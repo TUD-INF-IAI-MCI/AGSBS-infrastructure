@@ -15,6 +15,18 @@ of 3-tuples, as os.walk() produces."""
         res.append( (directoryname, directory_list, file_list) )
     return res
 
+
+def open_file(path, mode='r'):
+"""Wrapper for encoding stuff."""
+    try:
+        filehandle = codecs.open( directoryname + os.sep + file, mode, \
+                sys.getdefaultencoding())
+    except UnicodeEncodeError:
+        filehandle = codecs.open( directoryname + os.sep + file, mode,
+                'utf-8')
+    return filehandle
+
+
 class create_index():
     """create_index(dir)
     
@@ -43,14 +55,8 @@ By calling the function, the actual index is build."""
             for file in file_list:
                 # open with systems default encoding
                 # try systems default encoding, then utf-8, then fail
-                try:
-                    data = codecs.open( directoryname + os.sep + file, 'r', \
-                            sys.getdefaultencoding()).read()
-                except UnicodeEncodeError:
-                    data = codecs.open( directoryname + os.sep + file, 'r',
-                                'utf-8')
-
-                m = markdownParser( data )
+                data = open_file( file ).read()
+                m = markdownHeadingParser( data )
                 m.parse()
                 tmp_dict[ file ] = m.get_data()
         # dicts do not keep the order of their keys (we need such for the TOC)
@@ -67,3 +73,42 @@ By calling the function, the actual index is build."""
         return self.__index
 
 
+class page_index():
+    """page_index(directory, page_gap)
+
+Iterate through files in `directory`. Read in the page navigation (if any) and
+update (or create) it. `page_gap` will specify which gap the navigation bar will
+have for the pages."""
+    def __init__(self, dir):
+        self.__dir = dir
+    def iterate(elf):
+        """Iterate over the files and call self.trail_nav and self.gen_nav. Write
+back the file."""
+        for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
+            for file in file_list:
+                fhandle = open_file( file )
+                data = fhandle.read()
+                data = data.trail_nav( data )
+                data = data.gen_nav(data)
+                codecs.open( file, 'w', fhandle.encoding).write( data )
+
+    def trail_nav(self, page):
+        comment_started = True
+        new_page = []
+        for line in page.split('\n')
+            if(start = line.find('<!-- navigation bar') > 0):
+                comment_started = True
+                if(start > 2):
+                    new_page.append(line:start])
+            elif(comment_started and (end = line.find('-->')>0)):
+                comment_started = False
+                if(end < (len(line)-1)):
+                    new_page.append( line[end:] ))
+            else:
+                if(comment_started):
+                    continue # skip navigation
+                else:
+                    new_page.append( line )
+        return page
+    def gen_nav(self, page):
+        return page

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 
-class markdownParser():
+class markdownHeadingParser():
     """Implement an own simple markdown parser. Just reads in the headings of
 the given markdown string. If needs arises for more soffisticated stuff, use
 python-markdown."""
@@ -69,6 +69,3 @@ here wild guessing. It MUST be reimplemented."""
         while(res_id.startswith('-')):
             res_id = res_id[1:]
         return res_id
-
-
-
