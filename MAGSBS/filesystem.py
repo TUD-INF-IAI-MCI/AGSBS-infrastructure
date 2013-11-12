@@ -10,8 +10,8 @@ def get_markdown_files(dir):
 of 3-tuples, as os.walk() produces."""
     res = []
     for directoryname, directory_list, file_list in os.walk(dir):
-        file_list = [f for f in files    if(not file.endswith('.md')
-                    and not file.startswith('k'))]
+        file_list = [f for f in file_list    if(f.endswith('.md')
+                    and f.startswith('k'))]
         res.append( (directoryname, directory_list, file_list) )
     return res
 
@@ -19,10 +19,10 @@ of 3-tuples, as os.walk() produces."""
 def open_file(path, mode='r'):
     """Wrapper for en/decoding stuff."""
     try:
-        filehandle = codecs.open( directoryname + os.sep + file, mode, \
+        filehandle = codecs.open( path, mode, \
                 sys.getdefaultencoding())
     except UnicodeEncodeError:
-        filehandle = codecs.open( directoryname + os.sep + file, mode,
+        filehandle = codecs.open( path, mode,
                 'utf-8')
     return filehandle
 
@@ -55,7 +55,7 @@ By calling the function, the actual index is build."""
             for file in file_list:
                 # open with systems default encoding
                 # try systems default encoding, then utf-8, then fail
-                data = open_file( file ).read()
+                data = open_file( os.path.join(directoryname, file) ).read()
                 m = markdownHeadingParser( data )
                 m.parse()
                 tmp_dict[ file ] = m.get_data()
@@ -83,15 +83,16 @@ have for the pages."""
         self.__dir = dir
         self.pagenumbergap = pagenumbergap
         self.__lang = lang
-    def iterate(elf):
+    def iterate(self):
         """Iterate over the files and call self.trail_nav and self.gen_nav. Write
 back the file."""
         for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
             for file in file_list:
-                fhandle = open_file( file )
+                fhandle = open_file( directoryname + os.sep + file )
                 data = fhandle.read()
-                data = data.trail_nav( data )
-                data = data.gen_nav(data)
+                data = self.trail_nav( data )
+                data = self.gen_nav(data)
+                print('I have data',data)
                 codecs.open( file, 'w', fhandle.encoding).write( data )
 
     def trail_nav(self, page):
@@ -120,7 +121,9 @@ back the file."""
         """Generate language-specific site navigation.
 English table-of-contents are referenced as ../index.html, German toc's as
 ../inhalt.html."""
-        list_of_page_numbers = [heading for heading in create_index( self.__dir )
+        headings = create_index( self.__dir )
+        headings.walk()
+        list_of_page_numbers = [heading for heading in headings.get_index()
                     if(heading[0]==6)]
         toc = '[%s](../%s.html)' % (\
                     ('Inhalt' if self.__lang == 'de' else 'table of contents'),
@@ -129,5 +132,5 @@ English table-of-contents are referenced as ../index.html, German toc's as
         for ref in list_of_page_numbers:
             if( not (int(ref[2])%self.pagenumbergap)):
                 navbar.append( ' [%s](#%s)' % (ref[2], ref[1]))
-        return '<p>' + toc + '\n' + ''.join( new_page ) + '<hr /></p>' + page \
-                + '<p><hr />' + ''.join( new_page ) + toc + '</p>'
+        return '<p>' + toc + '\n' + ''.join( navbar ) + '<hr /></p>' + page \
+                + '<p><hr />' + ''.join( navbar ) + toc + '</p>'
