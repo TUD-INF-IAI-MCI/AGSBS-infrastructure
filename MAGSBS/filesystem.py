@@ -21,7 +21,7 @@ def open_file(path, mode='r'):
     try:
         filehandle = codecs.open( path, mode, \
                 sys.getdefaultencoding())
-    except UnicodeEncodeError:
+    except UnicodeDecodeError:
         filehandle = codecs.open( path, mode,
                 'utf-8')
     return filehandle
