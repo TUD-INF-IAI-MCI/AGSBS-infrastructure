@@ -24,35 +24,10 @@ fragmentation!"""
                     else 'Table Of Contents') ]
         output += ['\n=============\n\n']
 
-        chapter_number = 1
-        for chapter, headings in self.__index.items():
-            # strip markdown ending
-            filename = 'k'+chapter[1:3] + os.sep + chapter[:-2] + 'html'
-            chapter = chapter[1:] # strip trailing k
-            if(chapter.endswith('.md')):
-                chapter = chapter[:-3]
-            else:
-                raise ValueError('File must end with .md')
-            if(len(chapter)>6):
-                raise ValueError('Only files of form kxx.md" are accepted.')
-            chapter = chapter[1:3]
-            
-            # insert first-level-heading by hand, MUST be first heading!
-            if(not headings[0][0] == 1):
-                raise ValueError("First heading needs to be a h1 heading.")
-            else:
-                output.append( '\n[%s. %s](%s)\n' % (chapter_number,
-                        headings[0][2], filename) )
-
-            # get list of headings (and exclude page numbers); raise error if
-            # first-level-heading occures twice
-            headings = [h for h in headings[1:]   if(h[0] < 6  and  h[0] > 1)]
-            for h_num, heading in enumerate(headings):
-                output.append( '\n[%s.%s. %s](%s)\n' %
-                                (chapter_number, h_num+1, heading[2],
-                                filename + '#' + heading[1])
-                             )
-            chapter_number += 1
+        for fn, headings in self.__index.items():
+            headings = [h for h in headings   if(not h.is_shadow_heading())]
+            for heading in headings:
+                output.append( '\n%s' % (heading.get_markdown_link() ))
 
         self.output = output
 

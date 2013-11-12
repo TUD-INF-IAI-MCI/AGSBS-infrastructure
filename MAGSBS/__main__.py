@@ -27,9 +27,11 @@ def test_file_walk():
     return c.get_index()
 
 def test_index2markdown_TOC():
-    idx = test_file_walk()
-    c = index2markdown_TOC(idx, 'de')
-    print(c.get_markdown_page())
+    c = create_index('examples')
+    c.walk()
+    idx = index2markdown_TOC(c.get_index(), 'de')
+    print(idx.get_markdown_page())
+
 
 def test_pagenumber_indexing():
     p=page_navigation('examples', 5, lang='de')
@@ -38,7 +40,6 @@ def test_pagenumber_indexing():
 
 if __name__ == '__main__':
     #test_markdown_parser()
-    test_file_walk()
-    #test_index2markdown_TOC()
-    #test_index2markdown_TOC()
+    #test_file_walk()
+    test_index2markdown_TOC()
     #test_pagenumber_indexing()
