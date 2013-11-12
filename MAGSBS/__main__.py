@@ -23,7 +23,7 @@ def test_file_walk():
     c = create_index('examples')
     c.walk()
     for key, value in c.get_index().items():
-        print(key+repr(value)+'\n\n')
+        print(key+' '+'\n  '.join([v.get_markdown_link() for v in value])+'\n')
     return c.get_index()
 
 def test_index2markdown_TOC():
@@ -37,8 +37,8 @@ def test_pagenumber_indexing():
     p.iterate()
 
 if __name__ == '__main__':
-    test_markdown_parser()
-    #test_file_walk()
+    #test_markdown_parser()
+    test_file_walk()
     #test_index2markdown_TOC()
     #test_index2markdown_TOC()
     #test_pagenumber_indexing()

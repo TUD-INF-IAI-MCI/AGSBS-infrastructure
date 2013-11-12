@@ -45,11 +45,14 @@ python-markdown."""
                     level += 1
                     line = line[1:]
                 try: # match page number, else usual heading
-                    text = re.search('.*(\d+).*',line).groups()[0]
+                    re.search('.*- (slide|folie|seite|page) \d+ -.*',
+                            line.lower()).groups()[0]
+                    text = line
                     is_shadowheading = True
                 except AttributeError:
                     text = line[1:] # strip whitespace
             # if a heading was encountered:
+            print(level,text,is_shadowheading)
             if(level >= 0 and text != ''):
                 h = datastructures.heading(self.__path, self.__file_name)
                 h.set_level( level )
@@ -59,6 +62,7 @@ python-markdown."""
                         self.determine_relative_heading_number( level ) )
                 self.__headings.append( h )
 
+            level = -1; text = ''
             self.__lastchunk = line # save current line
 
     def determine_relative_heading_number(self, level):

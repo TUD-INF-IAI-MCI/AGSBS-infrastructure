@@ -8,24 +8,29 @@ import datastructures
 
 def get_markdown_files(dir):
     """Return all files starting with "k" and ending on ".md". Return is a list
-of 3-tuples, as os.walk() produces."""
+of 3-tuples, as os.walk() produces. Sort those before returning."""
     res = []
     for directoryname, directory_list, file_list in os.walk(dir):
         file_list = [f for f in file_list    if(f.endswith('.md')
                     and f.startswith('k'))]
         res.append( (directoryname, directory_list, file_list) )
+    res.sort()
     return res
 
 
-def open_file(path, mode='r'):
-    """Wrapper for en/decoding stuff."""
+def file_data_encoded(path):
+    """file_data_encoded(path)
+Opens path. Tries to guess the encoding. Return is first the data, second the
+encoding guessed."""
+    encoding = 'utf-8'
+    data = None
     try:
-        filehandle = codecs.open( path, mode, \
-                sys.getdefaultencoding())
+        data = codecs.open( path, 'r', \
+                sys.getdefaultencoding()).read()
+        encoding = sys.getdefaultencoding()
     except UnicodeDecodeError:
-        filehandle = codecs.open( path, mode,
-                'utf-8')
-    return filehandle
+        data = codecs.open( path, 'r', 'utf-8').read()
+    return (data, encoding)
 
 
 class create_index():
@@ -34,17 +39,12 @@ class create_index():
 Walk the file system tree from "dir" and have a look in all files who end on
 .md. Take headings of level 1 or 2 and add it to the index.
     
-Format of index: dict of lists: every file is a list of headings, each heading
-is a tuple of heading level, id and actual name. Thos are then stored in a
-OrderedDict with the key being the file name and the value being the list just
-described.
-
-E.g. { 'k01.html' : [(1,'art','art'), (6,'seite-1--',' -Seite 1 -')], [...] }
-"""
+Format of index: dict of lists: every filename is the key, the list of heading
+[objects] is the value in the OeredDict()."""
     def __init__(self, dir):
         self.__dir = dir
         if(not os.path.exists(dir)):
-            raise(OsError("Directory doesn't exist."))
+            raise(OSError("Directory doesn't exist."))
         self.__index = collections.OrderedDict()
 
     def walk(self):
@@ -56,19 +56,10 @@ By calling the function, the actual index is build."""
             for file in file_list:
                 # open with systems default encoding
                 # try systems default encoding, then utf-8, then fail
-                data = open_file( os.path.join(directoryname, file) ).read()
-                m = markdownHeadingParser( data )
+                data, enc = file_data_encoded( os.path.join(directoryname, file) )
+                m = markdownHeadingParser( data, directoryname, file )
                 m.parse()
-                tmp_dict[ file ] = m.get_data()
-        # dicts do not keep the order of their keys (we need such for the TOC)
-        # and os.walk does not read files/directories alphabetically either, so
-        # sort it:
-
-        keys = list(tmp_dict.keys())
-        keys.sort()
-        for key in keys:
-            print("key",key)
-            self.__index[key] = tmp_dict[key]
+                self.__index[ file ] = m.get_heading_list()
 
 
     def get_index(self):
@@ -90,12 +81,11 @@ have for the pages."""
 back the file."""
         for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
             for file in file_list:
-                fhandle = open_file( directoryname + os.sep + file )
+                data,enc = file_data_encoded( directoryname + os.sep + file )
                 data = fhandle.read()
                 data = self.trail_nav( data )
                 data = self.gen_nav(data)
-                print('I have data',data)
-                codecs.open( file, 'w', fhandle.encoding).write( data )
+                codecs.open( file, 'w', enc).write( data )
 
     def trail_nav(self, page):
         comment_started = True

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os
+import os, re
 
 def path2chapter(string):
     """Convert a file name as k010508.md to a tuple of the corresponding chapter
@@ -96,7 +96,8 @@ set_relative_heading_number(list) -> set relative heading number in document."""
                 self.__chapter_number + self.get_relative_heading_number()[1:] ) )
         if(self.is_shadow_heading()):
             # output a link like used in navigation bar
-            return '[%s](#%s)' % (self.get_text(), self.get_id())
+            number = re.search('.*?(\d+).*', self.get_text()).groups()[0]
+            return '[%s](#%s)' % (number, self.get_id())
         else:
             return '[%s. %s](%s#%s)' % ( \
                     full_number,
