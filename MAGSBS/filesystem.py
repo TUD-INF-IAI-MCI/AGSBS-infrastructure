@@ -17,7 +17,7 @@ of 3-tuples, as os.walk() produces."""
 
 
 def open_file(path, mode='r'):
-"""Wrapper for encoding stuff."""
+    """Wrapper for en/decoding stuff."""
     try:
         filehandle = codecs.open( directoryname + os.sep + file, mode, \
                 sys.getdefaultencoding())
@@ -73,14 +73,16 @@ By calling the function, the actual index is build."""
         return self.__index
 
 
-class page_index():
+class page_navigation():
     """page_index(directory, page_gap)
 
 Iterate through files in `directory`. Read in the page navigation (if any) and
 update (or create) it. `page_gap` will specify which gap the navigation bar will
 have for the pages."""
-    def __init__(self, dir):
+    def __init__(self, dir, pagenumbergap, lang='de'):
         self.__dir = dir
+        self.pagenumbergap = pagenumbergap
+        self.__lang = lang
     def iterate(elf):
         """Iterate over the files and call self.trail_nav and self.gen_nav. Write
 back the file."""
@@ -95,20 +97,37 @@ back the file."""
     def trail_nav(self, page):
         comment_started = True
         new_page = []
-        for line in page.split('\n')
-            if(start = line.find('<!-- navigation bar') > 0):
+        for line in page.split('\n'):
+            # search for supplied strings, if not found, start/end is -1
+            start = line.find('<!-- navigation bar')
+            end = line.find('-->')
+            if(start > 0):
                 comment_started = True
                 if(start > 2):
-                    new_page.append(line:start])
-            elif(comment_started and (end = line.find('-->')>0)):
+                    new_page.append(line[:start])
+            elif(comment_started and end>=0):
                 comment_started = False
                 if(end < (len(line)-1)):
-                    new_page.append( line[end:] ))
+                    new_page.append( line[end:] )
             else:
                 if(comment_started):
                     continue # skip navigation
                 else:
                     new_page.append( line )
-        return page
+        return '\n'.join( new_page )
+
     def gen_nav(self, page):
-        return page
+        """Generate language-specific site navigation.
+English table-of-contents are referenced as ../index.html, German toc's as
+../inhalt.html."""
+        list_of_page_numbers = [heading for heading in create_index( self.__dir )
+                    if(heading[0]==6)]
+        toc = '[%s](../%s.html)' % (\
+                    ('Inhalt' if self.__lang == 'de' else 'table of contents'),
+                    ('inhalt' if self.__lang == 'de' else 'index') )
+        navbar = [('Seiten: ' if self.__lang == 'de' else 'Pages: ')]
+        for ref in list_of_page_numbers:
+            if( not (int(ref[2])%self.pagenumbergap)):
+                navbar.append( ' [%s](#%s)' % (ref[2], ref[1]))
+        return '<p>' + toc + '\n' + ''.join( new_page ) + '<hr /></p>' + page \
+                + '<p><hr />' + ''.join( new_page ) + toc + '</p>'

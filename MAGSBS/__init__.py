@@ -41,6 +41,9 @@ def test_index2markdown_TOC():
     c = index2markdown_TOC(idx, 'de')
     print(c.get_markdown_page())
 
+def test_pagenumber_indexing():
+    page_navigation('examples', 5, lang='de')
+
 if __name__ == '__main__':
     #test_markdown_parser()
     #test_file_walk()
