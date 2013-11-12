@@ -12,10 +12,11 @@ from factories import *
 
 
 def test_markdown_parser():
-    m = markdownParser("Heya\n====\n\nImportant advisories\n---------\n\n\n###### - Seite 6 -\n")
+    m = markdownHeadingParser("Heya\n====\n\nImportant advisories\n---------\n\n\n###### - Seite 6 -\n",
+                'k01', 'k0103.md')
     m.parse()
-    for item in m.get_data():
-        print(repr(item))
+    for item in m.get_heading_list():
+        print(item.get_markdown_link())
     print("Done.")
 
 def test_file_walk():
@@ -36,8 +37,8 @@ def test_pagenumber_indexing():
     p.iterate()
 
 if __name__ == '__main__':
-    #test_markdown_parser()
+    test_markdown_parser()
     #test_file_walk()
     #test_index2markdown_TOC()
     #test_index2markdown_TOC()
-    test_pagenumber_indexing()
+    #test_pagenumber_indexing()

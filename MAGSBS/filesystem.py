@@ -4,6 +4,7 @@ import os, sys, codecs
 import collections
 
 from mparser import *
+import datastructures
 
 def get_markdown_files(dir):
     """Return all files starting with "k" and ending on ".md". Return is a list
@@ -66,6 +67,7 @@ By calling the function, the actual index is build."""
         keys = list(tmp_dict.keys())
         keys.sort()
         for key in keys:
+            print("key",key)
             self.__index[key] = tmp_dict[key]
 
 
