@@ -36,7 +36,8 @@ python-markdown."""
             if(line.startswith('===')):
                 level = 1
                 text = self.__lastchunk
-            elif(line.startswith('---')):
+            # check for spaces in subheadings, might be a table, too
+            elif(line.startswith('---') and not (line.find(' ')>=0)):
                 level = 2
                 text = self.__lastchunk
             elif(line.startswith('#')):
@@ -50,7 +51,13 @@ python-markdown."""
                     text = line
                     is_shadowheading = True
                 except AttributeError:
-                    text = line[1:] # strip whitespace
+                    text = line[:]
+                # it might end with multiple # signs:
+                while(text.endswith(' ') or text.endswith('#')):
+                    text = text[:-1]
+                # it might start with spaces, too
+                while(text.startswith(' ')):
+                    text = text[1:]
             # if a heading was encountered:
             if(level >= 0 and text != ''):
                 h = datastructures.heading(self.__path, self.__file_name)
@@ -68,7 +75,7 @@ python-markdown."""
         """Which number has the fifth level-2 heading in k0103.md? This
 function findsit out."""
         # set all variables below this level to 0 (its the start of a new section)
-        for i in range(level-1, 6):
+        for i in range(level, 6):
             self.__relative_heading_number[i] = 0
         # increase current level by one
         self.__relative_heading_number[level-1] += 1

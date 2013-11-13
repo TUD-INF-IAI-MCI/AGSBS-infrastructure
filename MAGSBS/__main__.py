@@ -40,5 +40,5 @@ def test_pagenumber_indexing():
 if __name__ == '__main__':
     #test_markdown_parser()
     #test_file_walk()
-    #test_index2markdown_TOC()
-    test_pagenumber_indexing()
+    test_index2markdown_TOC()
+    #test_pagenumber_indexing()
