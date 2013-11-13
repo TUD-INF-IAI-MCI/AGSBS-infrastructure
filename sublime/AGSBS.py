@@ -6,6 +6,12 @@ import codecs, re, sys
 import collections
 import json
 
+# after installation, the MAGSBS module will be in the same directory and thus
+# can be just imported. Since you want to test the development version
+# nonetheless, we add ".." to the path's where the modules are searched.
+sys.path.append('..')
+
+
 from MAGSBS import *
 
 class CreateStructureCommand(sublime_plugin.ApplicationCommand):
