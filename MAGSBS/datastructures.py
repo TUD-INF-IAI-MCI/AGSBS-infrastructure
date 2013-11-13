@@ -79,6 +79,14 @@ set_relative_heading_number(list) -> set relative heading number in document."""
         if(not isinstance(number, list)):
             raise ValueError("List expected.")
         self.__relative_heading_number = number
+
+    def get_page_number(self):
+        """Return page number, if it's a page heading, else raise ValueError."""
+        if(not self.is_shadow_heading() or not self.get_level() == 6):
+            raise ValueError("Not a page number heading, so no page number available.")
+        pgn = re.search('.*?(\d+).*', self.get_text()).groups()[0]
+        return int(pgn)
+
     def get_relative_heading_number(self):
         return self.__relative_heading_number
 

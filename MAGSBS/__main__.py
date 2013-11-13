@@ -35,11 +35,10 @@ def test_index2markdown_TOC():
 
 def test_pagenumber_indexing():
     p=page_navigation('examples', 5, lang='de')
-    print("echo")
     p.iterate()
 
 if __name__ == '__main__':
     #test_markdown_parser()
     #test_file_walk()
-    test_index2markdown_TOC()
-    #test_pagenumber_indexing()
+    #test_index2markdown_TOC()
+    test_pagenumber_indexing()

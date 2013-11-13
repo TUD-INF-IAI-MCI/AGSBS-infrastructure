@@ -52,7 +52,6 @@ python-markdown."""
                 except AttributeError:
                     text = line[1:] # strip whitespace
             # if a heading was encountered:
-            print(level,text,is_shadowheading)
             if(level >= 0 and text != ''):
                 h = datastructures.heading(self.__path, self.__file_name)
                 h.set_level( level )
