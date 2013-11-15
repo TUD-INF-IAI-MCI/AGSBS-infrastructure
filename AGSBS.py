@@ -6,13 +6,8 @@ import codecs, re, sys
 import collections
 import json
 
-# after installation, the MAGSBS module will be in the same directory and thus
-# can be just imported. Since you want to test the development version
-# nonetheless, we add ".." to the path's where the modules are searched.
-sys.path.append('..')
-
-
 from MAGSBS import *
+
 
 class CreateStructureCommand(sublime_plugin.ApplicationCommand):
     def run(self):
@@ -75,20 +70,15 @@ def create_folder_structure_book(path, input):
         else:
             k_str = "k" + str(i)        
         filename = k_str
-        print "filename "+filename
-        print "k_str "+k_str
         create_n_folder(path, filename)
         i = i + 1        
 
 def create_md_file(foldername, filename):
-    fn  = foldername + os.sep +filename  +".md"
+    fn  = foldername + os.sep +filename  +".md" 
     fd = os.open(fn, os.O_RDWR|os.O_CREAT) 
-    print "---------- text "
-    text = "Fuegen Sie hier die ueberschrift ein \n============= " 
-    #text = text.decode('utf-8')
-    #os.write(fd, text.encode('utf-8'))
-    os.write(fd, text)    
-    os.close(fd)   
+    text = u'Fügen Sie hier die ueberschrift ein \n============= '
+    os.write(fd,text.encode('utf-8'))
+    os.close(fd)
 
 def create_n_folder( foldername, filename):
         if not os.path.exists(foldername):
@@ -209,8 +199,10 @@ class AddTagCommand(sublime_plugin.TextCommand):
 
 class InsertPanelCommand(sublime_plugin.TextCommand):
     def run(self, edit, tag):
+        if tag == 'img ausgelagert':
+            self.view.window().show_input_panel("Bild-URL", "Name der Bilddatei eintragen. Die Bildbeschreibung wird ausgelagert", self.on_done_img, self.on_change, self.on_cancel)
         if tag == 'img':
-            self.view.window().show_input_panel("Bild-URL", "Bild-URL_eintragen", self.on_done_img, self.on_change, self.on_cancel)
+            self.view.window().show_input_panel("Bild-URL", "Name der Bilddatei eintragen.", self.on_done_img_normal, self.on_change, self.on_cancel)
         elif tag =='a':
             self.view.window().show_input_panel("Link-URL", "Link_eintragen", self.on_done_link, self.on_change, self.on_cancel)
         elif tag =='a name':
@@ -228,17 +220,58 @@ class InsertPanelCommand(sublime_plugin.TextCommand):
         self.view.run_command(
             "insert_my_text", {"args":            
             {'text': markdown}})
+
+    def on_done_img_normal(self, input):
+        markdown ='![Beschreibung ausgelagert]  (bilder/' +input +')'
+       # markdown = '[Bildbeschreibung von ' +input +'](bilder.html#' + link +')'
+        self.view.run_command(
+            "insert_my_text", {"args":            
+            {'text': markdown}})
+
     def on_done_img(self, input):
         #  if user cancels with Esc key, do nothing
         #  if canceled, index is returned as  -1
         if input == -1:
             return
        # if user picks from list, return the correct entry
-        print "------ \t" +input
-        markdown = '![Alternativtext]  (' +input +')'
+        
+        """
+            link to the alternativ description
+        """
+        link = "Bildbeschreibung von " +input
+        print link
+        heading_description = '\n## '+link +'##\n'
+        link = link.lower().replace(" ","-").replace(".","-")
+        
+        #[![Alternativtext]  (bilder/bild)](bilder.html#bildbeschreibung-von-bild)
+        markdown ='[![Beschreibung ausgelagert]  (bilder/' +input +')](bilder.html' +'#' +link +')'
+        print link
+       # markdown = '[Bildbeschreibung von ' +input +'](bilder.html#' + link +')'
         self.view.run_command(
             "insert_my_text", {"args":            
             {'text': markdown}})
+
+        path = self.view.file_name()
+        base = os.path.split(path)[0]
+        """
+            try to load bilder.md file or create
+        """
+        #fd = os.open(base +os.sep + 'bilder.md', os.O_RDWR|os.O_CREAT)
+        #print fd.readlines()
+        #count =  fd.read
+        fd = os.open(base +os.sep + 'bilder.md', os.O_RDWR|os.O_CREAT)
+        os.close(fd)
+        heading_level_one = '# Bilderbeschreibungen # \n'
+        heading_level_one = heading_level_one.encode('utf-8').strip()
+        with open(base +os.sep + 'bilder.md', 'r+') as fd:
+            line_count = len(fd.readlines())
+            # add heading_level_one
+            if line_count <=0:
+                fd.write(heading_level_one)               
+
+            fd.write(heading_description)  
+            fd.write("### TODO Beschreibung ergänzen ###") 
+        
 
     def on_done_anchor(self, input):
         #  if user cancels with Esc key, do nothing
@@ -365,8 +398,7 @@ class Move_caret_backCommand(sublime_plugin.TextCommand):
 """
 class CreateTocFileCommand(sublime_plugin.ApplicationCommand):
     def run(self):
-        foldername = sublime.windows()[0].folders()[0] 
-        base = foldername
+        base = sublime.windows()[0].folders()[0] 
         self.__dir = base        
         c = create_index(base)
         
@@ -380,7 +412,6 @@ class CreateTocCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         path = self.view.file_name()
         base = os.path.split(path)[0]
-        print "base CreateTocCommand" +base
         self.__dir = base
 
         # for root, dirs, files in os.walk(base):
@@ -406,6 +437,7 @@ class SaveAndReloadCommand(sublime_plugin.WindowCommand):
 
        
 def WriteIndex2File(base,content):
+
     indexFile = base + os.sep + "index.md"
     print "Save 2 file " +indexFile
     fd = os.open(indexFile, os.O_RDWR|os.O_CREAT)
@@ -413,17 +445,6 @@ def WriteIndex2File(base,content):
     os.write(fd, text)
     os.close(fd)
 
-# def collect_all_md_files(base):
-#     md_files = []
-#     kap_folder = []
-#     for root, dirs, files in os.walk(base):         
-#         for f in files:
-#             if f.find("md") >= 0:                
-#                 md_files.append(f)
-#         for folder in dirs:
-#             if folder.find("k") >= 0:
-#                 kap_folder.append(folder)
-#     return md_files
 
 def test_markdown_parser():
     m = markdownParser("Heya\n====\n\nImportant advisories\n---------\n\n\n###### - Seite 6 -\n")

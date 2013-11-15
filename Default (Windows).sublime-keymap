@@ -2,7 +2,6 @@
     { "keys": ["ctrl+alt+m"], "command": "markdown_preview", "args": {"target": "sublime agsbs", "parser":"markdown"} },
     {"keys": ["alt+m"], "command": "markdown_preview", "args": {"target": "browser", "parser":"markdown"} },
     { "keys": ["alt+h"], "command": "add_tag", "args": {"tag": "h", "markdown_str":"##"} },
-   
     { "keys": ["alt+i"], "command": "add_tag", "args": {"tag": "em", "markdown_str":"**"} },
     { "keys": ["alt+r"], "command": "add_tag", "args": {"tag": "hr", "markdown_str":"----------"} },
     { "keys": ["alt+s"], "command": "add_tag", "args": {"tag": "strong", "markdown_str":"****"} },
@@ -13,7 +12,8 @@
     { "keys": ["alt+l"], "command": "insert_panel", "args": {"tag": "a"} },
     { "keys": ["alt+a"], "command": "insert_panel", "args": {"tag": "a name"} },
     { "keys": ["alt+p"], "command": "insert_panel", "args": {"tag": "page"} },
-    { "keys": ["ctrl+alt+i"], "command": "insert_panel", "args": {"tag": "img"}},
+    { "keys": ["ctrl+alt+i"], "command": "insert_panel", "args": {"tag": "img ausgelagert"}},
+    { "keys": ["ctrl+alt+u"], "command": "insert_panel", "args": {"tag": "img"}},
     { "keys": ["ctrl+alt+t"], "command": "create_toc_file" },    
     { "keys": ["alt+ctrl+o"], "command": "quick_create_file" },
     { "keys": ["ctrl+alt+n"], "command": "create_structure"},
