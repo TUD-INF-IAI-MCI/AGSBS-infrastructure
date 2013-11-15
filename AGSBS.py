@@ -222,7 +222,7 @@ class InsertPanelCommand(sublime_plugin.TextCommand):
             {'text': markdown}})
 
     def on_done_img_normal(self, input):
-        markdown ='![Beschreibung ausgelagert]  (bilder/' +input +')'
+        markdown ='![ALternativtext]  (bilder/' +input +')'
        # markdown = '[Bildbeschreibung von ' +input +'](bilder.html#' + link +')'
         self.view.run_command(
             "insert_my_text", {"args":            
