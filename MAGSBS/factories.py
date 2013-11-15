@@ -27,7 +27,7 @@ fragmentation!"""
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
             for heading in headings:
-                output.append( '\n%s' % (heading.get_markdown_link() ))
+                output.append( '\n%s' % (heading.get_markdown_link() ) + '\n')
 
         self.output = output
 
