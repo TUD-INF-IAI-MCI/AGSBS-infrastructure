@@ -401,31 +401,30 @@ class CreateTocFileCommand(sublime_plugin.ApplicationCommand):
         base = sublime.windows()[0].folders()[0] 
         self.__dir = base        
         c = create_index(base)
-        print "test"
         c.walk()        
         index = c.get_index()
         md_index = index2markdown_TOC(index)
         WriteIndex2File(base,md_index.get_markdown_page())
 
 #erfordert datei
-class CreateTocCommand(sublime_plugin.TextCommand):
-    def run(self, edit):
-        path = self.view.file_name()
-        base = os.path.split(path)[0]
-        self.__dir = base
+# class CreateTocCommand(sublime_plugin.TextCommand):
+#     def run(self, edit):
+#         path = self.view.file_name()
+#         base = os.path.split(path)[0]
+#         self.__dir = base
 
-        # for root, dirs, files in os.walk(base):
-        #     for folder in dirs:
-        #         print folder
-        # collect_all_md_files(base)   
-        #test_file_walk()
-        c = create_index(base)
-        c.walk()
-        index = c.get_index()
-        md_index = index2markdown_TOC(index)
-        WriteIndex2File(base,md_index.get_markdown_page())        
-        # window.run_command("save")
-        # window.run_command("reload")
+#         # for root, dirs, files in os.walk(base):
+#         #     for folder in dirs:
+#         #         print folder
+#         # collect_all_md_files(base)   
+#         #test_file_walk()
+#         c = create_index(base)
+#         c.walk()
+#         index = c.get_index()
+#         md_index = index2markdown_TOC(index)
+#         WriteIndex2File(base,md_index.get_markdown_page())        
+#         # window.run_command("save")
+#         # window.run_command("reload")
 
 
 class SaveAndReloadCommand(sublime_plugin.WindowCommand):
