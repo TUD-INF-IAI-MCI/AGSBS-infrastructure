@@ -215,7 +215,6 @@ class InsertPanelCommand(sublime_plugin.TextCommand):
         if input == -1:
             return
        # if user picks from list, return the correct entry
-        print "------ \t" +input
         markdown = '######- Seite ' +input +' -######'
         self.view.run_command(
             "insert_my_text", {"args":            
@@ -241,7 +240,7 @@ class InsertPanelCommand(sublime_plugin.TextCommand):
         link = "Bildbeschreibung von " +input
         print link
         heading_description = '\n## '+link +'##\n'
-        link = link.lower().replace(" ","-").replace(".","-")
+        link = link.lower().replace(" ","-")
         
         #[![Alternativtext]  (bilder/bild)](bilder.html#bildbeschreibung-von-bild)
         markdown ='[![Beschreibung ausgelagert](bilder/' +input +')](bilder.html' +'#' +link +')'
@@ -399,7 +398,7 @@ class Move_caret_backCommand(sublime_plugin.TextCommand):
 class CreateTocFileCommand(sublime_plugin.ApplicationCommand):
     def run(self):
         base = sublime.windows()[0].folders()[0] 
-        self.__dir = base        
+    
         c = create_index(base)
         c.walk()        
         index = c.get_index()
