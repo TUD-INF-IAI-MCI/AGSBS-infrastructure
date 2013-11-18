@@ -27,9 +27,7 @@ file. The language specifies in which language to output the title of the TOC.
 heading number. It is assumed, that file names HAVE the form of k01.md for
 chapter 1 and NOT k1.html or something similar.
 
-Currently, there are NO files like k0101 recognized. It makes absolutely no
-sense to device chapters further then by 1.1 in output files. Everything else is
-fragmentation!"""
+"""
         output = [ ('Inhaltsverzeichnis' if self.lang=='de'
                     else 'Table Of Contents') ]
         output += ['\n=============\n\n']

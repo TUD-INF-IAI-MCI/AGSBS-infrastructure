@@ -54,6 +54,6 @@ def test_image_linking():
 if __name__ == '__main__':
     #test_markdown_parser()
     #test_file_walk()
-    #test_index2markdown_TOC()
+    test_index2markdown_TOC()
     #test_pagenumber_indexing()
-    test_image_linking()
+    #test_image_linking()
