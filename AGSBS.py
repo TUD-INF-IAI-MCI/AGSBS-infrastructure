@@ -222,7 +222,7 @@ class InsertPanelCommand(sublime_plugin.TextCommand):
             {'text': markdown}})
 
     def on_done_img_normal(self, input):
-        markdown ='![ALternativtext]  (bilder/' +input +')'
+        markdown ='![ALternativtext](bilder/' +input +')'
        # markdown = '[Bildbeschreibung von ' +input +'](bilder.html#' + link +')'
         self.view.run_command(
             "insert_my_text", {"args":            
@@ -244,7 +244,7 @@ class InsertPanelCommand(sublime_plugin.TextCommand):
         link = link.lower().replace(" ","-").replace(".","-")
         
         #[![Alternativtext]  (bilder/bild)](bilder.html#bildbeschreibung-von-bild)
-        markdown ='[![Beschreibung ausgelagert]  (bilder/' +input +')](bilder.html' +'#' +link +')'
+        markdown ='[![Beschreibung ausgelagert](bilder/' +input +')](bilder.html' +'#' +link +')'
         print link
        # markdown = '[Bildbeschreibung von ' +input +'](bilder.html#' + link +')'
         self.view.run_command(
@@ -401,7 +401,7 @@ class CreateTocFileCommand(sublime_plugin.ApplicationCommand):
         base = sublime.windows()[0].folders()[0] 
         self.__dir = base        
         c = create_index(base)
-        
+        print "test"
         c.walk()        
         index = c.get_index()
         md_index = index2markdown_TOC(index)
