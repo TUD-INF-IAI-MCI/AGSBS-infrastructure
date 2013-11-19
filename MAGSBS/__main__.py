@@ -37,8 +37,23 @@ def test_pagenumber_indexing():
     p=page_navigation('examples', 5, lang='de')
     p.iterate()
 
+def test_image_linking():
+    i = image_description('bilder/bla.jpg', '''A rather long picture
+            description, longer than 100 characters, actually; hopefully it gets
+            outsourced, so we see that the functionality is implemented
+            correctly.''' )
+    i.use_outsourced_descriptions( True )
+    i.set_outsourcing_path('k01/images.md')  # necessary for outsourcing!
+    i.set_chapter_path('k01/k01.html')   # necessary for outsourcing! 
+    data = i.get_output('Image Page 20')
+    for item in data:
+        print(item)
+
+
+
 if __name__ == '__main__':
     #test_markdown_parser()
     #test_file_walk()
     test_index2markdown_TOC()
     #test_pagenumber_indexing()
+    #test_image_linking()

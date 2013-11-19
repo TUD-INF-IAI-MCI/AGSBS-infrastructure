@@ -62,8 +62,7 @@ By calling the function, the actual index is build."""
                 m = markdownHeadingParser( data, directoryname, file )
                 m.parse()
                 self.__index[ file ] = m.get_heading_list()
-
-
+    
     def get_index(self):
         return self.__index
 
