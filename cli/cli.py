@@ -36,27 +36,7 @@ class main():
                 self.navbar()
             else:
                 print(usage)
-        """
-        parser = OptionParser()#usage=usage)
-        parser.add_option("-l", "--lang", action="store_true", dest="lang",
-                default=False, help='select output language')
-        parser.add_option("-o", "--output", dest="output",
-                  help="set output file (if unset, overwrite input file)",
-                  metavar="FILE")
-        parser.add_option("-p", "--pdftotext",
-                  action="store_true", dest="pdftotext", default=False,
-                  help='Replace some signs generated just by PDFtotext')
-        parser.add_option("-s", "--strip-newpage",
-                  action="store_true", dest="strip_newline", default=False,
-                  help='Strip the newpage character')
-        parser.add_option("-u", "--userdict", dest="userdict",
-                  help="set path to user-defined replacements/additions for "+\
-                          "unicode mappings (format described in README)",
-                  metavar="FILE", default=None)
-
-        (self.options, self.args) = parser.parse_args()
-"""
-
+    
     def toc(self):
         usage = sys.argv[0]+' toc [OPTIONS] -o output_file input_file'
         parser = OptionParser(usage=usage)
@@ -91,6 +71,40 @@ class main():
         idx = index2markdown_TOC(c.get_index(), options.lang, depth)
         file.write( idx.get_markdown_page() )
         file.close()
+    def navbar(self):
+        usage = sys.argv[0]+' navbar [OPTIONS] input_directory\n'+\
+                "\nIf input_directory is omitted, the current directory will "+\
+                "be taken. Please note\n also that all pages will get a page "+\
+                "navigation.\n\n"
+        parser = OptionParser(usage=usage)
+        #parser.add_option("-o", "--output", dest="output",
+        #          help="write output to file instead of stdout",
+        #          metavar="FILENAME", default='stdout')
+        parser.add_option("-l", "--lang", dest="lang",
+                  help="select language (currently just 'de' and 'en' supported)",
+                  metavar="LANG", default='de')
+        parser.add_option("-p", "--pnum-gap", dest="pnum_gap",
+                  help="gap in numbering between page links.",
+                  metavar="NUM", default='5')
+        (options, args) = parser.parse_args(sys.argv[2:])
+        if(len(args)<1):
+            parser.print_help()
+            exit(0)
+        else:
+            dir = args[0]
+        try:
+            pnumgap = int( options.pnum_gap )
+        except ValueError:
+            error_exit("Argument of -p must be an integer.")
+
+        #output = None
+        #if(options.output == 'stdout'):
+        #    output = sys.stdout
+        #else:
+        #    output = codecs.open(options.output, 'w', 'utf-8')
+
+        p=page_navigation(dir, pnumgap, options.lang)
+        p.iterate()
 
 
 m = main()
