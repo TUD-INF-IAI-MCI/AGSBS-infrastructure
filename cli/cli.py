@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os,sys
+import os, sys, codecs
 from optparse import OptionParser
 
 # Todo: dirty trick, remove me!
@@ -20,6 +20,10 @@ Available commands are:
 toc     - generate table of contents
 navbar  - generate navigation bar at beginning of each page
 """
+
+def error_exit(string):
+    sys.stderr.write( string + ('\n' if not string.endswith('\n') else '') )
+    sys.exit(127)
 
 class main():
     def __init__(self):
@@ -60,10 +64,36 @@ class main():
 """
 
     def toc(self):
-        c = create_index(sys.argv[2])
+        usage = sys.argv[0]+' toc [OPTIONS] -o output_file input_file'
+        parser = OptionParser(usage=usage)
+        parser.add_option("-d", "--depth", dest="depth",
+                  help="to which depth headings should be included in the output",
+                  metavar="NUM", default='4')
+        parser.add_option("-o", "--output", dest="output",
+                  help="write output to file instead of stdout",
+                  metavar="FILENAME", default='stdout')
+        parser.add_option("-l", "--lan", dest="output",
+                  help="select language (currently just 'de' and 'en' supported)",
+                  metavar="LANG", default='de')
+        (options, args) = parser.parse_args(sys.argv[2:])
+        file = (sys.stdout if options['output'] == 'stdout'\
+                    else options['output'])
+        file = codecs.open(file, 'w', 'utf-8')
+        try:
+            depth = int( options['depth'] )
+        except ValueError:
+            error_exit("Depth must be an integer.")
+        dir = '.'
+        if(not args == []):
+            dir = args[0]
+            if(not os.path.exists( dir )):
+                error_exit("Directory %s does not exist" % dir)
+
+        c = create_index( dir )
         c.walk()
-        idx = index2markdown_TOC(c.get_index(), 'de')
-        print(idx.get_markdown_page())
+        idx = index2markdown_TOC(c.get_index(), options['lang'], depth)
+        file.write( idx.get_markdown_page() )
+        file.close()
 
 
 m = main()

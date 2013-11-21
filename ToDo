@@ -1,8 +1,21 @@
 To Do
 =====
 
+- tabulars with:
+    - automatic creation of basic structure
+    - automatic link to skip the table
 * level 6 headings(!)
 * python3?
 * wiki (?)
 * Kate, Sublime Plugin?
+<<<<<<< HEAD
 * link 2 pictures , file name with/out extension
+
+Dokumentation
+--------------
+
+
+AGSBS-specific and hence in German:
+
+- Verzeichnisstruktur aus Protokoll ergänzen(!)
+- wie realisiert man Nummerierungen mit Unterbrechungen?

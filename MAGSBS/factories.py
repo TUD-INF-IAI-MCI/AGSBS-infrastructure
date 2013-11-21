@@ -16,9 +16,10 @@ class index2markdown_TOC():
 Take the ordered dict produced by create_index() and transform it  to a markdown
 file. The language specifies in which language to output the title of the TOC.
 """
-    def __init__(self, index, lang='de'):
+    def __init__(self, index, lang='de', depth=4):
         self.__index = index
         self.lang = lang
+        self.depth = depth
         self.__output = []
         self.transform_index()
 
@@ -35,6 +36,8 @@ chapter 1 and NOT k1.html or something similar.
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
             for heading in headings:
+                if(heading.get_level() > self.depth):
+                    continue # skip thoe headings
                 output.append( '\n%s\n' % (heading.get_markdown_link() ))
 
         self.output = output
@@ -53,10 +56,12 @@ method's doc-strings to understand how this class works.
 
 An example:
 
-i = image_description('bilder/bla.jpg', 'A cow making "moo"')
+i = image_description('bilder/bla.jpg', '''
+A cow on a meadow eating gras and staring a bit stupidly. It says "moo".
+    ''')
 i.use_outsourced_descriptions( True ) # outsource image descriptions > 100
+i.set_title("a cow on a meadow")
 i.set_outsourcing_path('k01/images.md')  # necessary for outsourcing!
-# needs to be HTML, for the link in the output format
 i.set_chapter_path('k01/k01.html')   # necessary for outsourcing! 
 data = i.get_output()
 
@@ -70,6 +75,7 @@ contained in the second item.
         self.enc = 'utf-8'
         self.description = description
         self.lang = 'de'
+        self.title = 'some image without title'
         self.exclusion_path = ('bilder.md' if self.lang == 'de' else
                 'images.md')
         self.outsource_long_descriptions = True
@@ -77,7 +83,15 @@ contained in the second item.
         self.img_maxlength = 100
         self.chapter_path = None
 
-    def set_chapter_path(self, path): self.chapter_path = path
+    def set_chapter_path(self, path):
+        if(path.endswith('.md')):
+            self.chapter_path = path[:-2]+'html'
+        else:
+            self.chapter_path = path
+    def set_title(self, title):
+        self.title = title
+    def get_title(self): return self.title
+
     def use_outsourced_descriptions(self, flag):
         self.outsource_long_descriptions = flag
     def set_outsourcing_path(self, path):
@@ -103,7 +117,7 @@ contained in the second item.
         text += title
         return text
 
-    def get_output(self, title):
+    def get_output(self):
         """Dispatcher function for get_inline_description and
 get_outsourcing_link; will be either a tuple of (link, content for outsourced
     description) or just a tuple with the image description/the reference to the
@@ -112,17 +126,17 @@ use_outsourced_descriptions(False) or will automatically exclude images longer
 than 100 characters."""
         if(not self.outsource_long_descriptions
                 or len(self.description) < self.img_maxlength):
-            return (get_inline_description(title), )
+            return (self.get_inline_description(self.get_title()), )
         else:
             external_text = []
-            external_text += [self.__get_outsourced_title( title )]
+            external_text += ['### ', self.get_title() ]
             external_text += ['\n\n', self.description,'\n\n']
             #external_text += ['[%s](%s#%s' % (
             #        ('zurück' if self.lang=='de' else 'back'),
             #        self.chapter_path, 
-            #        datastructures.gen_id( title )) ]
+            #        datastructures.gen_id( self.title )) ]
             external_text.append('\n\n* * * * *\n')
 
-            return (self.get_outsourcing_link( title ),
+            return (self.get_outsourcing_link( self.title ),
                     ''.join( external_text))
 

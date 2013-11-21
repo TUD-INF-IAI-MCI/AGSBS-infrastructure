@@ -37,23 +37,29 @@ def test_pagenumber_indexing():
     p=page_navigation('examples', 5, lang='de')
     p.iterate()
 
-def test_image_linking():
-    i = image_description('bilder/bla.jpg', '''A rather long picture
-            description, longer than 100 characters, actually; hopefully it gets
-            outsourced, so we see that the functionality is implemented
-            correctly.''' )
-    i.use_outsourced_descriptions( True )
+
+def test_image_descriptions():
+    i = image_description('bilder/bla.jpg', '''
+A cow on a meadow eating pink, already short gras and staring a bit stupidly. It
+says in a balloon "moo". The balloon collides with the clouds. BTW, the
+description is just that long to enforce outsourcing.
+    ''')
+    i.use_outsourced_descriptions( True ) # outsource image descriptions > 100
     i.set_outsourcing_path('k01/images.md')  # necessary for outsourcing!
-    i.set_chapter_path('k01/k01.html')   # necessary for outsourcing! 
-    data = i.get_output('Image Page 20')
-    for item in data:
-        print(item)
+    i.set_chapter_path('k01/k01.md')   # necessary for outsourcing! 
+    i.set_title("a cow on a meadow")
+    data = i.get_output()
+    if(len(data) == 1):
+        print('k01/k01.html:\n\n%s' % data[0])
+    else:
+        print('k01/k01.html:\n\n%s\n\n---------\n\nbilder.md:\n\n%s' % (data[0], data[1]))
 
 
 
 if __name__ == '__main__':
     #test_markdown_parser()
     #test_file_walk()
-    test_index2markdown_TOC()
+    #test_index2markdown_TOC()
     #test_pagenumber_indexing()
     #test_image_linking()
+    test_image_descriptions()
