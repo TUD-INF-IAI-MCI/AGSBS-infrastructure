@@ -38,14 +38,8 @@ class main():
                 print(usage)
         """
         parser = OptionParser()#usage=usage)
-        parser.add_option("-t", "--toc", dest="toc",
-                  help="generate table of contents",
-                  default='UTF-8')
-        parser.add_option("-l", "--ligature",
-                  action="store_true", dest="ligature", default=False,
-                  help='replace ligatures through normal letters (at least in'+\
-                          ' Latin languages where they are only for better '+\
-                          'readibility)')
+        parser.add_option("-l", "--lang", action="store_true", dest="lang",
+                default=False, help='select output language')
         parser.add_option("-o", "--output", dest="output",
                   help="set output file (if unset, overwrite input file)",
                   metavar="FILE")
@@ -72,15 +66,18 @@ class main():
         parser.add_option("-o", "--output", dest="output",
                   help="write output to file instead of stdout",
                   metavar="FILENAME", default='stdout')
-        parser.add_option("-l", "--lan", dest="output",
+        parser.add_option("-l", "--lang", dest="lang",
                   help="select language (currently just 'de' and 'en' supported)",
                   metavar="LANG", default='de')
         (options, args) = parser.parse_args(sys.argv[2:])
-        file = (sys.stdout if options['output'] == 'stdout'\
-                    else options['output'])
-        file = codecs.open(file, 'w', 'utf-8')
+
+        file = None
+        if(options.output == 'stdout'):
+            file = sys.stdout
+        else:
+            file = codecs.open(options.output, 'w', 'utf-8')
         try:
-            depth = int( options['depth'] )
+            depth = int( options.depth )
         except ValueError:
             error_exit("Depth must be an integer.")
         dir = '.'
@@ -91,7 +88,7 @@ class main():
 
         c = create_index( dir )
         c.walk()
-        idx = index2markdown_TOC(c.get_index(), options['lang'], depth)
+        idx = index2markdown_TOC(c.get_index(), options.lang, depth)
         file.write( idx.get_markdown_page() )
         file.close()
 
