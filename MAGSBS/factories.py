@@ -99,17 +99,20 @@ contained in the second item.
     def get_outsourcing_path(self):
         if(self.chapter_path):
             path = os.path.split( self.chapter_path )[0]
-            return os.path.join( path, self.exclusion_file )
+            path = os.path.join( path, self.exclusion_file )
         else:
-            return self.exclusion_file
+            path = self.exclusion_file
+        if(path.endswith('.md')):
+            path = path[:-2]+'html'
+        return path
 
     def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
         id = datastructures.gen_id( self.get_title() )
         link_text = ('Bildbeschreibung ausgelagert' if self.lang == 'de'
                             else 'description of image outsourced')
-        return '![ [%s](%s) ](%s#%s)' % (link_text, self.image_path,
-                        self.get_outsourcing_path(), id)
+        return '<a id="%s" />\n![ [%s](%s) ](%s#%s)\\' % (id, link_text,
+                    self.image_path, self.get_outsourcing_path(), id)
 
     def get_inline_description(self):
         """Return the markdown syntax for a image description."""
@@ -135,10 +138,10 @@ than 100 characters."""
             external_text = []
             external_text += ['### ', self.get_title() ]
             external_text += ['\n\n', self.description,'\n\n']
-            #external_text += ['[%s](%s#%s' % (
-            #        ('zurück' if self.lang=='de' else 'back'),
-            #        self.chapter_path, 
-            #        datastructures.gen_id( self.get_title() )) ]
+            external_text += ['[%s](%s#%s)' % (
+                    ('zurück' if self.lang=='de' else 'back'),
+                    self.chapter_path, 
+                    datastructures.gen_id( self.get_title() )) ]
             external_text.append('\n\n* * * * *\n')
 
             return (self.get_outsourcing_link(),
