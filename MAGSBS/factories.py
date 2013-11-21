@@ -70,13 +70,13 @@ description). When the tuple has, the first item is the text for the chapter,
 containing the image reference and a link to the outsourced image descrption,
 contained in the second item.
 """
-    def __init__(self, image_path, description):
+    def __init__(self, image_path, description, lang='de'):
         self.image_path = image_path
         self.enc = 'utf-8'
         self.description = description
-        self.lang = 'de'
+        self.lang = lang
         self.title = 'some image without title'
-        self.exclusion_path = ('bilder.md' if self.lang == 'de' else
+        self.exclusion_file = ('bilder.md' if self.lang == 'de' else
                 'images.md')
         self.outsource_long_descriptions = True
         # maximum length of image description before outsourcing it
@@ -95,19 +95,23 @@ contained in the second item.
     def use_outsourced_descriptions(self, flag):
         self.outsource_long_descriptions = flag
     def set_outsourcing_path(self, path):
-        self.exclusion_path = path
+        self.exclusion_file = path
+    def get_outsourcing_path(self):
+        if(self.chapter_path):
+            path = os.path.split( self.chapter_path )[0]
+            return os.path.join( path, self.exclusion_file )
+        else:
+            return self.exclusion_file
 
-    def get_outsourcing_link(self, title):
+    def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
-        # generate from the title the part of the link after the #. Important:
-        # urlencode only encodes key:value, so we must strip the trailing '='
-        # and we must replace the '+' through "%20"
-        id = URLencode({'':title}).replace('+','%20')[1:]
+        id = datastructures.gen_id( self.get_title() )
         link_text = ('Bildbeschreibung ausgelagert' if self.lang == 'de'
                             else 'description of image outsourced')
-        return '[%s](%s#%s)' % (link_text, self.image_path, id)
+        return '![ [%s](%s) ](%s#%s)' % (link_text, self.image_path,
+                        self.get_outsourcing_path(), id)
 
-    def get_inline_description(self, title):
+    def get_inline_description(self):
         """Return the markdown syntax for a image description."""
         return '![%s](%s)' % (title, self.image_path)
 
@@ -126,7 +130,7 @@ use_outsourced_descriptions(False) or will automatically exclude images longer
 than 100 characters."""
         if(not self.outsource_long_descriptions
                 or len(self.description) < self.img_maxlength):
-            return (self.get_inline_description(self.get_title()), )
+            return (self.get_inline_description(), )
         else:
             external_text = []
             external_text += ['### ', self.get_title() ]
@@ -134,9 +138,9 @@ than 100 characters."""
             #external_text += ['[%s](%s#%s' % (
             #        ('zurück' if self.lang=='de' else 'back'),
             #        self.chapter_path, 
-            #        datastructures.gen_id( self.title )) ]
+            #        datastructures.gen_id( self.get_title() )) ]
             external_text.append('\n\n* * * * *\n')
 
-            return (self.get_outsourcing_link( self.title ),
+            return (self.get_outsourcing_link(),
                     ''.join( external_text))
 

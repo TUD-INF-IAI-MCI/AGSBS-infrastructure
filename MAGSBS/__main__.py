@@ -45,7 +45,7 @@ says in a balloon "moo". The balloon collides with the clouds. BTW, the
 description is just that long to enforce outsourcing.
     ''')
     i.use_outsourced_descriptions( True ) # outsource image descriptions > 100
-    i.set_outsourcing_path('k01/images.md')  # necessary for outsourcing!
+    i.set_outsourcing_path('bilder.md')  # necessary for outsourcing!, relative to chapter root!
     i.set_chapter_path('k01/k01.md')   # necessary for outsourcing! 
     i.set_title("a cow on a meadow")
     data = i.get_output()
