@@ -1,0 +1,24 @@
+To Do: TRANSLATION INTO GERMAN
+
+Sublime Plugin
+--------------
+
+To do: link to documentation.
+
+MAGSBS
+------
+
+CLI interface
+-------------
+
++ Windows: open a cmd window (e.g. press Windows + r and type there cmd<enter>),
+  switch with the "cd"-command to the correct directory and execute the
+  following command:
+
+    * for a source installation: `setup.py sdist`\
+    * normal installation (for most users): `setup.py install`
+    * Binary installer: `python setup.py bdist_wininst`
++ other ssystems: in a terminal, change with "cd" to the correct directory and
+  run the same commands as above, only prefixed with "python ". The binary
+  target is not available.
+
