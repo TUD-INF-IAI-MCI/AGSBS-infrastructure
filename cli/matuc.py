@@ -12,16 +12,16 @@ from MAGSBS import *
 
 
 usage = """
-magsbs <command> <options>
+%s <command> <options>
 
 <command> determines which action to take. The syntax might vary between
-commands. Use magsbs <command> -h for help.
+commands. Use %s <command> -h for help.
 
 Available commands are:
 
 toc     - generate table of contents
 navbar  - generate navigation bar at beginning of each page
-"""
+""" % (sys.argv[0], sys.argv[0])
 
 def error_exit(string):
     sys.stderr.write( string + ('\n' if not string.endswith('\n') else '') )
