@@ -44,15 +44,18 @@ class main():
     def toc(self):
         usage = sys.argv[0]+' toc [OPTIONS] -o output_file input_directory'
         parser = OptionParser(usage=usage)
+        parser.add_option("-a", dest="appendixprefix",
+                  help="use 'A' as prefix to appendix chapter numbering",
+                  action="store_true", default=False)
         parser.add_option("-d", "--depth", dest="depth",
                   help="to which depth headings should be included in the output",
                   metavar="NUM", default='4')
-        parser.add_option("-o", "--output", dest="output",
-                  help="write output to file instead of stdout",
-                  metavar="FILENAME", default='stdout')
         parser.add_option("-l", "--lang", dest="lang",
                   help="select language (currently just 'de' and 'en' supported)",
                   metavar="LANG", default='de')
+        parser.add_option("-o", "--output", dest="output",
+                  help="write output to file instead of stdout",
+                  metavar="FILENAME", default='stdout')
         (options, args) = parser.parse_args(sys.argv[2:])
 
         file = None
@@ -72,7 +75,8 @@ class main():
 
         c = create_index( dir )
         c.walk()
-        idx = index2markdown_TOC(c.get_index(), options.lang, depth)
+        idx = index2markdown_TOC(c.get_index(), options.lang, depth,
+                options.appendixprefix)
         file.write( idx.get_markdown_page() )
         file.close()
     def navbar(self):

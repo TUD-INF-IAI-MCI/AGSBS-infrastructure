@@ -16,11 +16,12 @@ class index2markdown_TOC():
 Take the ordered dict produced by create_index() and transform it  to a markdown
 file. The language specifies in which language to output the title of the TOC.
 """
-    def __init__(self, index, lang='de', depth=4):
+    def __init__(self, index, lang='de', depth=4, use_appendix_prefix=False):
         self.__index = index
         self.lang = lang
         self.depth = depth
         self.__output = []
+        self.__use_appendix_prefix = use_appendix_prefix
         self.transform_index()
 
     def transform_index(self):
@@ -32,15 +33,24 @@ chapter 1 and NOT k1.html or something similar.
         output = [ ('Inhaltsverzeichnis' if self.lang=='de'
                     else 'Table Of Contents') ]
         output += ['\n=============\n\n']
+        appendix = ['\n\n']
+        if(not self.__use_appendix_prefix):
+            appendix += [ ('Anhang' if self.lang == 'de' else 'Appendix'),
+                        '\n======\n\n']
 
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
             for heading in headings:
                 if(heading.get_level() > self.depth):
-                    continue # skip thoe headings
-                output.append( '\n%s\n' % (heading.get_markdown_link() ))
+                    continue # skip those headings
+                elif(heading.is_appendix()):
+                    if(self.__use_appendix_prefix):
+                        heading.use_appendix_prefix(True)
+                    appendix.append( '\n%s\n' % (heading.get_markdown_link() ))
+                else:
+                    output.append( '\n%s\n' % (heading.get_markdown_link() ))
 
-        self.output = output
+        self.output = output+appendix
 
     def get_markdown_page(self):
         return ''.join(self.output)

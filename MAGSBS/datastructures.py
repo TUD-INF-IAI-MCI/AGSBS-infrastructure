@@ -3,22 +3,26 @@
 import os, re
 
 def path2chapter(string):
-    """Convert a file name as k010508.md to a tuple of the corresponding chapter
-numbers.
+    """Convert a file name as k010508.md or anh__.md to a tuple of the
+corresponding chapter numbers.
 Important: this functions throws OsErrors which must be caught by the plugin /
 frontend used; the supplied message can be displyed to the user."""
-    string = string[1:] # strip leading k
+    if(string.startswith('k')):
+        string = string[1:] # strip leading k
+    elif(string.startswith('anh')):
+        string = string[3:]
+
     if(string.endswith('.md')): string = string[:-3]
     elif(string.endswith('.html')): string = string[:-4]
     else:
-        raise OsError('Not supported file ending, must be .html or .md.')
+        raise OSError('Not a supported file ending, must be .html or .md.')
     erg = []
     while(string != ''):
         try:
             erg.append( int(string[:2]) )
             string = string[2:]
         except ValueError:
-            raise OsError("Wrong file name.")
+            raise OSError("Wrong file name.")
     return erg
 
 def gen_id(id):
@@ -58,6 +62,7 @@ This class represents a heading to ease the handling of headings.
         self.__path = path
         self.__file_name = file_name
         self.__is_shadow_heading = False
+        self.__use_appendix_prefix = False
 
     def set_level(self, level):
         self.__level = level
@@ -65,6 +70,11 @@ This class represents a heading to ease the handling of headings.
         return self.__level
     def set_shadow_heading(self, state):
         self.__is_shadow_heading = state
+    def is_appendix(self):
+        if(self.__file_name.startswith('anh')):
+            return True
+        else:
+            return False
     def is_shadow_heading(self):
         """Headings, marked as such, but not real headings. Example: page numbers."""
         return self.__is_shadow_heading
@@ -89,6 +99,8 @@ set_relative_heading_number(list) -> set relative heading number in document."""
 
     def get_relative_heading_number(self):
         return self.__relative_heading_number
+    def use_appendix_prefix(self, usage):
+        self.__use_appendix_prefix = usage
 
     def get_markdown_link(self):
         if(self.get_level() == 1):
@@ -102,6 +114,10 @@ set_relative_heading_number(list) -> set relative heading number in document."""
             # *one* fist-level-heading.
             full_number = '.'.join(map(lambda x: str(x),
                 self.__chapter_number + self.get_relative_heading_number()[1:] ) )
+
+        # prefix full_number with a capital 'A' for appendices, if wished
+        if(self.is_appendix() and self.__use_appendix_prefix):
+            full_number = 'A.' + full_number
         if(self.is_shadow_heading()):
             # output a link like used in navigation bar
             number = re.search('.*?(\d+).*', self.get_text()).groups()[0]
