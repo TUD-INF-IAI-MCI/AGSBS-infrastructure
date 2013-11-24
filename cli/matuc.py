@@ -42,7 +42,7 @@ class main():
                 print(usage)
     
     def toc(self):
-        usage = sys.argv[0]+' toc [OPTIONS] -o output_file input_file'
+        usage = sys.argv[0]+' toc [OPTIONS] -o output_file input_directory'
         parser = OptionParser(usage=usage)
         parser.add_option("-d", "--depth", dest="depth",
                   help="to which depth headings should be included in the output",

@@ -1,0 +1,5 @@
+#!/bin/sh
+# a bit of explanation:
+# since we start the script with python -c, sys.argv looks like:
+# ['-c', $params], so replace the first item to reflect the scriptname
+python -c 'import sys;sys.argv[0]="matuc";import matuc' "$@"

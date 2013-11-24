@@ -19,3 +19,7 @@ AGSBS-specific and hence in German:
 
 - Verzeichnisstruktur aus Protokoll ergänzen(!)
 - wie realisiert man Nummerierungen mit Unterbrechungen?
+    - Pandoc rückt dafür ein, dokumentieren
+- dokumentieren, Bilder:
+    - Bilder liegen unter Kapitel/bilder, davon geht Skript momentan aus
+    - bilder.md/.html liegt unterhalb von Kapitel
