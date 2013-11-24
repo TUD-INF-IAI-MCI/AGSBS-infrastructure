@@ -36,7 +36,7 @@ chapter 1 and NOT k1.html or something similar.
         appendix = ['\n\n']
         if(not self.__use_appendix_prefix):
             appendix += [ ('Anhang' if self.lang == 'de' else 'Appendix'),
-                        '\n======\n\n']
+                        '\n------\n\n']
 
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
