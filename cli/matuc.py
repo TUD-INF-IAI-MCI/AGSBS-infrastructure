@@ -45,7 +45,7 @@ class main():
         usage = sys.argv[0]+' toc [OPTIONS] -o output_file input_directory'
         parser = OptionParser(usage=usage)
         parser.add_option("-a", dest="appendixprefix",
-                  help="use 'A' as prefix to appendix chapter numbering",
+                  help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
                   action="store_true", default=False)
         parser.add_option("-d", "--depth", dest="depth",
                   help="to which depth headings should be included in the output",

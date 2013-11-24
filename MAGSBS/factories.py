@@ -11,7 +11,7 @@ else:
     URLencode = urllib.urlencode
 
 class index2markdown_TOC():
-    """index2markdown_TOC( OrderedDict(), lang )
+    """index2markdown_TOC( OrderedDict(), lang, depth=4, use_appendix_prefix=False)
 
 Take the ordered dict produced by create_index() and transform it  to a markdown
 file. The language specifies in which language to output the title of the TOC.
