@@ -2,4 +2,13 @@
 # a bit of explanation:
 # since we start the script with python -c, sys.argv looks like:
 # ['-c', $params], so replace the first item to reflect the scriptname
-python -c 'import sys;sys.argv[0]="matuc";import matuc' "$@"
+ver=`python -c 'import sys;print(sys.version[0])'`
+
+if [ $ver -eq 2 ]; then
+    PYTHON=python
+else
+    PYTHON=python2
+fi
+
+$PYTHON -c 'import sys;sys.argv[0]="matuc";import matuc' "$@"
+

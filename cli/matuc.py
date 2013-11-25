@@ -4,10 +4,6 @@
 import os, sys, codecs
 from optparse import OptionParser
 
-# Todo: dirty trick, remove me!
-parent = os.path.realpath( sys.argv[0]).split( os.sep )
-sys.path.append( os.sep.join( parent[:-2] ) )
-
 from MAGSBS import *
 
 
