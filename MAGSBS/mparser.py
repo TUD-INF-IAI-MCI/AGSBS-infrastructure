@@ -22,7 +22,14 @@ python-markdown."""
     def parse(self):
         """parse() -> parse the markdown data into a list of level 1, 2 and 6
         headings."""
-        for line in self.__md.split('\n'):
+        if(self.__md.find('\r\n')>=0):
+            lines = self.__md.split('\r\n')
+        else:
+            lines = self.__md.split('\n')
+            # on mac, lines are terminated with \r, lines will have one element
+            if(len(lines) == 1):
+                lines = lines[0].split('\r')
+        for line in lines:
             if(line.strip() == ''): # empty lines are start of next paragraph
                 self.paragraph_begun = True
                 continue # no further processing here

@@ -36,7 +36,7 @@ here wild guessing. It MUST be reimplemented."""
         if(char == ' '):
             res_id += '-'
         elif(ord(char) >= 128): # might be still a valid char for id
-            if(not (id in ['ä','ö','ü','ß'])):
+            if(not (id in [u'\xe4',u'\xf6',u'\xfc',u'\xDC'])):
                 continue # skip this character
         else:
             res_id += char 
