@@ -37,6 +37,7 @@ chapter 1 and NOT k1.html or something similar.
         if(not self.__use_appendix_prefix):
             appendix += [ ('Anhang' if self.lang == 'de' else 'Appendix'),
                         '\n------\n\n']
+        at_least_one_heading_in_appendix = False
 
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
@@ -47,10 +48,13 @@ chapter 1 and NOT k1.html or something similar.
                     if(self.__use_appendix_prefix):
                         heading.use_appendix_prefix(True)
                     appendix.append( '\n%s\n' % (heading.get_markdown_link() ))
+                    at_least_one_heading_in_appendix = True
                 else:
                     output.append( '\n%s\n' % (heading.get_markdown_link() ))
 
-        self.output = output+appendix
+        if(at_least_one_heading_in_appendix):
+            output += appendix
+        self.output = output
 
     def get_markdown_page(self):
         return ''.join(self.output)
