@@ -26,7 +26,7 @@ frontend used; the supplied message can be displyed to the user."""
             raise OSError("Wrong file name: got \"%s\" and \"%s\" was not expected." % (fn, string))
     return erg
 
-def gen_id(id):
+def gen_id(id, use_umlauts=True):
     """gen_id(id) -> an ID for making links.
 
 Todo: We ought to render the page (in memory) and find out the id's there, we do
@@ -37,7 +37,9 @@ here wild guessing. It MUST be reimplemented."""
         if(char == ' '):
             res_id += '-'
         elif(ord(char) >= 128): # might be still a valid char for id
-            if(not (id in [u'\xe4',u'\xf6',u'\xfc',u'\xDC'])):
+            if(use_umlauts and char in [u'\xe4',u'\xf6',u'\xfc',u'\xDC']):
+                res_id += char 
+            else:
                 continue # skip this character
         else:
             res_id += char 
