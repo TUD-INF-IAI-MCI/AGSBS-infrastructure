@@ -6,6 +6,7 @@ import collections
 # internal imports
 from filesystem import *
 from factories import *
+import pandoc
 
 
 # -- if not imported but run as main module, test functionality --
@@ -55,6 +56,13 @@ description is just that long to enforce outsourcing.
         print('k01/k01.html:\n\n%s\n\n---------\n\nbilder.md:\n\n%s' % (data[0], data[1]))
 
 
+def test_convert(file):
+    p=pandoc.pandoc()
+    p.set_editor("Sebastian Humenda")
+    p.set_workinggroup("AGSS")
+    p.set_lecturetitle("Fleischorientierte Brat- und Kochtechnik")
+    p.set_source("schaschlik.pdf")
+    p.convert( file, file[:-2]+'html' )
 
 if __name__ == '__main__':
     #test_markdown_parser()
@@ -62,4 +70,6 @@ if __name__ == '__main__':
     #test_index2markdown_TOC()
     #test_pagenumber_indexing()
     #test_image_linking()
-    test_image_descriptions()
+    #test_image_descriptions()
+    if(len(sys.argv)>1):
+        test_convert(sys.argv[1])

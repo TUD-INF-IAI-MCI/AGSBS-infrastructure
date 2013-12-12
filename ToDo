@@ -23,3 +23,10 @@ AGSBS-specific and hence in German:
 - dokumentieren, Bilder:
     - Bilder liegen unter Kapitel/bilder, davon geht Skript momentan aus
     - bilder.md/.html liegt unterhalb von Kapitel
+
+    Kate Plugin in C++:
+
+Subprozess in Qt: http://qt-project.org/doc/qt-4.8/qprocess.html#details
+Kate tutorial C++:
+    - http://techbase.kde.org/Development/Tutorials/Kate/KTextEditor_Plugins
+    - http://techbase.kde.org/Development/Tutorials/Kate/KTextEditor_Plugins_Advanced
