@@ -7,6 +7,7 @@ def path2chapter(string):
 corresponding chapter numbers.
 Important: this functions throws OsErrors which must be caught by the plugin /
 frontend used; the supplied message can be displyed to the user."""
+    fn = string[:] # for debugging purposes
     if(string.startswith('k')):
         string = string[1:] # strip leading k
     elif(string.startswith('anh')):
@@ -22,7 +23,7 @@ frontend used; the supplied message can be displyed to the user."""
             erg.append( int(string[:2]) )
             string = string[2:]
         except ValueError:
-            raise OSError("Wrong file name.")
+            raise OSError("Wrong file name: got \"%s\" and \"%s\" was not expected." % (fn, string))
     return erg
 
 def gen_id(id):
