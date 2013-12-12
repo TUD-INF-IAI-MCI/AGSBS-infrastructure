@@ -41,7 +41,14 @@ chapter 1 and NOT k1.html or something similar.
 
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
+            first_level_heading_encountered = False
             for heading in headings:
+                if(heading.get_level() == 1):
+                    if(first_level_heading_encountered):
+                        raise ValueError("There is more than one "+\
+                                "level-1-heading in \"%s\"." % (fn))
+                    else:
+                        first_level_heading_encountered = True
                 if(heading.get_level() > self.depth):
                     continue # skip those headings
                 elif(heading.is_appendix()):
