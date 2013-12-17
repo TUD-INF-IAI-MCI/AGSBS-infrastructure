@@ -130,7 +130,6 @@ set_relative_heading_number(list) -> set relative heading number in document."""
             return '[%s. %s](%s#%s)' % ( \
                     full_number,
                     self.get_text(),
-                    '/'.join( dir_above_file,
-                        self.__file_name).replace('.md','.html'),
+                    dir_above_file + '/' + self.__file_name.replace('.md','.html'),
                     self.get_id()
                     )
