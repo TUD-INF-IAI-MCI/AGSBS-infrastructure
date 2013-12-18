@@ -36,11 +36,13 @@ here wild guessing. It MUST be reimplemented."""
     for char in id:
         if(char == ' '):
             res_id += '-'
-        elif(ord(char) >= 128): # might be still a valid char for id
+        elif(ord(char) >= 128):
             if(use_umlauts and char in [u'\xe4',u'\xf6',u'\xfc',u'\xDC']):
                 res_id += char 
             else:
                 continue # skip this character
+        elif((ord(char) < 65) and (ord(char) > 57 or ord(char) < 49)):
+            continue
         else:
             res_id += char 
     # strip trailing hyphens:
