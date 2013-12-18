@@ -10,6 +10,9 @@ else:
     import urllib
     URLencode = urllib.urlencode
 
+class TOCError(Exception):
+    pass
+
 class index2markdown_TOC():
     """index2markdown_TOC( OrderedDict(), lang, depth=4, use_appendix_prefix=False)
 
@@ -45,7 +48,7 @@ chapter 1 and NOT k1.html or something similar.
             for heading in headings:
                 if(heading.get_level() == 1):
                     if(first_level_heading_encountered):
-                        raise ValueError("There is more than one "+\
+                        raise TOCError("There is more than one "+\
                                 "level-1-heading in \"%s\"." % (fn))
                     else:
                         first_level_heading_encountered = True

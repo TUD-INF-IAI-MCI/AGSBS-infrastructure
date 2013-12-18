@@ -69,12 +69,20 @@ class main():
             if(not os.path.exists( dir )):
                 error_exit("Directory %s does not exist" % dir)
 
-        c = create_index( dir )
-        c.walk()
-        idx = index2markdown_TOC(c.get_index(), options.lang, depth,
+        try:
+            c = create_index( dir )
+            c.walk()
+            idx = index2markdown_TOC(c.get_index(), options.lang, depth,
                 options.appendixprefix)
-        file.write( idx.get_markdown_page() )
-        file.close()
+            file.write( idx.get_markdown_page() )
+            file.close()
+        except OSError:
+            sys.stderr.write("OSError: " + e.message+'\n')
+            sys.exit(127)
+        except TOCError:
+            sys.stderr.write("TOCError: " + e.message+'\n')
+            sys.exit(127)
+
     def navbar(self):
         usage = sys.argv[0]+' navbar [OPTIONS] input_directory\n'+\
                 "\nIf input_directory is omitted, the current directory will "+\
