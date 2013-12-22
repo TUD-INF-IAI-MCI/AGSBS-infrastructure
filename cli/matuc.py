@@ -100,8 +100,7 @@ class main():
                   metavar="NUM", default='5')
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)<1):
-            parser.print_help()
-            exit(0)
+            dir = '.'
         else:
             dir = args[0]
         try:
