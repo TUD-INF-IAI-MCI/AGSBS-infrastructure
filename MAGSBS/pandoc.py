@@ -7,7 +7,7 @@ template for additional meta data in the output document(s)."""
 import datetime, codecs, tempfile
 import os, sys, subprocess
 import mparser, config
-from errors import NotImplementedError
+from errors import NotImplementedError, SubprocessError
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -121,10 +121,11 @@ generator fails."""
 class pandoc():
     """Abstract the translation by pandoc into a class which add meta-information
 to the output, handles errors and checks for the correct encoding."""
-    def __init__(self, format='html'):
+    def __init__(self, format='html', use_gladtex=False):
         self.conf = config.read_user_configuration()
         self.format = format
         self.tempfile = None
+        self.use_gladtex = use_gladtex
         self.__hvalues = {
                 'editor' : self.conf['editor'],
                 'workinggroup': self.conf['workinggroup'],
@@ -193,23 +194,35 @@ to the output, handles errors and checks for the correct encoding."""
         """convert_html(inputf) -> write to inputf.html
 Convert inputf to outputf. raise OSError if either pandoc  has not been found or
 it gave an error return code"""
-        outputf = inputf[:-2] + self.format
-        # guess path for windows
-        #if(sys.platform.lower().find('win')>=0):
-        #    path = os.path.join( os.environ['ProgramFiles'],
-        #            'pandoc', 'pandoc.exe')
-        #    if(not os.path.exists( path )):
-        #        raise OSError("Pandoc not found.")
+        if(self.use_gladtex):
+            outputf = inputf[:-2] + '.htex'
+        else:
+            outputf = inputf[:-2] + self.format
         template = self.mktemplate(inputf)
         proc = subprocess.Popen(['pandoc', '-s', '-f', 'markdown', '-t','html',
                 '--template=%s' % template,
-                "-o", outputf, inputf], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                "-o", outputf, ('--gladtex' if self.use_gladtex else ''), inputf],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         text = proc.communicate()
         ret = proc.wait()
         if(ret):
             remove_temp( self.tempfile)
+            print('\n'.joiN(text))
             raise OSError("Pandoc gave error status %s." % ret)
         remove_temp( self.tempfile)
-
-
+        if(self.use_gladtex):
+            # read in the generated file. Its a dirt-fix: pandoc strips newlines
+            # from equations, try to get some back
+            data = codecs.open(outputf, 'r', 'utf-8').read()
+            data = data.replace('\\\\', '\\\\\n')
+            codecs.open( outputf, 'w', 'utf-8').write( data )
+            proc = subprocess.Popen(['gladtex'] + \
+                    self.conf['gladtex_opts'].split(' ') + [outputf],
+                    stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+            text = proc.communicate()
+            ret = proc.wait()
+            if(ret):
+                print(text[1])
+                raise SubprocessError("Error while running GladTeX.")
+            os.remove( outputf )

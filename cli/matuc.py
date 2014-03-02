@@ -110,8 +110,10 @@ class main():
                   help="set semester of edit (will be guessed else)",
                   metavar="SEMYEAR", default=None)
         parser.add_option("-l", dest="lecturetitle",
-                  help="set lecture title (else try to use h1 heading, in any present",
+                  help="set lecture title (else try to use h1 heading, if present",
                   metavar="TITLE", default=None)
+        parser.add_option("-g", dest="gladtex", action="store_true",
+                  help="run gladtex after pandoc", default=False)
 
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)<1):
@@ -121,11 +123,11 @@ class main():
             print('Error: '+args[0]+' not found')
             sys.exit(127)
 
-        p = MAGSBS.pandoc(options.format)
+        p = MAGSBS.pandoc(options.format, use_gladtex=options.gladtex)
         if(options.workinggroup):
-            p.set_workinggroup(self, options.workinggroup)
+            p.set_workinggroup(options.workinggroup)
         if(options.source):
-            p.set_source(self, source)
+            p.set_source(options.source)
         if(options.editor):
             p.set_editor(options.editor)
         if(options.institution):
@@ -133,7 +135,7 @@ class main():
         if(options.lecturetitle):
             p.set_lecturetitle(options.lecturetitle)
         if(options.semesterofedit):
-            p.set_semesterofedit(options.date)
+            p.set_semesterofedit(options.semesterofedit)
         if(os.path.isdir(args[0])):
             MAGSBS.pandoc.convert_dir(p, args[0] ) # Todo: write this function
         else:

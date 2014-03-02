@@ -2,9 +2,10 @@ To Do
 =====
 
 - pandoc conversion for all files, not  just kxx.md
+- allow specifying gladtex arguments
+- docx output format
     - pandoc path: 
 C:\Users\voegler\AppData\Local\Pandoc\pandoc.exe
-- remove temp file after processing by pandoc
 - tabulars with:
     - automatic creation of basic structure
     - automatic link to skip the table
