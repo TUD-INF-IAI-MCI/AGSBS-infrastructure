@@ -5,6 +5,7 @@ import os, sys, codecs
 from optparse import OptionParser
 
 from MAGSBS import *
+import MAGSBS
 
 
 usage = """
@@ -15,8 +16,10 @@ commands. Use %s <command> -h for help.
 
 Available commands are:
 
-toc     - generate table of contents
+conv    - convert a markdown file using pandoc
+imgdsc  - generate image description snippets
 navbar  - generate navigation bar at beginning of each page
+toc     - generate table of contents
 """ % (sys.argv[0], sys.argv[0])
 
 def error_exit(string):
@@ -34,6 +37,8 @@ class main():
                 self.navbar()
             elif(sys.argv[1] == 'imgdsc'):
                 self.imgdsc()
+            elif(sys.argv[1] == 'conv'):
+                self.conv()
             else:
                 print(usage)
     
@@ -82,12 +87,61 @@ class main():
         except TOCError:
             sys.stderr.write("TOCError: " + e.message+'\n')
             sys.exit(127)
+    def conv(self):
+        usage = sys.argv[0]+' conv [input_directory|input_file]'
+        usage += "\n\nNote: the output file name will be the input file name + the new extension.\n\n"
+        parser = OptionParser(usage=usage)
+        parser.add_option("-f", dest="format",
+                  help="select output format",
+                  metavar="FMT", default='html')
+        parser.add_option("-w", dest="workinggroup",
+                  help="set working group",
+                  metavar="GROUP", default=None)
+        parser.add_option("-s", dest="source",
+                  help="set source document",
+                  metavar="SRC", default=None)
+        parser.add_option("-e", dest="editor",
+                  help="set editor",
+                  metavar="NAME", default=None)
+        parser.add_option("-i", dest="institution",
+                  help="set institution (default TU Dresden)",
+                  metavar="NAME", default=None)
+        parser.add_option("-S", dest="semesterofedit",
+                  help="set semester of edit (will be guessed else)",
+                  metavar="SEMYEAR", default=None)
+        parser.add_option("-l", dest="lecturetitle",
+                  help="set lecture title (else try to use h1 heading, in any present",
+                  metavar="TITLE", default=None)
+
+        (options, args) = parser.parse_args(sys.argv[2:])
+        if(len(args)<1):
+            parser.print_help()
+            sys.exit(1)
+        elif(not os.path.exists( args[0] )):
+            print('Error: '+args[0]+' not found')
+            sys.exit(127)
+
+        p = MAGSBS.pandoc(options.format)
+        if(options.workinggroup):
+            p.set_workinggroup(self, options.workinggroup)
+        if(options.source):
+            p.set_source(self, source)
+        if(options.editor):
+            p.set_editor(options.editor)
+        if(options.institution):
+            p.set_institution(options.institution)
+        if(options.lecturetitle):
+            p.set_lecturetitle(options.lecturetitle)
+        if(options.semesterofedit):
+            p.set_semesterofedit(options.date)
+        if(os.path.isdir(args[0])):
+            MAGSBS.pandoc.convert_dir(p, args[0] ) # Todo: write this function
+        else:
+            p = p.convert( args[0] )
+
 
     def navbar(self):
-        usage = sys.argv[0]+' navbar [OPTIONS] input_directory\n'+\
-                "\nIf input_directory is omitted, the current directory will "+\
-                "be taken. Please note\n also that all pages will get a page "+\
-                "navigation.\n\n"
+        usage = sys.argv[0]+' navbar [OPTIONS] input_directory]\n'
         parser = OptionParser(usage=usage)
         #parser.add_option("-o", "--output", dest="output",
         #          help="write output to file instead of stdout",

@@ -137,8 +137,8 @@ English table-of-contents are referenced as ../index.html, German toc's as
                     navbar.append( frst_h.get_markdown_link() )
                 # if its page number is exactly x*pagenumbergap from
                 # frst_h.get_text() away, print it
-                elif(not (heading.get_page_number() + frst_h.get_page_number() -1)
-                    % self.pagenumbergap):
+                elif(not (heading.get_page_number() + frst_h.get_page_number())
+                    % (self.pagenumbergap+1)):
                     navbar.append(' %s' % heading.get_markdown_link() )
         toc = '[%s](../%s.html)' % (\
                     ('Inhalt' if self.__lang == 'de' else 'table of contents'),
