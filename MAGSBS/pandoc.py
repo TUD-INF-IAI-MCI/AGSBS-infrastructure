@@ -199,15 +199,17 @@ it gave an error return code"""
         else:
             outputf = inputf[:-2] + self.format
         template = self.mktemplate(inputf)
-        proc = subprocess.Popen(['pandoc', '-s', '-f', 'markdown', '-t','html',
-                '--template=%s' % template,
-                "-o", outputf, ('--gladtex' if self.use_gladtex else ''), inputf],
+        pandoc_args = ['-s', '-f', 'markdown', '-t','html',
+                '--template=%s' % template, '-o', outputf]
+        if(self.use_gladtex):
+            pandoc_args.append('--gladtex')
+        proc = subprocess.Popen(['pandoc'] + pandoc_args + [inputf],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         text = proc.communicate()
         ret = proc.wait()
         if(ret):
             remove_temp( self.tempfile)
-            print('\n'.joiN(text))
+            print('\n'.join(text))
             raise OSError("Pandoc gave error status %s." % ret)
         remove_temp( self.tempfile)
         if(self.use_gladtex):
