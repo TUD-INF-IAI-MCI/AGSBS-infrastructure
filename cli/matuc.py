@@ -84,7 +84,7 @@ class main():
         except OSError:
             sys.stderr.write("OSError: " + e.message+'\n')
             sys.exit(127)
-        except TOCError:
+        except TOCError as e:
             sys.stderr.write("TOCError: " + e.message+'\n')
             sys.exit(127)
     def conv(self):
