@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os, re
+from errors import WrongFileNameError
 
 def path2chapter(string):
     """Convert a file name as k010508.md or anh__.md to a tuple of the
@@ -16,14 +17,14 @@ frontend used; the supplied message can be displyed to the user."""
     if(string.endswith('.md')): string = string[:-3]
     elif(string.endswith('.html')): string = string[:-4]
     else:
-        raise OSError('Not a supported file ending, must be .html or .md.')
+        raise WrongFileNameError('Not a supported file ending, must be .html or .md.')
     erg = []
     while(string != ''):
         try:
             erg.append( int(string[:2]) )
             string = string[2:]
         except ValueError:
-            raise OSError("Wrong file name: got \"%s\" and \"%s\" was not expected." % (fn, string))
+            raise WrongFileNameError("Wrong file name: got \"%s\" and \"%s\" was not expected." % (fn, string))
     return erg
 
 def gen_id(id, use_umlauts=True):

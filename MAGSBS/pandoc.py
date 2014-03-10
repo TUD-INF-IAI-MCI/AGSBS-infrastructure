@@ -7,7 +7,7 @@ template for additional meta data in the output document(s)."""
 import datetime, codecs, tempfile
 import os, sys, subprocess
 import mparser, config
-from errors import NotImplementedError, SubprocessError
+from errors import NotImplementedError, SubprocessError, WrongFileNameError
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -149,17 +149,18 @@ to the output, handles errors and checks for the correct encoding."""
         self.__hvalues['semesterofedit'] = date
 
     def __guess_title(self, inputf):
-        mp = mparser.markdownHeadingParser(
-                codecs.open(inputf, 'r', 'utf-8').read(),
-                os.path.split(inputf)[0], os.path.split(inputf)[1])
-        mp.parse()
-        hs = mp.get_heading_list()
-        if(hs == []):
-            return self.__hvalues['lecturetitle']
-        for h in hs:
-            if(h.get_level() == 1):
-                return h.get_text()
-        return self.__hvalues['lecturetitle']
+        try:
+            mp = mparser.markdownHeadingParser(
+                    codecs.open(inputf, 'r', 'utf-8').read(),
+                    os.path.split(inputf)[0], os.path.split(inputf)[1])
+            mp.parse()
+            hs = mp.get_heading_list()
+            for h in hs:
+                if(h.get_level() == 1):
+                    return h.get_text()
+        except WrongFileNameError:
+            return self.__hvalues['lecturetitle'] + ' ' \
+                + inputf[:-3].capitalize()
 
 
     def mktemplate(self, inputf):

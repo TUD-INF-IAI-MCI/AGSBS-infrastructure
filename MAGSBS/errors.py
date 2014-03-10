@@ -3,3 +3,5 @@ class NotImplementedError(Exception):
 
 class SubprocessError(Exception):
     pass
+class WrongFileNameError(Exception):
+    pass

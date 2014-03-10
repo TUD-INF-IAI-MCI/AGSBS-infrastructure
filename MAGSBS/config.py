@@ -2,8 +2,15 @@
 Read in user configuration.
 """
 
-import getpass
-import datetime
+import getpass, os
+import datetime, codecs
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
+## default values
+CONF_FILE_NAME = ".lecture_meta_data.dcxml"
+GLADTEX_OPTS = '-a -d bilder'
+
 
 def get_semester():
     semester = ''
@@ -22,10 +29,86 @@ def get_semester():
         semester += str( year )[-2:]
     return semester
 
-def read_user_configuration():
-    """Todo: implement me. Use standard values up to now."""
-    defaults = {'workinggroup':'AGSBS', 'editor' : getpass.getuser(),
-            'semesterofedit' : get_semester(), 'lecturetitle':'Unknown',
-            'source':'Unknown', 'institution':'TU Dresden',
-            'gladtex_opts':'-a -d bilder'}
-    return defaults
+def has_meta_data(path):
+    """Return whether lecture meta data can be found in the specified path."""
+    if(os.path.exists( os.path.join(path, CONF_FILE_NAME) )):
+        return True
+    else:
+        return False
+
+class LectureMetaData(dict):
+    """
+The lecture conversion needs meta data which is then embedded into the HTML
+document. Those fields are e.g. souce, editor, etc.
+
+This class provides a writer and also a reader for those files. The usage is as
+follows:
+
+l = LectureMetaData("directory")
+l.read()
+l['editor'] = 'Sebastian Humenda'
+l.write()
+
+In the directory "directory", this class looks for a configuration file with
+meta data. It is read. If none is present, this class will silently assume the
+default values.
+
+From the above example you can see that  this class can be used as a dictionary.
+The following fields are supported:
+
+editor          - who edited it (may be a string of names)
+source          - most probably a file name
+title           - None by default (can be set for table of contents, etc.)
+lecturetitle    - title of lecture
+institution     - publisher (default is TU Dresden)
+workinggroup    - default is 'AGSBS'
+semesterofedit  - either WSYY or SS/WSYY, where YY are the last two digits of
+                  the year and the letters in ront are literals
+
+All parameters are strings.
+"""
+    def __init__(self, directory):
+        """Set default values."""
+        self.dir = directory
+        self['workinggroup'] = 'AGSBS'
+        self['editor'] = getpass.getuser()
+        self['semesterofedit'] = get_semester()
+        self['lecturetitle'] = 'Unknown'
+        self['source'] = 'Unknown'
+        self['institution'] = 'TU Dresden'
+        self['type'] = 'html'
+        self['language'] = 'de'
+        self['rights'] = 'Access limited to members'
+        self.dictkey2xml = {
+                'workinggroup' : 'contributor', 'editor' : 'creator',
+                'semesterofedit' : 'date', 'lecturetitle' : 'title',
+                'source' : 'source', 'language':'language',
+                'institution' : 'publisher', 'rights':'rights',
+                'type' : 'type'
+        }
+        dict.__init__(self)
+
+    def write(self):
+        root = ET.Element('metadata')
+        root.attrib['xmlns:dc'] = 'http://purl.org/dc/elements/1.1'
+        root.attrib['xmlns:xsi'] = 'http://www.w3.org/2001/XMLSchema-instance'
+        for key, value in self.items():
+            c = ET.SubElement(root, 'dc:'+self.dictkey2xml[ key ] )
+            c.text = value
+        out = dom = minidom.parseString(
+                '<?xml version="1.0" encoding="UTF-8"?>' + \
+                ET.tostring( root )).toprettyxml()
+        codecs.open(CONF_FILE_NAME,'w',encoding='utf-8').write(  out )
+
+    def read(self):
+        if(has_meta_data(self.dir)):
+            xmlkey2dict = {}
+            for value,key in self.dictkey2xml.items():
+                xmlkey2dict[ key ] = value
+
+            root = ET.fromstring( codecs.open(CONF_FILE_NAME, 'r', 'utf-8').read() )
+            for child in root:
+                try:
+                    self[ xmlkey2dict[ child.tag ] ] = child.text
+                except IndexError:
+                    print(ET.dump( child ))
