@@ -12,18 +12,34 @@ of 3-tuples, as os.walk() produces. Sort those before returning."""
     if(not os.path.exists(dir) ):
         raise OSError("Specified directory %s does not exist." % dir)
     res = []
+
+    ## some helper inline functions
+    def valid_file_bgn(cmp):
+        """Should we consider this directory or file according to the specs?"""
+        valid = False
+        valid_tokens = ['k','v','anh']
+        for token in valid_tokens:
+            if(cmp.startswith( token )): valid = True
+        return valid
+    def skip_dir(root, cur):
+        """Check whether directory contains interesting files."""
+        skip = True
+        if(cur == dir): skip = False
+        if(valid_file_bgn(cur)): skip = False
+        return skip
+
     for directoryname, directory_list, file_list in os.walk(dir):
-        # check, whether we are currently in a k__, anh__ or in the directoy
+        # check, whether we are currently in a k__, anh__ or in the directory
         # "dir", if not, skip it(!)
         tmpdir = os.path.split(directoryname)[-1]
-        if(not (tmpdir == dir or tmpdir.startswith('k')
-                    or tmpdir.startswith('anh'))):
+        if(skip_dir( dir, tmpdir )):
             continue
 
-        file_list = [f for f in file_list    if(f.endswith('.md')
-                    and (f.startswith('k') or f.startswith('anh')))]
-        directory_list = [d for d in directory_list    if(d.endswith('.md')
-                    and (d.startswith('k') or d.startswith('anh')))]
+        file_list = [f for f in file_list\
+                    if(valid_file_bgn( f ) and f.endswith('.md'))]
+        #directory_list = [d for d in directory_list    if(d.endswith('.md')
+        #            and (d.startswith('k') or d.startswith('anh')))]
+        directory_list = [d for d in directory_list    if(valid_file_bgn(d))]
 
         res.append( (directoryname, directory_list, file_list) )
     res.sort()
