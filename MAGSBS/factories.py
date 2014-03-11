@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
-import datastructures
+import datastructures, filesystem
+from errors import TOCError
 
 if(int(sys.version[0]) >= 3):
     import urllib.parse
@@ -10,64 +11,57 @@ else:
     import urllib
     URLencode = urllib.urlencode
 
-class TOCError(Exception):
-    pass
-
 class index2markdown_TOC():
     """index2markdown_TOC( OrderedDict(), lang, depth=4, use_appendix_prefix=False)
-
 Take the ordered dict produced by create_index() and transform it  to a markdown
 file. The language specifies in which language to output the title of the TOC.
+
+This class must be run from the lecture root.
 """
     def __init__(self, index, lang='de', depth=4, use_appendix_prefix=False):
         self.__index = index
         self.lang = lang
         self.depth = depth
-        self.__output = []
         self.__use_appendix_prefix = use_appendix_prefix
+        # two lists for headings
+        self.__main = []
+        self.__appendix = []
+        self.__preface = filesystem.get_preface()
         self.transform_index()
 
     def transform_index(self):
-        """Walk through the dict; they key (file name) is used to determine the
-heading number. It is assumed, that file names HAVE the form of k01.md for
-chapter 1 and NOT k1.html or something similar.
-
-"""
-        output = [ ('Inhaltsverzeichnis' if self.lang=='de'
-                    else 'Table Of Contents') ]
-        output += ['\n=============\n\n']
-        appendix = ['\n\n']
-        if(not self.__use_appendix_prefix):
-            appendix += [ ('Anhang' if self.lang == 'de' else 'Appendix'),
-                        '\n------\n\n']
-        at_least_one_heading_in_appendix = False
-
+        """Walk through dictionary of file names and headings and create lists
+for later output."""
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
-            first_level_heading_encountered = False
             for heading in headings:
-                if(heading.get_level() == 1):
-                    if(first_level_heading_encountered):
-                        raise TOCError("There is more than one "+\
-                                "level-1-heading in \"%s\"." % (fn))
-                    else:
-                        first_level_heading_encountered = True
                 if(heading.get_level() > self.depth):
                     continue # skip those headings
                 elif(heading.is_appendix()):
-                    if(self.__use_appendix_prefix):
-                        heading.use_appendix_prefix(True)
-                    appendix.append( '\n%s\n' % (heading.get_markdown_link() ))
-                    at_least_one_heading_in_appendix = True
+                    if(self.__use_appendix_prefix): h.use_appendix_prefix(True)
+                    self.__appendix.append(heading.get_markdown_link())
                 else:
-                    output.append( '\n%s\n' % (heading.get_markdown_link() ))
-
-        if(at_least_one_heading_in_appendix):
-            output += appendix
-        self.output = output
+                    self.__main.append(heading.get_markdown_link())
 
     def get_markdown_page(self):
-        return ''.join(self.output)
+        output = [ ('Inhaltsverzeichnis' if self.lang=='de'
+                    else 'Table Of Contents') ]
+        output.append( '\n=============\n\n' )
+        if(self.__preface):
+            preface = self.__preface[:-3]
+            output.append( '[%s](%s.html)\n\n' % (preface.capitalize(),
+                preface))
+        for h in self.__main:
+            output.append( h )
+        if(len(self.__appendix)>0):
+            output.append('\n\n')
+            if(not self.__use_appendix_prefix):
+                output += [ ('Anhang' if self.lang == 'de' else 'Appendix'),
+                        '\n------\n\n']
+            for h in self.__appendix:
+                output.append( h )
+
+        return ''.join(output) + '\n'
 
 
 class image_description():

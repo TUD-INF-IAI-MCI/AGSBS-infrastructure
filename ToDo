@@ -1,7 +1,6 @@
 To Do
 =====
 
-- pandoc conversion for all files, not  just kxx.md
 - allow specifying gladtex arguments
 - docx output format
     - pandoc path: 
@@ -20,6 +19,7 @@ Dokumentation
 AGSBS-specific and hence in German:
 
 - Verzeichnisstruktur aus Protokoll ergänzen(!)
+    - v__, k__, anh__
 - wie realisiert man Nummerierungen mit Unterbrechungen?
     - Pandoc rückt dafür ein, dokumentieren
 - dokumentieren, Bilder:

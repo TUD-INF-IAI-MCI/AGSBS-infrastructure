@@ -17,8 +17,7 @@ of 3-tuples, as os.walk() produces. Sort those before returning."""
     def valid_file_bgn(cmp):
         """Should we consider this directory or file according to the specs?"""
         valid = False
-        valid_tokens = ['k','v','anh']
-        for token in valid_tokens:
+        for token in ['k', 'anh']:
             if(cmp.startswith( token )): valid = True
         return valid
     def skip_dir(root, cur):
@@ -45,6 +44,12 @@ of 3-tuples, as os.walk() produces. Sort those before returning."""
     res.sort()
     return res
 
+def get_preface():
+    """Return none, if no preface exists, else the file name. Must be executed
+in lecture root."""
+    for fn in ['vorwort.md','preface.md']:
+        if(os.path.exists( fn  )): return fn
+    return None
 
 def file_data_encoded(path):
     """file_data_encoded(path)

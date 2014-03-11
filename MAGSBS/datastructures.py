@@ -81,6 +81,12 @@ This class represents a heading to ease the handling of headings.
             return True
         else:
             return False
+    def is_preface(self):
+        if(self.__file_name.startswith('v')):
+            return True
+        else:
+            return False
+
     def is_shadow_heading(self):
         """Headings, marked as such, but not real headings. Example: page numbers."""
         return self.__is_shadow_heading
