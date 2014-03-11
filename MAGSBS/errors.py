@@ -7,5 +7,5 @@ class WrongFileNameError(Exception):
     pass
 class TOCError(Exception):
     pass
-
-
+class MissingMandatoryField():
+    pass

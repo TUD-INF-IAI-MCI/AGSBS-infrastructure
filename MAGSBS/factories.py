@@ -74,69 +74,60 @@ method's doc-strings to understand how this class works.
 
 An example:
 
-i = image_description('bilder/bla.jpg', '''
+i = image_description('bilder/bla.jpg', lang='de')  # language specifies whether bilder.md or images.md is used
+i.set_description('''
 A cow on a meadow eating gras and staring a bit stupidly. It says "moo".
-    ''')
-i.use_outsourced_descriptions( True ) # outsource image descriptions > 100
-i.set_title("a cow on a meadow")
-i.set_outsourcing_path('k01/images.md')  # necessary for outsourcing!
-i.set_chapter_path('k01/k01.html')   # necessary for outsourcing! 
+    '''  # setting the description is optional
+i.use_outsourced_descriptions( True ) # outsource image descriptions
+                                      # outsourced when length of alt attribut > 100
+i.set_title("a cow on a meadow") # not necessary for images which are not outsourced
+i.set_chapter_path('k01/') # mandatory
 data = i.get_output()
 
-data can be a tuple with one element (image directive with alternative
-description). When the tuple has, the first item is the text for the chapter,
-containing the image reference and a link to the outsourced image descrption,
-contained in the second item.
+data is either a 1-tupel or a 2-tupel. A 1-tupel contains the string for an
+embedded image. A 2-tupel means in the position 0 the string for the main
+document and in position 1 the string for the outsourcing document.
 """
-    def __init__(self, image_path, description, lang='de'):
+    def __init__(self, image_path, lang='de'):
+        self.fileending = 'html'
         self.image_path = image_path
-        self.enc = 'utf-8'
-        self.description = description
+        self.description = '\n'
         self.lang = lang
-        self.title = 'some image without title'
-        self.exclusion_file = ('bilder.md' if self.lang == 'de' else
-                'images.md')
+        self.title = 'No title'
         self.outsource_long_descriptions = True
         # maximum length of image description before outsourcing it
         self.img_maxlength = 100
-        self.chapter_path = None
+        self.chapter_path = '.'
+        self.exclusion_file_name = ('bilder' if lang == 'de' else 'images')\
+                self.output_format = 'html'
 
+    def set_description(self, desc): self.description = desc
     def set_chapter_path(self, path):
-        if(path.endswith('.md')):
-            self.chapter_path = path[:-2]+'html'
-        else:
-            self.chapter_path = path
+        self.chapter_path = chapter_path
     def set_title(self, title):
         self.title = title
     def get_title(self): return self.title
-
     def use_outsourced_descriptions(self, flag):
         self.outsource_long_descriptions = flag
-    def set_outsourcing_path(self, path):
-        self.exclusion_file = path
     def get_outsourcing_path(self):
-        if(self.chapter_path):
-            path = os.path.split( self.chapter_path )[0]
-            path = os.path.join( path, self.exclusion_file )
-        else:
-            path = self.exclusion_file
-        if(path.endswith('.md')):
-            path = path[:-2]+'html'
-        return path
+        return os.path.join( self.exclusion_file_name, self.exclusion_file_name
+            + '.' + self.format)
 
     def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
         id = datastructures.gen_id( self.get_title() )
         link_text = ('Bildbeschreibung ausgelagert' if self.lang == 'de'
                             else 'description of image outsourced')
-        return '<a id="%s" />\n![ [%s](%s) ](%s#%s)\\' % (id, link_text,
+        return '![ [%s](%s) ](%s#%s)' % (id, link_text,
                     self.image_path, self.get_outsourcing_path(), id)
 
     def get_inline_description(self):
-        """Return the markdown syntax for a image description."""
-        return '![%s](%s)' % (title, self.image_path)
+        """Return the markdown syntax for an inline image description."""
+        return '![%s](%s)' % (self.description, self.image_path)
 
     def __get_outsourced_title(self, title):
+        if(not self.title):
+            raise MissingMandatoryField('"title" must be set for outsourced images.')
         text = ('### Bildbeschreibung von ' if self.lang == 'de' else
                         'Image description of ')
         text += title
@@ -149,19 +140,12 @@ get_outsourcing_link; will be either a tuple of (link, content for outsourced
 image. It'll always return a inline description if set by
 use_outsourced_descriptions(False) or will automatically exclude images longer
 than 100 characters."""
-        if(not self.outsource_long_descriptions
-                or len(self.description) < self.img_maxlength):
-            return (self.get_inline_description(), )
+        if(not self.outsource_long_descriptions):
+            if(len(self.description) < self.img_maxlength):
+                return (self.get_inline_description(), )
         else:
-            external_text = []
-            external_text += ['### ', self.get_title() ]
-            external_text += ['\n\n', self.description,'\n\n']
-            external_text += ['[%s](%s#%s)' % (
-                    ('zurück' if self.lang=='de' else 'back'),
-                    self.chapter_path, 
-                    datastructures.gen_id( self.get_title() )) ]
-            external_text.append('\n\n* * * * *\n')
+            external_text = self.__get_outsourced_title() + '\n\n' +\
+                        self.description + '\n\n* * * * *\n'
 
-            return (self.get_outsourcing_link(),
-                    ''.join( external_text))
+            return (self.get_outsourcing_link(), external_text)
 

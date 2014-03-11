@@ -174,13 +174,13 @@ class main():
         p.iterate()
 
     def imgdsc(self):
-        usage = sys.argv[0]+' imgdsc [OPTIONS] image_name image_title\n'+\
-                "\nBy default, the image description is read from stdin, use -f to read from a file.\n\n"
+        usage = sys.argv[0]+' imgdsc [OPTIONS] image_name\n'+\
+                "\nBy default, the image description is read from stdin, use -f to read from a file.\n\n"+\
+                "Theworking directory must be a chapter; the image name must be a relative path like 'images/image.jpg'\n"
         parser = OptionParser(usage=usage)
-        parser.add_option("-i", "--iage-description-file", dest="imgdescfile",
-                  help="file name (without path) where outsourced image "+\
-                          "descriptions will be written to; has no effect, wenn -a is used.",
-                  metavar="FILENAME", default='bilder.md')
+        parser.add_option("-c", "--chapter-path", dest="chapterpath",
+                  help="path to chapter where editing takes place.",
+                  metavar="DIRECTORY", default='.')
         parser.add_option("-l", "--lang", dest="lang",
                   help="select language (currently just 'de' and 'en' supported)",
                   metavar="LANG", default='de')
