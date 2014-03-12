@@ -17,6 +17,10 @@ import collections
 # internal imports
 from filesystem import *
 from factories import *
-from pandoc import *
+import factories
+import pandoc
+import config
 
+
+#__all__ = ['config, 'pandoc']
 

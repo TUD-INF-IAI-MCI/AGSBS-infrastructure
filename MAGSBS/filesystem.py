@@ -6,27 +6,30 @@ import collections
 from mparser import *
 import datastructures
 
+
+def valid_file_bgn(cmp):
+    """Should we consider this directory or file according to the specs?"""
+    valid = False
+    for token in ['k', 'anh']:
+        if(cmp.startswith( token )):
+            # must be token + a number (like k01)
+            if(cmp[len(token):len(token)+1].isdigit()):
+                valid = True
+    return valid
+
+def skip_dir(root, cur):
+    """Check whether directory contains interesting files."""
+    skip = True
+    if(cur == dir): skip = False
+    if(valid_file_bgn(cur)): skip = False
+    return skip
+
 def get_markdown_files(dir):
     """Return all files starting with "k" and ending on ".md". Return is a list
 of 3-tuples, as os.walk() produces. Sort those before returning."""
     if(not os.path.exists(dir) ):
         raise OSError("Specified directory %s does not exist." % dir)
     res = []
-
-    ## some helper inline functions
-    def valid_file_bgn(cmp):
-        """Should we consider this directory or file according to the specs?"""
-        valid = False
-        for token in ['k', 'anh']:
-            if(cmp.startswith( token )): valid = True
-        return valid
-    def skip_dir(root, cur):
-        """Check whether directory contains interesting files."""
-        skip = True
-        if(cur == dir): skip = False
-        if(valid_file_bgn(cur)): skip = False
-        return skip
-
     for directoryname, directory_list, file_list in os.walk(dir):
         # check, whether we are currently in a k__, anh__ or in the directory
         # "dir", if not, skip it(!)
@@ -35,14 +38,15 @@ of 3-tuples, as os.walk() produces. Sort those before returning."""
             continue
 
         file_list = [f for f in file_list\
-                    if(valid_file_bgn( f ) and f.endswith('.md'))]
+                if(valid_file_bgn( f ) and f.endswith('.md'))]
         #directory_list = [d for d in directory_list    if(d.endswith('.md')
-        #            and (d.startswith('k') or d.startswith('anh')))]
+            #            and (d.startswith('k') or d.startswith('anh')))]
         directory_list = [d for d in directory_list    if(valid_file_bgn(d))]
 
         res.append( (directoryname, directory_list, file_list) )
     res.sort()
     return res
+
 
 def get_preface():
     """Return none, if no preface exists, else the file name. Must be executed

@@ -6,6 +6,7 @@ import getpass, os
 import datetime, codecs
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+import filesystem
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -36,6 +37,28 @@ def has_meta_data(path):
     else:
         return False
 
+def get_applicable_conf():
+    """get_applicable_conf() -> file name (or path to file)
+
+If the current directory contains a configuration file, just return the file
+name. If this directory is not the lecture root, look in the lecture root for a
+configuration file. If the lecture root has also no configuration, return the
+lecture root path nevertheless.
+
+Please note: if you are in a subdirectory, this will be a path like ../$CONF_FILE_NAME."""
+    if(os.path.exists(CONF_FILE_NAME)):
+        return CONF_FILE_NAME
+    # cwd != lecture root?
+    path = ''
+    while(filesystem.valid_file_bgn(
+                os.path.split( os.path.abspath(path) )[-1]) ):
+        if(os.path.exists( os.path.join(path, CONF_FILE_NAME) )):
+            break # return this path + CONF_FILE_NAME
+        path = os.path.join(path, '..')
+    ## if we reached this, we are in the lecture root
+    return os.path.join(path, CONF_FILE_NAME)
+
+
 class LectureMetaData(dict):
     """
 The lecture conversion needs meta data which is then embedded into the HTML
@@ -44,6 +67,7 @@ document. Those fields are e.g. souce, editor, etc.
 This class provides a writer and also a reader for those files. The usage is as
 follows:
 
+# the path is optional, it'll try to autodetect the correct path
 l = LectureMetaData("directory")
 l.read()
 l['editor'] = 'Sebastian Humenda'
@@ -67,7 +91,7 @@ semesterofedit  - either WSYY or SS/WSYY, where YY are the last two digits of
 
 All parameters are strings.
 """
-    def __init__(self, directory):
+    def __init__(self, directory=get_applicable_conf()):
         """Set default values."""
         self.dir = directory
         self['workinggroup'] = 'AGSBS'
@@ -112,3 +136,4 @@ All parameters are strings.
                     self[ xmlkey2dict[ child.tag ] ] = child.text
                 except IndexError:
                     print(ET.dump( child ))
+

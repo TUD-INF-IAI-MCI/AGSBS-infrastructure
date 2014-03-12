@@ -6,6 +6,7 @@ from optparse import OptionParser
 
 from MAGSBS import *
 import MAGSBS
+from MAGSBS.errors import *
 
 
 usage = """
@@ -176,33 +177,40 @@ class main():
     def imgdsc(self):
         usage = sys.argv[0]+' imgdsc [OPTIONS] image_name\n'+\
                 "\nBy default, the image description is read from stdin, use -f to read from a file.\n\n"+\
-                "Theworking directory must be a chapter; the image name must be a relative path like 'images/image.jpg'\n"
+                "The working directory must be a chapter; the image name must be a relative path like 'images/image.jpg'\n"
         parser = OptionParser(usage=usage)
-        parser.add_option("-c", "--chapter-path", dest="chapterpath",
-                  help="path to chapter where editing takes place.",
-                  metavar="DIRECTORY", default='.')
+        parser.add_option("-d", "--description", dest="description",
+                help="image description string (or - for stdin)",
+                metavar="DESC", default='no description')
         parser.add_option("-l", "--lang", dest="lang",
                   help="select language (currently just 'de' and 'en' supported)",
                   metavar="LANG", default='de')
+        parser.add_option("-o", "--outsource-descriptions", dest="outsource",
+                action="store_true", default=False,
+                help="if set, images will be outsourced, no matter how long they are.")
+        parser.add_option("-t", "--title", dest="title",
+                default=None,
+                help="If image gets outsourced, a title must be set.")
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)<1):
             parser.print_help()
             exit(0)
         else:
-            dir = args[0]
+            path = args[0]
+        if(options.description == "-"):
+            desc = sys.stdin.read()
+        else:
+            desc = options.description
+        i = MAGSBS.factories.image_description( args[0], lang=options.lang )
+        i.set_description( desc )
+        i.use_outsourced_descriptions( options.outsource )
+        if(options.title):
+            i.set_title( options.title )
         try:
-            pnumgap = int( options.pnum_gap )
-        except ValueError:
-            error_exit("Argument of -p must be an integer.")
-
-        #output = None
-        #if(options.output == 'stdout'):
-        #    output = sys.stdout
-        #else:
-        #    output = codecs.open(options.output, 'w', 'utf-8')
-
-        p=page_navigation(dir, pnumgap, options.lang)
-        p.iterate()
+            print('\n----\n'.join(i.get_output()))
+        except MissingMandatoryField as e:
+            sys.stderr.write('Error: '+e.message+'\n')
+            sys.exit(11)
 
 
 
