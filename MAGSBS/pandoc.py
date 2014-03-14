@@ -122,7 +122,8 @@ class pandoc():
     """Abstract the translation by pandoc into a class which add meta-information
 to the output, handles errors and checks for the correct encoding."""
     def __init__(self, format='html', use_gladtex=False):
-        self.conf = config.read_user_configuration()
+        self.conf = config.LectureMetaData()
+        self.conf.read()
         self.format = format
         self.tempfile = None
         self.use_gladtex = use_gladtex
@@ -159,8 +160,8 @@ to the output, handles errors and checks for the correct encoding."""
                 if(h.get_level() == 1):
                     return h.get_text()
         except WrongFileNameError:
-            return self.__hvalues['lecturetitle'] + ' ' \
-                + inputf[:-3].capitalize()
+            #self.__hvalues['lecturetitle'] + ' ' \
+            return inputf[:-3].capitalize()
 
 
     def mktemplate(self, inputf):

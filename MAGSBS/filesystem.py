@@ -20,7 +20,7 @@ def valid_file_bgn(cmp):
 def skip_dir(root, cur):
     """Check whether directory contains interesting files."""
     skip = True
-    if(cur == dir): skip = False
+    if(cur == root): skip = False
     if(valid_file_bgn(cur)): skip = False
     return skip
 
@@ -55,21 +55,6 @@ in lecture root."""
         if(os.path.exists( fn  )): return fn
     return None
 
-def file_data_encoded(path):
-    """file_data_encoded(path)
-Opens path. Tries to guess the encoding. Return is first the data, second the
-encoding guessed."""
-    encoding = 'utf-8'
-    data = None
-    try:
-        data = codecs.open( path, 'r', \
-                sys.getdefaultencoding()).read()
-        encoding = sys.getdefaultencoding()
-    except UnicodeDecodeError:
-        data = codecs.open( path, 'r', 'utf-8').read()
-    return (data, encoding)
-
-
 class create_index():
     """create_index(dir)
     
@@ -88,12 +73,12 @@ Format of index: dict of lists: every filename is the key, the list of heading
         """walk()
 
 By calling the function, the actual index is build."""
-        tmp_dict = {}
         for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
             for file in file_list:
                 # open with systems default encoding
                 # try systems default encoding, then utf-8, then fail
-                data, enc = file_data_encoded( os.path.join(directoryname, file) )
+                data = codecs.open( os.path.join(directoryname, file), 'r',
+                        'utf-8' ).read()
                 m = markdownHeadingParser( data, directoryname, file )
                 m.parse()
                 self.__index[ file ] = m.get_heading_list()
@@ -118,10 +103,10 @@ back the file."""
         for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
             for file in file_list:
                 fullpath = directoryname + os.sep + file 
-                data,enc = file_data_encoded( fullpath )
+                data = codecs.open( fullpath, 'r', 'utf-8').read()
                 data = self.trail_nav( data )
                 data = self.gen_nav(data, file)
-                codecs.open( fullpath, 'w', enc).write( data )
+                codecs.open( fullpath, 'w', 'utf-8').write( data )
 
     def trail_nav(self, page):
         """trail_nav(page)
@@ -153,18 +138,16 @@ English table-of-contents are referenced as ../index.html, German toc's as
 
         navbar = [('Seiten: ' if self.__lang == 'de' else 'Pages: ')]
         # first page number is necessary for calculations:
-        frst_h = None
-        for heading in m.get_heading_list():
-            # if it's a page number:
-            if(heading.get_level()==6 and heading.is_shadow_heading()):
-                if(not frst_h): # its possibly the first page number
-                    frst_h = heading
-                    navbar.append( frst_h.get_markdown_link() )
-                # if its page number is exactly x*pagenumbergap from
-                # frst_h.get_text() away, print it
-                elif(not (heading.get_page_number() + frst_h.get_page_number())
-                    % (self.pagenumbergap+1)):
-                    navbar.append(' %s' % heading.get_markdown_link() )
+        pnums = [ h  for h in m.get_heading_list() \
+                if(h.get_level()==6 and h.is_shadow_heading())]
+        first_h = pnums[0]
+        for pnum in pnums:
+            if(pnum == first_h):
+                navbar.append( first_h.get_markdown_link() )
+            elif(pnum.get_page_number() >
+                    (first_h.get_page_number()+(self.pagenumbergap/2))):
+                if(not (pnum.get_page_number()%self.pagenumbergap)):
+                    navbar.append(', %s' % pnum.get_markdown_link() )
         toc = '[%s](../%s.html)' % (\
                     ('Inhalt' if self.__lang == 'de' else 'table of contents'),
                     ('inhalt' if self.__lang == 'de' else 'index') )

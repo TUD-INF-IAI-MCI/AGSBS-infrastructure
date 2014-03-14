@@ -42,11 +42,11 @@ here wild guessing. It MUST be reimplemented."""
                 res_id += char 
             else:
                 continue # skip this character
-        elif((ord(char) < 65) and (ord(char) > 57 or ord(char) < 49)):
+        elif((ord(char) < 65) and (ord(char) > 57 or ord(char) < 45)):
             continue
         else:
             res_id += char 
-    # strip trailing hyphens:
+    # strip hyphens at the beginning
     while(res_id.startswith('-')):
         res_id = res_id[1:]
     return res_id 

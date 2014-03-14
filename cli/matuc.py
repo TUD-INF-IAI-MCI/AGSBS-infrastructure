@@ -124,7 +124,7 @@ class main():
             print('Error: '+args[0]+' not found')
             sys.exit(127)
 
-        p = MAGSBS.pandoc(options.format, use_gladtex=options.gladtex)
+        p = MAGSBS.pandoc.pandoc(options.format, use_gladtex=options.gladtex)
         if(options.workinggroup):
             p.set_workinggroup(options.workinggroup)
         if(options.source):
@@ -165,7 +165,7 @@ class main():
         except ValueError:
             error_exit("Argument of -p must be an integer.")
 
-        #output = None
+        output = None
         #if(options.output == 'stdout'):
         #    output = sys.stdout
         #else:
