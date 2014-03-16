@@ -37,7 +37,7 @@ $for(header-includes)$
 $endfor$
 <!-- agsbs-specific -->
     <meta name='Einrichtung' content='$$institution' />
-    <meta href="Arbeitsgruppe" content="$$workinggroup" />
+    <meta href='Arbeitsgruppe' content="$$workinggroup" />
     <meta name='Vorlagedokument' content='$$source' />
     <meta name='Lehrgebiet' content='$$lecturetitle' />
     <meta name='Semester der Bearbeitung' content='$$semesterofedit' />
@@ -70,6 +70,15 @@ $endfor$
 </body>
 </html>
 """
+
+def html_escape(string):
+    """Wraper for py 2 / 3."""
+    if(int( sys.version[0] ) >= 3):
+        import html
+        return html.escape( string )
+    else:
+        import cgi
+        return cgi.escape( string, True)
 
 
 # $$institution: 'TU Dresden, Institut f&uuml;r Angewandte Informatik, Mensch-Maschine Kommunikation'
@@ -121,10 +130,10 @@ generator fails."""
 class pandoc():
     """Abstract the translation by pandoc into a class which add meta-information
 to the output, handles errors and checks for the correct encoding."""
-    def __init__(self, format='html', use_gladtex=False):
-        self.conf = config.LectureMetaData()
-        self.conf.read()
-        self.format = format
+    def __init__(self, use_gladtex=False):
+        c = config.confFactory()
+        self.conf = c.get_conf_instance()
+        self.format = self.conf['format']
         self.tempfile = None
         self.use_gladtex = use_gladtex
         self.__hvalues = {
@@ -180,7 +189,7 @@ to the output, handles errors and checks for the correct encoding."""
             raise ValueError("One of the required fields for the HTML meta data has not been set.")
         data = HTML_template[:]
         for key, value in self.__hvalues.items():
-            data = data.replace('$$'+key, value)
+            data = data.replace('$$'+key, html_escape( value ))
         self.tempfile = tempfile.mktemp() + '.html'
         codecs.open( self.tempfile, "w", "utf-8").write( data )
         return self.tempfile

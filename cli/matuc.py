@@ -18,6 +18,7 @@ commands. Use %s <command> -h for help.
 Available commands are:
 
 conv    - convert a markdown file using pandoc
+conf    - set configuration options (or display them)
 imgdsc  - generate image description snippets
 navbar  - generate navigation bar at beginning of each page
 toc     - generate table of contents
@@ -40,6 +41,8 @@ class main():
                 self.imgdsc()
             elif(sys.argv[1] == 'conv'):
                 self.conv()
+            elif(sys.argv[1] == 'conf'):
+                self.conf()
             else:
                 print(usage)
     
@@ -88,9 +91,13 @@ class main():
         except TOCError as e:
             sys.stderr.write("TOCError: " + e.message+'\n')
             sys.exit(127)
-    def conv(self):
-        usage = sys.argv[0]+' conv [input_directory|input_file]'
-        usage += "\n\nNote: the output file name will be the input file name + the new extension.\n\n"
+
+
+    def conf(self):
+        """Read and write configuration."""
+        # todo: write me
+        # todo: init new configuration
+        usage = sys.argv[0]+' conv [options]'
         parser = OptionParser(usage=usage)
         parser.add_option("-f", dest="format",
                   help="select output format",
@@ -113,9 +120,15 @@ class main():
         parser.add_option("-l", dest="lecturetitle",
                   help="set lecture title (else try to use h1 heading, if present",
                   metavar="TITLE", default=None)
+
+    def conv(self):
+        usage = sys.argv[0]+' conv [options] input_directory | input_file'
+        usage += "\n\nNote: the output file name will be the input file name + the new extension.\n\n"
+        parser = OptionParser(usage=usage)
         parser.add_option("-g", dest="gladtex", action="store_true",
                   help="run gladtex after pandoc", default=False)
-
+        parser.add_option("-t", "--title", dest="title", default=None,
+                  help="set title for output document (if supported, e.g. in HTML)")
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)<1):
             parser.print_help()
@@ -124,23 +137,24 @@ class main():
             print('Error: '+args[0]+' not found')
             sys.exit(127)
 
-        p = MAGSBS.pandoc.pandoc(options.format, use_gladtex=options.gladtex)
-        if(options.workinggroup):
-            p.set_workinggroup(options.workinggroup)
-        if(options.source):
-            p.set_source(options.source)
-        if(options.editor):
-            p.set_editor(options.editor)
-        if(options.institution):
-            p.set_institution(options.institution)
-        if(options.lecturetitle):
-            p.set_lecturetitle(options.lecturetitle)
-        if(options.semesterofedit):
-            p.set_semesterofedit(options.semesterofedit)
-        if(os.path.isdir(args[0])):
-            MAGSBS.pandoc.convert_dir(p, args[0] ) # Todo: write this function
-        else:
-            p = p.convert( args[0] )
+        p = MAGSBS.pandoc.pandoc(use_gladtex=options.gladtex)
+        p = p.convert( args[0] )
+        # migrate everything below to init / make it work also here
+        #if(options.workinggroup):
+        #    p.set_workinggroup(options.workinggroup)
+        #if(options.source):
+        #    p.set_source(options.source)
+        #if(options.editor):
+        #    p.set_editor(options.editor)
+        #if(options.institution):
+        #    p.set_institution(options.institution)
+        #if(options.lecturetitle):
+        #    p.set_lecturetitle(options.lecturetitle)
+        #if(options.semesterofedit):
+        #    p.set_semesterofedit(options.semesterofedit)
+        #if(os.path.isdir(args[0])):
+        #    MAGSBS.pandoc.convert_dir(p, args[0] ) # Todo: write this function
+        #else:
 
 
     def navbar(self):

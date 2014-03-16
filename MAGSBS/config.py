@@ -2,7 +2,7 @@
 Read in user configuration.
 """
 
-import getpass, os
+import getpass, os, sys, pwd
 import datetime, codecs
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
@@ -11,6 +11,40 @@ import filesystem
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 GLADTEX_OPTS = '-a -d bilder'
+
+class Singleton:
+    """
+A non-thread-safe helper class to ease implementing singletons.
+This should be used as a decorator -- not a metaclass -- to the class that
+should be a singleton.
+
+The decorated class can define one `__init__` function that takes only the
+`self` argument. Other than that, there are no restrictions that apply to the
+decorated class.
+
+To get the singleton instance, use the `Instance` method. Trying to use
+`__call__` will result in a `TypeError` being raised.
+
+Limitations: The decorated class cannot be inherited from.
+"""
+    def __init__(self, decorated):
+        self._decorated = decorated
+
+    def Instance(self, path):
+        """Returns the singleton instance. Upon its first call, it creates a
+new instance of the decorated class and calls its `__init__` method.  On all
+subsequent calls, the already created instance is returned.  """
+        try:
+            return self._instance
+        except AttributeError:
+            self._instance = self._decorated(path)
+        return self._instance
+
+    def __call__(self):
+        raise TypeError('Singletons must be accessed through `Instance()`.')
+
+    def __instancecheck__(self, inst):
+        return isinstance(inst, self._decorated)
 
 
 def get_semester():
@@ -37,29 +71,8 @@ def has_meta_data(path):
     else:
         return False
 
-def get_applicable_conf():
-    """get_applicable_conf() -> file name (or path to file)
-
-If the current directory contains a configuration file, just return the file
-name. If this directory is not the lecture root, look in the lecture root for a
-configuration file. If the lecture root has also no configuration, return the
-lecture root path nevertheless.
-
-Please note: if you are in a subdirectory, this will be a path like ../$CONF_FILE_NAME."""
-    if(os.path.exists(CONF_FILE_NAME)):
-        return CONF_FILE_NAME
-    # cwd != lecture root?
-    path = ''
-    while(filesystem.valid_file_bgn(
-                os.path.split( os.path.abspath(path) )[-1]) ):
-        if(os.path.exists( os.path.join(path, CONF_FILE_NAME) )):
-            break # return this path + CONF_FILE_NAME
-        path = os.path.join(path, '..')
-    ## if we reached this, we are in the lecture root
-    return os.path.join(path, CONF_FILE_NAME)
-
-
-class LectureMetaData(dict):
+@Singleton
+class _LectureMetaData(dict):
     """
 The lecture conversion needs meta data which is then embedded into the HTML
 document. Those fields are e.g. souce, editor, etc.
@@ -67,7 +80,6 @@ document. Those fields are e.g. souce, editor, etc.
 This class provides a writer and also a reader for those files. The usage is as
 follows:
 
-# the path is optional, it'll try to autodetect the correct path
 l = LectureMetaData("directory")
 l.read()
 l['editor'] = 'Sebastian Humenda'
@@ -91,11 +103,17 @@ semesterofedit  - either WSYY or SS/WSYY, where YY are the last two digits of
 
 All parameters are strings.
 """
-    def __init__(self, directory=get_applicable_conf()):
-        """Set default values."""
-        self.dir = directory
+    def __init__(self, path):
+        "Set default values."
+        self.__path = path
         self['workinggroup'] = 'AGSBS'
-        self['editor'] = getpass.getuser()
+        if(sys.platform.lower().find('win')>=0):
+            self['editor'] = getpass.getuser()
+        else: # full name with the unix way
+            self['editor'] = pwd.getpwuid(os.getuid())[4]
+            # on some systems, real name ends with commas, strip those
+            while(self['editor'].endswith(',')):
+                self['editor'] = self['editor'][:-1]
         self['semesterofedit'] = get_semester()
         self['lecturetitle'] = 'Unknown'
         self['source'] = 'Unknown'
@@ -103,12 +121,13 @@ All parameters are strings.
         self['type'] = 'html'
         self['language'] = 'de'
         self['rights'] = 'Access limited to members'
+        self['format'] = 'html'
         self.dictkey2xml = {
                 'workinggroup' : 'contributor', 'editor' : 'creator',
                 'semesterofedit' : 'date', 'lecturetitle' : 'title',
                 'source' : 'source', 'language':'language',
                 'institution' : 'publisher', 'rights':'rights',
-                'type' : 'type'
+                'format' : 'type'
         }
         dict.__init__(self)
 
@@ -122,18 +141,66 @@ All parameters are strings.
         out = dom = minidom.parseString(
                 '<?xml version="1.0" encoding="UTF-8"?>' + \
                 ET.tostring( root )).toprettyxml()
-        codecs.open(CONF_FILE_NAME,'w',encoding='utf-8').write(  out )
+        codecs.open(self.__path,'w',encoding='utf-8').write(  out )
 
     def read(self):
-        if(has_meta_data(self.dir)):
+        if(has_meta_data(self.__path)):
             xmlkey2dict = {}
             for value,key in self.dictkey2xml.items():
                 xmlkey2dict[ key ] = value
 
-            root = ET.fromstring( codecs.open(CONF_FILE_NAME, 'r', 'utf-8').read() )
+            root = ET.fromstring( codecs.open( self.__path, 'r', 'utf-8').read() )
             for child in root:
                 try:
                     self[ xmlkey2dict[ child.tag ] ] = child.text
                 except IndexError:
                     print(ET.dump( child ))
+
+class confFactory():
+    """
+Factory which returns the corresponding instance of a user configuration. They
+are however not thread-safe.
+The "corresponding" configuration (object) is selected using first the root
+configuration and then, if present, the corresponding subdirectory configuration
+(if in a subdirectory).
+"""
+    def __init__(self):
+        self._instances = {}
+    def get_conf_instance(self):
+        """Return either an old object if already created or create a new one
+(kind of singleton). Automatically read the configuration upon creation."""
+        path = self.__getpath()
+        if(path in self._instances.keys()):
+            return self._instances[ path ]
+        else:
+            self._instances[ path ] = _LectureMetaData.Instance( path )
+            self._instances[ path ].read()
+        return self._instances[ path ]
+
+    def __getpath(self):
+        """__getpath() -> path to configuration file
+
+If the current directory contains a configuration file, just return the file
+name. If this directory is not the lecture root, look in the lecture root for a
+configuration file. If the lecture root has also no configuration, return the
+lecture root path nevertheless.
+
+Please note: if you are in a subdirectory, this will be a path like ../$CONF_FILE_NAME."""
+        if(os.path.exists(CONF_FILE_NAME)):
+            return CONF_FILE_NAME
+        # cwd != lecture root?
+        path = ''
+        while(filesystem.valid_file_bgn(
+                    os.path.split( os.path.abspath(path) )[-1])):
+            if(os.path.abspath(os.sep) == os.path.abspath( path )):
+                raise ConfigurationNotFoundError("While searching for a"+\
+                        " configuration file, the root directory was"+\
+                        " reached.\nThis means that this program fails to"+\
+                        " determine the lecture root.\nPlease report this bug.")
+            if(os.path.exists( os.path.join(path, CONF_FILE_NAME) )):
+                break # return this path + CONF_FILE_NAME
+            path = os.path.join(path, '..')
+        # if we reached this, we are in the lecture root
+        return os.path.abspath( os.path.join(path, CONF_FILE_NAME) )
+
 
