@@ -11,6 +11,7 @@ import filesystem
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 GLADTEX_OPTS = '-a -d bilder'
+PYVERSION = int(sys.version[0])
 
 class Singleton:
     """
@@ -66,7 +67,9 @@ def get_semester():
 
 def has_meta_data(path):
     """Return whether lecture meta data can be found in the specified path."""
-    if(os.path.exists( os.path.join(path, CONF_FILE_NAME) )):
+    if(not path.endswith(CONF_FILE_NAME)):
+        path = os.path.join(path, CONF_FILE_NAME)
+    if(os.path.exists( path )):
         return True
     else:
         return False
@@ -118,7 +121,7 @@ All parameters are strings.
         self['lecturetitle'] = 'Unknown'
         self['source'] = 'Unknown'
         self['institution'] = 'TU Dresden'
-        self['type'] = 'html'
+        self['format'] = 'html'
         self['language'] = 'de'
         self['rights'] = 'Access limited to members'
         self['format'] = 'html'
@@ -143,16 +146,26 @@ All parameters are strings.
                 ET.tostring( root )).toprettyxml()
         codecs.open(self.__path,'w',encoding='utf-8').write(  out )
 
+    def normalize_tag(self, tag):
+        if(tag.find('}')>0):
+            return tag[ tag.find('}')+1:]
+        else:
+            return tag
+
     def read(self):
         if(has_meta_data(self.__path)):
             xmlkey2dict = {}
             for value,key in self.dictkey2xml.items():
                 xmlkey2dict[ key ] = value
 
-            root = ET.fromstring( codecs.open( self.__path, 'r', 'utf-8').read() )
+            # py 2 / 3:
+            data = codecs.open( self.__path, 'r', 'utf-8').read()
+            if(PYVERSION == 2):
+                data = data.encode('utf-8')
+            root = ET.fromstring( data )
             for child in root:
                 try:
-                    self[ xmlkey2dict[ child.tag ] ] = child.text
+                    self[ xmlkey2dict[ self.normalize_tag( child.tag ) ] ] = child.text
                 except IndexError:
                     print(ET.dump( child ))
 
@@ -166,10 +179,13 @@ configuration and then, if present, the corresponding subdirectory configuration
 """
     def __init__(self):
         self._instances = {}
-    def get_conf_instance(self):
+    def get_conf_instance(self, force_current_directory=False):
         """Return either an old object if already created or create a new one
 (kind of singleton). Automatically read the configuration upon creation."""
-        path = self.__getpath()
+        if(force_current_directory):
+            path = CONF_FILE_NAME
+        else:
+            path = self.__getpath()
         if(path in self._instances.keys()):
             return self._instances[ path ]
         else:
@@ -198,7 +214,7 @@ Please note: if you are in a subdirectory, this will be a path like ../$CONF_FIL
                         " reached.\nThis means that this program fails to"+\
                         " determine the lecture root.\nPlease report this bug.")
             if(os.path.exists( os.path.join(path, CONF_FILE_NAME) )):
-                break # return this path + CONF_FILE_NAME
+                break # return this path
             path = os.path.join(path, '..')
         # if we reached this, we are in the lecture root
         return os.path.abspath( os.path.join(path, CONF_FILE_NAME) )

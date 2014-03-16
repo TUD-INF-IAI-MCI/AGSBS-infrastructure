@@ -17,8 +17,8 @@ commands. Use %s <command> -h for help.
 
 Available commands are:
 
+conf    - set, init or update a configuration
 conv    - convert a markdown file using pandoc
-conf    - set configuration options (or display them)
 imgdsc  - generate image description snippets
 navbar  - generate navigation bar at beginning of each page
 toc     - generate table of contents
@@ -94,32 +94,70 @@ class main():
 
 
     def conf(self):
-        """Read and write configuration."""
-        # todo: write me
-        # todo: init new configuration
-        usage = sys.argv[0]+' conv [options]'
+        """Create or update configuration."""
+        usage = sys.argv[0]+''' conf [options] <action>
+
+Allowed actions are `show` and `update`. `show` will show the current
+configuration settings, default values if none present. Update on the other hand
+will read in the current configuration (if present, else initialize a new one
+        with default values), override the corresponding items which were
+supplied on the command line and write the configuration back. It'll also show
+what has been set.
+
+To init an empty configuration, use update without arguments.'''
         parser = OptionParser(usage=usage)
         parser.add_option("-f", dest="format",
                   help="select output format",
-                  metavar="FMT", default='html')
-        parser.add_option("-w", dest="workinggroup",
-                  help="set working group",
-                  metavar="GROUP", default=None)
-        parser.add_option("-s", dest="source",
-                  help="set source document",
-                  metavar="SRC", default=None)
+                  metavar="FMT", default=None)
         parser.add_option("-e", dest="editor",
                   help="set editor",
                   metavar="NAME", default=None)
         parser.add_option("-i", dest="institution",
                   help="set institution (default TU Dresden)",
                   metavar="NAME", default=None)
-        parser.add_option("-S", dest="semesterofedit",
-                  help="set semester of edit (will be guessed else)",
-                  metavar="SEMYEAR", default=None)
         parser.add_option("-l", dest="lecturetitle",
                   help="set lecture title (else try to use h1 heading, if present",
                   metavar="TITLE", default=None)
+        parser.add_option("-s", dest="source",
+                  help="set source document",
+                  metavar="SRC", default=None)
+        parser.add_option("-S", dest="semesterofedit",
+                  help="set semester of edit (will be guessed else)",
+                  metavar="SEMYEAR", default=None)
+        parser.add_option("-w", dest="workinggroup",
+                  help="set working group",
+                  metavar="GROUP", default=None)
+        c = MAGSBS.config.confFactory()
+        # init / update new configuration in cwd
+        inst = c.get_conf_instance(force_current_directory=True)
+        (options, args) = parser.parse_args(sys.argv[2:])
+        if(len(args)==0 or len(args) > 1):
+            parser.print_help()
+            sys.exit(88)
+        if(int(sys.version[0]) == 2): # decode strings in py 2
+            for opt, value in options.__dict__.items():
+                if(not isinstance(value, unicode) and value):
+                    options.__dict__[opt] = value.decode( sys.stdin.encoding )
+
+
+        if(args[0] == 'show'):
+            print("Current settings are:\n\n")
+            for key, value in inst.items():
+                spaces = 20-len(key)
+                print(key+':'+' '*spaces+value)
+        elif(args[0] == 'update'):
+            for opt, value in options.__dict__.items():
+                if(value != None):
+                    inst[opt] = value
+            print("New settings are:\n\n")
+            for key, value in inst.items():
+                spaces = 20-len(key)
+                print(key+':'+' '*spaces+value)
+            inst.write()
+        else:
+            parser.print_help()
+
+
 
     def conv(self):
         usage = sys.argv[0]+' conv [options] input_directory | input_file'
