@@ -9,5 +9,7 @@ class TOCError(Exception):
     pass
 class MissingMandatoryField(Exception):
     pass
+class ConfigurationError(Exception):
+    pass
 class ConfigurationNotFoundError(Exception):
     pass

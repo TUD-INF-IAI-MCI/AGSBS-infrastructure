@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
-import datastructures, filesystem
+import datastructures, filesystem, config
 from errors import TOCError, MissingMandatoryField
 
 if(int(sys.version[0]) >= 3):
@@ -18,11 +18,13 @@ file. The language specifies in which language to output the title of the TOC.
 
 This class must be run from the lecture root.
 """
-    def __init__(self, index, lang='de', depth=4, use_appendix_prefix=False):
+    def __init__(self, index):
         self.__index = index
-        self.lang = lang
-        self.depth = depth
-        self.__use_appendix_prefix = use_appendix_prefix
+        c = config.confFactory()
+        self.conf  = c.get_conf_instance()
+        self.lang = self.conf[ 'language' ]
+        self.depth = self.conf[ 'tocDepth' ]
+        self.__use_appendix_prefix = self.conf[ 'appendixPrefix']
         # two lists for headings
         self.__main = []
         self.__appendix = []

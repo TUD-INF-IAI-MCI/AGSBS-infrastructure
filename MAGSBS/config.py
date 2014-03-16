@@ -7,6 +7,7 @@ import datetime, codecs
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import filesystem
+from errors import *
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -23,30 +24,23 @@ The decorated class can define one `__init__` function that takes only the
 `self` argument. Other than that, there are no restrictions that apply to the
 decorated class.
 
-To get the singleton instance, use the `Instance` method. Trying to use
-`__call__` will result in a `TypeError` being raised.
-
 Limitations: The decorated class cannot be inherited from.
 """
     def __init__(self, decorated):
         self._decorated = decorated
 
-    def Instance(self, path):
+    def __call__(self):
         """Returns the singleton instance. Upon its first call, it creates a
 new instance of the decorated class and calls its `__init__` method.  On all
 subsequent calls, the already created instance is returned.  """
         try:
             return self._instance
         except AttributeError:
-            self._instance = self._decorated(path)
+            self._instance = self._decorated()
         return self._instance
-
-    def __call__(self):
-        raise TypeError('Singletons must be accessed through `Instance()`.')
 
     def __instancecheck__(self, inst):
         return isinstance(inst, self._decorated)
-
 
 def get_semester():
     semester = ''
@@ -74,11 +68,10 @@ def has_meta_data(path):
     else:
         return False
 
-@Singleton
-class _LectureMetaData(dict):
+class LectureMetaData(dict):
     """
 The lecture conversion needs meta data which is then embedded into the HTML
-document. Those fields are e.g. souce, editor, etc.
+document. Those fields are e.g. source, editor, etc.
 
 This class provides a writer and also a reader for those files. The usage is as
 follows:
@@ -104,11 +97,13 @@ workinggroup    - default is 'AGSBS'
 semesterofedit  - either WSYY or SS/WSYY, where YY are the last two digits of
                   the year and the letters in ront are literals
 
-All parameters are strings.
+Please note: you should not use this clss, except you can make sure that exactly
+one instance at a time exists.
 """
     def __init__(self, path):
         "Set default values."
         self.__path = path
+        self.__numerical = ['tocDepth', 'appendixPrefix', 'pageNumberingGap']
         self['workinggroup'] = 'AGSBS'
         if(sys.platform.lower().find('win')>=0):
             self['editor'] = getpass.getuser()
@@ -125,21 +120,31 @@ All parameters are strings.
         self['language'] = 'de'
         self['rights'] = 'Access limited to members'
         self['format'] = 'html'
+        self['tocDepth'] = 5
+        self['appendixPrefix'] = 0
+        self['pageNumberingGap'] = 5
         self.dictkey2xml = {
                 'workinggroup' : 'contributor', 'editor' : 'creator',
                 'semesterofedit' : 'date', 'lecturetitle' : 'title',
                 'source' : 'source', 'language':'language',
                 'institution' : 'publisher', 'rights':'rights',
-                'format' : 'type'
+                'format' : 'type',
+                'tocDepth':'MAGSBS:tocDepth',
+                'appendixPrefix' : 'MAGSBS:appendixPrefix',
+                'pageNumberingGap' : 'MAGSBS:pageNumberingGap'
         }
         dict.__init__(self)
 
     def write(self):
         root = ET.Element('metadata')
         root.attrib['xmlns:dc'] = 'http://purl.org/dc/elements/1.1'
-        root.attrib['xmlns:xsi'] = 'http://www.w3.org/2001/XMLSchema-instance'
+        root.attrib['xmlns:MAGSBS'] = 'http://elvis.inf.tu-dresden.de'
         for key, value in self.items():
-            c = ET.SubElement(root, 'dc:'+self.dictkey2xml[ key ] )
+            if(not self.dictkey2xml[key].startswith('MAGSBS:')):
+                c = ET.SubElement(root, 'dc:'+self.dictkey2xml[ key ] )
+            else:
+                c = ET.SubElement(root, self.dictkey2xml[key])
+            if(key in self.__numerical): value = str(value)
             c.text = value
         out = dom = minidom.parseString(
                 '<?xml version="1.0" encoding="UTF-8"?>' + \
@@ -156,6 +161,7 @@ All parameters are strings.
         if(has_meta_data(self.__path)):
             xmlkey2dict = {}
             for value,key in self.dictkey2xml.items():
+                if(key.startswith('MAGSBS')): key = key[7:]
                 xmlkey2dict[ key ] = value
 
             # py 2 / 3:
@@ -165,10 +171,27 @@ All parameters are strings.
             root = ET.fromstring( data )
             for child in root:
                 try:
-                    self[ xmlkey2dict[ self.normalize_tag( child.tag ) ] ] = child.text
+                    key = xmlkey2dict[ self.normalize_tag( child.tag )]
+                    value = child.text
+                    if(value in self.__numerical):
+                        try:
+                            value = int( value )
+                        except ValueError:
+                            raise ConfigurationError("The option %s has an invalid value (%s) which can not converted to an integer.\n"\
+                                    % (key, value))
+                    self[ key ] = value
                 except IndexError:
                     print(ET.dump( child ))
 
+    def __setitem__(self, k, v):
+        if(k in self.__numerical):
+            try:
+                v = int(v)
+            except ValueError:
+                raise TypeError("For %s, the value must be convertable to an integer." % k)
+        dict.__setitem__(self, k, v)
+
+@Singleton
 class confFactory():
     """
 Factory which returns the corresponding instance of a user configuration. They
@@ -179,17 +202,14 @@ configuration and then, if present, the corresponding subdirectory configuration
 """
     def __init__(self):
         self._instances = {}
-    def get_conf_instance(self, force_current_directory=False):
+    def get_conf_instance(self):
         """Return either an old object if already created or create a new one
 (kind of singleton). Automatically read the configuration upon creation."""
-        if(force_current_directory):
-            path = CONF_FILE_NAME
-        else:
-            path = self.__getpath()
+        path = self.__getpath()
         if(path in self._instances.keys()):
             return self._instances[ path ]
         else:
-            self._instances[ path ] = _LectureMetaData.Instance( path )
+            self._instances[ path ] = LectureMetaData( path )
             self._instances[ path ].read()
         return self._instances[ path ]
 
@@ -218,5 +238,4 @@ Please note: if you are in a subdirectory, this will be a path like ../$CONF_FIL
             path = os.path.join(path, '..')
         # if we reached this, we are in the lecture root
         return os.path.abspath( os.path.join(path, CONF_FILE_NAME) )
-
 

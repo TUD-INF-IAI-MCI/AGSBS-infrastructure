@@ -4,7 +4,7 @@ import os, sys, codecs
 import collections
 
 from mparser import *
-import datastructures
+import datastructures, config
 
 
 def valid_file_bgn(cmp):
@@ -93,10 +93,13 @@ class page_navigation():
 Iterate through files in `directory`. Read in the page navigation (if any) and
 update (or create) it. `page_gap` will specify which gap the navigation bar will
 have for the pages."""
-    def __init__(self, dir, pagenumbergap, lang='de'):
+    def __init__(self, dir):
         self.__dir = dir
-        self.pagenumbergap = int( pagenumbergap )
-        self.__lang = lang
+        c = config.confFactory()
+        c = c.get_conf_instance()
+        self.pagenumbergap = c['pageNumberingGap']
+        self.__lang = c['language']
+        self.linebreaks = '\n'
     def iterate(self):
         """Iterate over the files and call self.trail_nav and self.gen_nav. Write
 back the file."""
@@ -104,6 +107,14 @@ back the file."""
             for file in file_list:
                 fullpath = directoryname + os.sep + file 
                 data = codecs.open( fullpath, 'r', 'utf-8').read()
+                # guess line breaks
+                if(data.find('\r\n')>=0):
+                    self.linebreaks = '\r\n'
+                else:
+                    if(len(data.split('\n')) < 2):
+                        self.linebreaks = '\r'
+                    else:
+                        self.linebreaks = '\n'
                 data = self.trail_nav( data )
                 data = self.gen_nav(data, file)
                 codecs.open( fullpath, 'w', 'utf-8').write( data )
@@ -118,7 +129,7 @@ and end again with
     
         navbar_started = False
         newpage = []
-        for line in page.split('\n'):
+        for line in page.split(self.linebreaks):
             if(line.find('<!-- page navigation -->')>=0):
                 navbar_started = True
             elif(navbar_started and (line.find('<!-- end page navigation -->') >= 0)):
@@ -126,7 +137,7 @@ and end again with
             else:
                 if(not navbar_started):
                     newpage.append( line )
-        return '\n'.join( newpage )
+        return self.linebreaks.join( newpage )
 
     def gen_nav(self, page, file_name):
         """Generate language-specific site navigation.
@@ -135,6 +146,7 @@ English table-of-contents are referenced as ../index.html, German toc's as
         newpage = []
         m = markdownHeadingParser( page, self.__dir, file_name )
         m.parse()
+        lbr = self.linebreaks
 
         navbar = [('Seiten: ' if self.__lang == 'de' else 'Pages: ')]
         # first page number is necessary for calculations:
@@ -151,13 +163,14 @@ English table-of-contents are referenced as ../index.html, German toc's as
         toc = '[%s](../%s.html)' % (\
                     ('Inhalt' if self.__lang == 'de' else 'table of contents'),
                     ('inhalt' if self.__lang == 'de' else 'index') )
-        newpage += [ '<!-- page navigation -->\n\n', toc, '\n\n', ''.join(navbar) ]
-        newpage += ['\n\n* * * * *\n<!-- end page navigation -->\n']
-        if(not page.startswith('\n')):
-            newpage.append('\n')
-        elif not page.endswith('\n'):
-            page += '\n'
+        newpage += [ '<!-- page navigation -->%s' % lbr, toc, lbr, lbr, ''.join(navbar) ]
+        newpage += [lbr,lbr, '* * * * *', lbr, '<!-- end page navigation -->', lbr]
+        if(not page.startswith(lbr)):
+            newpage.append(lbr)
+        elif not page.endswith(lbr):
+            page += lbr
         newpage.append( page )
-        newpage += ['\n<!-- page navigation -->\n\n* * * * *\n\n' ]
-        newpage += [''.join( navbar ), '\n\n', '\n\n', toc, '\n<!-- end page navigation -->']
+        newpage += [lbr, '<!-- page navigation -->', lbr, lbr,
+                    '* * * * *', lbr,lbr]
+        newpage += [''.join( navbar ), lbr,lbr, toc, lbr, '<!-- end page navigation -->']
         return ''.join(newpage)

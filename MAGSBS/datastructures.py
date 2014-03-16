@@ -2,22 +2,22 @@
 
 import os, re
 from errors import WrongFileNameError
+import config
 
 def path2chapter(string):
     """Convert a file name as k010508.md or anh__.md to a tuple of the
 corresponding chapter numbers.
 Important: this functions throws OsErrors which must be caught by the plugin /
 frontend used; the supplied message can be displyed to the user."""
-    fn = string[:] # for debugging purposes
     if(string.startswith('k')):
         string = string[1:] # strip leading k
     elif(string.startswith('anh')):
         string = string[3:]
 
     if(string.endswith('.md')): string = string[:-3]
-    elif(string.endswith('.html')): string = string[:-4]
+    #elif(string.endswith('.html')): string = string[:-4]
     else:
-        raise WrongFileNameError('Not a supported file ending, must be .html or .md.')
+        raise WrongFileNameError('Not a supported file ending, must be .md.')
     erg = []
     while(string != ''):
         try:
@@ -30,8 +30,9 @@ frontend used; the supplied message can be displyed to the user."""
 def gen_id(id, use_umlauts=True):
     """gen_id(id) -> an ID for making links.
 
-Todo: We ought to render the page (in memory) and find out the id's there, we do
-here wild guessing. It MUST be reimplemented."""
+The id's are wild-guessed. It'll fail as soon as non-German texts occure. One
+way is to make the code more robust, the other is to render the HTML-page in
+memory and parse the id's from there."""
     id = id.lower()
     res_id = ''
     for char in id:
@@ -68,7 +69,9 @@ This class represents a heading to ease the handling of headings.
         self.__path = path
         self.__file_name = file_name
         self.__is_shadow_heading = False
-        self.__use_appendix_prefix = False
+        c = config.confFactory()
+        c = c.get_conf_instance()
+        self.__use_appendix_prefix = c['appendixPrefix']
 
     def set_level(self, level):
         self.__level = level

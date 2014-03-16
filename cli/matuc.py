@@ -4,7 +4,7 @@
 import os, sys, codecs
 from optparse import OptionParser
 
-from MAGSBS import *
+from MAGSBS.config import PYVERSION
 import MAGSBS
 from MAGSBS.errors import *
 
@@ -30,6 +30,7 @@ def error_exit(string):
 
 class main():
     def __init__(self):
+        self.conf = MAGSBS.config.confFactory()
         if(len(sys.argv) < 2):
             print(usage)
         else:
@@ -42,22 +43,14 @@ class main():
             elif(sys.argv[1] == 'conv'):
                 self.conv()
             elif(sys.argv[1] == 'conf'):
-                self.conf()
+                self.conf_cmd()
             else:
-                print(usage)
-    
+                error_exit(usage)
+
     def toc(self):
+        "Table Of Contents"
         usage = sys.argv[0]+' toc [OPTIONS] -o output_file input_directory'
         parser = OptionParser(usage=usage)
-        parser.add_option("-a", dest="appendixprefix",
-                  help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
-                  action="store_true", default=False)
-        parser.add_option("-d", "--depth", dest="depth",
-                  help="to which depth headings should be included in the output",
-                  metavar="NUM", default='4')
-        parser.add_option("-l", "--lang", dest="lang",
-                  help="select language (currently just 'de' and 'en' supported)",
-                  metavar="LANG", default='de')
         parser.add_option("-o", "--output", dest="output",
                   help="write output to file instead of stdout",
                   metavar="FILENAME", default='stdout')
@@ -68,10 +61,6 @@ class main():
             file = sys.stdout
         else:
             file = codecs.open(options.output, 'w', 'utf-8')
-        try:
-            depth = int( options.depth )
-        except ValueError:
-            error_exit("Depth must be an integer.")
         dir = '.'
         if(not args == []):
             dir = args[0]
@@ -79,22 +68,20 @@ class main():
                 error_exit("Directory %s does not exist" % dir)
 
         try:
-            c = create_index( dir )
+            c = MAGSBS.filesystem.create_index( dir )
             c.walk()
-            idx = index2markdown_TOC(c.get_index(), options.lang, depth,
-                options.appendixprefix)
+            idx = MAGSBS.factories.index2markdown_TOC(c.get_index())
             file.write( idx.get_markdown_page() )
             file.close()
         except OSError:
-            sys.stderr.write("OSError: " + e.message+'\n')
-            sys.exit(127)
+            error_exit("OSError: " + e.message+'\n')
         except TOCError as e:
-            sys.stderr.write("TOCError: " + e.message+'\n')
-            sys.exit(127)
+            error_exit("TOCError: " + e.message+'\n')
 
-
-    def conf(self):
-        """Create or update configuration."""
+    def conf_cmd(self):
+        """Create or update configuration.
+Note: the matuc-global configuration (read-only) is ignored. A private one is
+read and used."""
         usage = sys.argv[0]+''' conf [options] <action>
 
 Allowed actions are `show` and `update`. `show` will show the current
@@ -106,6 +93,9 @@ what has been set.
 
 To init an empty configuration, use update without arguments.'''
         parser = OptionParser(usage=usage)
+        parser.add_option("-a", dest="appendixPrefix",
+                  help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
+                  action="store_true", default=False)
         parser.add_option("-f", dest="format",
                   help="select output format",
                   metavar="FMT", default=None)
@@ -116,43 +106,51 @@ To init an empty configuration, use update without arguments.'''
                   help="set institution (default TU Dresden)",
                   metavar="NAME", default=None)
         parser.add_option("-l", dest="lecturetitle",
-                  help="set lecture title (else try to use h1 heading, if present",
+                  help="set lecture title (else try to use h1 heading, if present)",
                   metavar="TITLE", default=None)
+        parser.add_option("-p", "--pnum-gap", dest="pageNumberingGap",
+                  help="gap in numbering between page links.",
+                  metavar="NUM", default=None)
         parser.add_option("-s", dest="source",
                   help="set source document",
                   metavar="SRC", default=None)
         parser.add_option("-S", dest="semesterofedit",
                   help="set semester of edit (will be guessed else)",
                   metavar="SEMYEAR", default=None)
+        parser.add_option("--toc-depth", dest="tocDepth",
+                  help="to which depth headings should be included in the table of contents",
+                  metavar="NUM", default=None)
         parser.add_option("-w", dest="workinggroup",
                   help="set working group",
                   metavar="GROUP", default=None)
-        c = MAGSBS.config.confFactory()
+        inst = MAGSBS.config.LectureMetaData( MAGSBS.config.CONF_FILE_NAME )
+        inst.read()
+
         # init / update new configuration in cwd
-        inst = c.get_conf_instance(force_current_directory=True)
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)==0 or len(args) > 1):
             parser.print_help()
             sys.exit(88)
-        if(int(sys.version[0]) == 2): # decode strings in py 2
+
+        if(PYVERSION == 2): # decode strings in py 2
             for opt, value in options.__dict__.items():
                 if(not isinstance(value, unicode) and value):
                     options.__dict__[opt] = value.decode( sys.stdin.encoding )
 
-
-        if(args[0] == 'show'):
-            print("Current settings are:\n\n")
+        def show_conf(prefix):
+            print(prefix)
             for key, value in inst.items():
                 spaces = 20-len(key)
-                print(key+':'+' '*spaces+value)
+                if(PYVERSION == 2 and type(value) != int): value = value.encode( sys.stdout.encoding )
+                print(key+':'+' '*spaces+str(value))
+
+        if(args[0] == 'show'):
+            show_conf("Current settings are:\n\n")
         elif(args[0] == 'update'):
             for opt, value in options.__dict__.items():
                 if(value != None):
                     inst[opt] = value
-            print("New settings are:\n\n")
-            for key, value in inst.items():
-                spaces = 20-len(key)
-                print(key+':'+' '*spaces+value)
+            show_conf("New settings are:\n\n")
             inst.write()
         else:
             parser.print_help()
@@ -201,29 +199,21 @@ To init an empty configuration, use update without arguments.'''
         #parser.add_option("-o", "--output", dest="output",
         #          help="write output to file instead of stdout",
         #          metavar="FILENAME", default='stdout')
-        parser.add_option("-l", "--lang", dest="lang",
-                  help="select language (currently just 'de' and 'en' supported)",
-                  metavar="LANG", default='de')
         parser.add_option("-p", "--pnum-gap", dest="pnum_gap",
                   help="gap in numbering between page links.",
-                  metavar="NUM", default='5')
+                  metavar="NUM", default=None)
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)<1):
             dir = '.'
         else:
             dir = args[0]
-        try:
-            pnumgap = int( options.pnum_gap )
-        except ValueError:
-            error_exit("Argument of -p must be an integer.")
+        if(options.pnum_gap):
+            try:
+                self.conf['pageNumberingGap'] = int(options.pnum_gap)
+            except ValueError:
+                error_exit("Argument of -p must be an integer.")
 
-        output = None
-        #if(options.output == 'stdout'):
-        #    output = sys.stdout
-        #else:
-        #    output = codecs.open(options.output, 'w', 'utf-8')
-
-        p=page_navigation(dir, pnumgap, options.lang)
+        p=MAGSBS.filesystem.page_navigation(dir)
         p.iterate()
 
     def imgdsc(self):
