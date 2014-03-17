@@ -91,17 +91,18 @@ data is either a 1-tupel or a 2-tupel. A 1-tupel contains the string for an
 embedded image. A 2-tupel means in the position 0 the string for the main
 document and in position 1 the string for the outsourcing document.
 """
-    def __init__(self, image_path, lang='de'):
-        self.format = 'html'
+    def __init__(self, image_path):
+        c = config.confFactory()
+        c = c.get_conf_instance()
+        self.format = c['format']
         self.image_path = image_path
         self.description = '\n'
-        self.lang = lang
+        self.lang = c['language']
         self.title = None
         self.outsource_long_descriptions = True
         # maximum length of image description before outsourcing it
         self.img_maxlength = 100
-        self.exclusion_file_name = ('bilder' if lang == 'de' else 'images')
-        self.output_format = 'html'
+        self.exclusion_file_name = ('bilder' if self.lang == 'de' else 'images')
 
     def set_description(self, desc): self.description = desc
     def set_title(self, title):
@@ -122,7 +123,8 @@ document and in position 1 the string for the outsourcing document.
 
     def get_inline_description(self):
         """Return the markdown syntax for an inline image description."""
-        return '![%s](%s)' % (self.description, self.image_path)
+        desc = self.description.replace('\n',' ').replace('\r',' ').replace(' ',' ')
+        return '![%s](%s)' % (desc, self.image_path)
 
     def __get_outsourced_title(self):
         if(not self.title):

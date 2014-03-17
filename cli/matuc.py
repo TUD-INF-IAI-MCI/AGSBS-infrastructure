@@ -90,7 +90,7 @@ determine the project root and read the configuration for there if present (else
 the default values are used).
 `init` on the other hand behaves basically like update (it sets configuration
 values), but it does that for the current directory. This is handy for
-sub-directory configurations or initialization of a new project."""
+sub-directory configurations or initialization of a new project.'''
         parser = OptionParser(usage=usage)
         parser.add_option("-a", dest="appendixPrefix",
                   help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
@@ -219,17 +219,12 @@ sub-directory configurations or initialization of a new project."""
         p.iterate()
 
     def imgdsc(self):
-        # Todo: rrefac. this for new configuration
         usage = sys.argv[0]+' imgdsc [OPTIONS] image_name\n'+\
-                "\nBy default, the image description is read from stdin, use -f to read from a file.\n\n"+\
                 "The working directory must be a chapter; the image name must be a relative path like 'images/image.jpg'\n"
         parser = OptionParser(usage=usage)
         parser.add_option("-d", "--description", dest="description",
                 help="image description string (or - for stdin)",
                 metavar="DESC", default='no description')
-        parser.add_option("-l", "--lang", dest="lang",
-                  help="select language (currently just 'de' and 'en' supported)",
-                  metavar="LANG", default='de')
         parser.add_option("-o", "--outsource-descriptions", dest="outsource",
                 action="store_true", default=False,
                 help="if set, images will be outsourced, no matter how long they are.")
@@ -246,7 +241,7 @@ sub-directory configurations or initialization of a new project."""
             desc = sys.stdin.read()
         else:
             desc = options.description
-        i = MAGSBS.factories.image_description( args[0], lang=options.lang )
+        i = MAGSBS.factories.image_description( args[0])
         i.set_description( desc )
         i.use_outsourced_descriptions( options.outsource )
         if(options.title):
