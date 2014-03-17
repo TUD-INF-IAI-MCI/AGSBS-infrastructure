@@ -79,19 +79,18 @@ class main():
             error_exit("TOCError: " + e.message+'\n')
 
     def conf_cmd(self):
-        """Create or update configuration.
-Note: the matuc-global configuration (read-only) is ignored. A private one is
-read and used."""
+        """Create or update configuration."""
         usage = sys.argv[0]+''' conf [options] <action>
 
-Allowed actions are `show` and `update`. `show` will show the current
-configuration settings, default values if none present. Update on the other hand
-will read in the current configuration (if present, else initialize a new one
-        with default values), override the corresponding items which were
-supplied on the command line and write the configuration back. It'll also show
-what has been set.
-
-To init an empty configuration, use update without arguments.'''
+Allowed actions are `show`, `update` and `init`. `show` shows the current
+configuration settings, default values if none present.
+`update` and `show` try to find the correct configuration: if none exists in the
+current directory and you are in a subdirectory of a project, they try to
+determine the project root and read the configuration for there if present (else
+the default values are used).
+`init` on the other hand behaves basically like update (it sets configuration
+values), but it does that for the current directory. This is handy for
+sub-directory configurations or initialization of a new project."""
         parser = OptionParser(usage=usage)
         parser.add_option("-a", dest="appendixPrefix",
                   help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
@@ -123,14 +122,20 @@ To init an empty configuration, use update without arguments.'''
         parser.add_option("-w", dest="workinggroup",
                   help="set working group",
                   metavar="GROUP", default=None)
-        inst = MAGSBS.config.LectureMetaData( MAGSBS.config.CONF_FILE_NAME )
-        inst.read()
 
-        # init / update new configuration in cwd
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)==0 or len(args) > 1):
             parser.print_help()
             sys.exit(88)
+
+        if(args[0] == 'init'):
+            # read configuration from cwd, if present
+            inst = MAGSBS.config.LectureMetaData( MAGSBS.config.CONF_FILE_NAME )
+            inst.read()
+        else:
+            inst = MAGSBS.config.confFactory()
+            inst = inst.get_conf_instance()
+
 
         if(PYVERSION == 2): # decode strings in py 2
             for opt, value in options.__dict__.items():
@@ -146,7 +151,7 @@ To init an empty configuration, use update without arguments.'''
 
         if(args[0] == 'show'):
             show_conf("Current settings are:\n\n")
-        elif(args[0] == 'update'):
+        elif(args[0] == 'update' or args[0] == 'init'):
             for opt, value in options.__dict__.items():
                 if(value != None):
                     inst[opt] = value
@@ -196,11 +201,8 @@ To init an empty configuration, use update without arguments.'''
     def navbar(self):
         usage = sys.argv[0]+' navbar [OPTIONS] input_directory]\n'
         parser = OptionParser(usage=usage)
-        #parser.add_option("-o", "--output", dest="output",
-        #          help="write output to file instead of stdout",
-        #          metavar="FILENAME", default='stdout')
         parser.add_option("-p", "--pnum-gap", dest="pnum_gap",
-                  help="gap in numbering between page links.",
+                  help="gap in numbering between page links. (temporary setting)",
                   metavar="NUM", default=None)
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)<1):
@@ -217,6 +219,7 @@ To init an empty configuration, use update without arguments.'''
         p.iterate()
 
     def imgdsc(self):
+        # Todo: rrefac. this for new configuration
         usage = sys.argv[0]+' imgdsc [OPTIONS] image_name\n'+\
                 "\nBy default, the image description is read from stdin, use -f to read from a file.\n\n"+\
                 "The working directory must be a chapter; the image name must be a relative path like 'images/image.jpg'\n"
