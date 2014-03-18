@@ -21,6 +21,7 @@ conf    - set, init or update a configuration
 conv    - convert a markdown file using pandoc
 imgdsc  - generate image description snippets
 navbar  - generate navigation bar at beginning of each page
+new     - create new project structure
 toc     - generate table of contents
 """ % (sys.argv[0], sys.argv[0])
 
@@ -44,6 +45,8 @@ class main():
                 self.conv()
             elif(sys.argv[1] == 'conf'):
                 self.conf_cmd()
+            elif(sys.argv[1] == 'new'):
+                self.new()
             else:
                 error_exit(usage)
 
@@ -249,8 +252,35 @@ sub-directory configurations or initialization of a new project.'''
         try:
             print('\n----\n'.join(i.get_output()))
         except MissingMandatoryField as e:
-            sys.stderr.write('Error: '+e.message+'\n')
-            sys.exit(11)
+            error_exit('Error: '+e.message+'\n')
+        
+    def new(self):
+        usage = sys.argv[0] + ' new <directory>'
+        parser = OptionParser(usage=usage)
+        parser.add_option("-a", dest="appendix_count", default="0", metavar="COUNT",
+                help="number of appendix chapters (default 0)")
+        parser.add_option("-c", dest="chapter_count", default="2", metavar="COUNT",
+                help="number of chapters (default 2)")
+        parser.add_option("-p", dest="preface", default=False,
+                action="store_true",
+                help="sets whether a preface exists (default None)")
+        parser.add_option("-l", dest="lang", default="de",
+                help="sets language (default de)")
+        (options, args) = parser.parse_args(sys.argv[2:])
+        if(len(args)<1):
+            parser.print_help()
+            sys.exit(1)
+        try:
+            a = int( options.appendix_count)
+            c = int( options.chapter_count )
+        except ValueError:
+            error_exit("The number of chapters and appendix chapters must be integers.")
+        i=MAGSBS.filesystem.init_lecture( args[0], c, options.lang)
+        if(a):
+            i.count_appendix_chapters( a )
+        if(options.preface):
+            i.set_preface( options.preface )
+        i.generate_structure()
 
 
 

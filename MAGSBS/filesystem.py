@@ -174,3 +174,50 @@ English table-of-contents are referenced as ../index.html, German toc's as
                     '* * * * *', lbr,lbr]
         newpage += [''.join( navbar ), lbr,lbr, toc, lbr, '<!-- end page navigation -->']
         return ''.join(newpage)
+
+class init_lecture():
+    """init_lecture()
+
+Initialize folder structure for a lecture."""
+    def __init__(self, path, numOfChapters, lang='de'):
+        self.lang = lang
+        self.numOfChapters = numOfChapters
+        self.path = path
+        self.appendixCount = 0
+        self.preface = False
+    def count_appendix_chapters(self, count):
+        if(not isinstance(count, int)):
+            raise ValueError("Integer required.")
+        self.appendixCount = count
+    def set_preface(self, preface):
+        if(not isinstance(preface, bool)):
+            raise ValueError("Boolean required.")
+        self.preface = preface
+    def generate_structure(self):
+        """Write out structure."""
+        if(not os.path.exists( self.path )):
+            os.mkdir( self.path )
+        def init(path):
+            chap_fn = os.path.split( path )[-1]
+            if(self.lang == 'de'):
+                imgfn = 'bilder.md'
+                imghead = 'Bildbeschreibungen von'
+            else:
+                imgfn = 'images.md'
+                imghead = 'Image Descriptions Of'
+            os.mkdir(path)
+            codecs.open(os.path.join(path, imgfn), 'w', 'utf-8').\
+                    write( imghead + ' ' + chap_fn + '\n==========')
+            codecs.open(os.path.join(path, chap_fn+'.md'), 'w', 'utf-8').\
+                    write(chap_fn+'\n======')
+        if(self.preface):
+            fn = ('vorwort' if self.lang == 'de' else 'preface')
+            codecs.open( os.path.join(self.path, fn+'.md'), 'w').write( \
+                    fn.capitalize()+'\n========')
+        for nchap in range(1,self.numOfChapters+1):
+            init(os.path.join(self.path,
+                        'k'+str(nchap).zfill(2).replace(' ','0')))
+        for napp in range(1,self.appendixCount+1):
+            init(os.path.join(self.path,
+                        'anh'+str(napp).zfill(2).replace(' ','0')))
+
