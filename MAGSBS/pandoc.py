@@ -8,6 +8,7 @@ import datetime, codecs, tempfile
 import os, sys, subprocess
 import mparser, config
 from errors import NotImplementedError, SubprocessError, WrongFileNameError
+from config import PYVERSION
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -168,6 +169,7 @@ to the output, handles errors and checks for the correct encoding."""
             for h in hs:
                 if(h.get_level() == 1):
                     return h.get_text()
+            return inputf[:-3].capitalize()
         except WrongFileNameError:
             #self.__hvalues['lecturetitle'] + ' ' \
             return inputf[:-3].capitalize()
@@ -186,11 +188,14 @@ to the output, handles errors and checks for the correct encoding."""
         if(not self.__hvalues['title']):
             self.__hvalues['title'] = self.__guess_title(inputf)
         if(filter(lambda x: x==None, self.__hvalues.values()) != []):
+            print(repr(self.__hvalues))
             raise ValueError("One of the required fields for the HTML meta data has not been set.")
         data = HTML_template[:]
         for key, value in self.__hvalues.items():
             data = data.replace('$$'+key, html_escape( value ))
         self.tempfile = tempfile.mktemp() + '.html'
+        if(PYVERSION < 3):
+            data = data.decode('utf-8')
         codecs.open( self.tempfile, "w", "utf-8").write( data )
         return self.tempfile
 
@@ -199,16 +204,17 @@ to the output, handles errors and checks for the correct encoding."""
             raise NotImplementedError("Only HTML output is supported currently.")
         else:
             self.convert_html(inputf)
-        OutFilter(self.format, inputf[:-2]+self.format)
+        OutFilter(self.format, inputf[:inputf.rfind('.')]+'.'+self.format)
 
     def convert_html(self, inputf):
         """convert_html(inputf) -> write to inputf.html
 Convert inputf to outputf. raise OSError if either pandoc  has not been found or
 it gave an error return code"""
+        inputfStripped = inputf[:inputf.rfind('.')]
         if(self.use_gladtex):
-            outputf = inputf[:-2] + '.htex'
+            outputf = inputfStripped + '.htex'
         else:
-            outputf = inputf[:-2] + self.format
+            outputf = inputfStripped + '.' + self.format
         template = self.mktemplate(inputf)
         pandoc_args = ['-s', '-f', 'markdown', '-t','html',
                 '--template=%s' % template, '-o', outputf]
