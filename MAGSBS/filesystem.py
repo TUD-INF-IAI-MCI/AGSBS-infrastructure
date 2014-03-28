@@ -10,7 +10,7 @@ import datastructures, config
 def valid_file_bgn(cmp):
     """Should we consider this directory or file according to the specs?"""
     valid = False
-    for token in ['k', 'anh']:
+    for token in config.VALID_FILE_BGN:
         if(cmp.startswith( token )):
             # must be token + a number (like k01)
             if(cmp[len(token):len(token)+1].isdigit()):
@@ -47,13 +47,6 @@ of 3-tuples, as os.walk() produces. Sort those before returning."""
     res.sort()
     return res
 
-
-def get_preface():
-    """Return none, if no preface exists, else the file name. Must be executed
-in lecture root."""
-    for fn in ['vorwort.md','preface.md']:
-        if(os.path.exists( fn  )): return fn
-    return None
 
 class create_index():
     """create_index(dir)

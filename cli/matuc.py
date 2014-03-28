@@ -110,6 +110,8 @@ sub-directory configurations or initialization of a new project.'''
         parser.add_option("-l", dest="lecturetitle",
                   help="set lecture title (else try to use h1 heading, if present)",
                   metavar="TITLE", default=None)
+        parser.add_option("-L", dest='language',
+                  help="set language (default de)", metavar="LANG", default='de')
         parser.add_option("-p", "--pnum-gap", dest="pageNumberingGap",
                   help="gap in numbering between page links.",
                   metavar="NUM", default=None)

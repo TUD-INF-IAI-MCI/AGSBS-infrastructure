@@ -3,6 +3,7 @@
 import os, sys
 import datastructures, filesystem, config
 from errors import TOCError, MissingMandatoryField
+_ = config._
 
 if(int(sys.version[0]) >= 3):
     import urllib.parse
@@ -28,39 +29,46 @@ This class must be run from the lecture root.
         # two lists for headings
         self.__main = []
         self.__appendix = []
-        self.__preface = filesystem.get_preface()
+        self.__preface = []
         self.transform_index()
 
     def transform_index(self):
         """Walk through dictionary of file names and headings and create lists
-for later output."""
+for later output. For each heading, decide whether self.depth > heading.depth,
+and in- or exclude it."""
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
             for heading in headings:
                 if(heading.get_level() > self.depth):
                     continue # skip those headings
-                elif(heading.is_appendix()):
-                    if(self.__use_appendix_prefix): h.use_appendix_prefix(True)
-                    self.__appendix.append(heading.get_markdown_link())
                 else:
-                    self.__main.append(heading.get_markdown_link())
+                    if(heading.get_type() == 'appendix'):
+                        if(self.__use_appendix_prefix): h.use_appendix_prefix(True)
+                        self.__appendix.append(heading.get_markdown_link())
+                    elif(heading.get_type() == 'preface'):
+                        self.__preface.append( heading.get_markdown_link() )
+                    else:
+                        self.__main.append(heading.get_markdown_link())
 
     def get_markdown_page(self):
-        output = [ ('Inhaltsverzeichnis' if self.lang=='de'
-                    else 'Table Of Contents') ]
+        output = [ _('table of contents').title(), ' - ',
+                self.conf['lecturetitle']]
         output.append( '\n=============\n\n' )
         if(self.__preface):
-            preface = self.__preface[:-3]
-            output.append( '[%s](%s.html)\n\n' % (preface.capitalize(),
-                preface))
+            output.append( _('preface').capitalize() + '\n' + '-'*len(_('preface')) + '\n\n')
+            for h in self.__preface:
+                output += [ h, '\n\n' ]
+            output.append('\n\n')
+            output.append(_('chapters').title())
+            output.append('\n--------\n\n')
         for h in self.__main:
             output.append( h )
             output.append('\\\n')
         if(len(self.__appendix)>0):
             output.append('\n\n')
             if(not self.__use_appendix_prefix):
-                output += [ ('Anhang' if self.lang == 'de' else 'Appendix'),
-                        '\n------\n\n']
+                output.append(_('appendix').title())
+                output.append('\n------\n\n')
             for h in self.__appendix:
                 output.append( h )
                 output.append('\\\n')
@@ -102,7 +110,7 @@ document and in position 1 the string for the outsourcing document.
         self.outsource_long_descriptions = True
         # maximum length of image description before outsourcing it
         self.img_maxlength = 100
-        self.exclusion_file_name = ('bilder' if self.lang == 'de' else 'images')
+        self.exclusion_file_name = _('images')
 
     def set_description(self, desc): self.description = desc
     def set_title(self, title):
@@ -116,8 +124,7 @@ document and in position 1 the string for the outsourcing document.
     def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
         id = datastructures.gen_id( self.get_title() )
-        link_text = ('Bildbeschreibung ausgelagert' if self.lang == 'de'
-                            else 'description of image outsourced')
+        link_text = _('description of image outsourced')
         return '[ ![%s](%s) ](%s#%s)' % (link_text, self.image_path,
                 self.get_outsourcing_path(), id)
 
@@ -129,8 +136,7 @@ document and in position 1 the string for the outsourcing document.
     def __get_outsourced_title(self):
         if(not self.title):
             raise MissingMandatoryField('"title" must be set for outsourced images.')
-        text = ('### Bildbeschreibung von ' if self.lang == 'de' else
-                        'Image description of ')
+        text = '###' + _('image description of').capitalize()
         text += self.title
         return text
 

@@ -6,14 +6,13 @@ import getpass, os, sys, pwd
 import datetime, codecs
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-import filesystem
 from errors import *
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 GLADTEX_OPTS = '-a -d bilder'
 PYVERSION = int(sys.version[0])
-
+VALID_FILE_BGN = ['k', 'anh', 'v']
 class Singleton:
     """
 A non-thread-safe helper class to ease implementing singletons.
@@ -226,7 +225,12 @@ Please note: if you are in a subdirectory, this will be a path like ../$CONF_FIL
             return CONF_FILE_NAME
         # cwd != lecture root?
         path = ''
-        while(filesystem.valid_file_bgn(
+        def valid_file_bgn(s): # cannot be used from file_system, circular dependency
+            if(s in VALID_FILE_BGN):
+                return True
+            else:
+                False
+        while(valid_file_bgn( \
                     os.path.split( os.path.abspath(path) )[-1])):
             if(os.path.abspath(os.sep) == os.path.abspath( path )):
                 raise ConfigurationNotFoundError("While searching for a"+\
@@ -239,3 +243,26 @@ Please note: if you are in a subdirectory, this will be a path like ../$CONF_FIL
         # if we reached this, we are in the lecture root
         return os.path.abspath( os.path.join(path, CONF_FILE_NAME) )
 
+@Singleton
+class translate():
+    """Replace me through gettext, as soon as its clear how easy it is to ship
+l10n with Windows."""
+    def __init__(self):
+        c = confFactory()
+        self.conf  = c.get_conf_instance()
+        self.lang = self.conf[ 'language' ]
+
+    def get_translation(self, origin):
+        en_de = {'preface':'vorwort', 'appendix':'anhang',
+            'table of contents' : 'inhaltsverzeichnis',
+            'chapters':'kapitel', 'image description of':'bildbeschreibung von',
+            'image description outsourced':'Bildbeschreibung ausgelagert',
+            'images':'bilder'
+            }
+        if(self.lang == 'de'):
+            return en_de[origin]
+        else:
+            return origin
+
+L10N = translate()
+_ = L10N.get_translation
