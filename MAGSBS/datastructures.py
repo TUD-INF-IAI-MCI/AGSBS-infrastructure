@@ -9,6 +9,7 @@ def path2chapter(string):
 corresponding chapter numbers.
 Important: this functions throws OsErrors which must be caught by the plugin /
 frontend used; the supplied message can be displyed to the user."""
+    fn = string[:] # back up file name for usage in error case
     if(string.startswith('k')):
         string = string[1:] # strip leading k
     elif(string.startswith('anh')):

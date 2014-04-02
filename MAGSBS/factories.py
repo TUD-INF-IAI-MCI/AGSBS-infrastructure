@@ -51,21 +51,26 @@ and in- or exclude it."""
                         self.__main.append(heading.get_markdown_link())
 
     def get_markdown_page(self):
-        output = [ _('table of contents').title(), ' - ',
-                self.conf['lecturetitle']]
-        output.append( '\n=============\n\n' )
+        title = _('table of contents').title() + ' - ' + \
+                self.conf['lecturetitle']
+        #output = ['%% %s\n%% %s\n%% %s\n\n' % (title, self.conf['editor'],
+        #        self.conf['semesterofedit'])]
+        output.append( '%s\n=============\n\n' % title )
         if(self.__preface):
             output.append( _('preface').capitalize() + '\n' + '-'*len(_('preface')) + '\n\n')
             for h in self.__preface:
-                output += [ h, '\n\n' ]
+                output += [ h, '\\\n']
+            # strip last \ at end of last line
+            output[-1] = output[-1][:-2]
             output.append('\n\n')
             output.append(_('chapters').title())
             output.append('\n--------\n\n')
-        for h in self.__main:
+        for num,h in enumerate(self.__main):
             output.append( h )
-            output.append('\\\n')
+            if(not num == len(self.__main)-1):
+                output.append('\\\n')
         if(len(self.__appendix)>0):
-            output.append('\n\n')
+            output.append('\n\n\n')
             if(not self.__use_appendix_prefix):
                 output.append(_('appendix').title())
                 output.append('\n------\n\n')
