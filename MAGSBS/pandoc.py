@@ -16,7 +16,7 @@ HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
-  <meta name="author" content="$$editor" />
+  <meta name="author" content="$$SourceAuthor" />
 $if(date-meta)$
   <meta name="date" content="$date-meta$" />
 $endif$
@@ -139,6 +139,7 @@ to the output, handles errors and checks for the correct encoding."""
         self.use_gladtex = use_gladtex
         self.__hvalues = {
                 'editor' : self.conf['editor'],
+                'SourceAuthor' : self.conf['SourceAuthor'],
                 'workinggroup': self.conf['workinggroup'],
                 'institution': self.conf['institution'],
                 'source': self.conf['source'],
@@ -171,7 +172,6 @@ to the output, handles errors and checks for the correct encoding."""
                     return h.get_text()
             return inputf[:-3].capitalize()
         except WrongFileNameError:
-            #self.__hvalues['lecturetitle'] + ' ' \
             return inputf[:-3].capitalize()
 
 
@@ -195,7 +195,7 @@ to the output, handles errors and checks for the correct encoding."""
             data = data.replace('$$'+key, html_escape( value ))
         self.tempfile = tempfile.mktemp() + '.html'
         if(PYVERSION < 3):
-            data = data.decode('utf-8')
+            data = unicode( data )
         codecs.open( self.tempfile, "w", "utf-8").write( data )
         return self.tempfile
 

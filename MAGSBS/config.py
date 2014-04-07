@@ -122,15 +122,17 @@ one instance at a time exists.
         self['tocDepth'] = 5
         self['appendixPrefix'] = 0
         self['pageNumberingGap'] = 5
+        self['SourceAuthor'] = 'unknown'
         self.dictkey2xml = {
                 'workinggroup' : 'contributor', 'editor' : 'creator',
                 'semesterofedit' : 'date', 'lecturetitle' : 'title',
                 'source' : 'source', 'language':'language',
                 'institution' : 'publisher', 'rights':'rights',
-                'format' : 'type',
+                'format' : 'format',
                 'tocDepth':'MAGSBS:tocDepth',
                 'appendixPrefix' : 'MAGSBS:appendixPrefix',
-                'pageNumberingGap' : 'MAGSBS:pageNumberingGap'
+                'pageNumberingGap' : 'MAGSBS:pageNumberingGap',
+                'SourceAuthor':'MAGSBS:SourceAuthor'
         }
         dict.__init__(self)
 
@@ -225,12 +227,13 @@ Please note: if you are in a subdirectory, this will be a path like ../$CONF_FIL
             return CONF_FILE_NAME
         # cwd != lecture root?
         path = ''
-        def valid_file_bgn(s): # cannot be used from file_system, circular dependency
-            if(s in VALID_FILE_BGN):
-                return True
-            else:
-                False
-        while(valid_file_bgn( \
+        def valid_dir_bgn(s): # cannot be used from file_system, circular dependency
+            for k in VALID_FILE_BGN:
+                if(s.startswith(k)):
+                    if(s[len(k)].isdigit()):
+                        return True
+            return False
+        while(valid_dir_bgn( \
                     os.path.split( os.path.abspath(path) )[-1])):
             if(os.path.abspath(os.sep) == os.path.abspath( path )):
                 raise ConfigurationNotFoundError("While searching for a"+\
