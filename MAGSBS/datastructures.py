@@ -41,15 +41,12 @@ memory and parse the id's from there."""
     for char in id:
         if(char == ' '):
             res_id += '-'
-        elif(ord(char) >= 128):
-            if(use_umlauts and char in [u'\xe4',u'\xf6',u'\xfc',u'\xDC']):
-                res_id += char 
-            else:
-                continue # skip this character
-        elif((ord(char) < 65) and (ord(char) > 57 or ord(char) < 45)):
-            continue
-        else:
+        elif(char.isalpha() or char.isdigit()):
             res_id += char 
+        elif(char in ['.','_']):
+            res_id += char 
+        else:
+            continue
     # strip hyphens at the beginning
     while(res_id.startswith('-')):
         res_id = res_id[1:]
