@@ -5,6 +5,7 @@ import collections
 
 from mparser import *
 import datastructures, config
+_ = config._
 
 
 def valid_file_bgn(cmp):
@@ -141,18 +142,20 @@ English table-of-contents are referenced as ../index.html, German toc's as
         m.parse()
         lbr = self.linebreaks
 
-        navbar = [('Seiten: ' if self.__lang == 'de' else 'Pages: ')]
+        navbar = []
         # first page number is necessary for calculations:
         pnums = [ h  for h in m.get_heading_list() \
                 if(h.get_level()==6 and h.is_shadow_heading())]
-        first_h = pnums[0]
-        for pnum in pnums:
-            if(pnum == first_h):
-                navbar.append( first_h.get_markdown_link() )
-            elif(pnum.get_page_number() >
-                    (first_h.get_page_number()+(self.pagenumbergap/2))):
-                if(not (pnum.get_page_number()%self.pagenumbergap)):
-                    navbar.append(', %s' % pnum.get_markdown_link() )
+        if(len(pnums) >= 1):
+            navbar.append(_('pages'.title() +': '))
+            first_h = pnums[0]
+            for pnum in pnums:
+                if(pnum == first_h):
+                    navbar.append( first_h.get_markdown_link() )
+                elif(pnum.get_page_number() >
+                        (first_h.get_page_number()+(self.pagenumbergap/2))):
+                    if(not (pnum.get_page_number()%self.pagenumbergap)):
+                        navbar.append(', %s' % pnum.get_markdown_link() )
         toc = '[%s](../%s.html)' % (\
                     ('Inhalt' if self.__lang == 'de' else 'table of contents'),
                     ('inhalt' if self.__lang == 'de' else 'index') )

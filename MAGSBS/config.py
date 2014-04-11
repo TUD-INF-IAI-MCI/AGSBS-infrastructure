@@ -260,7 +260,8 @@ l10n with Windows."""
             'table of contents' : 'inhaltsverzeichnis',
             'chapters':'kapitel', 'image description of':'bildbeschreibung von',
             'image description outsourced':'Bildbeschreibung ausgelagert',
-            'images':'bilder'
+            'images':'bilder',
+            'pages':'Seiten'
             }
         if(self.lang == 'de'):
             return en_de[origin]

@@ -13,3 +13,5 @@ class ConfigurationError(Exception):
     pass
 class ConfigurationNotFoundError(Exception):
     pass
+class StructuralError(Exception):
+    pass

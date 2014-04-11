@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import datastructures
+from errors import StructuralError
 
 class markdownHeadingParser():
     """Implement an own simple markdown parser. Just reads in the headings of
@@ -18,6 +19,7 @@ python-markdown."""
         # for the numbering of the headings relatively in the document; array
         # with each telling how often a specific heading has occured
         self.__relative_heading_number = [0,0,0,0,0,0]
+        self.__level_1_heading_encountered = False
 
     def parse(self):
         """parse() -> parse the markdown data into a list of level 1, 2 and 6
@@ -67,6 +69,12 @@ python-markdown."""
                     text = text[1:]
             # if a heading was encountered:
             if(level >= 0 and text != ''):
+                if (level == 1):
+                    if (self.__level_1_heading_encountered):
+                        raise StructuralError("More then one level-1-heading in %s"
+                            % self.__file_name)
+                    else:
+                        self.__level_1_heading_encountered = True
                 h = datastructures.heading(self.__path, self.__file_name)
                 h.set_level( level )
                 h.set_text( text )
