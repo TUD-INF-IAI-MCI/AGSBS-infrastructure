@@ -53,9 +53,7 @@ and in- or exclude it."""
     def get_markdown_page(self):
         title = _('table of contents').title() + ' - ' + \
                 self.conf['lecturetitle']
-        #output = ['%% %s\n%% %s\n%% %s\n\n' % (title, self.conf['editor'],
-        #        self.conf['semesterofedit'])]
-        output.append( '%s\n=============\n\n' % title )
+        output = [ '%s\n=============\n\n' % title  ]
         if(self.__preface):
             output.append( _('preface').capitalize() + '\n' + '-'*len(_('preface')) + '\n\n')
             for h in self.__preface:
