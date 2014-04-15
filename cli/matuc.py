@@ -183,8 +183,12 @@ sub-directory configurations or initialization of a new project.'''
             print('Error: '+args[0]+' not found')
             sys.exit(127)
 
-        p = MAGSBS.pandoc.pandoc(use_gladtex=options.gladtex)
-        p = p.convert( args[0] )
+        try:
+            p = MAGSBS.pandoc.pandoc(use_gladtex=options.gladtex)
+            p = p.convert( args[0] )
+        except MAGSBS.errors.SubprocessError as e:
+            print('Error: '+e.message)
+            sys.exit(127)
         # migrate everything below to init / make it work also here
         #if(options.workinggroup):
         #    p.set_workinggroup(options.workinggroup)

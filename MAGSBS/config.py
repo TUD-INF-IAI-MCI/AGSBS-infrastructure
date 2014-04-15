@@ -123,6 +123,7 @@ one instance at a time exists.
         self['appendixPrefix'] = 0
         self['pageNumberingGap'] = 5
         self['SourceAuthor'] = 'unknown'
+        self['GladTeXopts'] = '-a -d bilder'
         self.dictkey2xml = {
                 'workinggroup' : 'contributor', 'editor' : 'creator',
                 'semesterofedit' : 'date', 'lecturetitle' : 'title',
@@ -132,7 +133,8 @@ one instance at a time exists.
                 'tocDepth':'MAGSBS:tocDepth',
                 'appendixPrefix' : 'MAGSBS:appendixPrefix',
                 'pageNumberingGap' : 'MAGSBS:pageNumberingGap',
-                'SourceAuthor':'MAGSBS:SourceAuthor'
+                'SourceAuthor':'MAGSBS:SourceAuthor',
+                'GladTeXopts':'MAGSBS:GladTeXopts'
         }
         dict.__init__(self)
 

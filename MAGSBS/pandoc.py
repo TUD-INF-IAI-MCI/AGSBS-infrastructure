@@ -235,10 +235,13 @@ it gave an error return code"""
             data = codecs.open(outputf, 'r', 'utf-8').read()
             data = data.replace('\\\\', '\\\\\n')
             codecs.open( outputf, 'w', 'utf-8').write( data )
-            proc = subprocess.Popen(['gladtex'] + \
-                    self.conf['gladtex_opts'].split(' ') + [outputf],
-                    stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE)
+            try:
+                proc = subprocess.Popen(['gladtex'] + \
+                        self.conf['GladTeXopts'].split(' ') + [outputf],
+                        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+            except OSError:
+                raise SubprocessError("Either GladTeX is not installed or not in the search path.")
             text = proc.communicate()
             ret = proc.wait()
             if(ret):
