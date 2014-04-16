@@ -264,7 +264,9 @@ sense the navigation bar at the top and bottom.
             error_exit('Error: '+e.message+'\n')
         
     def new(self):
-        usage = sys.argv[0] + ' new <directory>'
+        usage = sys.argv[0] + ''' new <directory>
+Initialize a new lecture.
+'''
         parser = OptionParser(usage=usage)
         parser.add_option("-a", dest="appendix_count", default="0", metavar="COUNT",
                 help="number of appendix chapters (default 0)")
