@@ -208,7 +208,10 @@ sub-directory configurations or initialization of a new project.'''
 
 
     def navbar(self):
-        usage = sys.argv[0]+' navbar [OPTIONS] input_directory]\n'
+        usage = sys.argv[0]+''' navbar [OPTIONS] <input_directory>\n
+Work recursively through <input_directory> and add to each file where it makes
+sense the navigation bar at the top and bottom.
+'''
         parser = OptionParser(usage=usage)
         parser.add_option("-p", "--pnum-gap", dest="pnum_gap",
                   help="gap in numbering between page links. (temporary setting)",
