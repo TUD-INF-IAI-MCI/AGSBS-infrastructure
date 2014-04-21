@@ -231,7 +231,7 @@ Please note: if you are in a subdirectory, this will be a path like ../$CONF_FIL
         path = ''
         def valid_dir_bgn(s): # cannot be used from file_system, circular dependency
             for k in VALID_FILE_BGN:
-                if(s.startswith(k) and len(s) > len(k)):
+                if(s.startswith(k) and (len(s) > (len(k))+1)):
                     if(s[len(k)].isdigit()):
                         return True
             return False

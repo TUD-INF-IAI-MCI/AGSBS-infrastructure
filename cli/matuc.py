@@ -3,6 +3,7 @@
 
 import os, sys, codecs
 from optparse import OptionParser
+import locale
 
 from MAGSBS.config import PYVERSION
 import MAGSBS
@@ -28,6 +29,21 @@ toc     - generate table of contents
 def error_exit(string):
     sys.stderr.write( string + ('\n' if not string.endswith('\n') else '') )
     sys.exit(127)
+
+def guess_encoding():
+    """Guess stems default encoding, python2 / python3-independent."""
+    if(PYVERSION > 2):
+        return sys.getdefaultencoding()
+    else:
+        if(sys.stdin.encoding != None):
+            return sys.stdin.encoding
+        elif(sys.stdout.encoding != None):
+            return sys.stdout.encoding
+        else:
+            try:
+                return locale.getdefaultlocale()[1]
+            except IndexError:
+                raise UnicodeDecodeError("Could not gues encoding.")
 
 class main():
     def __init__(self):
@@ -185,7 +201,7 @@ sub-directory configurations or initialization of a new project.'''
 
         try:
             p = MAGSBS.pandoc.pandoc(use_gladtex=options.gladtex)
-            p = p.convert( args[0].decode(sys.stdin.encoding) )
+            p = p.convert( args[0].decode(guess_encoding()) )
         except MAGSBS.errors.SubprocessError as e:
             print('Error: '+e.message)
             sys.exit(127)
