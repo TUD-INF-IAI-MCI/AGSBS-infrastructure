@@ -181,6 +181,11 @@ to the output, handles errors and checks for the correct encoding."""
         return self.mktemplate_html(inputf)
 
     def mktemplate_html(self, inputf):
+        # is file name unicode?
+        if(PYVERSION < 3):
+            assert type(inputf) == unicode
+        else:
+            assert type(inputf) != byte
         output = []
         # adjust semesterofedit and title:
         if(not self.__hvalues['semesterofedit']):
