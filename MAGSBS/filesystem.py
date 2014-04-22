@@ -147,7 +147,7 @@ English table-of-contents are referenced as ../index.html, German toc's as
         pnums = [ h  for h in m.get_heading_list() \
                 if(h.get_level()==6 and h.is_shadow_heading())]
         if(len(pnums) >= 1):
-            navbar.append(_('pages'.title() +': '))
+            navbar.append(_('pages').title() +': ')
             first_h = pnums[0]
             for pnum in pnums:
                 if(pnum == first_h):
