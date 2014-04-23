@@ -201,7 +201,9 @@ sub-directory configurations or initialization of a new project.'''
 
         try:
             p = MAGSBS.pandoc.pandoc(use_gladtex=options.gladtex)
-            p = p.convert( args[0].decode(guess_encoding()) )
+            if(options.title):
+                p.set_title( options.title )
+            p.convert( args[0].decode(guess_encoding()) )
         except MAGSBS.errors.SubprocessError as e:
             print('Error: '+e.message)
             sys.exit(127)

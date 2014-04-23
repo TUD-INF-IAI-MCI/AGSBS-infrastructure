@@ -147,6 +147,11 @@ to the output, handles errors and checks for the correct encoding."""
                 'semesterofedit': self.conf['semesterofedit'],
                 'title':None}
 
+    def set_title(self, title):
+        """set_title(title) - set title for document
+In some cases, the lecture title / the level-1-heading is not sufficient for the
+title of the document, hence allow setting it separately."""
+        self.__hvalues['title'] = title
     def set_workinggroup(self, group):
         self.__hvalues['workinggroup'] = group
     def set_source(self, source):
