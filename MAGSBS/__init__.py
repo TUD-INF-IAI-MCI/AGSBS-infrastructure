@@ -15,11 +15,12 @@ import os, sys, codecs, re
 import collections
 
 # internal imports
-from filesystem import *
-from factories import *
-import factories
-import pandoc
-import config
+#from filesystem import *
+#from factories import *
+import MAGSBS.filesystem
+import MAGSBS.factories
+import MAGSBS.pandoc
+import MAGSBS.config
 
 
 #__all__ = ['config, 'pandoc']

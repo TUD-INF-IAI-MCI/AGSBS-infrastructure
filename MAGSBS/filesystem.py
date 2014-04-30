@@ -3,8 +3,9 @@
 import os, sys, codecs
 import collections
 
-from mparser import *
-import datastructures, config
+from MAGSBS.mparser import *
+import MAGSBS.datastructures as datastructures
+import MAGSBS.config as config
 _ = config._
 
 

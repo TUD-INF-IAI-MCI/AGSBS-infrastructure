@@ -6,7 +6,7 @@ import getpass, os, sys, pwd
 import datetime, codecs
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from errors import *
+from MAGSBS.errors import *
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -151,7 +151,8 @@ one instance at a time exists.
             c.text = value
         out = dom = minidom.parseString(
                 '<?xml version="1.0" encoding="UTF-8"?>' + \
-                ET.tostring( root )).toprettyxml()
+                ET.tostring( root ).decode('utf-8')
+                ).toprettyxml()
         codecs.open(self.__path,'w',encoding='utf-8').write(  out )
 
     def normalize_tag(self, tag):
@@ -262,6 +263,7 @@ l10n with Windows."""
             'table of contents' : 'inhaltsverzeichnis',
             'chapters':'kapitel', 'image description of':'bildbeschreibung von',
             'image description outsourced':'Bildbeschreibung ausgelagert',
+            'description of image outsourced':'Bildbeschreibung ausgelagert',
             'images':'bilder',
             'pages':'Seiten'
             }

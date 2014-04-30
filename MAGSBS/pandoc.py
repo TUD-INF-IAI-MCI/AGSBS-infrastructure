@@ -6,9 +6,10 @@ template for additional meta data in the output document(s)."""
 
 import datetime, codecs, tempfile
 import os, sys, subprocess
-import mparser, config
-from errors import NotImplementedError, SubprocessError, WrongFileNameError
-from config import PYVERSION
+import MAGSBS.config as config
+import MAGSBS.mparser as mparser
+from MAGSBS.errors import NotImplementedError, SubprocessError, WrongFileNameError
+from MAGSBS.config import PYVERSION
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -190,14 +191,15 @@ title of the document, hence allow setting it separately."""
         if(PYVERSION < 3):
             assert type(inputf) == unicode
         else:
-            assert type(inputf) != byte
+            assert type(inputf) != bytes
         output = []
         # adjust semesterofedit and title:
         if(not self.__hvalues['semesterofedit']):
             self.__hvalues['semesterofedit'] = datetime.datetime.now().strftime('%m/%Y')
         if(not self.__hvalues['title']):
             self.__hvalues['title'] = self.__guess_title(inputf)
-        if(filter(lambda x: x==None, self.__hvalues.values()) != []):
+        # filter configuration variables whether one is None
+        if(list(filter(lambda x: x==None, self.__hvalues.values())) != []):
             print(repr(self.__hvalues))
             raise ValueError("One of the required fields for the HTML meta data has not been set.")
         data = HTML_template[:]

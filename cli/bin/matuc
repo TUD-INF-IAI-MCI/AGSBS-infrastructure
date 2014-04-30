@@ -5,9 +5,10 @@
 ver=`python -c 'import sys;print(sys.version[0])'`
 
 if [ $ver -eq 2 ]; then
-    PYTHON=python
+    PYTHON=python3 # use python3 if standard interpreter is python(2)
 else
-    PYTHON=python2
+    # else, e.g. on arch, python3 is default interpreter
+    PYTHON=python
 fi
 
 $PYTHON -c 'import sys;sys.argv[0]="matuc";import matuc' "$@"

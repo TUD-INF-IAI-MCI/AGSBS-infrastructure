@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
-import datastructures
-from errors import StructuralError
+import MAGSBS.datastructures as datastructures
+from MAGSBS.errors import StructuralError
 
 class markdownHeadingParser():
     """Implement an own simple markdown parser. Just reads in the headings of

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os, re
-from errors import WrongFileNameError
-import config
+from MAGSBS.errors import WrongFileNameError
+import MAGSBS.config as config
 
 def path2chapter(string):
     """Convert a file name similar to as k010508.md, anh__.md or v__ to a tuple of the

@@ -34,8 +34,8 @@ def test_index2markdown_TOC():
     print(idx.get_markdown_page())
 
 
-def test_pagenumber_indexing():
-    p=page_navigation('examples', 5, lang='de')
+def test_pagenumber_indexing(dir):
+    p=page_navigation(dir)
     p.iterate()
 
 
@@ -58,18 +58,18 @@ description is just that long to enforce outsourcing.
 
 def test_convert(file):
     p=pandoc.pandoc()
-    p.set_editor("Sebastian Humenda")
-    p.set_workinggroup("AGSS")
-    p.set_lecturetitle("Fleischorientierte Brat- und Kochtechnik")
-    p.set_source("schaschlik.pdf")
-    p.convert( file, file[:-2]+'html' )
+    #p.set_editor("Sebastian Humenda")
+    #p.set_workinggroup("AGSS")
+    #p.set_lecturetitle("Fleischorientierte Brat- und Kochtechnik")
+    #p.set_source("schaschlik.pdf")
+    p.convert( file )
 
 if __name__ == '__main__':
     #test_markdown_parser()
     #test_file_walk()
     #test_index2markdown_TOC()
-    #test_pagenumber_indexing()
     #test_image_linking()
     #test_image_descriptions()
-    if(len(sys.argv)>1):
-        test_convert(sys.argv[1])
+    #if(len(sys.argv)>1):
+        #test_convert(sys.argv[1])
+        test_pagenumber_indexing(sys.argv[1])

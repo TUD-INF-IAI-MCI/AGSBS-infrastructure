@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
-import datastructures, filesystem, config
-from errors import TOCError, MissingMandatoryField
+import MAGSBS.datastructures as datastructures
+import MAGSBS.filesystem as filesystem
+import MAGSBS.config as config
+from MAGSBS.errors import TOCError, MissingMandatoryField
 _ = config._
 
 if(int(sys.version[0]) >= 3):
