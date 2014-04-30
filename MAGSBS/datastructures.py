@@ -30,7 +30,7 @@ frontend used; the supplied message can be displyed to the user."""
             raise WrongFileNameError("Wrong file name: got \"%s\" and \"%s\" was not expected." % (fn, string))
     return erg
 
-def gen_id(id, use_umlauts=True):
+def gen_id(id):
     """gen_id(id) -> an ID for making links.
 
 The id's are wild-guessed. It'll fail as soon as non-German texts occure. One
@@ -43,7 +43,7 @@ memory and parse the id's from there."""
             res_id += '-'
         elif(char.isalpha() or char.isdigit()):
             res_id += char 
-        elif(char in ['.','_']):
+        elif(char in ['.','_', '-']):
             res_id += char 
         else:
             continue
