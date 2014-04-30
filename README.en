@@ -1,6 +1,21 @@
 To Do: TRANSLATION INTO GERMAN
 
-Sublime Plugin
+Prerequisites
+-------------
+
+This version of MAGSBS / matuc / Kate depends on Python in version >= 3.2 (also
+encoding trouble could occur with Python 3.2).
+
+To test what your default Python is, execute:
+
+    python --version
+
+If it outputs a version starting with 3, everything is fine and you can execute
+all commands below with "python". If however the command returns something like
+2.x.x, you need to call every mentioned command instead with "python3". In the
+latter case, you should also check that Python3 is instaled.
+
+Kate Plugin
 --------------
 
 To do: link to documentation.
@@ -9,7 +24,7 @@ MAGSBS
 ------
 
 CLI interface
--------------
+---------
 
 + Windows: open a cmd window (e.g. press Windows + r and type there cmd<enter>),
   switch with the "cd"-command to the correct directory and execute the
@@ -18,7 +33,7 @@ CLI interface
     * for a source installation: `setup.py sdist`\
     * normal installation (for most users): `setup.py install`
     * Binary installer: `python setup.py bdist_wininst`
-+ other ssystems: in a terminal, change with "cd" to the correct directory and
++ other systems: in a terminal, change with "cd" to the correct directory and
   run the same commands as above, only prefixed with "python ". The binary
   target is not available.
 
