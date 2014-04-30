@@ -12,7 +12,12 @@ from errors import *
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 GLADTEX_OPTS = '-a -d bilder'
 PYVERSION = int(sys.version[0])
+# as a regular expression all kinds of token which can mark a page
+PAGENUMBERINGTOKENS = 'slide|folie|seite|page'
+
 VALID_FILE_BGN = ['k', 'anh', 'v']
+
+
 class Singleton:
     """
 A non-thread-safe helper class to ease implementing singletons.
