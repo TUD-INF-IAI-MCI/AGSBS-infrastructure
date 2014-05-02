@@ -13,7 +13,8 @@ CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 GLADTEX_OPTS = '-a -d bilder'
 PYVERSION = int(sys.version[0])
 # as a regular expression all kinds of token which can mark a page
-PAGENUMBERINGTOKENS = 'slide|folie|seite|page'
+PAGENUMBERINGTOKENS = ['slide','folie','seite','page']
+PAGENUMBERING_REGEX = '- (' + '|'.join( PAGENUMBERINGTOKENS ) + ') \d+ -'
 
 VALID_FILE_BGN = ['k', 'anh', 'v']
 
