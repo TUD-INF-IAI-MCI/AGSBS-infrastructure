@@ -224,6 +224,8 @@ title of the document, hence allow setting it separately."""
         """convert_html(inputf) -> write to inputf.html
 Convert inputf to outputf. raise OSError if either pandoc  has not been found or
 it gave an error return code"""
+        # strip .md, construct the output file name (different when using
+        # GladTeX)
         inputfStripped = inputf[:inputf.rfind('.')]
         if(self.use_gladtex):
             outputf = inputfStripped + '.htex'
@@ -233,29 +235,33 @@ it gave an error return code"""
         pandoc_args = ['-s', '-f', 'markdown', '--template=%s' % template ]
         if(self.use_gladtex):
             pandoc_args.append('--gladtex')
+
+        # run pandoc, read in the JSon output
         proc = subprocess.Popen(['pandoc'] + pandoc_args + \
                 ['-t','json', inputf],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         text = proc.communicate()
         JSon = text[0].decode( sys.getdefaultencoding() )
         ret = proc.wait()
-        if(ret):
+        if(ret): # if ret != 0, error; clean up
             remove_temp( self.tempfile)
             print('\n'.join(text))
             raise OSError("Pandoc gave error status %s." % ret)
+
         # filter json and give it as input to pandoc
         JSon = contentfilter.jsonfilter( JSon, self.conf['format'] )
         JSon = JSon.encode( sys.getdefaultencoding() )
         proc = subprocess.Popen(['pandoc'] + pandoc_args + \
-                ['-t', self.conf['format'], '-o', outputf],
+                ['-t', self.conf['format'], '-f','json', '-o', outputf],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        text = repr(proc.communicate( JSon ))
+        data = proc.communicate( JSon )
+        text = data[0].decode( sys.getdefaultencoding() )
         if(ret):
             remove_temp( self.tempfile)
-            print('\n'.join(text))
+            print('\n'.join(data))
             raise OSError("Pandoc gave error status %s." % ret)
         remove_temp( self.tempfile)
-        print(self.use_gladtex)
+
         if(self.use_gladtex):
             # read in the generated file. Its a dirt-fix: pandoc strips newlines
             # from equations, try to get some back
@@ -275,3 +281,4 @@ it gave an error return code"""
                 print(text[1])
                 raise SubprocessError("Error while running GladTeX.")
             os.remove( outputf )
+

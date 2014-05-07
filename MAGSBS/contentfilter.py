@@ -15,7 +15,7 @@ def join_para(chunks):
 Pandoc's json is recursively nested. To search for a particular string (like we
         do for page numbers), one has to join all the nested text chunks."""
     str = ''
-    for chunk in paras:
+    for chunk in chunks:
         if(type(chunk['c']) == list and chunk['t'] == 'Space'):
             str += ' '
         else:
@@ -65,6 +65,6 @@ def jsonfilter(text, format='html'):
     empty list deletes the object.)
     """
     doc = json.loads( text )
-    altered = pandocfilters.walk(doc, alterparagraphs, format, [])#doc[0]['unMeta'])
+    altered = pandocfilters.walk(doc, alterparagraphs, format, doc[0]['unMeta'])
     return json.dumps( altered )
 
