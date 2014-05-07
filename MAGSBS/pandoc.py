@@ -8,6 +8,7 @@ import datetime, codecs, tempfile
 import os, sys, subprocess
 import MAGSBS.config as config
 import MAGSBS.mparser as mparser
+import MAGSBS.contentfilter as contentfilter
 from MAGSBS.errors import NotImplementedError, SubprocessError, WrongFileNameError
 from MAGSBS.config import PYVERSION
 
@@ -216,6 +217,7 @@ title of the document, hence allow setting it separately."""
             raise NotImplementedError("Only HTML output is supported currently.")
         else:
             self.convert_html(inputf)
+        # ToDo: make me a real pandoc filter
         OutFilter(self.format, inputf[:inputf.rfind('.')]+'.'+self.format)
 
     def convert_html(self, inputf):
@@ -228,19 +230,32 @@ it gave an error return code"""
         else:
             outputf = inputfStripped + '.' + self.format
         template = self.mktemplate(inputf)
-        pandoc_args = ['-s', '-f', 'markdown', '-t','html',
-                '--template=%s' % template, '-o', outputf]
+        pandoc_args = ['-s', '-f', 'markdown', '--template=%s' % template ]
         if(self.use_gladtex):
             pandoc_args.append('--gladtex')
-        proc = subprocess.Popen(['pandoc'] + pandoc_args + [inputf],
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc = subprocess.Popen(['pandoc'] + pandoc_args + \
+                ['-t','json', inputf],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         text = proc.communicate()
+        JSon = text[0].decode( sys.getdefaultencoding() )
         ret = proc.wait()
         if(ret):
             remove_temp( self.tempfile)
             print('\n'.join(text))
             raise OSError("Pandoc gave error status %s." % ret)
+        # filter json and give it as input to pandoc
+        JSon = contentfilter.jsonfilter( JSon, self.conf['format'] )
+        JSon = JSon.encode( sys.getdefaultencoding() )
+        proc = subprocess.Popen(['pandoc'] + pandoc_args + \
+                ['-t', self.conf['format'], '-o', outputf],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        text = repr(proc.communicate( JSon ))
+        if(ret):
+            remove_temp( self.tempfile)
+            print('\n'.join(text))
+            raise OSError("Pandoc gave error status %s." % ret)
         remove_temp( self.tempfile)
+        print(self.use_gladtex)
         if(self.use_gladtex):
             # read in the generated file. Its a dirt-fix: pandoc strips newlines
             # from equations, try to get some back
