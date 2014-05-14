@@ -2,8 +2,9 @@
 import re
 import MAGSBS.datastructures as datastructures
 from MAGSBS.errors import StructuralError
+import MAGSBS.contentfilter as contentfilter
 
-class markdownHeadingParser():
+class simpleMarkdownParser():
     """Implement an own simple markdown parser. Just reads in the headings of
 the given markdown string. If needs arises for more soffisticated stuff, use
 python-markdown."""
@@ -22,8 +23,14 @@ python-markdown."""
         self.__level_1_heading_encountered = False
 
     def parse(self):
-        """parse() -> parse the markdown data into a list of level 1, 2 and 6
-        headings."""
+        """parse() -> parse the markdown data into a list of headings."""
+        # new method to extract page numbers:
+        pages = contentfilter.pandoc_ast_parser( self.__md,
+                contentfilter.page_number_extractor)
+        for text, id in pages:
+            num = int(re.match('- \w+ (\d+) .*', text).groups()[0])
+            self.__pagenumbers[ id ] = num
+        # old code below
         if(self.__md.find('\r\n')>=0):
             lines = self.__md.split('\r\n')
         else:
@@ -37,8 +44,7 @@ python-markdown."""
                 continue # no further processing here
             else:
                 self.paragraph_begun = False
-            # what kind of element - we distinguish heading level 1-5 and level
-            # 6 (for page numbers)
+            # parse heading / page number
             level = -1
             text = ''
             is_shadowheading = False # is a shadow heading, when it's a page number

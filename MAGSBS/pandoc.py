@@ -169,7 +169,7 @@ title of the document, hence allow setting it separately."""
 
     def __guess_title(self, inputf):
         try:
-            mp = mparser.markdownHeadingParser(
+            mp = mparser.simpleMarkdownParser(
                     codecs.open(inputf, 'r', 'utf-8').read(),
                     os.path.split(inputf)[0], os.path.split(inputf)[1])
             mp.parse()
@@ -232,7 +232,7 @@ it gave an error return code"""
         else:
             outputf = inputfStripped + '.' + self.format
         template = self.mktemplate(inputf)
-        pandoc_args = ['-s', '-f', 'markdown', '--template=%s' % template ]
+        pandoc_args = ['-s', '--template=%s' % template ]
         if(self.use_gladtex):
             pandoc_args.append('--gladtex')
 
@@ -249,16 +249,18 @@ it gave an error return code"""
             raise OSError("Pandoc gave error status %s." % ret)
 
         # filter json and give it as input to pandoc
-        JSon = contentfilter.jsonfilter( JSon, self.conf['format'] )
+        JSon = contentfilter.jsonfilter( JSon,
+                contentfilter.page_number_extractor, self.conf['format'] )
         JSon = JSon.encode( sys.getdefaultencoding() )
         proc = subprocess.Popen(['pandoc'] + pandoc_args + \
                 ['-t', self.conf['format'], '-f','json', '-o', outputf],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         data = proc.communicate( JSon )
-        text = data[0].decode( sys.getdefaultencoding() )
+        ret = proc.wait()
         if(ret):
             remove_temp( self.tempfile)
-            print('\n'.join(data))
+            print('\n'.join([e.decode( sys.getdefaultencoding() )
+                    for e in data]))
             raise OSError("Pandoc gave error status %s." % ret)
         remove_temp( self.tempfile)
 

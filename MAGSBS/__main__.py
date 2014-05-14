@@ -13,7 +13,7 @@ import pandoc
 
 
 def test_markdown_parser():
-    m = markdownHeadingParser("Heya\n====\n\nImportant advisories\n---------\n\n\n###### - Seite 6 -\n",
+    m = simpleMarkdownParser("Heya\n====\n\nImportant advisories\n---------\n\n\n###### - Seite 6 -\n",
                 'k01', 'k0103.md')
     m.parse()
     for item in m.get_heading_list():

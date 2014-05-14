@@ -74,7 +74,7 @@ By calling the function, the actual index is build."""
                 # try systems default encoding, then utf-8, then fail
                 data = codecs.open( os.path.join(directoryname, file), 'r',
                         'utf-8' ).read()
-                m = markdownHeadingParser( data, directoryname, file )
+                m = simpleMarkdownParser( data, directoryname, file )
                 m.parse()
                 self.__index[ file ] = m.get_heading_list()
     
@@ -83,7 +83,7 @@ By calling the function, the actual index is build."""
 
 
 class page_navigation():
-    """page_index(directory, page_gap)
+    """page_navigation(directory, page_gap)
 
 Iterate through files in `directory`. Read in the page navigation (if any) and
 update (or create) it. `page_gap` will specify which gap the navigation bar will
@@ -135,11 +135,9 @@ and end again with
         return self.linebreaks.join( newpage )
 
     def gen_nav(self, page, file_name):
-        """Generate language-specific site navigation.
-English table-of-contents are referenced as ../index.html, German toc's as
-../inhalt.html."""
+        """Generate language-specific site navigation."""
         newpage = []
-        m = markdownHeadingParser( page, self.__dir, file_name )
+        m = simpleMarkdownParser( page, self.__dir, file_name )
         m.parse()
         lbr = self.linebreaks
 

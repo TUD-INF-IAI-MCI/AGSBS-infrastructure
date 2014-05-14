@@ -1,17 +1,21 @@
-class NotImplementedError(Exception):
+class MAGSBS_error(Exception):
+    """Just a parent."""
     pass
 
-class SubprocessError(Exception):
+class NotImplementedError(MAGSBS_error):
     pass
-class WrongFileNameError(Exception):
+
+class SubprocessError(MAGSBS_error):
     pass
-class TOCError(Exception):
+class WrongFileNameError(MAGSBS_error):
     pass
-class MissingMandatoryField(Exception):
+class TOCError(MAGSBS_error):
     pass
-class ConfigurationError(Exception):
+class MissingMandatoryField(MAGSBS_error):
     pass
-class ConfigurationNotFoundError(Exception):
+class ConfigurationError(MAGSBS_error):
     pass
-class StructuralError(Exception):
+class ConfigurationNotFoundError(MAGSBS_error):
+    pass
+class StructuralError(MAGSBS_error):
     pass

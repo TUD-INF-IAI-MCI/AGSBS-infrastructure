@@ -1,6 +1,6 @@
 from pandocfilters import *
 import pandocfilters
-import sys, re
+import sys, subprocess, re
 import MAGSBS
 
 
@@ -22,30 +22,33 @@ Pandoc's json is recursively nested. To search for a particular string (like we
             str += chunk['c']
     return str
 
-def generate_link(text):
+def generate_link(ltext, id):
     """GEnerate the HTML paragraph with the HTML anchor and the Text."""
-    # strip the first ||
-    text = text[2:]
-    id = MAGSBS.datastructures.gen_id( text )
-    return '<p><a name="%s"/>%s</p>' % (id, text)
+    return '<p><a name="%s"/>%s</p>' % (id, ltext)
 
 
-def alterparagraphs(key, value, format, meta):
+def page_number_extractor(key, value, format, meta, modify_ast=True):
     """Scan all paragraphs for those starting with || to parse it for page
 numbering information."""
-    if(not (format == 'html' or format == 'html5')):
-        return
-    elif(key == 'Para'):
+    if(modify_ast):
+        if(not (format == 'html' or format == 'html5')):
+            return
+    if(key == 'Para'):
         if(len(value)>0):
             text = value[0]['c']
             if(type(text) == str):
                 if(text.startswith('||')):
                     text = join_para( value )
-                    if(re.search( MAGSBS.config.PAGENUMBERING_REGEX,
-                            text.lower())):
-                        return html(generate_link(text))
+                    if(re.search( MAGSBS.config.PAGENUMBERING_REGEX, text.lower())):
+                        # strip the first ||
+                        text = text[2:]
+                        id = MAGSBS.datastructures.gen_id( text )
+                        if(modify_ast):
+                            return html( generate_link( text, id ) )
+                        else:
+                            return (text, id)
 
-def jsonfilter(text, format='html'):
+def jsonfilter(text, action, format='html'):
     """NOTE: this is a copy from pandocfilters, it uses also the infrastructure
     of this module, but doesn't read from stdin (but from an argument) and
     doesn't write to stdout.
@@ -65,6 +68,28 @@ def jsonfilter(text, format='html'):
     empty list deletes the object.)
     """
     doc = json.loads( text )
-    altered = pandocfilters.walk(doc, alterparagraphs, format, doc[0]['unMeta'])
+    altered = pandocfilters.walk(doc, action, format, doc[0]['unMeta'])
     return json.dumps( altered )
+
+
+def pandoc_ast_parser(text, action):
+    """Load JSon from <text> and walk the tree. Return a list of all return
+    values of <action>."""
+    result = []
+    proc = subprocess.Popen(['pandoc', '-f','markdown', '-t','json'],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    data = proc.communicate( text.encode( sys.getdefaultencoding() ) )
+    ret = proc.wait()
+    if(ret):
+        print('\n'.join([e.decode( sys.getdefaultencoding() )
+                for e in data]))
+        raise OSError("Pandoc gave error status %s." % ret)
+    text = data[0].decode( sys.getdefaultencoding() )
+    doc = json.loads( text )
+    def go(key, value, format, meta):
+        res =  action(key, value, format, meta, modify_ast=False)
+        if(res):
+            result.append( res )
+    walk(doc, go, "", doc[0]['unMeta'])
+    return result
 
