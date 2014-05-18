@@ -273,14 +273,13 @@ it gave an error return code"""
             try:
                 proc = subprocess.Popen(['gladtex'] + \
                         self.conf['GladTeXopts'].split(' ') + [outputf],
-                        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             except OSError:
                 raise SubprocessError("Either GladTeX is not installed or not in the search path.")
             text = proc.communicate()
             ret = proc.wait()
             if(ret):
-                print(text[1])
+                print(text[1].decode( sys.getdefaultencoding() ))
                 raise SubprocessError("Error while running GladTeX.")
             os.remove( outputf )
 

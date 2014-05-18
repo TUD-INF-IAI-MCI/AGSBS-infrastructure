@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 # Markdown AGSBS (TU) Command line
+# This is free software, licensed under the LGPL v3. See the file "COPYING" for
+# details.
+#
+# (c) 2014 Sebastian Humenda <shumenda@gmx.de>
+
 
 import os, sys, codecs
 from optparse import OptionParser
 import locale
 
 from MAGSBS.config import PYVERSION
-import MAGSBS
+import MAGSBS, MAGSBS.quality_assurance
 from MAGSBS.errors import *
+import textwrap
 
 
 usage = """
@@ -18,12 +24,13 @@ commands. Use %s <command> -h for help.
 
 Available commands are:
 
-conf    - set, init or update a configuration
-conv    - convert a markdown file using pandoc
-imgdsc  - generate image description snippets
-navbar  - generate navigation bar at beginning of each page
-new     - create new project structure
-toc     - generate table of contents
+conf - set, init or update a configuration
+conv - convert a markdown file using pandoc
+imgdsc - generate image description snippets
+navbar - generate navigation bar at beginning of each page
+new - create new project structure
+mk - invoke "mistkerl", a quality assurance helper
+toc - generate table of contents
 """ % (sys.argv[0], sys.argv[0])
 
 def error_exit(string):
@@ -63,6 +70,8 @@ class main():
                 self.conf_cmd()
             elif(sys.argv[1] == 'new'):
                 self.new()
+            elif(sys.argv[1] == 'mk'):
+                self.mk()
             else:
                 error_exit(usage)
 
@@ -103,9 +112,10 @@ class main():
 
 Allowed actions are `show`, `update` and `init`. `show` shows the current
 configuration settings, default values if none present.
-`update` and `show` try to find the correct configuration: if none exists in the
-current directory and you are in a subdirectory of a project, they try to
-determine the project root and read the configuration for there if present (else
+`update` and `show` try to find the correct configuration: if none exists
+in the current directory and you are in a subdirectory of a project, they try to
+determine the project root and read the configuration for there if present
+(else
 the default values are used).
 `init` on the other hand behaves basically like update (it sets configuration
 values), but it does that for the current directory. This is handy for
@@ -127,7 +137,8 @@ sub-directory configurations or initialization of a new project.'''
                   help="set lecture title (else try to use h1 heading, if present)",
                   metavar="TITLE", default=None)
         parser.add_option("-L", dest='language',
-                  help="set language (default de)", metavar="LANG", default='de')
+                  help="set language (default de)", metavar="LANG",
+                  default='de')
         parser.add_option("-p", "--pnum-gap", dest="pageNumberingGap",
                   help="gap in numbering between page links.",
                   metavar="NUM", default=None)
@@ -151,7 +162,8 @@ sub-directory configurations or initialization of a new project.'''
 
         if(args[0] == 'init'):
             # read configuration from cwd, if present
-            inst = MAGSBS.config.LectureMetaData( MAGSBS.config.CONF_FILE_NAME )
+            inst = MAGSBS.config.LectureMetaData( MAGSBS.config.CONF_FILE_NAME
+            )
             inst.read()
         else:
             inst = MAGSBS.config.confFactory()
@@ -208,25 +220,8 @@ sub-directory configurations or initialization of a new project.'''
             else:
                 p.convert(args[0])
         except MAGSBS.errors.SubprocessError as e:
-            print('Error: '+e.message)
+            print('Error: '+str(e))
             sys.exit(127)
-        # migrate everything below to init / make it work also here
-        #if(options.workinggroup):
-        #    p.set_workinggroup(options.workinggroup)
-        #if(options.source):
-        #    p.set_source(options.source)
-        #if(options.editor):
-        #    p.set_editor(options.editor)
-        #if(options.institution):
-        #    p.set_institution(options.institution)
-        #if(options.lecturetitle):
-        #    p.set_lecturetitle(options.lecturetitle)
-        #if(options.semesterofedit):
-        #    p.set_semesterofedit(options.semesterofedit)
-        #if(os.path.isdir(args[0])):
-        #    MAGSBS.pandoc.convert_dir(p, args[0] ) # Todo: write this function
-        #else:
-
 
     def navbar(self):
         usage = sys.argv[0]+''' navbar [OPTIONS] <input_directory>\n
@@ -283,15 +278,17 @@ sense the navigation bar at the top and bottom.
             print('\n----\n'.join(i.get_output()))
         except MissingMandatoryField as e:
             error_exit('Error: '+e.message+'\n')
-        
+
     def new(self):
         usage = sys.argv[0] + ''' new <directory>
 Initialize a new lecture.
 '''
         parser = OptionParser(usage=usage)
-        parser.add_option("-a", dest="appendix_count", default="0", metavar="COUNT",
+        parser.add_option("-a", dest="appendix_count", default="0",
+        metavar="COUNT",
                 help="number of appendix chapters (default 0)")
-        parser.add_option("-c", dest="chapter_count", default="2", metavar="COUNT",
+        parser.add_option("-c", dest="chapter_count", default="2",
+        metavar="COUNT",
                 help="number of chapters (default 2)")
         parser.add_option("-p", dest="preface", default=False,
                 action="store_true",
@@ -314,6 +311,22 @@ Initialize a new lecture.
             i.set_preface( options.preface )
         i.generate_structure()
 
-
+    def mk(self):
+        usage = sys.argv[0] + ''' mk [FILE|DIRECTORY]
+Run "mistkerl", a quality assurance helper. It checks for common errors and
+outputs it on the command line.
+'''
+        if((len(sys.argv) < 3)):
+            print( usage )
+            sys.exit( 127 )
+        if(not os.path.exists( sys.argv[2] ) ):
+            print("Error: %s does not exist." % sys.argv[2] )
+        else:
+            output = MAGSBS.quality_assurance.mistkerl( sys.argv[2])
+            for fn, issues in output.items():
+                if(len(issues) > 0):
+                    print('\n'+fn+':\n')
+                for issue in issues:
+                    print('-   ' + '\n    '.join( textwrap.wrap( issue, 74 ) ) )
 
 m = main()

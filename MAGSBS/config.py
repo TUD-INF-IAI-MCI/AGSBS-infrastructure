@@ -14,7 +14,7 @@ GLADTEX_OPTS = '-a -d bilder'
 PYVERSION = int(sys.version[0])
 # as a regular expression all kinds of token which can mark a page
 PAGENUMBERINGTOKENS = ['slide','folie','seite','page']
-PAGENUMBERING_REGEX = '-\s+(' + '|'.join( PAGENUMBERINGTOKENS ) + ') \d+\s+-'
+PAGENUMBERING_REGEX = '-\s*(' + '|'.join( PAGENUMBERINGTOKENS ) + ')\s+\d+\s*-'
 
 VALID_FILE_BGN = ['k', 'anh', 'v']
 

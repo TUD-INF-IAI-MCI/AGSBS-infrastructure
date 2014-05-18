@@ -30,67 +30,14 @@ python-markdown."""
         for text, id in pages:
             num = int(re.match('- \w+ (\d+) .*', text).groups()[0])
             self.__pagenumbers[ id ] = num
-        # old code below
-        if(self.__md.find('\r\n')>=0):
-            lines = self.__md.split('\r\n')
-        else:
-            lines = self.__md.split('\n')
-            # on mac, lines are terminated with \r, lines will have one element
-            if(len(lines) == 1):
-                lines = lines[0].split('\r')
-        for line in lines:
-            if(line.strip() == ''): # empty lines are start of next paragraph
-                self.paragraph_begun = True
-                continue # no further processing here
-            else:
-                self.paragraph_begun = False
-            # parse heading / page number
-            level = -1
-            text = ''
-            is_shadowheading = False # is a shadow heading, when it's a page number
-            if(line.startswith('===')):
-                level = 1
-                text = self.__lastchunk
-            # check for spaces in subheadings, might be a table, too
-            elif(line.startswith('---') and not (line.find(' ')>=0)):
-                level = 2
-                text = self.__lastchunk
-            elif(line.startswith('#')):
-                level = 0
-                while(line.startswith('#')):
-                    level += 1
-                    line = line[1:]
-                try: # match page number, else usual heading
-                    re.search('.*- (slide|folie|seite|page) \d+ -.*',
-                            line.lower()).groups()[0]
-                    text = line
-                    is_shadowheading = True
-                except AttributeError:
-                    text = line[:]
-                # it might end with multiple # signs:
-                while(text.endswith(' ') or text.endswith('#')):
-                    text = text[:-1]
-                # it might start with spaces, too
-                while(text.startswith(' ')):
-                    text = text[1:]
-            # if a heading was encountered:
-            if(level >= 0 and text != ''):
-                if (level == 1):
-                    if (self.__level_1_heading_encountered):
-                        raise StructuralError("More then one level-1-heading in %s"
-                            % self.__file_name)
-                    else:
-                        self.__level_1_heading_encountered = True
-                h = datastructures.heading(self.__path, self.__file_name)
-                h.set_level( level )
-                h.set_text( text )
-                h.set_shadow_heading( is_shadowheading )
-                h.set_relative_heading_number(
-                        self.determine_relative_heading_number( level ) )
-                self.__headings.append( h )
-
-            level = -1; text = ''
-            self.__lastchunk = line # save current line
+        # Todo: write filter which gets all headings; below the heading data
+        # structure which needs to be used
+        #h = datastructures.heading(self.__path, self.__file_name)
+        #h.set_level( level )
+        #h.set_text( text )
+        #h.set_relative_heading_number(
+        #        self.determine_relative_heading_number( level ) )
+        #self.__headings.append( h )
 
     def determine_relative_heading_number(self, level):
         """Which number has the fifth level-2 heading in k0103.md? This
