@@ -48,6 +48,14 @@ numbering information."""
                         else:
                             return (text, id)
 
+
+def heading_extractor(key, value, format, meta, modify_ast=False):
+    """Extract all headings from the JSon AST."""
+    if(key == 'Header'):
+        # value[0] is the heading level
+        return (value[0], pandocfilters.stringify( value ))
+
+
 def jsonfilter(text, action, format='html'):
     """NOTE: this is a copy from pandocfilters, it uses also the infrastructure
     of this module, but doesn't read from stdin (but from an argument) and
@@ -72,10 +80,8 @@ def jsonfilter(text, action, format='html'):
     return json.dumps( altered )
 
 
-def pandoc_ast_parser(text, action):
-    """Load JSon from <text> and walk the tree. Return a list of all return
-    values of <action>."""
-    result = []
+def run_pandoc(text):
+    """Return pandoc and return Pandoc AST."""
     proc = subprocess.Popen(['pandoc', '-f','markdown', '-t','json'],
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     data = proc.communicate( text.encode( sys.getdefaultencoding() ) )
@@ -85,6 +91,12 @@ def pandoc_ast_parser(text, action):
                 for e in data]))
         raise OSError("Pandoc gave error status %s." % ret)
     text = data[0].decode( sys.getdefaultencoding() )
+    return text
+
+
+def pandoc_ast_parser(text, action):
+    """Walk the specified JSon tree and apply the supplied action."""
+    result = []
     doc = json.loads( text )
     def go(key, value, format, meta):
         res =  action(key, value, format, meta, modify_ast=False)

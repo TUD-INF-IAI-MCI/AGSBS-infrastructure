@@ -173,7 +173,8 @@ title of the document, hence allow setting it separately."""
                     codecs.open(inputf, 'r', 'utf-8').read(),
                     os.path.split(inputf)[0], os.path.split(inputf)[1])
             mp.parse()
-            hs = mp.get_heading_list()
+            mp.fetch_headings()
+            hs = mp.get_headings()
             for h in hs:
                 if(h.get_level() == 1):
                     return h.get_text()

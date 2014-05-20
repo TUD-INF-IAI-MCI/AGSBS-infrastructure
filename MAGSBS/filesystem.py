@@ -76,7 +76,8 @@ By calling the function, the actual index is build."""
                         'utf-8' ).read()
                 m = simpleMarkdownParser( data, directoryname, file )
                 m.parse()
-                self.__index[ file ] = m.get_heading_list()
+                m.fetch_headings()
+                self.__index[ file ] = m.get_headings()
     
     def get_index(self):
         return self.__index
@@ -142,22 +143,20 @@ and end again with
         lbr = self.linebreaks
 
         navbar = []
+        m.fetch_page_numbers()
+        data = m.get_page_numbers()
         # first page number is necessary for calculations:
-        pnums = [ h  for h in m.get_heading_list() \
-                if(h.get_level()==6 and h.is_shadow_heading())]
-        if(len(pnums) >= 1):
+        if(len(data) >= 1):
             navbar.append(_('pages').title() +': ')
-            first_h = pnums[0]
+            pnums = list( data.keys() ) # get all page numbers
+            pnums.sort()
             for pnum in pnums:
-                if(pnum == first_h):
-                    navbar.append( first_h.get_markdown_link() )
-                elif(pnum.get_page_number() >
-                        (first_h.get_page_number()+(self.pagenumbergap/2))):
-                    if(not (pnum.get_page_number()%self.pagenumbergap)):
-                        navbar.append(', %s' % pnum.get_markdown_link() )
-        toc = '[%s](../%s.html)' % (\
-                    ('Inhalt' if self.__lang == 'de' else 'table of contents'),
-                    ('inhalt' if self.__lang == 'de' else 'index') )
+                if(pnum == pnums[0]): # in case of first page number
+                    navbar.append( '[[%s]](#%s)' % (pnum, data[ pnum ]) )
+                elif(pnum > (pnums[0] + (self.pagenumbergap/2))):
+                    if(not (pnum%self.pagenumbergap)):
+                        navbar.append( ', [[%s]](#%s)' % (pnum, data[ pnum ]) )
+        toc = '[%s](../inhalt.html)' % _('table of contents').title()
         newpage += [ '<!-- page navigation -->%s' % lbr, toc, lbr, lbr, ''.join(navbar) ]
         newpage += [lbr,lbr, '* * * * *', lbr, '<!-- end page navigation -->', lbr]
         if(not page.startswith(lbr)):
