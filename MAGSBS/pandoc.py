@@ -120,11 +120,13 @@ generator fails."""
             p_end = data[p_start:].find('</p>') + p_start
             if(div_end == -1 or p_start == -1 or p_end == -1 or
                     p_start > div_end):
-                raise ValueError("Something is wrong in the HTML file, p and diff tag in wrong order?")
+                #raise ValueError("Something is wrong in the HTML file, p and diff tag in wrong order?")
+                pass # Todo: nicer solution anyway
             data = data[:p_start] + data[p_end+len('</p>'):]
             div_end = data[pos:].find('</div>')
             if(div_end == -1):
-                raise ValueError('no matching </div> for image div block')
+                #raise ValueError('no matching </div> for image div block')
+                break # just skip this file
             else:
                 div_end += pos
                 data = data[:div_end] + '</p>' +data[div_end + 6 :]

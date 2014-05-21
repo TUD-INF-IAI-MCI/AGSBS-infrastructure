@@ -38,7 +38,7 @@ numbering information."""
             text = value[0]['c']
             if(type(text) == str):
                 if(text.startswith('||')):
-                    text = join_para( value )
+                    text = pandocfilters.stringify( value )
                     if(re.search( MAGSBS.config.PAGENUMBERING_REGEX, text.lower())):
                         # strip the first ||
                         text = text[2:]

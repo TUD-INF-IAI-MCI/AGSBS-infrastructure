@@ -37,15 +37,37 @@ def page_number_is_paragraph(text):
     for num, line in enumerate(text.split('\n')):
         if(line.strip() == ''):
             paragraph_begun = True
+            previous_line_pnum = False
         else:
             if(previous_line_pnum ): # previous_line_pnum and this is no empty line...
                 previous_line_pnum = False
                 return (num+1, error_text)
-            elif(re.match(r'\|\|\s*' + config.PAGENUMBERING_REGEX, line)):
+            elif(re.search(r'\|\|\s*' + config.PAGENUMBERING_REGEX, line.lower())):
                 # line contains page number, is in front of a empty line?
                 if(not paragraph_begun):
                     return (num+1, error_text)
                 previous_line_pnum = True
+            paragraph_begun = False # one line of text ends "paragraph begun"
+
+
+def heading_is_paragraph(text):
+    """Check whether all page numbers are on a paragraph on their own."""
+    error_text = "Jede Ueberschrift muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
+    paragraph_begun = True
+    previous_line_heading = False
+    for num, line in enumerate(text.split('\n')):
+        if(line.strip() == ''):
+            paragraph_begun = True
+            previous_line_heading = False
+        else:
+            if(previous_line_heading ): # previous_line_heading and this is no empty line...
+                previous_line_heading = False
+                return (num+1, error_text)
+            elif(re.search(r'^#+.*', line.lower())):
+                # line contains heading, is in front of a empty line?
+                if(not paragraph_begun):
+                    return (num+1, error_text)
+                previous_line_heading = True
             paragraph_begun = False # one line of text ends "paragraph begun"
 
 def level_one_heading(text):
@@ -71,42 +93,61 @@ def page_numbering_text_is_lowercase( text ):
 
 ############################################
 
-def check_for_mistakes(fn):
-    output = []
-    try:
-        text = codecs.open( fn, "r", "utf-8" ).read()
-    except UnicodeDecodeError:
-        output.append('Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.')
-        return '\n'.join(output)
-    text = text.replace('\r\n','\n').replace('\r','\n')
-    for mistake in KNOWN_BEASTS:
-        data = mistake( text )
-        if( data ):
-            assert type(data) == tuple
-            if(data[0] == '-'):
-                output.append( data[1] )
-            else:
-                output.append( 'Zeile ' + str(data[0]) + ": " + data[1] )
-    return (fn, output)
+class Mistkerl():
+    """Wrapper which wraps different levels of errors."""
+    def __init__(self):
+        self.__critical = [level_one_heading, page_number_is_paragraph,
+                heading_is_paragraph, oldstyle_pagenumbering,
+                page_numbering_text_is_lowercase, common_latex_errors]
+        self.__warning = []
+        self.__pedantic = [] # LaTeX stuff?
+        self.__priority = 0
+    def get_issues(self):
+        issues = self.__critical
+        if(self.get_priority() >= 1):
+            issues += self.__warning
+        if(self.get_priority() >= 2):
+            issues += self.__pedantic
+        return issues
+    def set_priority(self, p):
+        assert type(p) == int
+        if(p < 0 or p > 2):
+            raise ValueError("0 for critical, 1 for warning and 3 for pedantic allowed.")
+        self.__prriority = p
+    def get_priority(self): return self.__prriority
+    def __iterate_errors(self, fn):
+        """Iterate over all errors, amount depending of set priority."""
+        output = []
+        try:
+            text = codecs.open( fn, "r", "utf-8" ).read()
+        except UnicodeDecodeError:
+            output.append('Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.')
+            return '\n'.join(output)
+        text = text.replace('\r\n','\n').replace('\r','\n')
+        for mistake in self.get_issues():
+            data = mistake( text )
+            if( data ):
+                assert type(data) == tuple
+                if(data[0] == '-'):
+                    output.append( data[1] )
+                else:
+                    output.append( 'Zeile ' + str(data[0]) + ": " + data[1] )
+        return (fn, output)
 
-
-KNOWN_BEASTS = [level_one_heading, page_number_is_paragraph,
-        oldstyle_pagenumbering, page_numbering_text_is_lowercase,
-        common_latex_errors]
-def mistkerl( path ):
-    """Take either a file and run checks or do the same for a directory
+    def run( self, path ):
+        """Take either a file and run checks or do the same for a directory
 recursively."""
-    output = {}
-    if( os.path.isfile( path ) ):
-        if( path.endswith('.md') ):
-            fn, issues = check_for_mistakes( path )
-            output[ fn ] = issues
-        else:
-            print('Error: file name must end on ".md".')
-            sys.exit( 127 )
-    else:
-        for directoryname, directory_list, file_list in filesystem.get_markdown_files( path ):
-            for file in file_list:
-                fn, issues = check_for_mistakes( os.path.join( directoryname, file) )
+        output = {}
+        if( os.path.isfile( path ) ):
+            if( path.endswith('.md') ):
+                fn, issues = self.__iterate_errors( path )
                 output[ fn ] = issues
-    return output
+            else:
+                print('Error: file name must end on ".md".')
+                sys.exit( 127 )
+        else:
+            for directoryname, directory_list, file_list in filesystem.get_markdown_files( path ):
+                for file in file_list:
+                    fn, issues = check_for_mistakes( os.path.join( directoryname, file) )
+                    output[ fn ] = issues
+        return output

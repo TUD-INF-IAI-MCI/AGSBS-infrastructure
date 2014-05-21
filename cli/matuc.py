@@ -316,13 +316,27 @@ Initialize a new lecture.
 Run "mistkerl", a quality assurance helper. It checks for common errors and
 outputs it on the command line.
 '''
-        if((len(sys.argv) < 3)):
+        parser = OptionParser(usage=usage)
+        parser.add_option("-p", dest="priority", default="0",
+            metavar="NUM", help="priority level for which messages are displayed; 0 means only critial, 1 also warnings and 2 also pedantic notes.")
+        (options, args) = parser.parse_args(sys.argv[2:])
+
+        if((len(args) != 1)):
             print( usage )
             sys.exit( 127 )
-        if(not os.path.exists( sys.argv[2] ) ):
-            print("Error: %s does not exist." % sys.argv[2] )
+        if(not os.path.exists( args[0] ) ):
+            print("Error: %s does not exist." % args[0] )
         else:
-            output = MAGSBS.quality_assurance.mistkerl( sys.argv[2])
+            mistkerl = MAGSBS.quality_assurance.Mistkerl()
+            try:
+                priority = int( options.priority)
+                if(priority < 0 or priority > 2):
+                    print("Error: Priority must be between 0 and 2")
+                    sys.exit(127)
+                mistkerl.set_priority( priority )
+            except ValueError:
+                print("Priority must be an integer.")
+            output = mistkerl.run( args[0] )
             for fn, issues in output.items():
                 if(len(issues) > 0):
                     print('\n'+fn+':\n')
