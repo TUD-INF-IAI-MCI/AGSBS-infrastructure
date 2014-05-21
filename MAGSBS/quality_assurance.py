@@ -148,6 +148,6 @@ recursively."""
         else:
             for directoryname, directory_list, file_list in filesystem.get_markdown_files( path ):
                 for file in file_list:
-                    fn, issues = check_for_mistakes( os.path.join( directoryname, file) )
+                    fn, issues = self.__iterate_errors( os.path.join( directoryname, file) )
                     output[ fn ] = issues
         return output
