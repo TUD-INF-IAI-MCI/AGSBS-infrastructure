@@ -60,10 +60,13 @@ def heading_is_paragraph(text):
             paragraph_begun = True
             previous_line_heading = False
         else:
+            if(not paragraph_begun): # happens on the second line of a paragraph
+                if(line.startswith('---') or line.startswith('===')):
+                    previous_line_heading = True
+                    continue
             if(previous_line_heading ): # previous_line_heading and this is no empty line...
-                previous_line_heading = False
                 return (num+1, error_text)
-            elif(re.search(r'^#+.*', line.lower())):
+            if(re.search(r'^#+.*', line.lower())):
                 # line contains heading, is in front of a empty line?
                 if(not paragraph_begun):
                     return (num+1, error_text)
