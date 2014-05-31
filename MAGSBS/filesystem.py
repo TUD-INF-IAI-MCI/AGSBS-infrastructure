@@ -156,7 +156,7 @@ and end again with
                 elif(pnum > (pnums[0] + (self.pagenumbergap/2))):
                     if(not (pnum%self.pagenumbergap)):
                         navbar.append( ', [[%s]](#%s)' % (pnum, data[ pnum ]) )
-        toc = '[%s](../inhalt.html)' % _('table of contents').title()
+        toc = '[%s](../inhalt.html)' % _('index').title()
         newpage += [ '<!-- page navigation -->%s' % lbr, toc, lbr, lbr, ''.join(navbar) ]
         newpage += [lbr,lbr, '* * * * *', lbr, '<!-- end page navigation -->', lbr]
         if(not page.startswith(lbr)):

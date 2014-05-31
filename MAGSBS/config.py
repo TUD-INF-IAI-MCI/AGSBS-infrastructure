@@ -271,7 +271,8 @@ l10n with Windows."""
             'image description outsourced':'Bildbeschreibung ausgelagert',
             'description of image outsourced':'Bildbeschreibung ausgelagert',
             'images':'bilder',
-            'pages':'Seiten'
+            'pages':'Seiten',
+            'index':'Inhalt'
             }
         if(self.lang == 'de'):
             return en_de[origin]
