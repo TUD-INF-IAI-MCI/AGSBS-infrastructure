@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+# This is free software, licensed under the LGPL v3. See the file "COPYING" for
+# details.
+#
+# (c) 2014 Sebastian Humenda <shumenda@gmx.de>
 
 import os, sys
 import MAGSBS.datastructures as datastructures

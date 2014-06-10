@@ -77,10 +77,15 @@ By calling the function, the actual index is build."""
                 m = simpleMarkdownParser( data, directoryname, file )
                 m.parse()
                 m.fetch_headings()
-                self.__index[ file ] = m.get_headings()
+                full_fn = os.path.join( os.path.split( directoryname )[-1],
+                        file)
+                self.__index[ full_fn ] = m.get_headings()
     
     def get_index(self):
-        return self.__index
+        tmp = collections.OrderedDict()
+        for key in sorted( self.__index ):
+            tmp[ key ] = self.__index[ key ]
+        return tmp
 
 
 class page_navigation():

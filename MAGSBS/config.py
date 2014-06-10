@@ -2,11 +2,14 @@
 Read in user configuration.
 """
 
-import getpass, os, sys, pwd
+import getpass, os, sys
 import datetime, codecs
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from MAGSBS.errors import *
+
+if not (sys.platform.lower().startswith("win")):
+    import pwd
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -263,9 +266,13 @@ l10n with Windows."""
         c = confFactory()
         self.conf  = c.get_conf_instance()
         self.lang = self.conf[ 'language' ]
-
-    def get_translation(self, origin):
-        en_de = {'preface':'vorwort', 'appendix':'anhang',
+        self.en_fr = { 
+            'preface':'introduction',   'appendix':'appendice',
+            'chapters':'chapitres', 'pages':'pages',
+            'table of contents':'table des matières',
+            'index':'index'
+            }
+        self.en_de = {'preface':'vorwort', 'appendix':'anhang',
             'table of contents' : 'inhaltsverzeichnis',
             'chapters':'kapitel', 'image description of':'bildbeschreibung von',
             'image description outsourced':'Bildbeschreibung ausgelagert',
@@ -274,9 +281,15 @@ l10n with Windows."""
             'pages':'Seiten',
             'index':'Inhalt'
             }
-        if(self.lang == 'de'):
-            return en_de[origin]
-        else:
+
+    def get_translation(self, origin):
+        try:
+            trans = getattr(self, 'en_'+self.lang)
+        except AttributeError:
+            return origin
+        try:
+            return trans[ origin ]
+        except KeyError:
             return origin
 
 L10N = translate()
