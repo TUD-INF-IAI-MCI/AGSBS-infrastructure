@@ -1,4 +1,7 @@
-# -*- coding: utf-8 -*-
+# This is free software, licensed under the LGPL v3. See the file "COPYING" for
+# details.
+#
+# (c) 2014 Sebastian Humenda <shumenda@gmx.de>
 
 import os, re
 from MAGSBS.errors import WrongFileNameError
@@ -76,7 +79,7 @@ raise a type error, if the type is not recognized.
         c = config.confFactory()
         c = c.get_conf_instance()
         self.__use_appendix_prefix = c['appendixPrefix']
-        self.types = ['main' # usual headings
+        self.types = ['main', # usual headings
                 'appendix', 'preface']
         if(file_name.startswith('anh')):
             self.__type = 'main'
@@ -95,7 +98,7 @@ raise a type error, if the type is not recognized.
         return self.__type
     def set_type(self, type):
         if(not type in self.types):
-            raise("Wrong heading type. Must be either main, appendix or preface.")
+            raise ValueError("Wrong heading type. Must be either main, appendix or preface.")
         else:
             self.__type = type
 

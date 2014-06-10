@@ -2,8 +2,8 @@
 # details.
 #
 # (c) 2014 Sebastian Humenda <shumenda@gmx.de>
-# -*- coding: utf-8 -*-
-import re
+
+import re, os
 import MAGSBS.datastructures as datastructures
 from MAGSBS.errors import StructuralError
 import MAGSBS.contentfilter as contentfilter
@@ -54,6 +54,15 @@ xported JSon tree is then used for post-processing."""
             h.set_text( rHeading[1] )
             h.set_relative_heading_number(
                 self.determine_relative_heading_number( rHeading[0] ) )
+            dirname = os.path.split( self.__path )[-1]
+            if( dirname.startswith("anh") or self.__file_name.startswith("anh")):
+                h.set_type('appendix')
+            elif( (dirname.startswith("v") or self.__file_name.startswith("v"))
+                    and (len(dirname)>1 or len(self.__file_name)>1)):
+                # assured that it starts with v and is longer than just v, now
+                # followed by a number?:
+                if( dirname[1].isdigit() or self.__file_name[1].isdigit() ):
+                    h.set_type( "preface" )
             self.__headings.append( h )
 
     def determine_relative_heading_number(self, level):
