@@ -44,7 +44,6 @@ and in- or exclude it."""
         for fn, headings in self.__index.items():
             headings = [h for h in headings   if(not h.is_shadow_heading())]
             for heading in headings:
-                if(heading.get_text().startswith("Comprendre")):
                 if(heading.get_level() > self.depth):
                     continue # skip those headings
                 else:
