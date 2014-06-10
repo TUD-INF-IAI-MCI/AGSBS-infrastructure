@@ -50,7 +50,7 @@ xported JSon tree is then used for post-processing."""
                 contentfilter.heading_extractor)
         for rHeading in raw_headings:
             h = datastructures.heading(self.__path, self.__file_name)
-            h.set_level( rHeading[0] )
+            h.set_level( self.guess_heading_level( rHeading[0] ) )
             h.set_text( rHeading[1] )
             h.set_relative_heading_number(
                 self.determine_relative_heading_number( rHeading[0] ) )
@@ -64,6 +64,22 @@ xported JSon tree is then used for post-processing."""
                 if( dirname[1].isdigit() or self.__file_name[1].isdigit() ):
                     h.set_type( "preface" )
             self.__headings.append( h )
+
+    def guess_heading_level( self, internal_level ):
+        """Guess the heading level. Let's take the usual chapter, starting with
+"k" in the filename. Each depth has exactly two digits, deppth 0 is e.g. a file
+name like "k01.md" and depth 1 is "k0105.md"."""
+        fn = self.__file_name
+        i=0
+        # strip letters first
+        while(fn != ""):
+            if(fn[0].isalpha()): fn=fn[1:]
+            else: break
+        while(fn != ""):
+            if(not fn[0].isdigit()): break
+            i+=1
+            fn=fn[1:]
+        return int(i/2) -1 + internal_level
 
     def determine_relative_heading_number(self, level):
         """Which number has the fifth level-2 heading in k0103.md? This
