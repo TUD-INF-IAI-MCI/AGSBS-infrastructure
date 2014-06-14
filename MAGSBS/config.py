@@ -270,7 +270,10 @@ l10n with Windows."""
             'preface':'introduction',   'appendix':'appendice',
             'chapters':'chapitres', 'pages':'pages',
             'table of contents':'table des matières',
-            'index':'index'
+            'index':'index',
+            'image description outsourced':'description de l'image excluré',
+            'description of image outsourced':'description de l'image excluré',
+            'next':'suivant',  'previous':'précédent'
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
             'table of contents' : 'inhaltsverzeichnis',
@@ -279,7 +282,8 @@ l10n with Windows."""
             'description of image outsourced':'Bildbeschreibung ausgelagert',
             'images':'bilder',
             'pages':'Seiten',
-            'index':'Inhalt'
+            'index':'Inhalt',
+            'next':'weiter',   'previous':'zurück'
             }
 
     def get_translation(self, origin):
