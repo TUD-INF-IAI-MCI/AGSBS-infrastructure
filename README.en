@@ -15,6 +15,12 @@ all commands below with "python". If however the command returns something like
 2.x.x, you need to call every mentioned command instead with "python3". In the
 latter case, you should also check that Python3 is instaled.
 
+In addition you need Pandoc (version >= 1.12) and Python-Pandocfilters.
+Python-Pandocfilters can be optained either from
+<https://github.com/jgm/pandocfilters.git> or from your favorite package
+manager. For Debian/Ubuntu, there will soon be a package (time of writing:
+15.06.2014).
+
 Kate Plugin
 --------------
 
