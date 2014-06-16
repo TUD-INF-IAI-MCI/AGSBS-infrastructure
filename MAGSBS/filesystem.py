@@ -6,18 +6,16 @@ import collections
 from MAGSBS.mparser import *
 import MAGSBS.datastructures as datastructures
 import MAGSBS.config as config
+import MAGSBS.errors
 _ = config._
 
-
-def valid_file_bgn(cmp):
+def valid_file_bgn( cmp ):
     """Should we consider this directory or file according to the specs?"""
-    valid = False
     for token in config.VALID_FILE_BGN:
         if(cmp.startswith( token )):
             # must be token + a number (like k01)
             if(cmp[len(token):len(token)+1].isdigit()):
-                valid = True
-    return valid
+                return True
 
 def skip_dir(root, cur):
     """Check whether directory contains interesting files."""
@@ -50,6 +48,28 @@ of 3-tuples, as os.walk() produces. Sort those before returning."""
     return res
 
 
+def is_lecture_root( dir ):
+    """is_lecture_root(dir )
+    Check whether the given directory is the lecture root.
+    Algorithm: if dir starts with a valid chapter prefix, it is obviously not.
+    for all other cases, try to obtain a list of files and if _one_
+    **directory** starts with a chapter prefix, it is a valid chapter root."""
+    dir = os.path.abspath( dir )
+    if( valid_file_bgn( os.path.split( dir )[-1] ) ):
+        return False
+    else:
+        for DIR in [e for e in os.listdir( dir ) if os.path.isdir( dir+os.sep+e )]:
+            if( valid_file_bgn( DIR ) ):
+                return True
+        return False
+
+def fn2targetformat( fn, fmt ):
+    """Alters a path to have the file name extension of the target format."""
+    if( not fn.endswith('.md') ):
+        raise ValueError("File must end on .md")
+    return fn.replace('.md', '.'+fmt )
+
+
 class create_index():
     """create_index(dir)
     
@@ -59,14 +79,13 @@ Walk the file system tree from "dir" and have a look in all files who end on
 Format of index: dict of lists: every filename is the key, the list of heading
 [objects] is the value in the OeredDict()."""
     def __init__(self, dir):
-        self.__dir = dir
         if(not os.path.exists(dir)):
             raise(OSError("Directory doesn't exist."))
+        self.__dir = dir
         self.__index = collections.OrderedDict()
 
     def walk(self):
         """walk()
-
 By calling the function, the actual index is build."""
         for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
             for file in file_list:
@@ -77,8 +96,7 @@ By calling the function, the actual index is build."""
                 m = simpleMarkdownParser( data, directoryname, file )
                 m.parse()
                 m.fetch_headings()
-                full_fn = os.path.join( os.path.split( directoryname )[-1],
-                        file)
+                full_fn = os.path.join( directoryname, file)
                 self.__index[ full_fn ] = m.get_headings()
     
     def get_index(self):
@@ -95,30 +113,46 @@ Iterate through files in `directory`. Read in the page navigation (if any) and
 update (or create) it. `page_gap` will specify which gap the navigation bar will
 have for the pages."""
     def __init__(self, dir):
+        if( not os.path.exists( dir ) ):
+            raise OSError("The directory \"%s\" doesn't exist." % dir)
+        if( not is_lecture_root( dir ) ):
+            raise MAGSBS.errors.StructuralError("This command must be run from the lecture root!")
         self.__dir = dir
         c = config.confFactory()
         c = c.get_conf_instance()
         self.pagenumbergap = c['pageNumberingGap']
         self.__lang = c['language']
+        self.__fmt = c['format']
         self.linebreaks = '\n'
     def iterate(self):
         """Iterate over the files and call self.trail_nav and self.gen_nav. Write
 back the file."""
+        cwd = os.getcwd()
+        os.chdir( self.__dir )
+        files = []
         for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
             for file in file_list:
-                fullpath = directoryname + os.sep + file 
-                data = codecs.open( fullpath, 'r', 'utf-8').read()
-                # guess line breaks
-                if(data.find('\r\n')>=0):
-                    self.linebreaks = '\r\n'
+                files.append( directoryname + os.sep + file )
+        files.sort()
+        has_prev = None
+        has_next = None
+        for pos, file in enumerate( files ):
+            if( pos ):  has_prev = files[ pos -1 ]
+            if( pos == (len(files)-1) ): has_next = None
+            else:                        has_next = files[ pos + 1 ]
+            data = codecs.open( file, 'r', 'utf-8').read()
+            # guess line breaks
+            if(data.find('\r\n')>=0):
+                self.linebreaks = '\r\n'
+            else:
+                if(len(data.split('\n')) < 2):
+                    self.linebreaks = '\r'
                 else:
-                    if(len(data.split('\n')) < 2):
-                        self.linebreaks = '\r'
-                    else:
-                        self.linebreaks = '\n'
-                data = self.trail_nav( data )
-                data = self.gen_nav(data, file)
-                codecs.open( fullpath, 'w', 'utf-8').write( data )
+                    self.linebreaks = '\n'
+            data = self.trail_nav( data )
+            data = self.gen_nav(data, file, has_prev, has_next)
+            codecs.open( file, 'w', 'utf-8').write( data )
+        os.chdir( cwd )
 
     def trail_nav(self, page):
         """trail_nav(page)
@@ -140,8 +174,10 @@ and end again with
                     newpage.append( line )
         return self.linebreaks.join( newpage )
 
-    def gen_nav(self, page, file_name):
+    def gen_nav(self, page, file_name, has_prev, has_next):
         """Generate language-specific site navigation."""
+        if( has_prev ):    has_prev = fn2targetformat( has_prev, self.__fmt )
+        if( has_next ):    has_next = fn2targetformat( has_next, self.__fmt)
         newpage = []
         m = simpleMarkdownParser( page, self.__dir, file_name )
         m.parse()
@@ -161,8 +197,14 @@ and end again with
                 elif(pnum > (pnums[0] + (self.pagenumbergap/2))):
                     if(not (pnum%self.pagenumbergap)):
                         navbar.append( ', [[%s]](#%s)' % (pnum, data[ pnum ]) )
-        toc = '[%s](../inhalt.html)' % _('index').title()
-        newpage += [ '<!-- page navigation -->%s' % lbr, toc, lbr, lbr, ''.join(navbar) ]
+        chapternav = '[%s](../inhalt.html)' % _('index').title()
+        if( has_prev ):
+            chapternav = '[%s](%s)  ' % (_('previous'),
+                os.path.join( "..", os.path.split( has_prev )[-1])) + chapternav
+        if( has_next ):
+            chapternav += "  [%s](%s)" % (_('next'),
+                os.path.join("..", os.path.split( has_next)[-1] ))
+        newpage += [ '<!-- page navigation -->%s' % lbr, chapternav, lbr, lbr, ''.join(navbar) ]
         newpage += [lbr,lbr, '* * * * *', lbr, '<!-- end page navigation -->', lbr]
         if(not page.startswith(lbr)):
             newpage.append(lbr)
@@ -171,7 +213,7 @@ and end again with
         newpage.append( page )
         newpage += [lbr, '<!-- page navigation -->', lbr, lbr,
                     '* * * * *', lbr,lbr]
-        newpage += [''.join( navbar ), lbr,lbr, toc, lbr, '<!-- end page navigation -->']
+        newpage += [''.join( navbar ), lbr,lbr, chapternav, lbr, '<!-- end page navigation -->']
         return ''.join(newpage)
 
 class init_lecture():

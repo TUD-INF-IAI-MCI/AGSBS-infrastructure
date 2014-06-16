@@ -271,8 +271,8 @@ l10n with Windows."""
             'chapters':'chapitres', 'pages':'pages',
             'table of contents':'table des matières',
             'index':'index',
-            'image description outsourced':'description de l'image excluré',
-            'description of image outsourced':'description de l'image excluré',
+            'image description outsourced':"description de l'image excluré",
+            'description of image outsourced':"description de l'image excluré",
             'next':'suivant',  'previous':'précédent'
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
