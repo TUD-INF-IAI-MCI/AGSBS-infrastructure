@@ -81,27 +81,39 @@ def level_one_heading(text):
     except errors.StructuralError:
         return ('-', "In dem Dokument gibt es mehr als eine ueberschrift der Ebene 1. Dies ist nicht erlaubt. Beispielsweise hat jeder Foliensatz nur eine ueberschrift und auch ein Kapitel wird nur mit einer ueberschrift bezeichnet. Falls es doch mehrere große ueberschriften geben sollte, sollten diese auf eigene Kapitel oder Unterkapitel ausgelagert werden.")
 
-def oldstyle_pagenumbering( text ):
+def oldstyle_pagenumbering( line ):
     """Check whether the old page numbering style "###### - page xyz -" is used."""
-    for num, line in enumerate( text.split('\n') ):
-        obj = re.search(r'\s*######\s*-\s*(Seite|Slide|slide|page|Page|Folie)\s+(\d+)\s*-.*', line)
-        if( obj ):
-            return (num+1, 'Es wurde eine Seitenzahl im Format "###### - Seite xyz -" bzw. "###### - Seite xyz - ######" gefunden. dies ist nicht mehr erlaubt. Seitenzahlen muessen die Form "|| - Seite xyz -" haben.')
+    obj = re.search(r'\s*######\s*-\s*(Seite|Slide|slide|page|Page|Folie)\s+(\d+)\s*-.*', line)
+    if( obj ):
+        return 'Es wurde eine Seitenzahl im Format "###### - Seite xyz -" bzw. "###### - Seite xyz - ######" gefunden. dies ist nicht mehr erlaubt. Seitenzahlen muessen die Form "|| - Seite xyz -" haben.'
 
-def page_numbering_text_is_lowercase( text ):
-    for num, line in enumerate( text.split('\n') ):
-        if(line.startswith('######') or line.startswith('||')):
-            if(line.find('seite')>=0 or line.find('folie')>=0):
-                return (num+1, 'Das Wort "Seite" wurde klein geschrieben. Dadurch wird es vom MAGSBS-Modul nicht erkannt, sodass keine automatische Seitennavigation erstellt werden kann.')
+def page_numbering_text_is_lowercase( line ):
+    if(line.startswith('######') or line.startswith('||')):
+        if(line.find('seite')>=0 or line.find('folie')>=0):
+            return 'Das Wort "Seite" wurde klein geschrieben. Dadurch wird es vom MAGSBS-Modul nicht erkannt, sodass keine automatische Seitennavigation erstellt werden kann.'
+
+def page_string_but_no_page_number( line ):
+    """Sometimes one types "- page -" and forgets the digit."""
+    if( not line.startswith("||") ): return None
+    line = line.replace(" ", "")
+    for t in config.PAGENUMBERINGTOKENS:
+        idx = line.lower().find( t )
+        if( idx >= 0 ):
+            if( len(line) > idx + len( t ) ):
+                if( not line[idx + len(t)].isdigit() ):
+                    return "Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde."
+
+
 
 ############################################
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
     def __init__(self):
+        self.__oneliner = [oldstyle_pagenumbering,
+                page_numbering_text_is_lowercase, page_string_but_no_page_number ]
         self.__critical = [level_one_heading, page_number_is_paragraph,
-                heading_is_paragraph, oldstyle_pagenumbering,
-                page_numbering_text_is_lowercase, common_latex_errors]
+                heading_is_paragraph, common_latex_errors ] + self.__oneliner
         self.__warning = []
         self.__pedantic = [] # LaTeX stuff?
         self.__priority = 0
@@ -117,9 +129,15 @@ class Mistkerl():
         if(p < 0 or p > 2):
             raise ValueError("0 for critical, 1 for warning and 3 for pedantic allowed.")
         self.__prriority = p
-    def get_priority(self): return self.__prriority
+    def get_priority(self): return self.__priority
     def __iterate_errors(self, fn):
         """Iterate over all errors, amount depending of set priority."""
+        def format_output( data ):
+            if(data[0] == '-'):
+                return data[1]
+            else:
+                return 'Zeile ' + str(data[0]) + ": " + data[1]
+
         output = []
         try:
             text = codecs.open( fn, "r", "utf-8" ).read()
@@ -128,13 +146,21 @@ class Mistkerl():
             return '\n'.join(output)
         text = text.replace('\r\n','\n').replace('\r','\n')
         for mistake in self.get_issues():
+            if mistake in self.__oneliner: continue
             data = mistake( text )
             if( data ):
                 assert type(data) == tuple
-                if(data[0] == '-'):
-                    output.append( data[1] )
-                else:
-                    output.append( 'Zeile ' + str(data[0]) + ": " + data[1] )
+                output.append( format_output( data ) )
+        already_checked = []
+        for num, line in enumerate( text.split('\n') ):
+            for mistake in self.get_issues():
+                if mistake in self.__oneliner and not (mistake in already_checked):
+                    data = mistake( line )
+                    if( data ):
+                        assert type(data) == str
+                        output.append( format_output( (num+1, data ) ) )
+                        already_checked.append( mistake )
+
         return (fn, output)
 
     def run( self, path ):
@@ -149,7 +175,10 @@ recursively."""
                 print('Error: file name must end on ".md".')
                 sys.exit( 127 )
         else:
-            for directoryname, directory_list, file_list in filesystem.get_markdown_files( path ):
+            sortedFiles = filesystem.get_markdown_files( path )
+            sortedFiles = sorted( sortedFiles,
+                    key=lambda x: x)
+            for directoryname, directory_list, file_list in sortedFiles:
                 for file in file_list:
                     fn, issues = self.__iterate_errors( os.path.join( directoryname, file) )
                     output[ fn ] = issues
