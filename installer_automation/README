@@ -1,0 +1,11 @@
+Sorry, this includes binary data. I see now simple and yet fast way to build an
+installer else.
+
+Execute 
+./build_installer-linux.sh
+
+This creates a build directory, copies all relevant files into it and runs
+makensis.
+
+The same file could be written as a batch file for Windows. Any takers?
+
