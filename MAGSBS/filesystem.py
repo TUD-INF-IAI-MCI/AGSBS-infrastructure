@@ -11,6 +11,7 @@ _ = config._
 
 def valid_file_bgn( cmp ):
     """Should we consider this directory or file according to the specs?"""
+    cmp = os.path.split( cmp )[-1]
     for token in config.VALID_FILE_BGN:
         if(cmp.startswith( token )):
             # must be token + a number (like k01)
@@ -24,27 +25,37 @@ def skip_dir(root, cur):
     if(valid_file_bgn(cur)): skip = False
     return skip
 
-def get_markdown_files(dir):
-    """Return all files starting with "k" and ending on ".md". Return is a list
-of 3-tuples, as os.walk() produces. Sort those before returning."""
+def get_markdown_files( dir, all_markdown_files=False ):
+    """os.walk( dir) -compatible function for getting all markdown files.
+    Speciality: all_markdown_files = True will output all markdown files (like
+    images.md) where all_markdown_files = False will only look at directories
+    and files starting with one of the defined chapter prefixes."""
+    def interesting_dir( dir ):
+        dir = os.path.split( dir )[-1]
+        if( dir.startswith(".svn") or dir.startswith(".git") or dir == "images"
+                or dir == "bilder"):
+            return False
+        return True
     if(not os.path.exists(dir) ):
         raise OSError("Specified directory %s does not exist." % dir)
     res = []
-    for directoryname, directory_list, file_list in os.walk(dir):
-        # check, whether we are currently in a k__, anh__ or in the directory
-        # "dir", if not, skip it(!)
-        tmpdir = os.path.split(directoryname)[-1]
-        if(skip_dir( dir, tmpdir )):
-            continue
-
-        file_list = [f for f in file_list\
-                if(valid_file_bgn( f ) and f.endswith('.md'))]
-        #directory_list = [d for d in directory_list    if(d.endswith('.md')
-            #            and (d.startswith('k') or d.startswith('anh')))]
-        directory_list = [d for d in directory_list    if(valid_file_bgn(d))]
-
-        res.append( (directoryname, directory_list, file_list) )
-    res.sort()
+    dirs = [ dir ]
+    for dir in dirs:
+        if( dir == "." ):
+            items = os.listdir( dir )
+        else:
+            items = [os.path.join( dir, e)  for e in os.listdir( dir )]
+        files = sorted( [e for e in items \
+                    if os.path.isfile( e ) and e.endswith(".md")])
+        newdirs = sorted( [e for e in items  if os.path.isdir( e )
+                    and interesting_dir( e )])
+        if( not all_markdown_files ):
+            # remove those which aren't starting with a common chapter prefix
+            files   = [e for e in files    if valid_file_bgn( e )]
+            newdirs = [e for e in newdirs  if valid_file_bgn( e )]
+        dirs += newdirs
+        res.append( (dir, [os.path.split( e )[-1] for e in newdirs], 
+                [os.path.split( e )[-1]  for e in files]) )
     return res
 
 

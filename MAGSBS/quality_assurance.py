@@ -50,11 +50,18 @@ def page_number_is_paragraph(text):
             paragraph_begun = False # one line of text ends "paragraph begun"
 
 
-def heading_is_paragraph(text):
-    """Check whether all page numbers are on a paragraph on their own."""
+def heading_is_paragraph(text, fn):
+    """Check whether all page numbers are on a paragraph on their own. Also
+    checks whether headings do NOT start with a number."""
     error_text = "Jede Ueberschrift muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
+    error_text_number = "Die Überschriftsnummerierungen werden automatisch generiert und sollen daher nicht am Anfang der Überschrift stehen, sondern weggelassen werden."
+    def check_numbering( num, line ):
+        res = re.search(r"^(\#*)\s*(\d+\.?\d*)", line)
+        if( res ):
+            return (num+1, error_text_number)
     paragraph_begun = True
     previous_line_heading = False
+    previous_line = ''
     for num, line in enumerate(text.split('\n')):
         if(line.strip() == ''):
             paragraph_begun = True
@@ -62,16 +69,21 @@ def heading_is_paragraph(text):
         else:
             if(not paragraph_begun): # happens on the second line of a paragraph
                 if(line.startswith('---') or line.startswith('===')):
+                    res = check_numbering( num, previous_line )
+                    if( res ): return (res[0]-1, res[1])
                     previous_line_heading = True
                     continue
             if(previous_line_heading ): # previous_line_heading and this is no empty line...
                 return (num+1, error_text)
-            if(re.search(r'^#+.*', line.lower())):
+            if(re.search(r'^#+.*', line)):
+                res = check_numbering( num, line )
+                if( res ): return res
                 # line contains heading, is in front of a empty line?
                 if(not paragraph_begun):
                     return (num+1, error_text)
                 previous_line_heading = True
             paragraph_begun = False # one line of text ends "paragraph begun"
+        previous_line = line
 
 def level_one_heading(text):
     """Parse the document and raise errors if more than one level-1-heading was encountered."""
@@ -112,8 +124,9 @@ class Mistkerl():
     def __init__(self):
         self.__oneliner = [oldstyle_pagenumbering,
                 page_numbering_text_is_lowercase, page_string_but_no_page_number ]
+        self._needs_file_name = [ heading_is_paragraph]
         self.__critical = [level_one_heading, page_number_is_paragraph,
-                heading_is_paragraph, common_latex_errors ] + self.__oneliner
+                common_latex_errors ] + self.__oneliner + self._needs_file_name
         self.__warning = []
         self.__pedantic = [] # LaTeX stuff?
         self.__priority = 0
@@ -147,7 +160,10 @@ class Mistkerl():
         text = text.replace('\r\n','\n').replace('\r','\n')
         for mistake in self.get_issues():
             if mistake in self.__oneliner: continue
-            data = mistake( text )
+            if mistake in self._needs_file_name:
+                data = mistake( text, fn )
+            else:
+                data = mistake( text )
             if( data ):
                 assert type(data) == tuple
                 output.append( format_output( data ) )
@@ -175,7 +191,8 @@ recursively."""
                 print('Error: file name must end on ".md".')
                 sys.exit( 127 )
         else:
-            sortedFiles = filesystem.get_markdown_files( path )
+            sortedFiles = filesystem.get_markdown_files( path,
+                    all_markdown_files=True )
             sortedFiles = sorted( sortedFiles,
                     key=lambda x: x)
             for directoryname, directory_list, file_list in sortedFiles:
