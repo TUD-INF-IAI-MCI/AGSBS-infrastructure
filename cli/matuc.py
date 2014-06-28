@@ -317,7 +317,7 @@ Run "mistkerl", a quality assurance helper. It checks for common errors and
 outputs it on the command line.
 '''
         parser = OptionParser(usage=usage)
-        parser.add_option("-p", dest="priority", default="0",
+        parser.add_option("-p", dest="priority", default="1",
             metavar="NUM", help="priority level for which messages are displayed; 0 means only critial, 1 also warnings and 2 also pedantic notes.")
         (options, args) = parser.parse_args(sys.argv[2:])
 
@@ -330,10 +330,14 @@ outputs it on the command line.
             mistkerl = MAGSBS.quality_assurance.Mistkerl()
             try:
                 priority = int( options.priority)
-                if(priority < 0 or priority > 2):
+                priorities = list(
+                        MAGSBS.quality_assurance.MistakePriority.__members__.items())
+                if(priority < 0 or priority > (len(priorities)-1)):
                     print("Error: Priority must be between 0 and 2")
                     sys.exit(127)
-                mistkerl.set_priority( priority )
+                mistkerl.set_priority( getattr(
+                    MAGSBS.quality_assurance.MistakePriority, 
+                    priorities[ priority ][0] ) )
             except ValueError:
                 print("Priority must be an integer.")
             output = mistkerl.run( args[0] )
