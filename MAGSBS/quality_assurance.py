@@ -4,13 +4,19 @@
 # (c) 2014 Sebastian Humenda <shumenda@gmx.de>
 
 """
-ToDo: rewrite me
 This sub-module provides implementations for checking common lecture editing
 errors.
 
-There will be a global list of functions checking for one particular problem.
-All functions take the text of a particular file and return a tuple with
-(line_number, error_text_German)."""
+In the Mistkerl class, the only one which should be used from outside, there is
+a list of "mistakes". Mistkerl iterates through them and takes the appropriate
+steps to run the mistake checks.
+
+A mistake is a child of the Mistake class. It can set its priority and its type
+(what it wants to see from the document) in its __init__-function. The common
+run-function then implements the checking.
+
+All mistakes take a list of arguments (which depends on the set type, see
+MistakeType) and return a tuple with (line_number, detailed_error_text_German)."""
 
 import re, os, sys
 import codecs, collections
@@ -217,6 +223,35 @@ class page_numbering_text_is_lowercase(Mistake):
             if(text.find('seite')>=0 or text.find('folie')>=0):
                 return (lnum, 'Das Wort "Seite" wurde klein geschrieben. Dadurch wird es vom MAGSBS-Modul nicht erkannt, sodass keine automatische Seitennavigation erstellt werden kann.')
 
+class page_string_varies(Mistake):
+    """Some editors tend to use "slide" on the first page but "page" on the
+    second. That's inconsistent."""
+    def __init__(self):
+        Mistake.__init__(self)
+        self.set_priority( MistakePriority.normal )
+        self.set_type( MistakeType.need_pagenumbers ) # todo: could be page_numbers_dir as well
+        self._match = re.compile( config.PAGENUMBERING_REGEX )
+    def _error_msg(self, num, text):
+        return ( num, 'In der Überschrift "%s" kommt keines der folgenden Wörter vor: %s' \
+                        % (text, ', '.join( config.PAGENUMBERINGTOKENS )) )
+    def run(self, *args):
+        page_string = ''  # e.g. "page", used to check whether one diverges
+        for lnum, text in args[0]:
+            text = text.lower()
+            text_word = self._match.search( text )
+            if( not text_word ):
+                return self._error_msg(lnum, text)
+            else: text_word = text_word.groups()
+            if( page_string == '' ):
+                for t in config.PAGENUMBERINGTOKENS:
+                    if(text.find( t )>= 0):
+                        page_string = t
+            else:
+                if( text_word[0] != page_string ):
+                    return (lnum, "Die erste Seite wurde mit \"%s\" gekennzeichnet, danach wurde aber \"%s\" verwendet.  Dies sollte einheitlich sein." \
+                                    % (page_string.title(),
+                                       text_word[0].title() ))
+
 class page_string_but_no_page_number(Mistake):
     def __init__(self):
         Mistake.__init__(self)
@@ -291,10 +326,9 @@ class Mistkerl():
         self.__issues = [common_latex_errors, page_number_is_paragraph,
                 heading_is_paragraph, level_one_heading, oldstyle_pagenumbering,
                 itemize_is_paragraph, page_numbering_text_is_lowercase,
-                page_string_but_no_page_number]
+                page_string_but_no_page_number, page_string_varies]
         self.__cache_pnums = collections.OrderedDict()
         self.__cache_headings = collections.OrderedDict()
-        self.__cache_content = collections.OrderedDict()
         self.requested_level = MistakePriority.normal
 
     def get_issues(self):
@@ -354,7 +388,6 @@ recursively."""
                     Append( file_path, ('-','Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'))
                     continue
                 text = text.replace('\r\n','\n').replace('\r','\n')
-                self.__cache_content[ file_path ] = text
 
                 for issue in FullFile:
                     Append( file_path, issue.run( text ) )
@@ -365,7 +398,6 @@ recursively."""
                     for issue in OneLiner:
                         Append( file_path, issue.run( num+1, line ) )
                 # cache headings and page numbers
-                # ToDo: DEBUG both
                 pnums = pageNumberExtractor( text )
                 hdngs = HeadingExtractor( text )
                 self.__cache_pnums[ file_path ] = pnums
