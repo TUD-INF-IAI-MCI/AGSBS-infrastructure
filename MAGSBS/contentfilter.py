@@ -26,6 +26,11 @@ def generate_link(ltext, id):
     """GEnerate the HTML paragraph with the HTML anchor and the Text."""
     return '<p><a name="%s"/>%s</p>' % (id, ltext)
 
+def has_math(key, value, format, meta, modify_ast=False):
+    """Return True, if a math environment has been found."""
+    if( key.lower() == "math" ):
+        return True
+
 
 def page_number_extractor(key, value, format, meta, modify_ast=True):
     """Scan all paragraphs for those starting with || to parse it for page
@@ -99,7 +104,7 @@ def pandoc_ast_parser(text, action):
     result = []
     doc = json.loads( text )
     def go(key, value, format, meta):
-        res =  action(key, value, format, meta, modify_ast=False)
+        res = action(key, value, format, meta, modify_ast=False)
         if(res):
             result.append( res )
     walk(doc, go, "", doc[0]['unMeta'])

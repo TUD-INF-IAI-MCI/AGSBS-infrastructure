@@ -254,6 +254,14 @@ it gave an error return code"""
         # filter json and give it as input to pandoc
         JSon = contentfilter.jsonfilter( JSon,
                 contentfilter.page_number_extractor, self.conf['format'] )
+        # check whether "Math" occurs and therefore if GladTeX needs to be run
+        if( not self.use_gladtex ): # only check if GladTeX is not selected yet
+            need_gladtex = contentfilter.pandoc_ast_parser( JSon,
+                contentfilter.has_math)
+            if( type(need_gladtex) == list and len(need_gladtex) != 0):
+                self.use_gladtex = need_gladtex[0]
+                outputf = inputfStripped + '.htex'
+                pandoc_args.append('--gladtex')
         JSon = JSon.encode( sys.getdefaultencoding() )
         proc = subprocess.Popen(['pandoc'] + pandoc_args + \
                 ['-t', self.conf['format'], '-f','json', '-o', outputf],
