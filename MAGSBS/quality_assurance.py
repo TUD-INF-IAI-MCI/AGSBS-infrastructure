@@ -122,6 +122,10 @@ class page_number_is_paragraph(Mistake):
 class heading_is_paragraph(Mistake):
 # ToDo: two errors are here checked, instead split it into two error classes to
 # avoid swallowed mistakes ;)
+# ToDo II: check_numbering is commented out: it may be the case that we have an
+# aabstract in a paper and therefore the first heading is NOT 1. but has no
+# number; then the editor chooses to make the second heading with the number
+# "1.". We ought to decide how to deal with that
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
@@ -147,15 +151,15 @@ class heading_is_paragraph(Mistake):
             else:
                 if(not paragraph_begun): # happens on the second line of a paragraph
                     if(line.startswith('---') or line.startswith('===')):
-                        res = check_numbering( num, previous_line )
-                        if( res ): return (res[0]-1, res[1])
+                        #res = check_numbering( num, previous_line )
+                        #if( res ): return (res[0]-1, res[1])
                         previous_line_heading = True
                         continue
                 if(previous_line_heading ): # previous_line_heading and this is no empty line...
                     return (num+1, error_text)
                 if(re.search(r'^#+.*', line)):
-                    res = check_numbering( num, line )
-                    if( res ): return res
+                    #res = check_numbering( num, line )
+                    #if( res ): return res
                     # line contains heading, is in front of a empty line?
                     if(not paragraph_begun):
                         return (num+1, error_text)
@@ -188,22 +192,34 @@ class itemize_is_paragraph(Mistake):
         self.set_priority( MistakePriority.critical )
         self.set_type( MistakeType.full_file )
         self._match = re.compile(r"^\d+\. ")
+        self.__lastlines = []
+    def __legalstart( self, line ):
+        if(line.startswith("- ") or self._match.search( line )):
+            return True
+        else:
+            return False
+    def __in_itemize( self, line ):
+        if( len(self.__lastlines) < 2): return False
+        elif( self.__legalstart( line ) ):
+            last = self.__lastlines[-1]
+            if( self.__legalstart( line ) ):
+                return True
+        return False
+
     def run(self, *args):
-        paragraph_begun = True
-        in_itemize = False
-        def is_empty( string ):
-            return string.replace(" ","").replace("\t","") == ""
+        def empty( string ):
+            return string.replace(" ","").replace("\t", "")
         for num, line in enumerate( args[0].split("\n") ):
-            if( is_empty( line )):
-                paragraph_begun = True
-                in_itemize = False
-                continue
-            if((line.startswith("- ") or self._match.search(line))):
-                if( paragraph_begun ):
-                    in_itemize = True
-                elif( not paragraph_begun and not in_itemize ):
-                    return (num+1, "Jede Aufzählung muss darüber und darunter Leerzeilen haben, damit sie bei der Umwandlung als Aufzählung erkannt wird.")
-            paragraph_begun = False
+            if( self.__in_itemize( line ) ):
+                if( not (self.__lastlines[0] == '') and \
+                        not self.__legalstart( line ) ):
+                    return (num, "Jede Aufzählung muss darüber und darunter Leerzeilen haben, damit sie bei der Umwandlung als Aufzählung erkannt wird.")
+            if( len(self.__lastlines) == 2):
+                del self.__lastlines[0]
+            if( empty( line ) == ''):
+                self.__lastlines.append( '' )
+            else:
+                self.__lastlines.append( line )
 
 
 class oldstyle_pagenumbering(Mistake):
