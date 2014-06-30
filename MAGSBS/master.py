@@ -54,9 +54,8 @@ result in other undefined behavior.
 This function creates a navigation bar, the table of contents and converts all
 files. It will raise NoLectureConfigurationError when no configuration has been
 found and there are MarkDown files."""
-        c = convert_a_directoryl( self.get_roots() )
         cwd = os.getcwd()
-        for root in c.get_roots():
+        for root in self.get_roots():
             os.chdir( root )
             # create navigation bar
             p = MAGSBS.filesystem.page_navigation( "." )
