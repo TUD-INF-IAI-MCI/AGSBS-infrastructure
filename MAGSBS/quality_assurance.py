@@ -120,6 +120,8 @@ class page_number_is_paragraph(Mistake):
 
 
 class heading_is_paragraph(Mistake):
+# ToDo: two errors are here checked, instead split it into two error classes to
+# avoid swallowed mistakes ;)
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
@@ -130,7 +132,7 @@ class heading_is_paragraph(Mistake):
         if(len(args) < 1):
             raise ValueError("At least one parameter with the file content expected.")
         error_text = "Jede Ueberschrift muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
-        error_text_number = "Die Überschriftsnummerierungen werden automatisch generiert und sollen daher nicht am Anfang der Überschrift stehen, sondern weggelassen werden."
+        error_text_number = "Die Überschriftsnummerierungen werden automatisch generiert und sollen daher weggelassen werden."
         def check_numbering( num, line ):
             res = re.search(r"^(\#*)\s*(\d+\.\d*)", line)
             if( res ):
@@ -188,16 +190,20 @@ class itemize_is_paragraph(Mistake):
         self._match = re.compile(r"^\d+\. ")
     def run(self, *args):
         paragraph_begun = True
-        def Strip( string ):
-            return string.replace(" ","").replace("\t","")
+        in_itemize = False
+        def is_empty( string ):
+            return string.replace(" ","").replace("\t","") == ""
         for num, line in enumerate( args[0].split("\n") ):
-            if(Strip( line ) == ''):
+            if( is_empty( line )):
                 paragraph_begun = True
-            else:
-                if((line.startswith("- ") or self._match.search(line)) \
-                        and not paragraph_begun):
+                in_itemize = False
+                continue
+            if((line.startswith("- ") or self._match.search(line))):
+                if( paragraph_begun ):
+                    in_itemize = True
+                elif( not paragraph_begun and not in_itemize ):
                     return (num+1, "Jede Aufzählung muss darüber und darunter Leerzeilen haben, damit sie bei der Umwandlung als Aufzählung erkannt wird.")
-                paragraph_begun = False
+            paragraph_begun = False
 
 
 class oldstyle_pagenumbering(Mistake):
@@ -392,9 +398,9 @@ recursively."""
                 for issue in FullFile:
                     Append( file_path, issue.run( text ) )
                 for num, line in enumerate(text.split('\n')):
-                    if( num > 800 and not overlong ):
+                    if( num > 1300 and not overlong ):
                         overlong = True
-                        Append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 800 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
+                        Append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 1300 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
                     for issue in OneLiner:
                         Append( file_path, issue.run( num+1, line ) )
                 # cache headings and page numbers

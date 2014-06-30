@@ -264,8 +264,7 @@ class translate():
 l10n with Windows."""
     def __init__(self):
         c = confFactory()
-        self.conf  = c.get_conf_instance()
-        self.lang = self.conf[ 'language' ]
+        self._factory = confFactory()
         self.en_fr = { 
             'preface':'introduction',   'appendix':'appendice',
             'chapters':'chapitres', 'pages':'pages',
@@ -287,8 +286,11 @@ l10n with Windows."""
             }
 
     def get_translation(self, origin):
+        inst = self._factory.get_conf_instance()
+        lang = inst[ 'language' ]
+
         try:
-            trans = getattr(self, 'en_'+self.lang)
+            trans = getattr(self, 'en_'+lang)
         except AttributeError:
             return origin
         try:
