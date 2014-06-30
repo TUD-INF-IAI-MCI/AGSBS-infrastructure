@@ -81,6 +81,12 @@ and in- or exclude it."""
                 output.append( h )
                 output.append('\\\n')
 
+        if( os.path.exists( "info.md" ) ):
+            output.append('\n\n* * * * *\n\n[')
+            output.append(_("remarks about the accessible edited version"))
+            output.append('](info.html)')
+            output.append("\n")
+
         return ''.join(output) + '\n'
 
 

@@ -272,7 +272,7 @@ l10n with Windows."""
             'index':'index',
             'image description outsourced':"description de l'image excluré",
             'description of image outsourced':"description de l'image excluré",
-            'next':'suivant',  'previous':'précédent'
+            'next':'suivant',  'previous':'précédent',
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
             'table of contents' : 'inhaltsverzeichnis',
@@ -282,7 +282,8 @@ l10n with Windows."""
             'images':'bilder',
             'pages':'Seiten',
             'index':'Inhalt',
-            'next':'weiter',   'previous':'zurück'
+            'next':'weiter',   'previous':'zurück',
+            'Remarks about the accessible edited version':'Hinweise zur barrierefrei bearbeiteten Version'
             }
 
     def get_translation(self, origin):
