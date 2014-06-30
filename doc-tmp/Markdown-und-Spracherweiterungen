@@ -1,0 +1,51 @@
+# TMP Doku
+
+## Markdown
+
+## Sprungmarken setzen (um Elemente zu überspringen)
+
+Um etwas zu überspringen, ist ein Link sowie eine Sprungmarke (auch Sprunganker)
+nötig. Es gibt in HTML viele (teils auch veraltete) Möglichkeiten um
+Sprungmarken zu erstellen, in Markdown sind aber nur `<div id="text"></div>` und
+`<span id="text"></span>` erlaubt. Hintergrund ist, dass dies die allgemeinsten Varianten sind. Am meisten bietet sich `span` an, da es keinen neuen Block beginnt.
+
+Wie bereits erwähnt soll Markdown so unabhängig wie möglich vom Ausgabeformat
+sein. Um das zu erreichen wurden o.g. Ausnahmen zu der Version von Pandocs
+Markdown hinzugefügt. Der Export in andere Formate ist trotzdem möglich.
+
+Ein Beispiel könnte so aussehen:
+
+~~~~
+[Tabelle überspringen](#endetabelle1)
+
+
+--------------  ------------------
+Nahrung         Preis
+--------------  ------------------
+Schokolade      0,99 EUR
+Brot            2,80 EUR
+--------------  ------------------
+
+<span id="endetabelle1"></span>
+~~~~
+
+Zwischen `<span id="text">` und `</span>` darf selbstverständich weiterer Text
+stehen, falls gewünscht.
+
+## Spracherweiterungen
+#
+Folgende Spracherweiterungen gibt es:
+
+## Seitenzahlen
+
+Seitenzahlen werden mit "||" eingeleitet und müssen das Format 
+`<Identifier> <Zahl>` haben, wobei "Identifier" entwerder "Seite, Folie, slide,
+page oder glisser ist. Jede Seitenzahl **MUSS** ein eigener Absatz sein.
+Beispiel:
+
+~~~~
+
+|| - Seite 80 -
+
+~~~~
+
