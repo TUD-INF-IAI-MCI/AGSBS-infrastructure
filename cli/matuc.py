@@ -341,6 +341,9 @@ outputs it on the command line.
             except ValueError:
                 print("Priority must be an integer.")
             output = mistkerl.run( args[0] )
+            if(len(output) == 0):
+                print("Nun denn, ich konnte keine Fehler entdecken. Hoffen wir, dass es auch wirklich\nkeine gibt ;-).")
+                sys.exit( 0 )
             for fn, issues in output.items():
                 if(len(issues) > 0):
                     print('\n'+fn+':\n')

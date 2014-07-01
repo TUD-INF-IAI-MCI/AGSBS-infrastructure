@@ -414,9 +414,9 @@ recursively."""
                 for issue in FullFile:
                     Append( file_path, issue.run( text ) )
                 for num, line in enumerate(text.split('\n')):
-                    if( num > 1300 and not overlong ):
+                    if( num > 2000 and not overlong ):
                         overlong = True
-                        Append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 1300 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
+                        Append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2000 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
                     for issue in OneLiner:
                         Append( file_path, issue.run( num+1, line ) )
                 # cache headings and page numbers
