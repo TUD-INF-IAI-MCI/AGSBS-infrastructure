@@ -301,7 +301,7 @@ class uniform_pagestrings(Mistake):
         f_fn = os.path.split( f_fn )[-1]
         second_piece = ''
         if( f_fn == l_fn ):
-            second_piece = "später dann aber aber \"%s\"" %(l_num, l_text)
+            second_piece = "später dann aber aber \"%s\"" % (l_text)
         else:
             second_piece = "in der Datei \"%s\" dann aber \"%s\"" % (l_fn, l_text)
         return (l_num, "In der Datei \"%s\", Zeile %s wurde zuerst \"%s\" verwendet, " % (f_fn, f_num, f_text) + \
