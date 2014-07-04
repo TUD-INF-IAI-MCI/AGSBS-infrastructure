@@ -308,13 +308,18 @@ class uniform_pagestrings(Mistake):
                 second_piece + ". Dies sollte einheitlich sein.")
 
     def worker(self, *args):
+        rgx = re.compile( config.PAGENUMBERING_REGEX )
         first = None
         for fn, NUMS in args[0].items():
             for lnum, text in NUMS:
+                match = rgx.search( text.lower() )
+                if( not match ): continue
+                else: match = match.groups()
                 if( first == None ):
-                    first = (fn, lnum, text)
-                elif( first[2] != text ):
-                    return self._error( first[0], first[1], first[2], fn, lnum, text )
+                    first = (fn, lnum, match[0])
+                elif( first[2] != match[0] ):
+                    return self._error( first[0], first[1], first[2], fn, lnum,
+                            match[0])
 
 
 class page_string_but_no_page_number(Mistake):
