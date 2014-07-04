@@ -40,12 +40,14 @@ class MistakeType(enum.Enum):
     oneliner            line number (starting form 1), line
     need_headings       argument is return value of HeadingExtractor class
     need_headings_dir   all headings in a directory
-    need_pagenumbers   (line_num, level, string) # output of pageNumberExtractor"""
+    need_pagenumbers   (line_num, level, string) # output of pageNumberExtractor
+    need_pagenumbers   [(line_num, level, string)] # one directory full of page numbers."""
     full_file = 1
     oneliner = 2
     need_headings = 3
     need_headings_dir = 4
     need_pagenumbers = 5
+    need_pagenumbers_dir = 6
 
 class Mistake:
     """Convenience class which saves the actual method and the type of
@@ -53,6 +55,13 @@ class Mistake:
     def __init__(self):
         self._type = MistakeType.full_file
         self._priority = MistakePriority.normal
+        self.__apply = True
+    def do_run(self):
+        """Can be set e.g. for oneliners which have already found an error."""
+        return self.__apply
+    def set_run(self, value):
+        assert type(value) == bool
+        self.__apply = value
     def get_type(self): return self._type
     def set_type(self, t):
         if( isinstance( t, MistakeType) ):
@@ -67,6 +76,10 @@ class Mistake:
             raise TypeError("This method expects an argument of type enum.")
 
     def run(self, *args):
+        if( not self.do_run ):
+            return
+        return self.worker( *args )
+    def worker(self, *args):
         raise NotImplementedError("The method run must be overriden by a child class.")
 
 
@@ -74,7 +87,7 @@ class common_latex_errors( Mistake ):
     def __init__(self):
         Mistake.__init__( self )
         # full_file is automatic
-    def run(self, *args):
+    def worker(self, *args):
         if( len(args) < 1 ):
             raise TypeError("An argument with the file content to check is expected.")
         for num, line in enumerate( args[0].split('\n') ):
@@ -98,7 +111,7 @@ class page_number_is_paragraph(Mistake):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
         self._error_text = "Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
-    def run(self, *args):
+    def worker(self, *args):
         if(len(args)<1):
             raise ValueError("At least one argument (file content) expected.")
         paragraph_begun = True
@@ -130,7 +143,7 @@ class heading_is_paragraph(Mistake):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
         self.set_type( MistakeType.full_file )
-    def run(self, *args):
+    def worker(self, *args):
         """Check whether all page numbers are on a paragraph on their own. Also
         checks whether headings do NOT start with a number."""
         if(len(args) < 1):
@@ -173,16 +186,16 @@ class level_one_heading( Mistake ):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
         self.set_type( MistakeType.need_headings_dir )
-    def run(self, *args):
+    def worker(self, *args):
+        assert type( args[0] ) == dict or \
+                type( args[0] ) == collections.OrderedDict
         found_h1 = False
-        for fn, headings in args[0]:
+        for path, headings in args[0].items():
             for lnum, level, text in headings:
                 if( level == 1 ):
                     if( found_h1 ):
-                        dir = fn.split( os.sep )
-                        if(len(dir) >= 2): dir = dir[-2]
-                        else: dir = dir[-1]
-                        return ('-', "In dem Verzeichnis " + dir + " gibt es mehr als eine Überschrift der Ebene 1. Dies ist nicht erlaubt. Beispielsweise hat jeder Foliensatz nur eine ueberschrift und auch ein Kapitel wird nur mit einer ueberschrift bezeichnet. Es ist Aufgabe des Bearbeiters, Foliensätze ohne erkennbare Struktur mit einer Struktur zu versehen.")
+                        dir = os.path.split( path )[0]
+                        return ('-', "In dem Verzeichnis " + dir + " gibt es mehr als eine Überschrift der Ebene 1. Dies ist nicht erlaubt. Beispielsweise hat jeder Foliensatz nur eine Überschrift und auch ein Kapitel wird nur mit einer Überschrift bezeichnet.")
                     else:
                         found_h1 = True
 
@@ -206,7 +219,7 @@ class itemize_is_paragraph(Mistake):
                 return True
         return False
 
-    def run(self, *args):
+    def worker(self, *args):
         def empty( string ):
             return string.replace(" ","").replace("\t", "")
         for num, line in enumerate( args[0].split("\n") ):
@@ -227,7 +240,7 @@ class oldstyle_pagenumbering(Mistake):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
         self.set_type( MistakeType.oneliner )
-    def run(self, *args):
+    def worker(self, *args):
         """Check whether the old page numbering style "###### - page xyz -" is used."""
         if(len(args)< 2): raise ValueError("Two arguments expected.")
         obj = re.search(r'\s*######\s*-\s*(' +
@@ -240,7 +253,7 @@ class page_numbering_text_is_lowercase(Mistake):
     def __init__(self):
         Mistake.__init__(self)
         self.set_type( MistakeType.need_pagenumbers )
-    def run(self, *args):
+    def worker(self, *args):
         for lnum, text in args[0]:
             if(text.find('seite')>=0 or text.find('folie')>=0):
                 return (lnum, 'Das Wort "Seite" wurde klein geschrieben. Dadurch wird es vom MAGSBS-Modul nicht erkannt, sodass keine automatische Seitennavigation erstellt werden kann.')
@@ -253,26 +266,56 @@ class page_string_varies(Mistake):
         self.set_priority( MistakePriority.normal )
         self.set_type( MistakeType.need_pagenumbers ) # todo: could be page_numbers_dir as well
         self._match = re.compile( config.PAGENUMBERING_REGEX )
-    def _error_msg(self, num, text):
+    def _error_syntax(self, num, text):
+        return (num, 'Die Überschrift muss die Form "- Seite ZAHL -" haben, wobei ZAHL durch eine Zahl ersetzt werden muss. Wahrscheinlich wurden die Bindestriche vergessen.')
+    def _error_word(self, num, text):
         return ( num, 'In der Überschrift "%s" kommt keines der folgenden Wörter vor: %s' \
                         % (text, ', '.join( config.PAGENUMBERINGTOKENS )) )
-    def run(self, *args):
+    def worker(self, *args):
         page_string = ''  # e.g. "page", used to check whether one diverges
         for lnum, text in args[0]:
             text = text.lower()
             text_word = self._match.search( text )
             if( not text_word ):
-                return self._error_msg(lnum, text)
+                found = False
+                for t in config.PAGENUMBERINGTOKENS:
+                    if(text.lower().find( t ) >= 0):
+                        found = True
+                        break
+                if( found ):
+                    self._error_syntax( lnum, text )
+                else:
+                    return self._error_msg(lnum, text)
             else: text_word = text_word.groups()
             if( page_string == '' ):
                 for t in config.PAGENUMBERINGTOKENS:
                     if(text.find( t )>= 0):
                         page_string = t
-            else:
-                if( text_word[0] != page_string ):
-                    return (lnum, "Die erste Seite wurde mit \"%s\" gekennzeichnet, danach wurde aber \"%s\" verwendet.  Dies sollte einheitlich sein." \
-                                    % (page_string.title(),
-                                       text_word[0].title() ))
+
+class uniform_pagestrings(Mistake):
+    def __init__(self):
+        self.set_priority( MistakePriority.normal )
+        self.set_type( MistakeType.need_pagenumbers_dir )
+    def _error(self, f_fn, f_num, f_text, l_fn, l_num, l_text):
+        l_fn = os.path.split( l_fn )[-1]
+        f_fn = os.path.split( f_fn )[-1]
+        second_piece = ''
+        if( f_fn == l_fn ):
+            second_piece = "später dann aber aber \"%s\"" %(l_num, l_text)
+        else:
+            second_piece = "in der Datei \"%s\" dann aber \"%s\"" % (l_fn, l_text)
+        return (l_num, "In der Datei \"%s\", Zeile %s wurde zuerst \"%s\" verwendet, " % (f_fn, f_num, f_text) + \
+                second_piece + ". Dies sollte einheitlich sein.")
+
+    def worker(self, *args):
+        first = None
+        for fn, NUMS in args[0].items():
+            for lnum, text in NUMS:
+                if( first == None ):
+                    first = (fn, lnum, text)
+                elif( first[2] != text ):
+                    return self._error( first[0], first[1], first[2], fn, lnum, text )
+
 
 class page_string_but_no_page_number(Mistake):
     def __init__(self):
@@ -281,7 +324,7 @@ class page_string_but_no_page_number(Mistake):
         self.set_type( MistakeType.oneliner )
         self.set_priority( MistakePriority.critical )
 
-    def run( self, *args ):
+    def worker( self, *args ):
         """Sometimes one types "- page -" and forgets the digit."""
         line = args[1]
         if( not line.startswith("||") ): return None
@@ -348,9 +391,11 @@ class Mistkerl():
         self.__issues = [common_latex_errors, page_number_is_paragraph,
                 heading_is_paragraph, level_one_heading, oldstyle_pagenumbering,
                 itemize_is_paragraph, page_numbering_text_is_lowercase,
-                page_string_but_no_page_number, page_string_varies]
+                page_string_but_no_page_number, page_string_varies,
+                uniform_pagestrings]
         self.__cache_pnums = collections.OrderedDict()
         self.__cache_headings = collections.OrderedDict()
+        self.__output = {}
         self.requested_level = MistakePriority.normal
 
     def get_issues(self):
@@ -368,10 +413,18 @@ class Mistkerl():
         else:
             return 'Zeile ' + str(data[0]) + ": " + data[1]
 
+    def __append(self, path, value):
+        if( value ):
+            if( not path in self.__output.keys() ):
+                self.__output[ path ] = []
+            self.__output[ path ].append( self.__format_out( value ) )
+
+
     def run( self, path ):
         """Take either a file and run checks or do the same for a directory
 recursively."""
-        output = {}
+        # dirty trick: file_iterator abstracts whether one file or a directory
+        # tree is used
         file_iterator = None
         if( os.path.isfile( path ) ):
             if( path.endswith('.md') ):
@@ -385,12 +438,14 @@ recursively."""
             file_iterator = lambda path: filesystem.get_markdown_files( path,
                     all_markdown_files=True )
         def Append( path, x ):
-            if( x ):
-                if( not path in output.keys() ):
-                    output[ path ] = []
-                output[ path ].append( self.__format_out( x ) )
+            self.__append( path, x )
 
+        last_dir = None
         for directoryname, directory_list, file_list in file_iterator( path ):
+            if( not (last_dir == directoryname) ):
+                self.run_directory_filters( last_dir )
+                last_dir = directoryname
+
             # presort issues
             FullFile = [e for e in self.get_issues() \
                         if e.get_type() == MistakeType.full_file]
@@ -414,11 +469,15 @@ recursively."""
                 for issue in FullFile:
                     Append( file_path, issue.run( text ) )
                 for num, line in enumerate(text.split('\n')):
-                    if( num > 2000 and not overlong ):
+                    if( num > 2500 and not overlong ):
                         overlong = True
-                        Append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2000 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
+                        Append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
                     for issue in OneLiner:
-                        Append( file_path, issue.run( num+1, line ) )
+                        if( issue.do_run() ):
+                            res = issue.run( num+1, line )
+                            if( res ):
+                                Append( file_path, res )
+                                issue.set_run( False )
                 # cache headings and page numbers
                 pnums = pageNumberExtractor( text )
                 hdngs = HeadingExtractor( text )
@@ -429,8 +488,29 @@ recursively."""
                     Append( file_path, issue.run( pnums ) )
                 for issue in NeedHeadings:
                     Append( file_path, issue.run( hdngs ) )
+        # the last directory must be processed, even so there was no directory
+        # change
+        self.run_directory_filters( directoryname )
                         
+        # sort output again
         new = collections.OrderedDict()
-        for k, v in sorted(output.items(), key=lambda x: x[0]):
+        for k, v in sorted(self.__output.items(), key=lambda x: x[0].lower()):
             new[k] = sorted( v )
         return new
+
+    def run_directory_filters(self, dname):
+        """Run all filters depending on the output of a directory."""
+        if( len(self.__cache_pnums) > 0 ):
+            x = [e for e in self.get_issues() if e.get_type() == MistakeType.need_pagenumbers_dir]
+            for issue in x:
+                self.__append( dname, issue.run( self.__cache_pnums ) )
+        if( len(self.__cache_headings) > 0 ):
+            x = [e for e in self.get_issues() if e.get_type() == MistakeType.need_headings_dir]
+            for issue in x:
+                self.__append( dname, issue.run( self.__cache_headings ) )
+        self.__cache_pnums.clear()
+        self.__cache_headings.clear()
+
+
+
+

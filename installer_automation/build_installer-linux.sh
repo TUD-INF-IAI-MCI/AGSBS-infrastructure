@@ -17,3 +17,4 @@ makensis matuc.nsi
 mv matuc_installer.exe ..
 cd ..
 rm -rf build
+chmod a+r matuc_installer.exe
