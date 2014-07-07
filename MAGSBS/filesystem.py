@@ -107,8 +107,15 @@ By calling the function, the actual index is build."""
                 m = simpleMarkdownParser( data, directoryname, file )
                 m.parse()
                 m.fetch_headings()
+                headings = []
+                if( os.path.split( directoryname )[-1].startswith("anh") ):
+                    for heading in m.get_headings():
+                        heading.set_type( "appendix" )
+                        headings.append( heading )
+                else:
+                    headings = m.get_headings()
                 full_fn = os.path.join( directoryname, file)
-                self.__index[ full_fn ] = m.get_headings()
+                self.__index[ full_fn ] = headings
     
     def get_index(self):
         tmp = collections.OrderedDict()
@@ -135,16 +142,42 @@ have for the pages."""
         self.__lang = c['language']
         self.__fmt = c['format']
         self.linebreaks = '\n'
+    def __preorder(self):
+        preface = []
+        main = []
+        appendix = []
+        for dir, dlist, flist in get_markdown_files(self.__dir):
+            tmp = os.path.split( dir )[-1]
+            stop = False
+            for t in config.VALID_PREFACE_BGN:
+                if( tmp.startswith( t) ):
+                    preface.append( (dir, dlist, flist) )
+                    stop = True
+                    break
+            if( stop ): continue
+            for t in config.VALID_MAIN_BGN:
+                if( tmp.startswith( t) ):
+                    main.append( (dir, dlist, flist) )
+                    stop = True
+                    break
+            if( stop ): continue
+            for t in config.VALID_APPENDIX_BGN:
+                if( tmp.startswith( t) ):
+                    appendix.append( (dir, dlist, flist) )
+                    stop = True
+                    break
+        return preface + main + appendix
+
+
     def iterate(self):
         """Iterate over the files and call self.trail_nav and self.gen_nav. Write
 back the file."""
         cwd = os.getcwd()
         os.chdir( self.__dir )
         files = []
-        for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
+        for directoryname, directory_list, file_list in self.__preorder():
             for file in file_list:
                 files.append( directoryname + os.sep + file )
-        files.sort()
         has_prev = None
         has_next = None
         for pos, file in enumerate( files ):
@@ -211,10 +244,10 @@ and end again with
         chapternav = '[%s](../inhalt.html)' % _('index').title()
         if( has_prev ):
             chapternav = '[%s](%s)  ' % (_('previous'),
-                os.path.join( "..", os.path.split( has_prev )[-1])) + chapternav
+                os.path.join( "..", has_prev )) + chapternav
         if( has_next ):
             chapternav += "  [%s](%s)" % (_('next'),
-                os.path.join("..", os.path.split( has_next)[-1] ))
+                os.path.join("..", has_next ))
         newpage += [ '<!-- page navigation -->%s' % lbr, chapternav, lbr, lbr, ''.join(navbar) ]
         newpage += [lbr,lbr, '* * * * *', lbr, '<!-- end page navigation -->', lbr]
         if(not page.startswith(lbr)):
