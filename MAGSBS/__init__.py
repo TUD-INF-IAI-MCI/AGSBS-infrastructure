@@ -21,6 +21,8 @@ import MAGSBS.filesystem
 import MAGSBS.factories
 import MAGSBS.pandoc
 import MAGSBS.config
+import MAGSBS.master
+import MAGSBS.errors
 
 
 #__all__ = ['config, 'pandoc']

@@ -290,7 +290,6 @@ it gave an error return code"""
             text = proc.communicate()
             ret = proc.wait()
             if(ret):
-                print(text[1].decode( sys.getdefaultencoding() ))
-                raise SubprocessError("Error while running GladTeX.")
+                raise SubprocessError(text[1].decode( sys.getdefaultencoding()))
             os.remove( outputf )
 

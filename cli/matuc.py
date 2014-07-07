@@ -72,6 +72,8 @@ class main():
                 self.new()
             elif(sys.argv[1] == 'mk'):
                 self.mk()
+            elif(sys.argv[1] == 'master'):
+                self.master()
             else:
                 error_exit(usage)
 
@@ -349,5 +351,16 @@ outputs it on the command line.
                     print('\n'+fn+':\n')
                 for issue in issues:
                     print('-   ' + '\n    '.join( textwrap.wrap( issue, 74 ) ) )
+    def master(self):
+        args = sys.argv[2:]
+        if not os.path.exists( args[0] ):
+            print("No such file or directory.")
+            sys.exit(1)
+        elif(not os.path.isdir( args[0] )):
+            print("%s: is not a directory" % args[0])
+            sys.exit(1)
+        else:
+            m = MAGSBS.master.Master( args[0] )
+            m.run()
 
 m = main()
