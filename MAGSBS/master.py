@@ -71,7 +71,11 @@ found and there are MarkDown files."""
                 os.chdir( dir )
                 for f in flist:
                     p = MAGSBS.pandoc.pandoc()
-                    p.convert( f )
+                    try:
+                        p.convert( f )
+                    except MAGSBS.error.SubprocessError as interposeError:
+                        raise MAGSBS.errors.SubprocessError("Error while converting \"%s\"\n" % f \
+                                        +  E.args[0])
                 os.chdir( root )
         os.chdir( cwd )
         
