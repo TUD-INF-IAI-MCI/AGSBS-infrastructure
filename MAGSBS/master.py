@@ -76,6 +76,6 @@ found and there are MarkDown files."""
                     except MAGSBS.errors.SubprocessError as interposeError:
                         raise MAGSBS.errors.SubprocessError("Error while converting \"%s\"\n" % os.path.join( dir, f ) \
                                         +  interposeError.args[0])
-                os.chdir( root )
+                os.chdir( os.path.join( cwd, root ) )
         os.chdir( cwd )
         
