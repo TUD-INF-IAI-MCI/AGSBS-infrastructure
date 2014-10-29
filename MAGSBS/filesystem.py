@@ -123,6 +123,15 @@ By calling the function, the actual index is build."""
             tmp[ key ] = self.__index[ key ]
         return tmp
 
+    def is_empty(self):
+        """Check whether actual entries were collected for the table of
+        contents."""
+        empty = True
+        for key,value in self.__index.items():
+            if value:
+                empty = False
+        return empty
+
 
 class page_navigation():
     """page_navigation(directory, page_gap)

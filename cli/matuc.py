@@ -100,9 +100,10 @@ class main():
         try:
             c = MAGSBS.filesystem.create_index( dir )
             c.walk()
-            idx = MAGSBS.factories.index2markdown_TOC(c.get_index())
-            file.write( idx.get_markdown_page() )
-            file.close()
+            if not c.is_empty():
+                idx = MAGSBS.factories.index2markdown_TOC(c.get_index())
+                file.write( idx.get_markdown_page() )
+                file.close()
         except OSError:
             error_exit("OSError: " + e.message+'\n')
         except TOCError as e:

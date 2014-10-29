@@ -63,9 +63,11 @@ found and there are MarkDown files."""
             # create table of contents
             c = MAGSBS.filesystem.create_index( "." )
             c.walk()
-            idx = MAGSBS.factories.index2markdown_TOC(c.get_index())
-            with codecs.open( _( "index" ).lower() + ".md", 'w' ) as file:
-                file.write( idx.get_markdown_page() )
+            if( not c.is_empty() ):
+                index = c.get_index()
+                md_creator = MAGSBS.factories.index2markdown_TOC(index)
+                with codecs.open( _( "index" ).lower() + ".md", 'w' ) as file:
+                    file.write( md_creator.get_markdown_page() )
             
             for dir, dlist, flist in MAGSBS.filesystem.get_markdown_files( ".", True ):
                 os.chdir( dir )
