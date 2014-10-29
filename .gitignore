@@ -2,3 +2,4 @@
 build
 cli/build
 dist
+installer*/matuc_installer.exe

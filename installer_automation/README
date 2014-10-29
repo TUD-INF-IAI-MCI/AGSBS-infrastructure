@@ -1,12 +1,12 @@
 Installer Automation
 ====================
 
-Sorry, this includes binary data. I see now simple and yet fast way to build an
-installer else.
+Currently, there is binary data in this git repository. It is merely for
+convenience.
 
 Execute 
 
-    ./build_installer-linux.sh
+    ./build_installer-windows.sh
 
 This creates a build directory, copies all relevant files into it and runs
 makensis.
@@ -27,3 +27,10 @@ the version number of python without dots. copy those into your just referenced
 folder containing a fresh *copy* of the installed Python.
 
 Now rename the directory to "binary" and add the GladTeX executable. Voila!
+
+Building A Debian Package
+=========================
+
+$ sudo apt-get install dpkg-dev dh-python debhelper
+
+$ sh debian.sh
