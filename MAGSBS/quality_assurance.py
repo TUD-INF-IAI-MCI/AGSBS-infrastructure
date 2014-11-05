@@ -16,7 +16,9 @@ A mistake is a child of the Mistake class. It can set its priority and its type
 run-function then implements the checking.
 
 All mistakes take a list of arguments (which depends on the set type, see
-MistakeType) and return a tuple with (line_number, detailed_error_text_German)."""
+MistakeType) and return a tuple with (line_number, detailed_error_text_German).
+
+For the documentation of the mistake types, see the appropriate class."""
 
 import re, os, sys
 import codecs, collections
@@ -35,13 +37,16 @@ class MistakeType(enum.Enum):
     """The mistake type determines the arguments and the environment in which to
     run the tests.
 
-    type                parameters
-    full_file           file content, file name
-    oneliner            line number (starting form 1), line
-    need_headings       argument is return value of HeadingExtractor class
-    need_headings_dir   all headings in a directory
-    need_pagenumbers   (line_num, level, string) # output of pageNumberExtractor
-    need_pagenumbers   [(line_num, level, string)] # one directory full of page numbers."""
+type                parameters      Explanation
+full_file           (content, name) applied to a whole file
+oneliner            (num, line)     applied to line, starting num = 1
+need_headings       (lnum, level,   applied to all headings
+                     title)
+need_headings_dir   [(path, [lnum,  applied to all headings in a directory
+                     level, title]))
+need_pagenumbers    (lnum, level,   applied to all page numbers of page
+                 string)
+need_pagenumbers_dir   see headings applied to all page numbers of directory"""
     full_file = 1
     oneliner = 2
     need_headings = 3
@@ -321,6 +326,38 @@ class uniform_pagestrings(Mistake):
                     return self._error( first[0], first[1], first[2], fn, lnum,
                             match[0])
 
+class too_many_headings(Mistake):
+    """Are there too many headings of the same level in a directory next to each
+other? E.g. 40 headings level 2. The figure can be controled using
+self.threshold."""
+    def __init__( self ):
+        self.set_priority( MistakePriority.critical )
+        self.set_type( MistakeType.need_headings_dir )
+        self.threshold = 20
+        conf = config.confFactory().get_conf_instance()
+        self.maxdepth = conf['tocDepth']
+
+    def worker( self, *args ):
+        levels = [0,0,0,0,0,0]
+        for fpath, headings in args[0].items():
+            for lnum, level, title in headings:
+                if( level > self.maxdepth ): continue
+                levels[level-1] += 1
+                # + 1 for the current level and reset all levels below
+                for i in range( level, len(levels) ):
+                    levels[i] = 0
+                if( levels[level-1] > self.threshold ):
+                    return self.error_text( level )
+
+    def error_text( self, heading_level ):
+        return ("-", "Es existieren mehr als %d " % self.threshold + \
+                "Überschriften der Ebene %d. " % heading_level + \
+                "Das macht das Inhaltsverzeichnis sehr übersichtlich."+\
+                " Man kann entweder in der Konfiguration tocDepth kleiner setzen, "+\
+                "um Überschriften dieser Ebene nicht ins Inhaltsverzeichnis"+\
+                " aufzunehmen (für Foliensätze z.B. tocDepth 1) oder die Anzahl "+\
+                "an Überschriften minimieren, sofern möglich.")
+
 
 class page_string_but_no_page_number(Mistake):
     def __init__(self):
@@ -396,7 +433,7 @@ class Mistkerl():
                 heading_is_paragraph, level_one_heading, oldstyle_pagenumbering,
                 itemize_is_paragraph, page_numbering_text_is_lowercase,
                 page_string_but_no_page_number, page_string_varies,
-                uniform_pagestrings]
+                uniform_pagestrings, too_many_headings ]
         self.__cache_pnums = collections.OrderedDict()
         self.__cache_headings = collections.OrderedDict()
         self.__output = {}
@@ -486,12 +523,6 @@ recursively."""
         for issue in NeedHeadings:
             self.__append( file_path, issue.run( hdngs ) )
                        
-        ## sort output again
-        #new = collections.OrderedDict()
-        #for k, v in sorted(self.__output.items(), key=lambda x: x[0].lower()):
-        #    new[k] = sorted( v )
-        #return new
-
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""
         if( len(self.__cache_pnums) > 0 ):
