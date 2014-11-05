@@ -115,7 +115,7 @@ one instance at a time exists.
         self.__path = path
         self.__numerical = ['tocDepth', 'appendixPrefix', 'pageNumberingGap']
         self['workinggroup'] = 'AGSBS'
-        if(sys.platform.lower().find('win')>=0):
+        if(sys.platform.lower().startswith('win')>=0):
             self['editor'] = getpass.getuser()
         else: # full name with the unix way
             self['editor'] = pwd.getpwuid(os.getuid())[4]
