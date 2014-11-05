@@ -56,7 +56,7 @@ class Mistake:
         self._type = MistakeType.full_file
         self._priority = MistakePriority.normal
         self.__apply = True
-    def do_run(self):
+    def should_be_run(self):
         """Can be set e.g. for oneliners which have already found an error."""
         return self.__apply
     def set_run(self, value):
@@ -76,7 +76,7 @@ class Mistake:
             raise TypeError("This method expects an argument of type enum.")
 
     def run(self, *args):
-        if( not self.do_run ):
+        if( not self.should_be_run ):
             return
         return self.worker( *args )
     def worker(self, *args):
@@ -389,7 +389,6 @@ def pageNumberExtractor(data):
 
 ############################################
 
-# ToDo: implement need_headings_dir
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
     def __init__(self):
@@ -428,80 +427,70 @@ class Mistkerl():
     def run( self, path ):
         """Take either a file and run checks or do the same for a directory
 recursively."""
-        # dirty trick: file_iterator abstracts whether one file or a directory
-        # tree is used
-        file_iterator = None
-        if( os.path.isfile( path ) ):
-            if( path.endswith('.md') ):
-                def onefile( path ):
-                    yield (os.path.split(path)[0], [], [os.path.split(path)[-1]])
-                file_iterator = onefile
-            else:
-                print('Error: file name must end on ".md".')
-                sys.exit( 127 )
-        else:
-            file_iterator = lambda path: filesystem.get_markdown_files( path,
-                    all_markdown_files=True )
-        def Append( path, x ):
-            self.__append( path, x )
-
         last_dir = None
-        for directoryname, directory_list, file_list in file_iterator( path ):
+        for directoryname, directory_list, file_list in filesystem.\
+                        get_markdown_files( path, all_markdown_files=True ):
             if( not (last_dir == directoryname) ):
                 self.run_directory_filters( last_dir )
                 last_dir = directoryname
 
-            # presort issues
-            FullFile = [e for e in self.get_issues() \
-                        if e.get_type() == MistakeType.full_file]
-            OneLiner = [e for e in self.get_issues() if e.get_type() ==
-                    MistakeType.oneliner]
-            NeedPnums = [e for e in self.get_issues() if e.get_type() ==
-                        MistakeType.need_pagenumbers]
-            NeedHeadings = [e for e in self.get_issues() if e.get_type() ==
-                        MistakeType.need_headings]
 
-            overlong = False
             for file in file_list:
                 file_path = os.path.join( directoryname, file )
                 try:
                     text = codecs.open( file_path, "r", "utf-8" ).read()
                 except UnicodeDecodeError:
-                    Append( file_path, ('-','Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'))
+                    self.__append( file_path, ('-','Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'))
                     continue
                 text = text.replace('\r\n','\n').replace('\r','\n')
-
-                for issue in FullFile:
-                    Append( file_path, issue.run( text ) )
-                for num, line in enumerate(text.split('\n')):
-                    if( num > 2500 and not overlong ):
-                        overlong = True
-                        Append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
-                    for issue in OneLiner:
-                        if( issue.do_run() ):
-                            res = issue.run( num+1, line )
-                            if( res ):
-                                Append( file_path, res )
-                                issue.set_run( False )
-                # cache headings and page numbers
-                pnums = pageNumberExtractor( text )
-                hdngs = HeadingExtractor( text )
-                self.__cache_pnums[ file_path ] = pnums
-                self.__cache_headings[ file_path ] = hdngs
-
-                for issue in NeedPnums:
-                    Append( file_path, issue.run( pnums ) )
-                for issue in NeedHeadings:
-                    Append( file_path, issue.run( hdngs ) )
+                self.__run_filters_on_file( file_path, text )
         # the last directory must be processed, even so there was no directory
         # change
         self.run_directory_filters( directoryname )
-                        
-        # sort output again
-        new = collections.OrderedDict()
-        for k, v in sorted(self.__output.items(), key=lambda x: x[0].lower()):
-            new[k] = sorted( v )
-        return new
+        return self.__output
+ 
+
+    def __run_filters_on_file( self, file_path, text ):
+        """Execute all filters which operate on one file."""
+        # presort issues
+        FullFile = [e for e in self.get_issues() \
+                if e.get_type() == MistakeType.full_file]
+        OneLiner = [e for e in self.get_issues() if e.get_type() ==
+                MistakeType.oneliner]
+        NeedPnums = [e for e in self.get_issues() if e.get_type() ==
+                MistakeType.need_pagenumbers]
+        NeedHeadings = [e for e in self.get_issues() if e.get_type() ==
+                MistakeType.need_headings]
+
+        overlong = False
+        for issue in FullFile:
+            self.__append( file_path, issue.run( text ) )
+        for num, line in enumerate(text.split('\n')):
+            if( num > 2500 and not overlong ):
+                overlong = True
+                self.__append( file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
+            for issue in OneLiner:
+                if( issue.should_be_run() ):
+                    res = issue.run( num+1, line )
+                    if( res ):
+                        self.__append( file_path, res )
+                        issue.set_run( False )
+        # cache headings and page numbers
+        pnums = pageNumberExtractor( text )
+        hdngs = HeadingExtractor( text )
+        self.__cache_pnums[ file_path ] = pnums
+        self.__cache_headings[ file_path ] = hdngs
+
+        for issue in NeedPnums:
+            self.__append( file_path, issue.run( pnums ) )
+        for issue in NeedHeadings:
+            self.__append( file_path, issue.run( hdngs ) )
+                       
+        ## sort output again
+        #new = collections.OrderedDict()
+        #for k, v in sorted(self.__output.items(), key=lambda x: x[0].lower()):
+        #    new[k] = sorted( v )
+        #return new
 
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""
