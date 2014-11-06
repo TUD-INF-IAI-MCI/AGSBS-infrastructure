@@ -290,7 +290,7 @@ class page_string_varies(Mistake):
                 if( found ):
                     self._error_syntax( lnum, text )
                 else:
-                    return self._error_msg(lnum, text)
+                    return self._error_word(lnum, text)
             else: text_word = text_word.groups()
             if( page_string == '' ):
                 for t in config.PAGENUMBERINGTOKENS:
