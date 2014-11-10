@@ -64,11 +64,14 @@ def is_lecture_root( dir ):
     Check whether the given directory is the lecture root.
     Algorithm: if dir starts with a valid chapter prefix, it is obviously not.
     for all other cases, try to obtain a list of files and if _one_
-    **directory** starts with a chapter prefix, it is a valid chapter root."""
+    **directory** starts with a chapter prefix, it is a valid chapter root. As
+    an addition, a ".LectureMetaData.dcxml" will also mark a lecture root."""
     dir = os.path.abspath( dir )
     if( valid_file_bgn( os.path.split( dir )[-1] ) ):
         return False
     else:
+        if( os.path.exists( conf.CONF_FILE_NAME ) ):
+            return True
         for DIR in [e for e in os.listdir( dir ) if os.path.isdir( dir+os.sep+e )]:
             if( valid_file_bgn( DIR ) ):
                 return True
