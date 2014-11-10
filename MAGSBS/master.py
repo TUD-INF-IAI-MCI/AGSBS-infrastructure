@@ -1,5 +1,5 @@
 import MAGSBS.errors
-import os, sys, codecs
+import os, sys, io
 
 """For documentation about this module, please refer the its classs master."""
 _ = MAGSBS.config._
@@ -66,7 +66,8 @@ found and there are MarkDown files."""
             if( not c.is_empty() ):
                 index = c.get_index()
                 md_creator = MAGSBS.factories.index2markdown_TOC(index)
-                with codecs.open( _( "index" ).lower() + ".md", 'w' ) as file:
+                with io.open( _( "index" ).lower() + ".md", mode='w',
+                        encoding="utf-8" ) as file:
                     file.write( md_creator.get_markdown_page() )
             
             for dir, dlist, flist in MAGSBS.filesystem.get_markdown_files( ".", True ):
