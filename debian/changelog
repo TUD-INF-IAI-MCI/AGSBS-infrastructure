@@ -1,9 +1,15 @@
-magsbs (0.1-2) UNRELEASED; urgency=medium
+magsbs (0.1-4) unstable; urgency=medium
+
+  * new MAGSBS version, no minor version number increase
+
+ -- Sebastian Humenda <shumenda@gmx.de>  Thu, 06 Nov 2014 21:54:49 +0000
+
+magsbs (0.1-3) unstable; urgency=medium
 
   * include enum backport
   * depend on all necessary packages
 
- -- Sebastian Humenda <shumenda@gmx.de>  Sat, 11 Oct 2014 15:05:48 +0100
+ -- Sebastian Humenda <shumenda@gmx.de>  Thu, 06 Nov 2014 21:54:31 +0000
 
 magsbs (0.1-1) unstable; urgency=low
 

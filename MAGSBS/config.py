@@ -20,7 +20,7 @@ PAGENUMBERINGTOKENS = ['slide','folie','seite','page']
 PAGENUMBERING_REGEX = '-\s*(' + '|'.join( PAGENUMBERINGTOKENS ) + ')\s+(\d+)\s*-'
 
 VALID_PREFACE_BGN = ['v']
-VALID_MAIN_BGN = ['k']
+VALID_MAIN_BGN = ['k', 'blatt']
 VALID_APPENDIX_BGN = ['anh']
 VALID_FILE_BGN = VALID_PREFACE_BGN + VALID_MAIN_BGN + VALID_APPENDIX_BGN
 
@@ -267,6 +267,7 @@ l10n with Windows."""
     def __init__(self):
         c = confFactory()
         self._factory = confFactory()
+        self.supported_languages = [ 'de', 'fr' ]
         self.en_fr = { 
             'preface':'introduction',   'appendix':'appendice',
             'chapters':'chapitres', 'pages':'pages',
@@ -274,6 +275,7 @@ l10n with Windows."""
             'index':'index',
             'image description outsourced':"description de l'image excluré",
             'description of image outsourced':"description de l'image excluré",
+            'images':'images',
             'next':'suivant',  'previous':'précédent',
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',

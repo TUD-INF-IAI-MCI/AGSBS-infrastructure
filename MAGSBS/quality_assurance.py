@@ -138,12 +138,13 @@ class page_number_is_paragraph(Mistake):
 
 
 class heading_is_paragraph(Mistake):
-# ToDo: two errors are here checked, instead split it into two error classes to
-# avoid swallowed mistakes ;)
-# ToDo II: check_numbering is commented out: it may be the case that we have an
-# aabstract in a paper and therefore the first heading is NOT 1. but has no
-# number; then the editor chooses to make the second heading with the number
-# "1.". We ought to decide how to deal with that
+    # ToDo: two errors are here checked, instead split it into two error classes
+    # to avoid swallowed mistakes ;)
+    # ToDo II: check_numbering is commented out: it may be the case that we have
+    # an aabstract in a paper and therefore the first heading is NOT 1. but has
+    # no number; then the editor chooses to make the second heading with the
+    # number
+    # "1.". We ought to decide how to deal with that
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
@@ -186,7 +187,7 @@ class heading_is_paragraph(Mistake):
             previous_line = line
 
 class level_one_heading( Mistake ):
-    """Parse the document and raise errors if more than one level-1-heading was encountered."""
+    """Parse the directory and raise errors if more than one level-1-heading was encountered."""
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority( MistakePriority.critical )
@@ -196,6 +197,14 @@ class level_one_heading( Mistake ):
                 type( args[0] ) == collections.OrderedDict
         found_h1 = False
         for path, headings in args[0].items():
+            is_image_path = False
+            for dest_lang in config.L10N.supported_languages:
+                translate_dict = getattr( config.L10N, 'en_' + dest_lang )
+                if( path.lower().find( translate_dict["images"] ) >= 0 ):
+                    is_image_path = True
+            if( is_image_path or path.lower().find( "images" ) >= 0 ):
+                continue # do not count h1's in bilder.md
+
             for lnum, level, text in headings:
                 if( level == 1 ):
                     if( found_h1 ):
