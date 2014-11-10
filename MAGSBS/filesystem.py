@@ -70,7 +70,7 @@ def is_lecture_root( dir ):
     if( valid_file_bgn( os.path.split( dir )[-1] ) ):
         return False
     else:
-        if( os.path.exists( conf.CONF_FILE_NAME ) ):
+        if( os.path.exists( config.CONF_FILE_NAME ) ):
             return True
         for DIR in [e for e in os.listdir( dir ) if os.path.isdir( dir+os.sep+e )]:
             if( valid_file_bgn( DIR ) ):

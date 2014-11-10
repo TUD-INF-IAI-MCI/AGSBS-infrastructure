@@ -20,7 +20,7 @@ PAGENUMBERINGTOKENS = ['slide','folie','seite','page']
 PAGENUMBERING_REGEX = '-\s*(' + '|'.join( PAGENUMBERINGTOKENS ) + ')\s+(\d+)\s*-'
 
 VALID_PREFACE_BGN = ['v']
-VALID_MAIN_BGN = ['k', 'blatt']
+VALID_MAIN_BGN = ['k', 'blatt', 'Blatt', 'paper']
 VALID_APPENDIX_BGN = ['anh']
 VALID_FILE_BGN = VALID_PREFACE_BGN + VALID_MAIN_BGN + VALID_APPENDIX_BGN
 

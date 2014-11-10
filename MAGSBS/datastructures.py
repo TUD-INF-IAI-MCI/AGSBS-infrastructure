@@ -10,28 +10,27 @@ import MAGSBS.config as config
 def path2chapter(string):
     """Convert a file name similar to as k010508.md, anh__.md or v__ to a tuple of the
 corresponding chapter numbers.
-Important: this functions throws OsErrors which must be caught by the plugin /
-frontend used; the supplied message can be displyed to the user."""
-    fn = string[:] # back up file name for usage in error case
-    if(string.startswith('k')):
-        string = string[1:] # strip leading k
-    elif(string.startswith('anh')):
-        string = string[3:]
-    elif(string.startswith('v')):
-            string = string[1:]
-
+Important: this function throws OsErrors which must be caught by the plugin /
+frontend used; the supplied message can be displayed to the user."""
+    old_fn = string[:] # back up file name for usage in error case
+    string = os.path.split( string )[-1] # just take the file name
     if(string.endswith('.md')): string = string[:-3]
-    #elif(string.endswith('.html')): string = string[:-4]
     else:
         raise WrongFileNameError('Not a supported file ending, must be .md.')
-    erg = []
-    while(string != ''):
-        try:
-            erg.append( int(string[:2]) )
-            string = string[2:]
-        except ValueError:
-            raise WrongFileNameError("Wrong file name: got \"%s\" and \"%s\" was not expected." % (fn, string))
-    return erg
+
+    found = False
+    for prefix in config.VALID_FILE_BGN:
+        if( string.startswith( prefix ) ):
+            string = string[len(prefix):]
+            found = True
+    if not found:
+            raise WrongFileNameError( "Wrong file name: got \"%s\", " % old_fn +\
+                    "\not a valid chapter/paper prefix." )
+    try:
+        return int( string )
+    except ValueError:
+        raise WrongFileNameError( "Tried to convert %s to a " % string +\
+                " number, looking at file %s." % old_fn )
 
 def gen_id(id):
     """gen_id(id) -> an ID for making links.
@@ -131,16 +130,17 @@ set_relative_heading_number(list) -> set relative heading number in document."""
 
     def get_markdown_link(self):
         if(self.get_level() == 1):
-            full_number = '.'.join(map(lambda x: str(x),
-                    self.__chapter_number))
+            full_number = str( self.__chapter_number )
         elif(self.get_level() == -1):
             raise ValueError("Heading level not set.")
         else:
             # add chapter level additionally; relative chapter number has the
             # first item from the aray stripped of, because there will be always
             # *one* fist-level-heading.
-            full_number = '.'.join(map(lambda x: str(x),
-                self.__chapter_number + self.get_relative_heading_number()[1:] ) )
+            rh = self.get_relative_heading_number()[1:]
+            # rh shall be .num.num.num if nested, else ''4
+            rh = ('.' + '.'.join( [str(i) for i in rh] ) if len( rh ) else '' )
+            full_number = str( self.__chapter_number ) + rh
 
         # prefix full_number with a capital 'A' for appendices, if wished
         if(self.get_type() == 'appendix' and self.__use_appendix_prefix):
