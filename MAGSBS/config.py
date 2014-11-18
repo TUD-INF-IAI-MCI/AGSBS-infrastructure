@@ -224,8 +224,11 @@ configuration and then, if present, the corresponding subdirectory configuration
         if(path in self._instances.keys()):
             return self._instances[ path ]
         else:
-            self._instances[ path ] = LectureMetaData( path )
-            self._instances[ path ].read()
+            try:
+                self._instances[ path ] = LectureMetaData( path )
+                self._instances[ path ].read()
+            except UnicodeDecodeError:
+                raise UnicodeDecodeError("File must be encoded in UTF-8")
         return self._instances[ path ]
 
     def __getpath(self):
