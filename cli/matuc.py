@@ -54,7 +54,7 @@ def guess_encoding():
 
 class main():
     def __init__(self):
-        self.conf = MAGSBS.config.confFactory()
+        self.conf = MAGSBS.config.confFactory().get_conf_instance()
         if(len(sys.argv) < 2):
             print(usage)
         else:

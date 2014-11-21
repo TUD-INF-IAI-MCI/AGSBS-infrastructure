@@ -217,6 +217,7 @@ configuration and then, if present, the corresponding subdirectory configuration
 """
     def __init__(self):
         self._instances = {}
+
     def get_conf_instance(self):
         """Return either an old object if already created or create a new one
 (kind of singleton). Automatically read the configuration upon creation."""
