@@ -25,39 +25,80 @@ def skip_dir(root, cur):
     if(valid_file_bgn(cur)): skip = False
     return skip
 
-def get_markdown_files( dir, all_markdown_files=False ):
-    """os.walk( dir) -compatible function for getting all markdown files.
-    Speciality: all_markdown_files = True will output all markdown files (like
-    images.md) where all_markdown_files = False will only look at directories
-    and files starting with one of the defined chapter prefixes."""
-    def interesting_dir( dir ):
-        dir = os.path.split( dir )[-1]
-        if( dir.startswith(".svn") or dir.startswith(".git") or dir == "images"
-                or dir == "bilder"):
-            return False
-        return True
-    if(not os.path.exists(dir) ):
-        raise OSError("Specified directory %s does not exist." % dir)
-    res = []
-    dirs = [ dir ]
-    for dir in dirs:
-        if( dir == "." ):
-            items = os.listdir( dir )
-        else:
-            items = [os.path.join( dir, e)  for e in os.listdir( dir )]
-        files = sorted( [e for e in items \
-                    if os.path.isfile( e ) and e.endswith(".md")])
-        newdirs = sorted( [e for e in items  if os.path.isdir( e )
-                    and interesting_dir( e )])
-        if( not all_markdown_files ):
-            # remove those which aren't starting with a common chapter prefix
-            files   = [e for e in files    if valid_file_bgn( e )]
-            newdirs = [e for e in newdirs  if valid_file_bgn( e )]
-        dirs += newdirs
-        res.append( (dir, [os.path.split( e )[-1] for e in newdirs], 
-                [os.path.split( e )[-1]  for e in files]) )
-    return res
+class FileWalker():
+    """Abstraction class to provide functionality as offered by os.walk(), but
+omit certain files and folders.
 
+Ignored: folders like images, bilder, .git, .svn
+Files picked up: ending on configured file endings."""
+    def __init__(self, path):
+        self.path = path
+        self.black_list = [".svn",".git","bilder","images"]
+        self.endings = ["md"]
+        self.exclude_non_chapter_prefixed = True
+
+    def add_blacklisted(self, new):
+        self.black_list += new
+    def set_endings(self, e):
+        assert isinstance(e, list) or isinstance(e, tuple)
+        self.endings = e
+
+
+    def set_ignore_non_chapter_prefixed(self, x):
+        """Ignore files and directories which do not adhere to the common
+        lecture structure."""
+        self.exclude_non_chapter_prefixed = x
+
+    def interesting_dir(self, dir):
+        """Returns true, if that directory shall be searched for files."""
+        dir = os.path.split(dir)[-1]
+        for bad in self.black_list:
+            if(dir.lower().startswith(bad)):
+                return False
+        return True
+
+    def interesting_file(self, fn):
+        """Filter against file endings."""
+        for ending in self.endings:
+            if(fn.lower().endswith(ending)):
+                return True
+        return False
+
+    def walk(self):
+        if(not os.path.exists(self.path) ):
+            raise OSError("Specified directory %s does not exist." % dir)
+        res = []
+        dirs = [self.path]
+        for dir in dirs:
+            if(dir == "."):
+                items = os.listdir( dir )
+            else:
+                items = [os.path.join( dir, e)  for e in os.listdir( dir )]
+            files = sorted( [e for e in items \
+                        if os.path.isfile( e ) and self.interesting_file(e)])
+            newdirs = sorted( [e for e in items  if os.path.isdir( e )
+                        and self.interesting_dir(e)])
+            if(self.exclude_non_chapter_prefixed):
+                # remove those which aren't starting with a common chapter prefix
+                files   = [e for e in files    if valid_file_bgn( e )]
+                newdirs = [e for e in newdirs  if valid_file_bgn( e )]
+            dirs += newdirs
+            res.append((dir, [os.path.split(e)[-1] for e in newdirs], 
+                [os.path.split( e )[-1]  for e in files]) )
+        return res
+
+
+
+
+def get_markdown_files(dir, all_markdown_files=False):
+    """os.walk(dir) -compatible function for getting all markdown files.
+In fact it uses the FileWalker class and acts as a short hand.
+The all_markdown_files option specifies, whether only the files adhering to the
+structure or all files shall be listed ending on .md."""
+    fw = FileWalker(dir)
+    fw.set_ignore_non_chapter_prefixed(not all_markdown_files)
+    fw.set_endings([".md"])
+    return fw.walk()
 
 def is_lecture_root( dir ):
     """is_lecture_root(dir )
