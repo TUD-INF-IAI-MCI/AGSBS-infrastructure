@@ -33,7 +33,7 @@ Ignored: folders like images, bilder, .git, .svn
 Files picked up: ending on configured file endings."""
     def __init__(self, path):
         self.path = path
-        self.black_list = [".svn",".git","bilder","images"]
+        self.black_list = ["quell",".svn",".git","bilder","images"]
         self.endings = ["md"]
         self.exclude_non_chapter_prefixed = True
 
