@@ -157,3 +157,8 @@ set_relative_heading_number(list) -> set relative heading number in document."""
                     dir_above_file + '/' + self.__file_name.replace('.md','.html'),
                     self.get_id()
                     )
+def is_list_alike(type):
+    """Check whether object is iterable and supports indexing."""
+    a = hasattr(type, '__iter__')
+    b = hasattr(type, '__getitem__')
+    return a and b

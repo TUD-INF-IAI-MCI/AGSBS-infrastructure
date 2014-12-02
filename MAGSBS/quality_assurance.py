@@ -25,7 +25,7 @@ import codecs, collections
 import MAGSBS.config as config
 import MAGSBS.filesystem as filesystem
 import MAGSBS.errors as errors
-import MAGSBS.filesystem as filesystem
+from MAGSBS.datastructures import is_list_alike
 import enum
 
 class MistakePriority(enum.Enum):
@@ -61,6 +61,15 @@ class Mistake:
         self._type = MistakeType.full_file
         self._priority = MistakePriority.normal
         self.__apply = True
+        self.__file_types = ["md"]
+    def set_file_types(self, types):
+        if(not is_list_alike(types)):
+            raise TypeError("List or tuple expected.")
+        self.__file_types = types
+    def get_file_types(self):
+        """Return all file extensions which shall be checked."""
+        return self.__file_types
+
     def should_be_run(self):
         """Can be set e.g. for oneliners which have already found an error."""
         return self.__apply
@@ -101,14 +110,14 @@ It'll save typing."""
     def worker(self, *args):
         if(len(args) != 2):
             raise ValueError("For a mistake checker of type oneliner, exactly two arguments are required.")
-        ret = self.check(args[0], args[1])
-        if(ret): return ret
+        return self.check(args[0], args[1])
 
 
 class common_latex_errors(Mistake):
     def __init__(self):
         Mistake.__init__(self)
         # full_file is automatic
+        self.set_file_types([".md",".tex"])
     def worker(self, *args):
         if(len(args) < 1):
             raise TypeError("An argument with the file content to check is expected.")
@@ -132,6 +141,7 @@ class LaTeXMatricesAreHardToRead(onelinerMistake):
     them."""
     def __init__(self):
         onelinerMistake.__init__(self)
+        self.set_file_types(["md","tex"])
         self.pat1 = re.compile(r"\\left\(.*?begin{(array|matrix)")
         self.pat2 = re.compile(r"\\begin{.*?matrix}.*\\\\.*&")
     def check(self, num, line):
@@ -343,6 +353,7 @@ class page_string_varies(Mistake):
 
 class uniform_pagestrings(Mistake):
     def __init__(self):
+        Mistake.__init__(self)
         self.set_priority(MistakePriority.normal)
         self.set_type(MistakeType.need_pagenumbers_dir)
     def _error(self, f_fn, f_num, f_text, l_fn, l_num, l_text):
@@ -375,6 +386,7 @@ class too_many_headings(Mistake):
 other? E.g. 40 headings level 2. The figure can be controled using
 self.threshold."""
     def __init__(self):
+        Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self.set_type(MistakeType.need_headings_dir)
         self.threshold = 20
@@ -484,11 +496,17 @@ class Mistkerl():
         self.__output = {}
         self.requested_level = MistakePriority.normal
 
-    def get_issues(self):
+    def get_issues(self, fname):
+        """Instanciate issue classes and filter for file endings."""
         for issue in self.__issues:
             i = issue()
             if(self.get_priority().value >= i.get_priority().value):
-                yield i
+                if(fname): # fname exists -> not a directory -> check for extension
+                    ext = fname[fname.rfind(".")+1:]
+                    if(ext in i.get_file_types()):
+                        yield i
+                else:
+                    yield i
     def set_priority(self, p):
         assert type(p) == MistakePriority
         self.__priority = p
@@ -535,16 +553,17 @@ recursively."""
  
 
     def __run_filters_on_file(self, file_path, text):
-        """Execute all filters which operate on one file."""
+        """Execute all filters which operate on one file. Also exclue filters
+        which do not match for the file ending."""
         # presort issues
-        FullFile = [e for e in self.get_issues() \
+        FullFile = [e for e in self.get_issues(file_path) \
                 if e.get_type() == MistakeType.full_file]
-        OneLiner = [e for e in self.get_issues() if e.get_type() ==
-                MistakeType.oneliner]
-        NeedPnums = [e for e in self.get_issues() if e.get_type() ==
-                MistakeType.need_pagenumbers]
-        NeedHeadings = [e for e in self.get_issues() if e.get_type() ==
-                MistakeType.need_headings]
+        OneLiner = [e for e in self.get_issues(file_path)
+                        if e.get_type() == MistakeType.oneliner]
+        NeedPnums = [e for e in self.get_issues(file_path)
+                    if e.get_type() == MistakeType.need_pagenumbers]
+        NeedHeadings = [e for e in self.get_issues(file_path)
+                        if e.get_type() == MistakeType.need_headings]
 
         overlong = False
         for issue in FullFile:
@@ -552,7 +571,11 @@ recursively."""
         for num, line in enumerate(text.split('\n')):
             if(num > 2500 and not overlong):
                 overlong = True
-                self.__append(file_path, ("-", "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."))
+                self.__append(file_path, ("-", "Die Datei ist zu lang. Um die "+
+                    " Navigation zu erleichtern und die einfache Lesbarkeit zu"+
+                    " gewährleisten sollten lange Kapitel mit mehr als 2500 " +
+                    "Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md "+
+                    "der kleiner aufgeteilt werden."))
             for issue in OneLiner:
                 if(issue.should_be_run()):
                     res = issue.run(num+1, line)
@@ -573,11 +596,11 @@ recursively."""
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""
         if(len(self.__cache_pnums) > 0):
-            x = [e for e in self.get_issues() if e.get_type() == MistakeType.need_pagenumbers_dir]
+            x = [e for e in self.get_issues(False) if e.get_type() == MistakeType.need_pagenumbers_dir]
             for issue in x:
                 self.__append(dname, issue.run(self.__cache_pnums))
         if(len(self.__cache_headings) > 0):
-            x = [e for e in self.get_issues() if e.get_type() == MistakeType.need_headings_dir]
+            x = [e for e in self.get_issues(False) if e.get_type() == MistakeType.need_headings_dir]
             for issue in x:
                 self.__append(dname, issue.run(self.__cache_headings))
         self.__cache_pnums.clear()
