@@ -28,6 +28,9 @@ import MAGSBS.errors as errors
 from MAGSBS.datastructures import is_list_alike
 import enum
 
+from MAGSBS.quality_assurance.latex import *
+from MAGSBS.quality_assurance.markdown import *
+
 class MistakePriority(enum.Enum):
     critical = 1
     normal = 2
