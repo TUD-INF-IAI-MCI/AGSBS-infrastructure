@@ -324,7 +324,7 @@ def pageNumberExtractor(data):
     # one-liners are called; potentially saves some iterations
     numbers = []
     for num, line in enumerate(data.split('\n')):
-        if(line.startswith("||")):
+        if(line.startswith("||") and not line.startswith("|||")):
             numbers.append((num+1, line[2:]))
     return numbers
 
