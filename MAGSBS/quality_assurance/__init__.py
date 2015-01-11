@@ -1,3 +1,4 @@
-import MAGSBS.quality_assurance.latex
-import MAGSBS.quality_assurance.markdown
-import MAGSBS.quality_assurance.mistkerl
+from .meta import *
+from .latex import *
+from .markdown import *
+from .mistkerl import *

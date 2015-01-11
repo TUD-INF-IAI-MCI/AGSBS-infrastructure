@@ -1,6 +1,8 @@
 """All mistakes made while writing Markdown files are put in here."""
 
-from .mistkerl import Mistake, MistakeType, MistakePriority, onelinerMistake
+from .meta import Mistake, MistakeType, MistakePriority, onelinerMistake
+import os, re, collections
+import MAGSBS.config as config
 
 class page_number_is_paragraph(Mistake):
     """Check whether all page numbers are on a paragraph on their own."""
@@ -280,53 +282,5 @@ class page_string_but_no_page_number(Mistake):
                 if(len(line) > idx + len(t)):
                     if(not line[idx + len(t)].isdigit()):
                         return (args[0], "Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde.")
-
-
-def HeadingExtractor(text):
-    headings = []
-    paragraph_begun = True
-    previous_line_heading = False
-    previous_line = ''
-    for num, line in enumerate(text.split('\n')):
-        if(line.strip() == ''):
-            paragraph_begun = True
-            previous_line_heading = False
-        else:
-            if(not paragraph_begun): # happens on the second line of a paragraph
-                if(line.startswith('---')):
-                    previous_line_heading = True
-                    headings.append((num, 2, previous_line)) # heading level 2
-                elif(line.startswith('===')):
-                    previous_line_heading = True
-                    headings.append((num, 1, previous_line)) # heading level 2
-                    continue
-            if(line.startswith("#")):
-                if(paragraph_begun):
-                    level = 0
-                    while(line.startswith("#") or line.startswith(" ")):
-                        if(line[0] == "#"): level += 1
-                        line = line[1:]
-                    while(line.endswith("#") or line.endswith(" ")):
-                        line = line[:-1]
-
-                    headings.append((num+1, level, line))
-                    previous_line_heading = True
-            paragraph_begun = False # one line of text ends "paragraph begun"
-        previous_line = line
-    return headings
-
-
-def pageNumberExtractor(data):
-    """Iterate over lines and extract all those starting with ||. The page
-    number and the rest of the line is returned as a tuple."""
-    # ToDo: write me as a kind of cool class which is called always when all
-    # one-liners are called; potentially saves some iterations
-    numbers = []
-    for num, line in enumerate(data.split('\n')):
-        if(line.startswith("||") and not line.startswith("|||")):
-            numbers.append((num+1, line[2:]))
-    return numbers
-
-############################################
 
 

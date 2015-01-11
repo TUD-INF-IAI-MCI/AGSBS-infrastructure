@@ -2,8 +2,9 @@
 note that they are also applied to *.md-files, since LaTeX can be embedded there
 as well."""
 
-from .mistkerl import Mistake, MistakeType, \
+from .meta import Mistake, MistakeType, \
                                 MistakePriority, onelinerMistake
+import re
 
 
 class common_latex_errors(Mistake):
