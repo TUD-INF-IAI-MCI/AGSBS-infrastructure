@@ -1,7 +1,6 @@
 """All mistakes made while writing Markdown files are put in here."""
 
-from MAGSBS.quality_assurance.mistkerl import Mistake, MistakeType, \
-                                MistakePriority, onelinerMistake
+from .mistkerl import Mistake, MistakeType, MistakePriority, onelinerMistake
 
 class page_number_is_paragraph(Mistake):
     """Check whether all page numbers are on a paragraph on their own."""

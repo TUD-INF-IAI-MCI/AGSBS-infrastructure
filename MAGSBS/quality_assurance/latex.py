@@ -2,7 +2,7 @@
 note that they are also applied to *.md-files, since LaTeX can be embedded there
 as well."""
 
-from MAGSBS.quality_assurance.mistkerl import Mistake, MistakeType, \
+from .mistkerl import Mistake, MistakeType, \
                                 MistakePriority, onelinerMistake
 
 

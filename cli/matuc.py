@@ -24,13 +24,14 @@ commands. Use %s <command> -h for help.
 
 Available commands are:
 
-conf - set, init or update a configuration
-conv - convert a markdown file using pandoc
-imgdsc - generate image description snippets
-navbar - generate navigation bar at beginning of each page
-new - create new project structure
-mk - invoke "mistkerl", a quality assurance helper
-toc - generate table of contents
+conf    - set, init or update a configuration
+conv    - convert a markdown file using pandoc
+imgdsc  - generate image description snippets
+navbar  - generate navigation bar at beginning of each page
+new     - create new project structure
+mk      - invoke "mistkerl", a quality assurance helper
+toc     - generate table of contents
+version - output program version
 """ % (sys.argv[0], sys.argv[0])
 
 def error_exit(string):
@@ -74,6 +75,8 @@ class main():
                 self.mk()
             elif(sys.argv[1] == 'master'):
                 self.master()
+            elif(sys.argv[1] == 'version'):
+                self.version()
             else:
                 error_exit(usage)
 
@@ -363,5 +366,8 @@ outputs it on the command line.
         else:
             m = MAGSBS.master.Master( args[0] )
             m.run()
+
+    def version(self):
+        print('Version: '+str(MAGSBS.config.VERSION))
 
 m = main()

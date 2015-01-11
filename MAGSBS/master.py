@@ -80,5 +80,5 @@ found and there are MarkDown files."""
                         raise MAGSBS.errors.SubprocessError("Error while converting \"%s\"\n" % os.path.join( dir, f ) \
                                         +  interposeError.args[0])
                 os.chdir( os.path.join( cwd, root ) )
-        os.chdir( cwd )
+            os.chdir( cwd )
         

@@ -11,6 +11,7 @@ from MAGSBS.errors import *
 if not (sys.platform.lower().startswith("win")):
     import pwd
 
+VERSION = '0.1.1'
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 GLADTEX_OPTS = '-a -d bilder'

@@ -1,3 +1,3 @@
-from MAGSBS.quality_assurance.mistkerl import *
-from MAGSBS.quality_assurance.latex import *
-from MAGSBS.quality_assurance.markdown import *
+import MAGSBS.quality_assurance.latex
+import MAGSBS.quality_assurance.markdown
+import MAGSBS.quality_assurance.mistkerl
