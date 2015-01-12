@@ -168,18 +168,12 @@ sub-directory configurations or initialization of a new project.'''
 
         if(args[0] == 'init'):
             # read configuration from cwd, if present
-            inst = MAGSBS.config.LectureMetaData( MAGSBS.config.CONF_FILE_NAME
-            )
+            inst = MAGSBS.config.LectureMetaData(MAGSBS.config.CONF_FILE_NAME)
             inst.read()
         else:
             inst = MAGSBS.config.confFactory()
             inst = inst.get_conf_instance()
 
-
-        if(PYVERSION == 2): # decode strings in py 2
-            for opt, value in options.__dict__.items():
-                if(not isinstance(value, unicode) and value):
-                    options.__dict__[opt] = value.decode( sys.stdin.encoding )
 
         def show_conf(prefix):
             print(prefix)

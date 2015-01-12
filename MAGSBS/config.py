@@ -163,9 +163,9 @@ one instance at a time exists.
             c.text = value
         out = dom = minidom.parseString(
                 '<?xml version="1.0" encoding="UTF-8"?>' + \
-                ET.tostring( root ).decode('utf-8')
+                ET.tostring(root)
                 ).toprettyxml()
-        codecs.open(self.__path,'w',encoding='utf-8').write(  out )
+        open(self.__path, 'w', encoding='utf-8').write(out)
 
     def normalize_tag(self, tag):
         if(tag.find('}')>0):

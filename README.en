@@ -3,7 +3,7 @@ To Do: TRANSLATION INTO GERMAN
 Prerequisites
 -------------
 
-This version of MAGSBS / matuc / Kate depends on Python in version >= 3.2 (also
+This version of MAGSBS / matuc depends on Python in version >= 3.2 (also
 encoding trouble could occur with Python 3.2).
 
 To test what your default Python is, execute:
@@ -20,11 +20,6 @@ Python-Pandocfilters can be optained either from
 <https://github.com/jgm/pandocfilters.git> or from your favorite package
 manager. For Debian/Ubuntu, there will soon be a package (time of writing:
 15.06.2014).
-
-Kate Plugin
---------------
-
-To do: link to documentation.
 
 MAGSBS
 ------
