@@ -25,6 +25,11 @@ def skip_dir(root, cur):
     if(valid_file_bgn(cur)): skip = False
     return skip
 
+
+def join_paths(*args):
+    """os.path.join-alike function to join a arbitrari number of tokens to a
+path - fixed to / as separator."""
+    return '/'.join(args)
 class FileWalker():
     """Abstraction class to provide functionality as offered by os.walk(), but
 omit certain files and folders.
@@ -273,8 +278,8 @@ and end again with
 
     def gen_nav(self, page, file_name, has_prev, has_next):
         """Generate language-specific site navigation."""
-        if( has_prev ):    has_prev = fn2targetformat( has_prev, self.__fmt )
-        if( has_next ):    has_next = fn2targetformat( has_next, self.__fmt)
+        if(has_prev):    has_prev = fn2targetformat( has_prev, self.__fmt )
+        if(has_next):    has_next = fn2targetformat( has_next, self.__fmt)
         newpage = []
         m = simpleMarkdownParser( page, self.__dir, file_name )
         m.parse()
@@ -295,12 +300,12 @@ and end again with
                     if(not (pnum%self.pagenumbergap)):
                         navbar.append( ', [[%s]](#%s)' % (pnum, data[ pnum ]) )
         chapternav = '[%s](../inhalt.html)' % _('index').title()
-        if( has_prev ):
+        if(has_prev):
             chapternav = '[%s](%s)  ' % (_('previous'),
-                os.path.join( "..", has_prev )) + chapternav
-        if( has_next ):
+                join_paths("..", has_prev)) + chapternav
+        if(has_next):
             chapternav += "  [%s](%s)" % (_('next'),
-                os.path.join("..", has_next ))
+                join_paths("..", has_next))
         newpage += [ '<!-- page navigation -->%s' % lbr, chapternav, lbr, lbr, ''.join(navbar) ]
         newpage += [lbr,lbr, '* * * * *', lbr, '<!-- end page navigation -->', lbr]
         if(not page.startswith(lbr)):

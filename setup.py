@@ -1,5 +1,6 @@
 from distutils.core import setup
 import sys, os
+import MAGSBS
 
 #path = os.path.dirname( sys.argv[0] )
 #path = os.path.split( path )[0]
@@ -19,7 +20,7 @@ else:
 # install MAGSBS-module
 
 setup(name='MAGSBS',
-      version='0.1',
+      version=MAGSBS.config.VERSION,
       packages=packages,
       )
 
