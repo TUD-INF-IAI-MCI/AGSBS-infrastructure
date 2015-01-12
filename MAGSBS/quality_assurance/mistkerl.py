@@ -38,7 +38,8 @@ class Mistkerl():
                 itemize_is_paragraph, page_numbering_text_is_lowercase,
                 page_string_but_no_page_number, page_string_varies,
                 uniform_pagestrings, too_many_headings,
-                LaTeXMatricesAreHardToRead, PageNumbersWithoutDashes]
+                LaTeXMatricesAreHardToRead, PageNumbersWithoutDashes,
+                DoNotEmbedHTMLLineBreaks, EmbeddedHTMLComperators]
         self.__cache_pnums = collections.OrderedDict()
         self.__cache_headings = collections.OrderedDict()
         self.__output = {}

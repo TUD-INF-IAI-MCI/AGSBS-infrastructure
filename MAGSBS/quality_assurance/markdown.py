@@ -317,3 +317,25 @@ class PageNumbersWithoutDashes(onelinerMistake):
             return (num, "Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: " +
                     "\"|| - Seite xyz -\"")
 
+class DoNotEmbedHTMLLineBreaks(onelinerMistake):
+    """Instead of <br> for an empty line, a single \ can be used."""
+    def __init__(self):
+        onelinerMistake.__init__(self)
+        self.pattern = re.compile(r'<br.*/?>')
+    def check(self, num, line):
+        if(self.pattern.search(line.lower())):
+            return (num, "Es sollte kein Umbruch mittels HTML-Tags erzeugt " +
+                    "werden. Platziert man einen \\ als einziges Zeichen auf " +
+                    "eine Zeile und lässt davor und danach eine Zeile frei, " +
+                    "hat dies denselben Effekt.")
+
+class EmbeddedHTMLComperators(onelinerMistake):
+    """Instead of &lt;&gt;, use \< \>."""
+    def __init__(self):
+        onelinerMistake.__init__(self)
+        self.pattern = re.compile(r'&(lt|gt);')
+    def check(self, num, line):
+        if(self.pattern.search(line.lower())):
+            return (num, "Relationsoperatoren sollten nicht mittels HTML, " +
+                    "sondern mittels \\< und \\> erzeugt werden.")
+
