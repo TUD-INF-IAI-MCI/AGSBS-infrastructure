@@ -35,7 +35,7 @@ def HeadingExtractor(text):
                     headings.append((num+1, level, line))
                     previous_line_heading = True
             paragraph_begun = False # one line of text ends "paragraph begun"
-        previous_line = line
+        previous_line = line[:]
     return headings
 
 
@@ -43,11 +43,11 @@ def pageNumberExtractor(data):
     """Iterate over lines and extract all those starting with ||. The page
     number and the rest of the line is returned as a tuple."""
     numbers = []
-    rgx = re.compile(r"^||.*?-.*?-")
-    print("hi!")
+    rgx = re.compile(r"^\|\|\s*-\s*(.+?)\s*-")
     for num, line in enumerate(data.split('\n')):
-        if(rgx.search(line)):
-            numbers.append((num+1, line[2:]))
+        result = rgx.search(line)
+        if(result):
+            numbers.append((num+1, result.groups()[0]))
     return numbers
 
 class MistakePriority(enum.Enum):

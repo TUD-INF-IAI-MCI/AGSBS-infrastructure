@@ -38,7 +38,7 @@ class Mistkerl():
                 itemize_is_paragraph, page_numbering_text_is_lowercase,
                 page_string_but_no_page_number, page_string_varies,
                 uniform_pagestrings, too_many_headings,
-                LaTeXMatricesAreHardToRead]
+                LaTeXMatricesAreHardToRead, PageNumbersWithoutDashes]
         self.__cache_pnums = collections.OrderedDict()
         self.__cache_headings = collections.OrderedDict()
         self.__output = {}
@@ -79,7 +79,9 @@ recursively."""
         fw = filesystem.FileWalker(path)
         fw.set_ignore_non_chapter_prefixed(False)
         fw.set_endings([".md","tex"])
+        cwd = os.getcwd()
         for directoryname, dir_list, file_list in fw.walk():
+            os.chdir(directoryname)
             if(not (last_dir == directoryname)):
                 self.run_directory_filters(last_dir)
                 last_dir = directoryname
@@ -94,6 +96,7 @@ recursively."""
                     continue
                 text = text.replace('\r\n','\n').replace('\r','\n')
                 self.__run_filters_on_file(file_path, text)
+            os.chdir(cwd)
         # the last directory must be processed, even so there was no directory
         # change
         self.run_directory_filters(directoryname)

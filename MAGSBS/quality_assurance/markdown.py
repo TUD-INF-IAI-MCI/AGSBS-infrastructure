@@ -283,4 +283,37 @@ class page_string_but_no_page_number(Mistake):
                     if(not line[idx + len(t)].isdigit()):
                         return (args[0], "Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde.")
 
+class headingOccursMultipleTimes(Mistake):
+    """Parse headings; report doubled headings; ignore headings below
+tocDepth."""
+    def __init__(self):
+        Mistake.__init__(self)
+        self.set_priority(MistakePriority.critical)
+        self.set_type(MistakeType.need_headings)
+    def worker(self, *args):
+        error_message = """Überschriften gleichen Namens machen
+Inhaltsverzeichnisse schwer lesbar und erschweren die Navigation. Häufig kommt
+dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, dass nur die
+Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle
+Überschriften, mitsamt der Überschriften die doppelt sind, gar nicht erst im
+Inhaltsverzeichnis erscheinen."""
+        last_heading = None
+        for lnum, heading_level, text in args[0]:
+            if(heading_level > MAGSBS.config.confFactory().get_conf_instance()):
+                continue # skip it
+            if last_heading == text:
+                return (lnum, error_message)
+            last_heading = text
+
+class PageNumbersWithoutDashes(onelinerMistake):
+    """Page number should look like "|| - page 8 -", people sometimes write
+"|| page 8"."""
+    def __init__(self):
+        onelinerMistake.__init__(self)
+        pattern = r'\|\|\s*(' + '|'.join(config.PAGENUMBERINGTOKENS) + ')'
+        self.pattern = re.compile(pattern.lower())
+    def check(self, num, line):
+        if(self.pattern.search(line.lower())):
+            return (num, "Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: " +
+                    "\"|| - Seite xyz -\"")
 

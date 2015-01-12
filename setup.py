@@ -1,6 +1,6 @@
 from distutils.core import setup
 import sys, os
-import MAGSBS
+import MAGSBS.config
 
 #path = os.path.dirname( sys.argv[0] )
 #path = os.path.split( path )[0]
