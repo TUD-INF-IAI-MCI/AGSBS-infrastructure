@@ -91,7 +91,7 @@ recursively."""
             for file in file_list:
                 file_path = os.path.join(directoryname, file)
                 try:
-                    text = codecs.open(file_path, "r", "utf-8").read()
+                    text = codecs.open(file, "r", "utf-8").read()
                 except UnicodeDecodeError:
                     self.__append(file_path, ('-','Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'))
                     continue
