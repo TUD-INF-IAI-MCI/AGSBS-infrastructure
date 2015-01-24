@@ -209,12 +209,23 @@ e.set_path("/dev/null")
 
 class error_formatter:
     """Format an error message according to options set. One use case might be
-the output on the command line."""
+the output on the command line.
+
+Usage:
+    
+fmt = error_formatter()
+fmt.set_with_blank_lines(False) # before/after path a blank line; default True
+fmt.set_width(170) # output width of errors, default 80
+fmt.set_itemize_sign("- ") # text before each of the errors; default: None
+fmt.sort_critical_first(True) # sort not alphabetically using path, but by priority (default False)
+fmt.suppress_paths(True) # do not show paths at all (useful if only one path examined); default False
+"""
     def __init__(self):
         self.__x = 0
         self.__with_blank_lines = True
         self.__itemize_sign = ''
         self.__sort_critical_first = False
+        self.__suppress_paths = False
 
     def set_with_blank_lines(self, flag):
         """Set whether there are blank lines between paths or not."""
@@ -225,6 +236,9 @@ the output on the command line."""
 
     def set_itemize_sign(self, sign):
         self.__itemize_sign = sign[:]
+
+    def suppress_paths(self, flag):
+        self.__suppress_paths = flag
 
     def __severity_format(self, sev):
         translations = {'critical' : 'kritisch', 'pedantic' : 'pedantisch',
@@ -264,12 +278,13 @@ self.sort_critical_first(True)."""
         last_path = None
         output = []
         for error in errors:
-            if last_path != error.get_path():
-                # new path, new "section"; empty lines and path are printed
-                if output != [] and self.__with_blank_lines: output.append("\n")
-                output += [error.get_path(), '\n']
-                if self.__with_blank_lines: output.append("\n")
-                last_path = error.get_path()
+            if not self.__suppress_paths:
+                if last_path != error.get_path():
+                    # new path, new "section"; empty lines and path are printed
+                    if output != [] and self.__with_blank_lines: output.append("\n")
+                    output += [error.get_path(), '\n']
+                    if self.__with_blank_lines: output.append("\n")
+                    last_path = error.get_path()
             output.append(self.format_error(error))
             output.append("\n")
         return "".join(output)
