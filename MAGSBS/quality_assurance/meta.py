@@ -3,6 +3,7 @@ mistake."""
 
 import re
 import enum
+import textwrap
 from MAGSBS.datastructures import is_list_alike
 
 def HeadingExtractor(text):
@@ -50,7 +51,7 @@ def pageNumberExtractor(data):
             numbers.append((num+1, result.groups()[0]))
     return numbers
 
-class MistakePriority(enum.Enum):
+class MistakePriority(enum.IntEnum):
     critical = 1
     normal = 2
     pedantic = 3
@@ -64,8 +65,8 @@ full_file           (content, name) applied to a whole file
 oneliner            (num, line)     applied to line, starting num = 1
 need_headings       (lnum, level,   applied to all headings
                      title)
-need_headings_dir   [(path, [lnum,  applied to all headings in a directory
-                     level, title]))
+need_headings_dir   {path : [lnum,  applied to all headings in a directory
+                     level, title]}
 need_pagenumbers    (lnum, level,   applied to all page numbers of page
                  string)
 need_pagenumbers_dir   see headings applied to all page numbers of directory"""
@@ -115,8 +116,17 @@ class Mistake:
         if(not self.should_be_run):
             return
         return self.worker(*args)
+
     def worker(self, *args):
         raise NotImplementedError("The method run must be overriden by a child class.")
+
+    def error(self, msg, lnum=None, path=None):
+        e = error_message()
+        e.set_severity(self.get_priority())
+        e.set_message(msg)
+        if(lnum): e.set_lnum(lnum)
+        if(path): e.set_path(path)
+        return e
 
 class onelinerMistake(Mistake):
     """Class to ease the creation of onliner checks further:
@@ -135,4 +145,132 @@ It'll save typing."""
         return self.check(args[0], args[1])
 
 
+class error_message:
+    """Abstraction of an error message. It abstracts from the actual formatting
+to be independent from a tty or GUI representation.
+
+Usage:
+
+e = error()
+e.set_message("That's wrong.")
+# line number, optional
+e.set_number(666)
+# automatically set when self.error() in Mistake sublcasses is used
+e.set_severity(MistakePriority.normal)
+# automatically set, but can be altered:
+e.set_path("/dev/null")
+"""
+    def __init__(self):
+        self.__msg = None
+        self.__lnum = None
+        self.__path = None
+        self.__severity = None
+
+    def set_severity(self, level):
+        if(type(level) != MistakePriority):
+            raise ValueError("Priority must be of type MistakePriority.")
+        self.__severity = level
+
+    def set_message(self, msg):
+        if(type(msg) == str):
+            self.__msg = msg
+        else:
+            self.__msg = str(msg)
+
+    def set_lnum(self, lnum):
+        if(type(lnum) != int):
+            raise ValueError("Line number must be an integer.")
+        self.__lnum = lnum
+
+    def set_path(self, path):
+        if(type(path) == str):
+            self.__path = path
+        else:
+            self.__path = str(path)
+
+    def is_valid(self):
+        if(self.__path != None and self.__msg != None and
+                self.__severity != None):
+            return True
+        else:
+            return False
+
+    def get_severity(self):
+        return self.__severity
+
+    def get_message(self):
+        return self.__msg
+
+    def get_path(self):
+        return self.__path
+
+    def get_lnum(self):
+        return self.__lnum
+
+class error_formatter:
+    """Format an error message according to options set. One use case might be
+the output on the command line."""
+    def __init__(self):
+        self.__x = 0
+        self.__with_blank_lines = True
+        self.__itemize_sign = ''
+        self.__sort_critical_first = False
+
+    def set_with_blank_lines(self, flag):
+        """Set whether there are blank lines between paths or not."""
+        self.__with_blank_lines = flag
+
+    def set_width(self, width):
+        self.__x = width
+
+    def set_itemize_sign(self, sign):
+        self.__itemize_sign = sign[:]
+
+    def __severity_format(self, sev):
+        translations = {'critical' : 'kritisch', 'pedantic' : 'pedantisch',
+                'normal' : 'normal'}
+        return translations[str(sev).split(".")[-1]]
+
+    def sort_critical_first(self, flag):
+        self.__sort_critical_first = flag
+
+    def format_error(self, err):
+        """Format an error according to the options set."""
+        for attr in ['get_message', 'get_severity', 'get_path']:
+            if not hasattr(err, attr):
+                raise ValueError("Argument must provide method %s()." % attr)
+        prefix = ''
+        if self.__itemize_sign: prefix += self.__itemize_sign
+        if err.get_lnum():
+            prefix += 'Zeile %s' % err.get_lnum()
+        if err.get_severity() == MistakePriority.critical:
+            prefix += ' [%s]' % self.__severity_format(err.get_severity())
+        width = (999999 if self.__x == 0 else self.__x - 1)
+        wrapper = textwrap.TextWrapper(width)
+        wrapper.initial_indent = prefix + ': '
+        wrapper.subsequent_indent = '    '
+        return '\n'.join(wrapper.wrap(err.get_message()))
+
+    def __sort(self, errors):
+        """Sorts given errors either alphabetical or using priority, if
+self.sort_critical_first(True)."""
+        if self.__sort_critical_first:
+            return sorted(errors, key=error_message.get_severity)
+        else:
+            return sorted(errors, key=error_message.get_path)
+
+    def format_errors(self, errors):
+        errors = self.__sort(errors)
+        last_path = None
+        output = []
+        for error in errors:
+            if last_path != error.get_path():
+                # new path, new "section"; empty lines and path are printed
+                if output != [] and self.__with_blank_lines: output.append("\n")
+                output += [error.get_path(), '\n']
+                if self.__with_blank_lines: output.append("\n")
+                last_path = error.get_path()
+            output.append(self.format_error(error))
+            output.append("\n")
+        return "".join(output)
 

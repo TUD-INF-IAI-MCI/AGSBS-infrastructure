@@ -36,13 +36,14 @@ class Mistkerl():
         self.__issues = [common_latex_errors, page_number_is_paragraph,
                 heading_is_paragraph, level_one_heading, oldstyle_pagenumbering,
                 itemize_is_paragraph, page_numbering_text_is_lowercase,
-                page_string_but_no_page_number, page_string_varies,
-                uniform_pagestrings, too_many_headings,
-                LaTeXMatricesAreHardToRead, PageNumbersWithoutDashes,
-                DoNotEmbedHTMLLineBreaks, EmbeddedHTMLComperators]
+                page_string_but_no_page_number, uniform_pagestrings,
+                too_many_headings, LaTeXMatricesAreHardToRead,
+                PageNumbersWithoutDashes, DoNotEmbedHTMLLineBreaks,
+                EmbeddedHTMLComperators, pageNumberWordIsMispelled]
         self.__cache_pnums = collections.OrderedDict()
         self.__cache_headings = collections.OrderedDict()
-        self.__output = {}
+        self.__output = []
+        self.__priority = MistakePriority.normal
         self.requested_level = MistakePriority.normal
 
     def get_issues(self, fname):
@@ -60,19 +61,6 @@ class Mistkerl():
         assert type(p) == MistakePriority
         self.__priority = p
     def get_priority(self): return self.__priority
-    def __format_out(self, data):
-        if(data[0] == '-'):
-            return data[1]
-        else:
-            return 'Zeile ' + str(data[0]) + ": " + data[1]
-
-    def __append(self, path, value):
-        if(value):
-            if(not path in self.__output.keys()):
-                self.__output[ path ] = []
-            self.__output[ path ].append(self.__format_out(value))
-
-
     def run(self, path):
         """Take either a file and run checks or do the same for a directory
 recursively."""
@@ -93,7 +81,10 @@ recursively."""
                 try:
                     text = codecs.open(file, "r", "utf-8").read()
                 except UnicodeDecodeError:
-                    self.__append(file_path, ('-','Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'))
+                    e = error_message()
+                    e.set_severity(MistakePriority.critical)
+                    e.set_path(file_path)
+                    e.set_message('Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.')
                     continue
                 text = text.replace('\r\n','\n').replace('\r','\n')
                 self.__run_filters_on_file(file_path, text)
@@ -102,6 +93,16 @@ recursively."""
         # change
         self.run_directory_filters(directoryname)
         return self.__output
+
+    def __append(self, path, err):
+        """Add an error to the internal output dict."""
+        if(not err): return
+        if(type(err) != error_message):
+            raise TypeError("Errors may only be of type error_message, got '%s'"
+                    % str(err))
+        if not err.get_path():
+            err.set_path(path)
+        self.__output.append(err)
  
 
     def __run_filters_on_file(self, file_path, text):
@@ -123,11 +124,16 @@ recursively."""
         for num, line in enumerate(text.split('\n')):
             if(num > 2500 and not overlong):
                 overlong = True
-                self.__append(file_path, ("-", "Die Datei ist zu lang. Um die "+
+                e = error_message()
+                e.set_severity(MistakePriority.normal)
+                e.set_path(file_path)
+                e.set_message("Die Datei ist zu lang. Um die "+
                     " Navigation zu erleichtern und die einfache Lesbarkeit zu"+
                     " gewährleisten sollten lange Kapitel mit mehr als 2500 " +
-                    "Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md "+
-                    "der kleiner aufgeteilt werden."))
+                    "Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md" +
+                    " oder kleiner aufgeteilt werden.")
+
+                self.__append(file_path, e)
             for issue in OneLiner:
                 if(issue.should_be_run()):
                     res = issue.run(num+1, line)
@@ -157,7 +163,4 @@ recursively."""
                 self.__append(dname, issue.run(self.__cache_headings))
         self.__cache_pnums.clear()
         self.__cache_headings.clear()
-
-
-
 

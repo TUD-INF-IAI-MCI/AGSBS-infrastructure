@@ -38,20 +38,28 @@ def error_exit(string):
     sys.stderr.write( string + ('\n' if not string.endswith('\n') else '') )
     sys.exit(127)
 
-def guess_encoding():
-    """Guess stems default encoding, python2 / python3-independent."""
-    if(PYVERSION > 2):
-        return sys.getdefaultencoding()
-    else:
-        if(sys.stdin.encoding != None):
-            return sys.stdin.encoding
-        elif(sys.stdout.encoding != None):
-            return sys.stdout.encoding
-        else:
-            try:
-                return locale.getdefaultlocale()[1]
-            except IndexError:
-                raise UnicodeDecodeError("Could not gues encoding.")
+def getTerminalSize():
+    """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""
+    import os
+    env = os.environ
+    def ioctl_GWINSZ(fd):
+        try:
+            import fcntl, termios, struct, os
+            cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+        except:
+            return
+        return cr
+    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+    if not cr:
+        try:
+           fd = os.open(os.ctermid(), os.O_RDONLY)
+           cr = ioctl_GWINSZ(fd)
+           os.close(fd)
+        except:
+            pass
+        if not cr:
+            cr = (env.get('LINES', 25), env.get('COLUMNS', 80))
+    return int(cr[1]), int(cr[0])
 
 class main():
     def __init__(self):
@@ -317,38 +325,32 @@ Run "mistkerl", a quality assurance helper. It checks for common errors and
 outputs it on the command line.
 '''
         parser = OptionParser(usage=usage)
-        parser.add_option("-p", dest="priority", default="1",
-            metavar="NUM", help="priority level for which messages are displayed; 0 means only critial, 1 also warnings and 2 also pedantic notes.")
+        parser.add_option("-c", dest="critical_first", action="store_true",
+                help="Sort critical errors first")
+        parser.add_option("-s", dest="squeeze_output", action="store_true",
+                help="use less blank lines")
         (options, args) = parser.parse_args(sys.argv[2:])
 
         if((len(args) != 1)):
-            print( usage )
+            print(usage)
             sys.exit( 127 )
         if(not os.path.exists( args[0] ) ):
             print("Error: %s does not exist." % args[0] )
-        else:
-            mistkerl = MAGSBS.quality_assurance.Mistkerl()
-            try:
-                priority = int( options.priority)
-                priorities = list(
-                        MAGSBS.quality_assurance.MistakePriority.__members__.items())
-                if(priority < 0 or priority > (len(priorities)-1)):
-                    print("Error: Priority must be between 0 and 2")
-                    sys.exit(127)
-                mistkerl.set_priority( getattr(
-                    MAGSBS.quality_assurance.MistakePriority, 
-                    priorities[ priority ][0] ) )
-            except ValueError:
-                print("Priority must be an integer.")
-            output = mistkerl.run( args[0] )
-            if(len(output) == 0):
-                print("Nun denn, ich konnte keine Fehler entdecken. Hoffen wir, dass es auch wirklich\nkeine gibt ;-).")
-                sys.exit( 0 )
-            for fn, issues in output.items():
-                if(len(issues) > 0):
-                    print('\n'+fn+':\n')
-                for issue in issues:
-                    print('-   ' + '\n    '.join( textwrap.wrap( issue, 74 ) ) )
+            sys.exit(5)
+        mistkerl = MAGSBS.quality_assurance.Mistkerl()
+        errors = mistkerl.run(args[0])
+        if(len(errors) == 0):
+            print("Nun denn, ich konnte keine Fehler entdecken. Hoffen wir, dass es auch wirklich\nkeine gibt ;-).")
+            sys.exit( 0 )
+        formatter = MAGSBS.quality_assurance.error_formatter()
+        formatter.set_itemize_sign("  ")
+        formatter.set_width(getTerminalSize()[0])
+        if options.squeeze_output:
+            formatter.set_with_blank_lines(False)
+        if options.critical_first:
+            formatter.sort_critical_first(True)
+        print(formatter.format_errors(errors))
+
     def master(self):
         args = sys.argv[2:]
         if not os.path.exists( args[0] ):
