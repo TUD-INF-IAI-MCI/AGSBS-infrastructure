@@ -10,4 +10,4 @@ my_fancy_page = c.get_markdown_page()
 """
 
 __all__ = ["pandoc", "quality_assurance", "filesystem", "mparser",
-        "errors", "datastructures", "contentfilter", "config"]
+        "errors", "datastructures", "contentfilter", "config", "master"]

@@ -1,8 +1,9 @@
-import MAGSBS.errors
-import os, sys, io
+from . import errors
+from . import config
+import os, sys
 
 """For documentation about this module, please refer the its classs master."""
-_ = MAGSBS.config._
+_ = config._
 
 class NoLectureConfigurationError(Exception):
     pass
@@ -66,9 +67,8 @@ found and there are MarkDown files."""
             if( not c.is_empty() ):
                 index = c.get_index()
                 md_creator = MAGSBS.factories.index2markdown_TOC(index)
-                with io.open( _( "index" ).lower() + ".md", mode='w',
-                        encoding="utf-8" ) as file:
-                    file.write( md_creator.get_markdown_page() )
+                with open(_("index").lower() + ".md", 'w', "utf-8") as file:
+                    file.write(md_creator.get_markdown_page())
             
             for dir, dlist, flist in MAGSBS.filesystem.get_markdown_files( ".", True ):
                 os.chdir( dir )

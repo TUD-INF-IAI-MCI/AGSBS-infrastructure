@@ -22,9 +22,9 @@ For the documentation of the mistake types, see the appropriate class."""
 
 import re, os, sys
 import codecs, collections
-import MAGSBS.config as config
-import MAGSBS.filesystem as filesystem
-import MAGSBS.errors as errors
+from .. import config as config
+from .. import filesystem as filesystem
+from .. import errors as errors
 
 from .meta import *
 from .latex import *
