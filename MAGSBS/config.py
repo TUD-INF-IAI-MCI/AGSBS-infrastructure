@@ -161,11 +161,10 @@ one instance at a time exists.
                 c = ET.SubElement(root, self.dictkey2xml[key])
             if(key in self.__numerical): value = str(value)
             c.text = value
-        out = dom = minidom.parseString(
-                '<?xml version="1.0" encoding="UTF-8"?>' + \
-                ET.tostring(root)
-                ).toprettyxml()
-        open(self.__path, 'w', encoding='utf-8').write(out)
+        out = minidom.parseString('<?xml version="1.0" encoding="UTF-8"?>' + \
+                ET.tostring(root, encoding="unicode")
+                ).toprettyxml(indent="  ", encoding="utf-8")
+        open(self.__path, 'wb').write(out)
 
     def normalize_tag(self, tag):
         if(tag.find('}')>0):
@@ -278,10 +277,12 @@ l10n with Windows."""
             'chapters':'chapitres', 'pages':'pages',
             'table of contents':'table des matières',
             'index':'index',
+            'image descriptions':"description à les image",
             'image description outsourced':"description de l'image excluré",
             'description of image outsourced':"description de l'image excluré",
             'images':'images',
             'next':'suivant',  'previous':'précédent',
+            'chapter':'chapitre', 'paper':'document'
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
             'table of contents' : 'inhaltsverzeichnis',
@@ -292,7 +293,8 @@ l10n with Windows."""
             'pages':'Seiten',
             'index':'Inhalt',
             'next':'weiter',   'previous':'zurück',
-            'Remarks about the accessible edited version':'Hinweise zur barrierefrei bearbeiteten Version'
+            'Remarks about this accessible version':'Hinweise zur dieser barrierefreien Version',
+            'chapter':'kapitel', 'paper':'blatt'
             }
 
     def get_translation(self, origin):

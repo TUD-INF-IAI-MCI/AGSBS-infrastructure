@@ -301,6 +301,10 @@ Initialize a new lecture.
         parser.add_option("-p", dest="preface", default=False,
                 action="store_true",
                 help="sets whether a preface exists (default None)")
+        parser.add_option("-n", dest="nochapter", default=False,
+                action="store_true",
+                help='if set, blattxx will be used instead of kxx')
+
         parser.add_option("-l", dest="lang", default="de",
                 help="sets language (default de)")
         (options, args) = parser.parse_args(sys.argv[2:])
@@ -312,12 +316,13 @@ Initialize a new lecture.
             c = int( options.chapter_count )
         except ValueError:
             error_exit("The number of chapters and appendix chapters must be integers.")
-        i=MAGSBS.filesystem.init_lecture( args[0], c, options.lang)
-        if(a):
-            i.count_appendix_chapters( a )
-        if(options.preface):
-            i.set_preface( options.preface )
-        i.generate_structure()
+        builder = MAGSBS.filesystem.init_lecture(args[0], c, options.lang)
+        builder.set_amount_appendix_chapters(a)
+        if options.preface:
+            builder.set_has_preface(True)
+        if options.nochapter:
+            builder.set_no_chapters(True)
+        builder.generate_structure()
 
     def mk(self):
         usage = sys.argv[0] + ''' mk [FILE|DIRECTORY]

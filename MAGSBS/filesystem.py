@@ -1,13 +1,12 @@
 """Everything file system related goes in here."""
 
-import os, sys, codecs
-import collections
+import os, collections
 
-from MAGSBS.mparser import *
-import MAGSBS.datastructures as datastructures
-import MAGSBS.config as config
-import MAGSBS.errors
+from . import mparser
+from . import config
+from . import errors
 _ = config._
+#pylint: disable=redefined-builtin
 
 def valid_file_bgn( cmp ):
     """Should we consider this directory or file according to the specs?"""
@@ -21,8 +20,10 @@ def valid_file_bgn( cmp ):
 def skip_dir(root, cur):
     """Check whether directory contains interesting files."""
     skip = True
-    if(cur == root): skip = False
-    if(valid_file_bgn(cur)): skip = False
+    if cur == root:
+        skip = False
+    if valid_file_bgn(cur):
+        skip = False
     return skip
 
 
@@ -54,11 +55,11 @@ Files picked up: ending on configured file endings."""
         lecture structure."""
         self.exclude_non_chapter_prefixed = x
 
-    def interesting_dir(self, dir):
+    def interesting_dir(self, directory):
         """Returns true, if that directory shall be searched for files."""
-        dir = os.path.split(dir)[-1]
+        directory = os.path.split(directory)[-1]
         for bad in self.black_list:
-            if(dir.lower().startswith(bad)):
+            if(directory.lower().startswith(bad)):
                 return False
         return True
 
@@ -74,7 +75,8 @@ Files picked up: ending on configured file endings."""
             raise OSError("Specified directory %s does not exist." % dir)
         elif os.path.isfile(self.path):
             path, file = os.path.split(self.path)
-            if path == '': path = '.'
+            if path == '':
+                path = '.'
             return [(path, [], [file])]
         res = []
         dirs = [self.path]
@@ -92,7 +94,7 @@ Files picked up: ending on configured file endings."""
                 files   = [e for e in files    if valid_file_bgn( e )]
                 newdirs = [e for e in newdirs  if valid_file_bgn( e )]
             dirs += newdirs
-            res.append((dir, [os.path.split(e)[-1] for e in newdirs], 
+            res.append((dir, [os.path.split(e)[-1] for e in newdirs],
                 [os.path.split( e )[-1]  for e in files]) )
         return res
 
@@ -109,23 +111,25 @@ structure or all files shall be listed ending on .md."""
     fw.set_endings([".md"])
     return fw.walk()
 
-def is_lecture_root( dir ):
-    """is_lecture_root(dir )
+def is_lecture_root(directory):
+    """is_lecture_root(directory)
     Check whether the given directory is the lecture root.
     Algorithm: if dir starts with a valid chapter prefix, it is obviously not.
     for all other cases, try to obtain a list of files and if _one_
     **directory** starts with a chapter prefix, it is a valid chapter root. As
     an addition, a ".LectureMetaData.dcxml" will also mark a lecture root."""
-    dir = os.path.abspath( dir )
-    if( valid_file_bgn( os.path.split( dir )[-1] ) ):
+    directory = os.path.abspath( directory )
+    # if cwd starts with a chapter prefix, it is no lecture root
+    if(valid_file_bgn(os.path.split( directory )[-1])):
         return False
-    else:
-        if( os.path.exists( config.CONF_FILE_NAME ) ):
+    subdirectories = [e for e in os.listdir(directory) \
+            if os.path.isdir(directory+os.sep+e)]
+    for directory in subdirectories:
+        if(valid_file_bgn(directory)):
             return True
-        for DIR in [e for e in os.listdir( dir ) if os.path.isdir( dir+os.sep+e )]:
-            if( valid_file_bgn( DIR ) ):
-                return True
-        return False
+    if(os.path.exists(config.CONF_FILE_NAME)):
+        return True
+    return False
 
 def fn2targetformat( fn, fmt ):
     """Alters a path to have the file name extension of the target format."""
@@ -136,44 +140,45 @@ def fn2targetformat( fn, fmt ):
 
 class create_index():
     """create_index(dir)
-    
-Walk the file system tree from "dir" and have a look in all files who end on
+
+Walk the file system tree from "dir" and have a look in all files which end on
 .md. Take headings of level 1 or 2 and add it to the index.
-    
+
 Format of index: dict of lists: every filename is the key, the list of heading
 [objects] is the value in the OeredDict()."""
-    def __init__(self, dir):
-        if(not os.path.exists(dir)):
+    def __init__(self, path):
+        if(not os.path.exists(path)):
             raise(OSError("Directory doesn't exist."))
-        self.__dir = dir
+        self.__dir = path
         self.__index = collections.OrderedDict()
 
     def walk(self):
         """walk()
 By calling the function, the actual index is build."""
-        for directoryname, directory_list, file_list in get_markdown_files(self.__dir):
-            for file in file_list:
+        for directory, directories, files in get_markdown_files(self.__dir):
+            for file in files:
                 # open with systems default encoding
                 # try systems default encoding, then utf-8, then fail
-                data = codecs.open( os.path.join(directoryname, file), 'r',
-                        'utf-8' ).read()
-                m = simpleMarkdownParser( data, directoryname, file )
+                data = open(os.path.join(directory, file), 'r',
+                        encoding='utf-8').read()
+                # ToDo: use pandoc?
+                m = mparser.simpleMarkdownParser(data, directory, file)
                 m.parse()
                 m.fetch_headings()
                 headings = []
-                if( os.path.split( directoryname )[-1].startswith("anh") ):
+                if(os.path.split(directory)[-1].startswith("anh") ):
                     for heading in m.get_headings():
                         heading.set_type( "appendix" )
                         headings.append( heading )
                 else:
                     headings = m.get_headings()
-                full_fn = os.path.join( directoryname, file)
+                full_fn = os.path.join( directory, file)
                 self.__index[ full_fn ] = headings
-    
+
     def get_index(self):
         tmp = collections.OrderedDict()
-        for key in sorted( self.__index ):
-            tmp[ key ] = self.__index[ key ]
+        for key in sorted(self.__index):
+            tmp[key] = self.__index[ key ]
         return tmp
 
     def is_empty(self):
@@ -192,11 +197,15 @@ class page_navigation():
 Iterate through files in `directory`. Read in the page navigation (if any) and
 update (or create) it. `page_gap` will specify which gap the navigation bar will
 have for the pages."""
+    NAVIGATION_END = '<!-- end page navigation -->'
+    NAVIGATION_BEGIN = '<!-- page navigation -->'
+
     def __init__(self, dir):
         if( not os.path.exists( dir ) ):
             raise OSError("The directory \"%s\" doesn't exist." % dir)
         if( not is_lecture_root( dir ) ):
-            raise MAGSBS.errors.StructuralError("This command must be run from the lecture root!")
+            raise errors.StructuralError("This command must be run from " + \
+                    "the lecture root!")
         self.__dir = dir
         c = config.confFactory()
         c = c.get_conf_instance()
@@ -216,13 +225,15 @@ have for the pages."""
                     preface.append( (dir, dlist, flist) )
                     stop = True
                     break
-            if( stop ): continue
+            if stop:
+                continue
             for t in config.VALID_MAIN_BGN:
-                if( tmp.startswith( t) ):
+                if(tmp.startswith(t)):
                     main.append( (dir, dlist, flist) )
                     stop = True
                     break
-            if( stop ): continue
+            if stop:
+                continue
             for t in config.VALID_APPENDIX_BGN:
                 if( tmp.startswith( t) ):
                     appendix.append( (dir, dlist, flist) )
@@ -243,10 +254,13 @@ back the file."""
         has_prev = None
         has_next = None
         for pos, file in enumerate( files ):
-            if( pos ):  has_prev = files[ pos -1 ]
-            if( pos == (len(files)-1) ): has_next = None
-            else:                        has_next = files[ pos + 1 ]
-            data = codecs.open( file, 'r', 'utf-8').read()
+            if(pos):
+                has_prev = files[ pos -1 ]
+            if(pos == (len(files)-1)):
+                has_next = None
+            else:
+                has_next = files[ pos + 1 ]
+            data = open(file, 'r', encoding='utf-8').read()
             # guess line breaks
             if(data.find('\r\n')>=0):
                 self.linebreaks = '\r\n'
@@ -257,7 +271,7 @@ back the file."""
                     self.linebreaks = '\n'
             data = self.trail_nav( data )
             data = self.gen_nav(data, file, has_prev, has_next)
-            codecs.open( file, 'w', 'utf-8').write( data )
+            open(file, 'w', encoding='utf-8').write(data)
         os.chdir( cwd )
 
     def trail_nav(self, page):
@@ -267,13 +281,13 @@ must start with
     <!-- page navigation -->
 and end again with
     <!-- end page navigation -->"""
-    
+
         navbar_started = False
         newpage = []
         for line in page.split(self.linebreaks):
-            if(line.find('<!-- page navigation -->')>=0):
+            if(line.find(self.NAVIGATION_BEGIN)>=0):
                 navbar_started = True
-            elif(navbar_started and (line.find('<!-- end page navigation -->') >= 0)):
+            elif navbar_started and (line.find(self.NAVIGATION_END) >= 0):
                 navbar_started = False
             else:
                 if(not navbar_started):
@@ -282,10 +296,12 @@ and end again with
 
     def gen_nav(self, page, file_name, has_prev, has_next):
         """Generate language-specific site navigation."""
-        if(has_prev):    has_prev = fn2targetformat( has_prev, self.__fmt )
-        if(has_next):    has_next = fn2targetformat( has_next, self.__fmt)
+        if(has_prev):
+            has_prev = fn2targetformat( has_prev, self.__fmt )
+        if(has_next):
+            has_next = fn2targetformat(has_next, self.__fmt)
         newpage = []
-        m = simpleMarkdownParser( page, self.__dir, file_name )
+        m = mparser.simpleMarkdownParser(page, self.__dir, file_name)
         m.parse()
         lbr = self.linebreaks
 
@@ -310,61 +326,99 @@ and end again with
         if(has_next):
             chapternav += "  [%s](%s)" % (_('next'),
                 join_paths("..", has_next))
-        newpage += [ '<!-- page navigation -->%s' % lbr, chapternav, lbr, lbr, ''.join(navbar) ]
-        newpage += [lbr,lbr, '* * * * *', lbr, '<!-- end page navigation -->', lbr]
+        newpage += [self.NAVIGATION_BEGIN, lbr, chapternav, lbr, lbr,
+                ''.join(navbar)]
+        newpage += [lbr,lbr, '* * * * *', lbr, self.NAVIGATION_END, lbr]
         if(not page.startswith(lbr)):
             newpage.append(lbr)
         elif not page.endswith(lbr):
             page += lbr
         newpage.append( page )
-        newpage += [lbr, '<!-- page navigation -->', lbr, lbr,
+        newpage += [lbr, self.NAVIGATION_BEGIN, lbr, lbr,
                     '* * * * *', lbr,lbr]
-        newpage += [''.join( navbar ), lbr,lbr, chapternav, lbr, '<!-- end page navigation -->']
+        newpage += [''.join(navbar), lbr,lbr, chapternav, lbr,
+                self.NAVIGATION_END]
         return ''.join(newpage)
 
 class init_lecture():
     """init_lecture()
 
-Initialize folder structure for a lecture."""
+Initialize folder structure for a lecture.
+
+builder = init_lecture(path, numOfChapters, lang='de')
+builder.set_no_chapters(True|False) # use kxx or blattxx
+# number of appendix chapters, 0 by default
+builder.set_amount_appendix_chapters(2)
+builder.set_has_preface(True) # create preface chapter
+builder.generate_structure() # also inits a basic configuration
+"""
     def __init__(self, path, numOfChapters, lang='de'):
-        self.lang = lang
-        self.numOfChapters = numOfChapters
-        self.path = path
-        self.appendixCount = 0
-        self.preface = False
-    def count_appendix_chapters(self, count):
+        self.__lang = lang
+        self.__amountChapters = numOfChapters
+        self.__path = path
+        self.__appendix_count = 0
+        self.__preface = False
+        self.__no_chapters = False
+
+    def set_no_chapters(self, ex):
+        self.__no_chapters = ex
+
+    def set_amount_appendix_chapters(self, count):
         if(not isinstance(count, int)):
-            raise ValueError("Integer required.")
-        self.appendixCount = count
-    def set_preface(self, preface):
+            raise TypeError("Integer required.")
+        self.__appendix_count = count
+
+    def set_has_preface(self, preface):
         if(not isinstance(preface, bool)):
             raise ValueError("Boolean required.")
-        self.preface = preface
-    def generate_structure(self):
-        """Write out structure."""
-        if(not os.path.exists( self.path )):
-            os.mkdir( self.path )
-        def init(path):
-            chap_fn = os.path.split( path )[-1]
-            if(self.lang == 'de'):
-                imgfn = 'bilder.md'
-                imghead = 'Bildbeschreibungen von'
-            else:
-                imgfn = 'images.md'
-                imghead = 'Image Descriptions Of'
+        self.__preface = preface
+
+    def __create_chapter(self, prefix, number, images_file=False):
+        """Init a chapter, the corresponding MarkDown file and optionally a
+image description file as well. This method assums that it is called from the
+new lecture root."""
+        path = prefix + str(number).zfill(2)
+        if not os.path.exists(path):
             os.mkdir(path)
-            codecs.open(os.path.join(path, imgfn), 'w', 'utf-8').\
-                    write( imghead + ' ' + chap_fn + '\n==========')
-            codecs.open(os.path.join(path, chap_fn+'.md'), 'w', 'utf-8').\
-                    write(chap_fn+'\n======')
-        if(self.preface):
-            fn = ('vorwort' if self.lang == 'de' else 'preface')
-            codecs.open( os.path.join(self.path, fn+'.md'), 'w').write( \
-                    fn.capitalize()+'\n========')
-        for nchap in range(1,self.numOfChapters+1):
-            init(os.path.join(self.path,
-                        'k'+str(nchap).zfill(2).replace(' ','0')))
-        for napp in range(1,self.appendixCount+1):
-            init(os.path.join(self.path,
-                        'anh'+str(napp).zfill(2).replace(' ','0')))
+        chap_file = os.path.join(path, prefix + str(number).zfill(2)) + '.md'
+        with open(chap_file, 'w', encoding='utf-8') as f:
+            heading = _('chapter') + ' ' + str(number)
+            if self.__no_chapters: # use different heading
+                heading = _('paper') + ' ' + str(number)
+            f.write(heading.capitalize())
+            f.write('\n')
+            f.write('=' * len(heading))
+            f.write("\n\n")
+        if images_file:
+            imgpath = os.path.join(path, _('images') + '.md')
+            with open(imgpath, 'w', encoding='utf-8') as f:
+                f.write(_("image descriptions").capitalize())
+                f.write("\n")
+                f.write('=' * len(_("image descriptions")))
+                f.write("\n\n")
+
+
+    def generate_structure(self):
+        """Create file system structure for the lecture, as configured.
+Initialize basic configuration as well."""
+        if not os.path.exists(self.__path):
+            os.mkdir( self.__path )
+        cwd = os.getcwd()
+        os.chdir(self.__path)
+        # initialize configuration:
+        inst = config.LectureMetaData(config.CONF_FILE_NAME)
+        inst.write()
+        # read this configuration back in again using singleton
+        inst = config.confFactory().get_conf_instance()
+
+        if(self.__preface):
+            self.__create_chapter('v', '1', False)
+        for index in range(1, self.__amountChapters + 1):
+            if self.__no_chapters:
+                self.__create_chapter('blatt', index, False)
+            else:
+                self.__create_chapter('k', index, False)
+        for index in range(1, self.__appendix_count + 1):
+            self.__create_chapter('anh', index, False)
+        os.chdir(cwd)
 
