@@ -1,14 +1,23 @@
-from pandocfilters import *
+#pylint: disable=redefined-builtin,unused-argument
+# Pylint is right about the errors above, but the additional arguments e.g.
+# where introduced to be compatible with the pandocfilters package.
+"""
+This module provides some extensions to the python-pandoc API as well as a few
+custom filters for the extended version of MarkDown.
+"""
+
 import pandocfilters
+import json
 import sys, subprocess, re
-import MAGSBS
+from . import config
+from . import datastructures
 
 
 def html(x):
     """html(x)
 The string x is transformed into an RawBlock for Pandoc's usage."""
     assert type(x) == str
-    return RawBlock('html', x)
+    return pandocfilters.RawBlock('html', x)
 
 def join_para(chunks):
     """join_para(chunks)
@@ -44,10 +53,10 @@ numbering information."""
             if(type(text) == str):
                 if(text.startswith('||')):
                     text = pandocfilters.stringify( value )
-                    if(re.search( MAGSBS.config.PAGENUMBERING_REGEX, text.lower())):
+                    if(re.search(config.PAGENUMBERING_REGEX, text.lower())):
                         # strip the first ||
                         text = text[2:]
-                        id = MAGSBS.datastructures.gen_id( text )
+                        id = datastructures.gen_id( text )
                         if(modify_ast):
                             return html( generate_link( text, id ) )
                         else:
@@ -87,8 +96,8 @@ def jsonfilter(text, action, format='html'):
 
 def run_pandoc(text):
     """Return pandoc and return Pandoc AST."""
-    proc = subprocess.Popen(['pandoc', '-f','markdown', '-t','json'],
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc = subprocess.Popen(['pandoc', '-f','markdown', '-t','json'], stdin=\
+            subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     data = proc.communicate( text.encode( sys.getdefaultencoding() ) )
     ret = proc.wait()
     if(ret):
@@ -107,6 +116,6 @@ def pandoc_ast_parser(text, action):
         res = action(key, value, format, meta, modify_ast=False)
         if(res):
             result.append( res )
-    walk(doc, go, "", doc[0]['unMeta'])
+    pandocfilters.walk(doc, go, "", doc[0]['unMeta'])
     return result
 
