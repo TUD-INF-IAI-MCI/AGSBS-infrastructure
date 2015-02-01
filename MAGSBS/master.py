@@ -72,7 +72,7 @@ found and there are MarkDown files."""
             if( not c.is_empty() ):
                 index = c.get_index()
                 md_creator = factories.index2markdown_TOC(index)
-                with open(_("index").lower() + ".md", 'w', "utf-8") as file:
+                with open(_("index").lower() + ".md", 'w', encoding="utf-8") as file:
                     file.write(md_creator.get_markdown_page())
             
             for directory, dlist, flist in filesystem.get_markdown_files( ".", True ):

@@ -31,6 +31,8 @@ def join_paths(*args):
     """os.path.join-alike function to join a arbitrari number of tokens to a
 path - fixed to / as separator."""
     return '/'.join(args)
+
+
 class FileWalker():
     """Abstraction class to provide functionality as offered by os.walk(), but
 omit certain files and folders.
