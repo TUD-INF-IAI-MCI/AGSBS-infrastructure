@@ -1,8 +1,12 @@
+"""For documentation about this module, please refer to its classs master."""
 from . import errors
 from . import config
-import os, sys
+from . import pandoc
+from . import filesystem
+from . import factories
+import os
 
-"""For documentation about this module, please refer the its classs master."""
+
 _ = config._
 
 class NoLectureConfigurationError(Exception):
@@ -26,16 +30,17 @@ files are converted."""
         roots = []
         dirs = [path]
         go_deeper = True
-        for dir in dirs:
-            meta = [e for e in os.listdir(dir) if e ==
-                    MAGSBS.config.CONF_FILE_NAME]
-            if( meta ): # found, this is our root
-                roots.append( dir )
+        for directory in dirs:
+            meta = [e for e in os.listdir(directory) if e ==
+                    config.CONF_FILE_NAME]
+            if(meta): # found, this is our root
+                roots.append(directory)
                 go_deeper = False
             else:
-                if( go_deeper ):
-                    dirs += [os.path.join(dir, e)  for e in os.listdir( dir ) \
-                        if( os.path.isdir( os.path.join(dir, e)) )]
+                if(go_deeper):
+                    dirs += [os.path.join(directory, e) \
+                            for e in os.listdir(directory) \
+                            if( os.path.isdir( os.path.join(dir, e)) )]
         found_md = False
         for dir, dlist, flist in os.walk( path ):
             for f in flist:
@@ -59,26 +64,26 @@ found and there are MarkDown files."""
         for root in self.get_roots():
             os.chdir( root )
             # create navigation bar
-            p = MAGSBS.filesystem.page_navigation( "." )
+            p = filesystem.page_navigation( "." )
             p.iterate()
             # create table of contents
-            c = MAGSBS.filesystem.create_index( "." )
+            c = filesystem.create_index( "." )
             c.walk()
             if( not c.is_empty() ):
                 index = c.get_index()
-                md_creator = MAGSBS.factories.index2markdown_TOC(index)
+                md_creator = factories.index2markdown_TOC(index)
                 with open(_("index").lower() + ".md", 'w', "utf-8") as file:
                     file.write(md_creator.get_markdown_page())
             
-            for dir, dlist, flist in MAGSBS.filesystem.get_markdown_files( ".", True ):
-                os.chdir( dir )
+            for directory, dlist, flist in filesystem.get_markdown_files( ".", True ):
+                os.chdir(directory)
                 for f in flist:
-                    p = MAGSBS.pandoc.pandoc()
+                    p = pandoc.pandoc()
                     try:
                         p.convert( f )
-                    except MAGSBS.errors.SubprocessError as interposeError:
-                        raise MAGSBS.errors.SubprocessError("Error while converting \"%s\"\n" % os.path.join( dir, f ) \
+                    except errors.SubprocessError as interposeError:
+                        raise errors.SubprocessError("Error while converting \"%s\"\n" % os.path.join( dir, f ) \
                                         +  interposeError.args[0])
-                os.chdir( os.path.join( cwd, root ) )
-            os.chdir( cwd )
+                os.chdir(os.path.join(cwd, root))
+            os.chdir(cwd)
         

@@ -1,6 +1,8 @@
 0.1.2:
 
  * einheitliche Schnittstelle zum Erstellen von Lehrmaterialien
+ * aussagekräftige Fehlermeldung, wenn Pandoc fehlt
+ * viele weitere Fehler behoben
 
 0.1.1
 
