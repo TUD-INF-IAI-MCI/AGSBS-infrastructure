@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # vim: set expandtab sts=4 ts=4 sw=4:
 """
 This module abstracts everything related to calling pandoc and modifiying the
@@ -9,7 +8,7 @@ import os, sys, subprocess
 import MAGSBS.config as config
 import MAGSBS.mparser as mparser
 import MAGSBS.contentfilter as contentfilter
-from MAGSBS.errors import NotImplementedError, SubprocessError, WrongFileNameError
+from MAGSBS.errors import SubprocessError, WrongFileNameError
 from MAGSBS.config import PYVERSION
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -83,12 +82,6 @@ def html_escape(string):
         import cgi
         return cgi.escape( string, True)
 
-
-# $$institution: 'TU Dresden, Institut f&uuml;r Angewandte Informatik, Mensch-Maschine Kommunikation'
-# $$workinggroup: Arbeitsgruppe Studium für Blinde und Sehbehinderte
-# $$origin: E5hajimemasite.pdf
-# $$subject: japanisch
-# $$editor: Max Reitz
 
 def remove_temp(fn):
     if(fn == None): return
@@ -219,7 +212,10 @@ title of the document, hence allow setting it separately."""
         if(self.format != 'html'):
             raise NotImplementedError("Only HTML output is supported currently.")
         else:
-            self.convert_html(inputf)
+            try:
+                self.convert_html(inputf)
+            except FileNotFoundError:
+                raise SubprocessError("Pandoc not found. Make sure it is in the PATH environment variable.")
         # ToDo: make me a real pandoc filter
         OutFilter(self.format, inputf[:inputf.rfind('.')]+'.'+self.format)
 

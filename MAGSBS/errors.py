@@ -2,9 +2,6 @@ class MAGSBS_error(Exception):
     """Just a parent."""
     pass
 
-class NotImplementedError(MAGSBS_error):
-    pass
-
 class SubprocessError(MAGSBS_error):
     pass
 

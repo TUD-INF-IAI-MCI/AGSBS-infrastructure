@@ -118,7 +118,7 @@ class Mistake:
         return self.worker(*args)
 
     def worker(self, *args):
-        raise NotImplementedError("The method run must be overriden by a child class.")
+        raise NotImplementedError("The method run must be overridden by a child class.")
 
     def error(self, msg, lnum=None, path=None):
         e = error_message()
