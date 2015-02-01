@@ -1,12 +1,13 @@
 """
 Read in user configuration.
 """
+#pylint: disable=invalid-encoded-data
 
 import getpass, os, sys
 import datetime, codecs
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from MAGSBS.errors import *
+from .errors import ConfigurationError, ConfigurationNotFoundError
 
 if not (sys.platform.lower().startswith("win")):
     import pwd
@@ -269,7 +270,6 @@ class translate():
     """Replace me through gettext, as soon as its clear how easy it is to ship
 l10n with Windows."""
     def __init__(self):
-        c = confFactory()
         self._factory = confFactory()
         self.supported_languages = [ 'de', 'fr' ]
         self.en_fr = { 

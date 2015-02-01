@@ -22,3 +22,7 @@ class ConfigurationNotFoundError(MAGSBS_error):
 
 class StructuralError(MAGSBS_error):
     pass
+
+
+class FileNotFoundError(MAGSBS_error):
+    pass

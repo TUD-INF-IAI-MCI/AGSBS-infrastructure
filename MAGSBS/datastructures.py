@@ -4,8 +4,8 @@
 # (c) 2014 Sebastian Humenda <shumenda@gmx.de>
 
 import os, re
-from MAGSBS.errors import WrongFileNameError
-import MAGSBS.config as config
+from .errors import WrongFileNameError
+from . import config
 
 def path2chapter(string):
     """Convert a file name similar to as k010508.md, anh__.md or v__ to a tuple of the

@@ -4,10 +4,10 @@
 # (c) 2014 Sebastian Humenda <shumenda@gmx.de>
 
 import os, sys
-import MAGSBS.datastructures as datastructures
-import MAGSBS.filesystem as filesystem
-import MAGSBS.config as config
-from MAGSBS.errors import TOCError, MissingMandatoryField
+from . import datastructures
+from . import filesystem
+from . import config
+from .errors import TOCError, MissingMandatoryField
 _ = config._
 
 if(int(sys.version[0]) >= 3):

@@ -5,11 +5,11 @@ template for additional meta data in the output document(s)."""
 
 import datetime, codecs, tempfile
 import os, sys, subprocess
-import MAGSBS.config as config
-import MAGSBS.mparser as mparser
-import MAGSBS.contentfilter as contentfilter
-from MAGSBS.errors import SubprocessError, WrongFileNameError
-from MAGSBS.config import PYVERSION
+from . import config
+from . import mparser
+from . import contentfilter
+from .errors import SubprocessError, WrongFileNameError, FileNotFoundError
+from .config import PYVERSION
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
