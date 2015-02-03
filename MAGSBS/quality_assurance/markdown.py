@@ -1,9 +1,10 @@
 # vim: set expandtab sts=4 ts=4 sw=4 tw=0 ft=python:
+#pylint: disable=line-too-long
 """All mistakes made while writing Markdown files are put in here."""
 
 from .meta import Mistake, MistakeType, MistakePriority, onelinerMistake
-import os, re, collections
-import MAGSBS.config as config
+import os, re
+from .. import config
 
 class page_number_is_paragraph(Mistake):
     """Check whether all page numbers are on a paragraph on their own."""
@@ -11,8 +12,8 @@ class page_number_is_paragraph(Mistake):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self._error_text = "Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
-    def error(self, msg, lnum):
-        return super.error(self._error_text, lnum)
+    def error(self, lnum):
+        return super().error(self._error_text, lnum)
     def worker(self, *args):
         if(len(args)<1):
             raise ValueError("At least one argument (file content) expected.")
@@ -26,7 +27,8 @@ class page_number_is_paragraph(Mistake):
                 if(previous_line_pnum): # previous_line_pnum and this is no empty line...
                     #previous_line_pnum = False
                     return self.error(num+1)
-                elif(re.search(r'\|\|\s*' + config.PAGENUMBERING_REGEX, line.lower())):
+                elif(re.search(r'\|\|\s*' + config.PAGENUMBERING_REGEX,
+                        line.lower())):
                     # line contains page number, is in front of a empty line?
                     if(not paragraph_begun):
                         return self.error(num+1)
@@ -89,11 +91,9 @@ class level_one_heading(Mistake):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self.set_type(MistakeType.need_headings_dir)
-    def error(self, msg, path):
-        self.error(msg, lnum=None, path=path)
+    def __error(self, msg, path):
+        super().error(msg, lnum=None, path=path)
     def worker(self, *args):
-        assert type(args[0]) == dict or \
-                type(args[0]) == collections.OrderedDict
         found_h1 = False
         for path, headings in args[0].items():
             is_image_path = False
@@ -108,7 +108,7 @@ class level_one_heading(Mistake):
                 if(level == 1):
                     if(found_h1):
                         dir = os.path.split(path)[0]
-                        return self.error("In diesem Verzeichnis gibt es mehr" +
+                        return self.__error("In diesem Verzeichnis gibt es mehr" +
                                 " als eine Überschrift der Ebene 1. Dies ist " +
                                 "nicht erlaubt. Beispielsweise hat jeder " +
                                 "Foliensatz nur eine Hauptüberschrift und auch" +
@@ -214,8 +214,10 @@ class uniform_pagestrings(Mistake):
         for fn, PNUMS in args[0].items():
             for lnum, text in PNUMS:
                 match = rgx.search(text.lower())
-                if(not match): continue
-                else: match = match.groups()
+                if(not match):
+                    continue
+                else:
+                    match = match.groups()
                 if(first == None):
                     first = (fn, lnum, match[0])
                 elif(first[2] != match[0]):
@@ -235,7 +237,7 @@ self.threshold."""
 
     def worker(self, *args):
         levels = [0,0,0,0,0,0]
-        for fpath, headings in args[0].items():
+        for headings in args[0].values():
             for lnum, level, title in headings:
                 if(level > self.maxdepth): continue
                 levels[level-1] += 1
@@ -243,9 +245,9 @@ self.threshold."""
                 for i in range(level, len(levels)):
                     levels[i] = 0
                 if(levels[level-1] > self.threshold):
-                    return self.error(level)
+                    return self.__error(level)
 
-    def error(self, heading_level):
+    def __error(self, heading_level):
         return super.error("Es existieren mehr als %d " % self.threshold + \
                 "Überschriften der Ebene %d. " % heading_level + \
                 "Das macht das Inhaltsverzeichnis sehr übersichtlich."+\
@@ -290,7 +292,7 @@ dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, dass nur die
 Inhaltsverzeichnis erscheinen."""
         last_heading = None
         for lnum, heading_level, text in args[0]:
-            if(heading_level > MAGSBS.config.confFactory().get_conf_instance()):
+            if(heading_level > config.confFactory().get_conf_instance()):
                 continue # skip it
             if last_heading == text:
                 return self.error(error_message, lnum)
@@ -309,7 +311,7 @@ class PageNumbersWithoutDashes(onelinerMistake):
                     "\"|| - Seite xyz -\"", num)
 
 class DoNotEmbedHTMLLineBreaks(onelinerMistake):
-    """Instead of <br> for an empty line, a single \ can be used."""
+    """Instead of <br> for an empty line, a single \\ can be used."""
     def __init__(self):
         onelinerMistake.__init__(self)
         self.pattern = re.compile(r'<br.*/?>')
@@ -321,7 +323,7 @@ class DoNotEmbedHTMLLineBreaks(onelinerMistake):
                     "hat dies denselben Effekt.",  num)
 
 class EmbeddedHTMLComperators(onelinerMistake):
-    """Instead of &lt;&gt;, use \< \>."""
+    """Instead of &lt;&gt;, use \\< \\>."""
     def __init__(self):
         onelinerMistake.__init__(self)
         self.pattern = re.compile(r'&(lt|gt);')

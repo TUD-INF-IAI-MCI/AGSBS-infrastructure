@@ -77,7 +77,7 @@ need_pagenumbers_dir   see headings applied to all page numbers of directory"""
     need_pagenumbers = 5
     need_pagenumbers_dir = 6
 
-class Mistake:
+class Mistake(object):
     """Convenience class which saves the actual method and the type of
     mistake."""
     def __init__(self):
@@ -139,13 +139,17 @@ It'll save typing."""
     def __init__(self):
         Mistake.__init__(self)
         self.set_type(MistakeType.oneliner)
+    def check(self, lnum, text):
+        """The method to implement the actual  checker in."""
+        pass
+
     def worker(self, *args):
         if(len(args) != 2):
             raise ValueError("For a mistake checker of type oneliner, exactly two arguments are required.")
         return self.check(args[0], args[1])
 
 
-class error_message:
+class error_message(object):
     """Abstraction of an error message. It abstracts from the actual formatting
 to be independent from a tty or GUI representation.
 
@@ -207,7 +211,7 @@ e.set_path("/dev/null")
     def get_lnum(self):
         return self.__lnum
 
-class error_formatter:
+class error_formatter(object):
     """Format an error message according to options set. One use case might be
 the output on the command line.
 
