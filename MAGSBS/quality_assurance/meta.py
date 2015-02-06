@@ -1,3 +1,6 @@
+# Disabling the checkers above is discouraged, but encouraged for this file;
+# pylint makes mistakes itself
+#pylint: disable=line-too-long,abstract-class-little-used,no-init,too-few-public-methods
 """This file contains all helper functions and classes to represent a
 mistake."""
 
@@ -216,7 +219,7 @@ class error_formatter(object):
 the output on the command line.
 
 Usage:
-    
+
 fmt = error_formatter()
 fmt.set_with_blank_lines(False) # before/after path a blank line; default True
 fmt.set_width(170) # output width of errors, default 80

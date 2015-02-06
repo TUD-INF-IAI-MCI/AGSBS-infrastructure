@@ -107,7 +107,6 @@ class level_one_heading(Mistake):
             for lnum, level, text in headings:
                 if(level == 1):
                     if(found_h1):
-                        dir = os.path.split(path)[0]
                         return self.__error("In diesem Verzeichnis gibt es mehr" +
                                 " als eine Überschrift der Ebene 1. Dies ist " +
                                 "nicht erlaubt. Beispielsweise hat jeder " +
