@@ -4,6 +4,7 @@ from . import config
 from . import pandoc
 from . import filesystem
 from . import factories
+
 import os
 
 
@@ -24,6 +25,7 @@ navigation bar and the table of contents is generated; afterwards all MarkDown
 files are converted."""
     def __init__(self, path):
         self._roots = self.__findroot( path )
+
     def get_roots(self):
         return self._roots
     def __findroot(self, path):
@@ -42,12 +44,12 @@ files are converted."""
                             for e in os.listdir(directory) \
                             if( os.path.isdir( os.path.join(dir, e)) )]
         found_md = False
-        for dir, dlist, flist in os.walk( path ):
+        for directory, dlist, flist in os.walk(path):
             for f in flist:
-                if( f.endswith(".md") ):
+                if f.endswith(".md"):
                     found_md = True
                     break
-        if( roots == [] and found_md ):
+        if(roots == [] and found_md):
             # this is markdown stuff without configuration!
             raise NoLectureConfigurationError("No configuration in a directory of the path \"%s\" or its subdirectories found. As soon as there are MarkDown files present, a configuration has to exist." % path)
         return roots
@@ -74,7 +76,7 @@ found and there are MarkDown files."""
                 md_creator = factories.index2markdown_TOC(index)
                 with open(_("index").lower() + ".md", 'w', encoding="utf-8") as file:
                     file.write(md_creator.get_markdown_page())
-            
+
             for directory, dlist, flist in filesystem.get_markdown_files( ".", True ):
                 os.chdir(directory)
                 for f in flist:
@@ -86,4 +88,4 @@ found and there are MarkDown files."""
                                         +  interposeError.args[0])
                 os.chdir(os.path.join(cwd, root))
             os.chdir(cwd)
-        
+

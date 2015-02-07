@@ -1,21 +1,16 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2015 Sebastian Humenda <shumenda |at| gmx |dot| de>
+"""This module contains all file system related functionality. Starting from a
+customized os.walk()-alike function to classes modifying Markdown documents."""
 
-import os, sys
+import os
 from . import datastructures
-from . import filesystem
 from . import config
-from .errors import TOCError, MissingMandatoryField
+from .errors import MissingMandatoryField
 _ = config._
 
-if(int(sys.version[0]) >= 3):
-    import urllib.parse
-    URLencode = urllib.parse.urlencode
-else:
-    import urllib
-    URLencode = urllib.urlencode
 
 class index2markdown_TOC():
     """index2markdown_TOC( OrderedDict(), lang, depth=4, use_appendix_prefix=False)
@@ -28,9 +23,7 @@ This class must be run from the lecture root.
         self.__index = index
         c = config.confFactory()
         self.conf  = c.get_conf_instance()
-        self.lang = self.conf[ 'language' ]
-        self.depth = self.conf[ 'tocDepth' ]
-        self.__use_appendix_prefix = self.conf[ 'appendixPrefix']
+        self.__use_appendix_prefix = self.conf['appendixPrefix']
         # two lists for headings
         self.__main = []
         self.__appendix = []
@@ -39,21 +32,21 @@ This class must be run from the lecture root.
 
     def transform_index(self):
         """Walk through dictionary of file names and headings and create lists
-for later output. For each heading, decide whether self.depth > heading.depth,
+for later output. For each heading, decide whether conf['depth'] > heading.depth,
 and in- or exclude it."""
-        for fn, headings in self.__index.items():
-            headings = [h for h in headings   if(not h.is_shadow_heading())]
+        for headings in self.__index.values():
             for heading in headings:
-                if(heading.get_level() > self.depth):
+                if(heading.get_level() > self.conf['tocDepth']):
                     continue # skip those headings
+
+                if(heading.get_type() == 'appendix'):
+                    if(self.__use_appendix_prefix):
+                        heading.use_appendix_prefix(True)
+                    self.__appendix.append(heading.get_markdown_link())
+                elif(heading.get_type() == 'preface'):
+                    self.__preface.append( heading.get_markdown_link() )
                 else:
-                    if(heading.get_type() == 'appendix'):
-                        if(self.__use_appendix_prefix): h.use_appendix_prefix(True)
-                        self.__appendix.append(heading.get_markdown_link())
-                    elif(heading.get_type() == 'preface'):
-                        self.__preface.append( heading.get_markdown_link() )
-                    else:
-                        self.__main.append(heading.get_markdown_link())
+                    self.__main.append(heading.get_markdown_link())
 
     def get_markdown_page(self):
         title = _('table of contents').title() + ' - ' + \
@@ -90,6 +83,7 @@ and in- or exclude it."""
         return ''.join(output) + '\n'
 
 
+#pylint: disable=too-many-instance-attributes
 class image_description():
     """
 image_description(self, image_path, description)
@@ -114,8 +108,7 @@ embedded image. A 2-tupel means in the position 0 the string for the main
 document and in position 1 the string for the outsourcing document.
 """
     def __init__(self, image_path):
-        c = config.confFactory()
-        c = c.get_conf_instance()
+        c = config.confFactory().get_conf_instance()
         self.format = c['format']
         self.image_path = image_path
         self.description = '\n'
@@ -137,10 +130,10 @@ document and in position 1 the string for the outsourcing document.
 
     def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
-        id = datastructures.gen_id( self.get_title() )
+        label = datastructures.gen_id( self.get_title() )
         link_text = _('description of image outsourced')
         return '[ ![%s](%s) ](%s#%s)' % (link_text, self.image_path,
-                self.get_outsourcing_path(), id)
+                self.get_outsourcing_path(), label)
 
     def get_inline_description(self):
         """Return the markdown syntax for an inline image description."""

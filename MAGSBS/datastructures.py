@@ -72,7 +72,6 @@ raise a type error, if the type is not recognized.
         self.__chapter_number = path2chapter(file_name)
         self.__path = path
         self.__file_name = file_name
-        self.__is_shadow_heading = False
         c = config.confFactory()
         c = c.get_conf_instance()
         self.__use_appendix_prefix = c['appendixPrefix']
@@ -90,8 +89,6 @@ raise a type error, if the type is not recognized.
         self.__level = level
     def get_level(self):
         return self.__level
-    def set_shadow_heading(self, state):
-        self.__is_shadow_heading = state
     def get_type(self):
         return self.__type
     def set_type(self, a_type): # ToDo: do not use strings, but enum
@@ -100,9 +97,6 @@ raise a type error, if the type is not recognized.
         else:
             self.__type = type
 
-    def is_shadow_heading(self):
-        """Headings, marked as such, but not real headings. Example: page numbers."""
-        return self.__is_shadow_heading
     def get_id(self):            return self.__id
     def set_text(self, text):
         self.__text = text
@@ -114,13 +108,6 @@ set_relative_heading_number(list) -> set relative heading number in document."""
         if(not isinstance(number, list)):
             raise ValueError("List expected.")
         self.__relative_heading_number = number
-
-    def get_page_number(self):
-        """Return page number, if it's a page heading, else raise ValueError."""
-        if(not self.is_shadow_heading() or not self.get_level() == 6):
-            raise ValueError("Not a page number heading, so no page number available.")
-        pgn = re.search(r'.*?(\d+).*', self.get_text()).groups()[0]
-        return int(pgn)
 
     def get_relative_heading_number(self):
         return self.__relative_heading_number
@@ -144,18 +131,10 @@ set_relative_heading_number(list) -> set relative heading number in document."""
         # prefix full_number with a capital 'A' for appendices, if wished
         if(self.get_type() == 'appendix' and self.__use_appendix_prefix):
             full_number = 'A.' + full_number
-        if(self.is_shadow_heading()):
-            # output a link like used in navigation bar
-            number = re.search(r'.*?(\d+).*', self.get_text()).groups()[0]
-            return '[%s](#%s)' % (number, self.get_id())
-        else:
-            dir_above_file = os.path.split( self.__path )[1]
-            return '[%s. %s](%s#%s)' % ( \
-                    full_number,
-                    self.get_text(),
-                    dir_above_file + '/' + self.__file_name.replace('.md','.html'),
-                    self.get_id()
-                    )
+        dir_above_file = os.path.split( self.__path )[1]
+        return '[%s. %s](%s/%s.html#%s)' % (full_number, self.get_text(),
+                dir_above_file, self.__file_name[:-2], self.get_id())
+
 def is_list_alike(obj):
     """Check whether object is iterable and supports indexing."""
     a = hasattr(obj, '__iter__')
