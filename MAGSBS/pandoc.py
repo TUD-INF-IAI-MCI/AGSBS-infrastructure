@@ -3,13 +3,13 @@
 This module abstracts everything related to calling pandoc and modifiying the
 template for additional meta data in the output document(s)."""
 
-import datetime, codecs, tempfile
+import datetime, tempfile
+import html
 import os, sys, subprocess
 from . import config
 from . import mparser
 from . import contentfilter
 from .errors import SubprocessError, WrongFileNameError, FileNotFoundError
-from .config import PYVERSION
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -73,15 +73,6 @@ $endfor$
 </html>
 """
 
-def html_escape(string):
-    """Wraper for py 2 / 3."""
-    if(int( sys.version[0] ) >= 3):
-        import html
-        return html.escape( string )
-    else:
-        import cgi
-        return cgi.escape( string, True)
-
 
 def remove_temp(fn):
     if(fn == None): return
@@ -104,7 +95,7 @@ generator fails."""
     def noop(self):    pass
     def filter_html(self):
         """Images will be in a extra div with a caption - remove that."""
-        data = codecs.open(self.inputf, 'r', 'utf-8').read()
+        data = open(self.inputf, 'r', encoding='utf-8').read()
         while( (data.find('<div class="figure">')>=0)):
             pos = data.find('<div class="figure">')
             data = data[:pos] + '<p>' + data[pos + len('<div class="figure">') : ]
@@ -123,7 +114,7 @@ generator fails."""
             else:
                 div_end += pos
                 data = data[:div_end] + '</p>' +data[div_end + 6 :]
-        codecs.open(self.inputf, 'w', 'utf-8').write( data )
+        open(self.inputf, 'w', encoding='utf-8').write( data )
 
 class pandoc():
     """Abstract the translation by pandoc into a class which add meta-information
@@ -165,7 +156,7 @@ title of the document, hence allow setting it separately."""
     def __guess_title(self, inputf):
         try:
             mp = mparser.simpleMarkdownParser(
-                    codecs.open(inputf, 'r', 'utf-8').read(),
+                    open(inputf, 'r', encoding='utf-8').read(),
                     os.path.split(inputf)[0], os.path.split(inputf)[1])
             mp.parse()
             mp.fetch_headings()
@@ -184,12 +175,9 @@ title of the document, hence allow setting it separately."""
         return self.mktemplate_html(inputf)
 
     def mktemplate_html(self, inputf):
+        assert inputf != bytes
         # is file name unicode?
-        if(PYVERSION < 3):
-            assert type(inputf) == unicode
-        else:
-            assert type(inputf) != bytes
-        output = []
+
         # adjust semesterofedit and title:
         if(not self.__hvalues['semesterofedit']):
             self.__hvalues['semesterofedit'] = datetime.datetime.now().strftime('%m/%Y')
@@ -201,11 +189,9 @@ title of the document, hence allow setting it separately."""
             raise ValueError("One of the required fields for the HTML meta data has not been set.")
         data = HTML_template[:]
         for key, value in self.__hvalues.items():
-            data = data.replace('$$'+key, html_escape( value ))
+            data = data.replace('$$'+key, html.escape( value ))
         self.tempfile = tempfile.mktemp() + '.html'
-        if(PYVERSION < 3):
-            data = unicode( data )
-        codecs.open( self.tempfile, "w", "utf-8").write( data )
+        open(self.tempfile, "w", encoding="utf-8").write(data)
         return self.tempfile
 
     def convert(self, inputf):
@@ -274,9 +260,9 @@ it gave an error return code"""
         if(self.use_gladtex):
             # read in the generated file. Its a dirt-fix: pandoc strips newlines
             # from equations, try to get some back
-            data = codecs.open(outputf, 'r', 'utf-8').read()
+            data = open(outputf, 'r', encoding='utf-8').read()
             data = data.replace('\\\\', '\\\\\n')
-            codecs.open( outputf, 'w', 'utf-8').write( data )
+            open(outputf, 'w', encoding='utf-8').write( data )
             try:
                 proc = subprocess.Popen(['gladtex'] + \
                         self.conf['GladTeXopts'].split(' ') + [outputf],
