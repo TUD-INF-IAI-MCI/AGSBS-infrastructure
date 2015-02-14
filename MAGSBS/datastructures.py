@@ -52,7 +52,7 @@ This function tries to generate the same text's as pandoc."""
         res_id = res_id[1:]
     return res_id
 
-class heading():
+class Heading():
     """heading(file_name)
 
 This class represents a heading to ease the handling of headings.
@@ -66,6 +66,7 @@ a heading. heading.get_type() will only return those. set_type() however will
 raise a type error, if the type is not recognized.
 """
     def __init__(self, path, file_name):
+        self.__line_number = None
         self.__text = ''
         self.__id = ''
         self.__level = -1
@@ -101,7 +102,10 @@ raise a type error, if the type is not recognized.
     def set_text(self, text):
         self.__text = text
         self.__id = gen_id(text)
-    def get_text(self):            return self.__text
+
+    def get_text(self):
+        return self.__text
+
     def set_relative_heading_number(self, number):
         """
 set_relative_heading_number(list) -> set relative heading number in document."""
@@ -111,6 +115,7 @@ set_relative_heading_number(list) -> set relative heading number in document."""
 
     def get_relative_heading_number(self):
         return self.__relative_heading_number
+
     def use_appendix_prefix(self, usage):
         self.__use_appendix_prefix = usage
 
@@ -134,6 +139,14 @@ set_relative_heading_number(list) -> set relative heading number in document."""
         dir_above_file = os.path.split( self.__path )[1]
         return '[%s. %s](%s/%s.html#%s)' % (full_number, self.get_text(),
                 dir_above_file, self.__file_name[:-2], self.get_id())
+
+        def set_line_numer(self, lnum):
+            """Set the line number, e.g. if heading was taken from a file."""
+            self.__line_number = lnum
+
+        def get_line_number(self):
+            return self.__line_number
+
 
 def is_list_alike(obj):
     """Check whether object is iterable and supports indexing."""

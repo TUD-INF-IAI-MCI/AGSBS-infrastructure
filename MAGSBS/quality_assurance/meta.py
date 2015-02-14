@@ -9,8 +9,10 @@ import enum
 import textwrap
 from MAGSBS.datastructures import is_list_alike
 
-def HeadingExtractor(text):
+def headingExtractor(text):
     headings = []
+    def new_heading(self, lnum, level, text):
+        h = new datastructures.Heading()
     paragraph_begun = True
     previous_line_heading = False
     previous_line = ''

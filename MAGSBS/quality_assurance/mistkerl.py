@@ -147,7 +147,7 @@ recursively."""
                         issue.set_run(False)
         # cache headings and page numbers
         pnums = pageNumberExtractor(text)
-        hdngs = HeadingExtractor(text)
+        hdngs = headingExtractor(text)
         self.__cache_pnums[ file_path ] = pnums
         self.__cache_headings[ file_path ] = hdngs
 

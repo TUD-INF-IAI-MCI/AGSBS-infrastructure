@@ -2,10 +2,15 @@
 # details.
 #
 # (c) 2014 Sebastian Humenda <shumenda@gmx.de>
+"""
+This file contains all helper data structure which are not local to a specific
+module. One example is the Heading class, used in mparser and quality_assurance.
+Other datastructures might be in here as well to have them defined in a global
+place.
+"""
 
 import re, os
 from . import datastructures
-from .errors import StructuralError
 from . import contentfilter as contentfilter
 
 class simpleMarkdownParser():
@@ -40,7 +45,7 @@ xported JSon tree is then used for post-processing."""
         pages = contentfilter.pandoc_ast_parser( self.__json,
                 contentfilter.page_number_extractor)
         for text, id in pages:
-            num = int(re.search('- \w+\s+(\d+)', text).groups()[0])
+            num = int(re.search(r'- \w+\s+(\d+)', text).groups()[0])
             self.__pagenumbers[ num ] = id
 
     def fetch_headings(self):
@@ -49,7 +54,7 @@ xported JSon tree is then used for post-processing."""
         raw_headings = contentfilter.pandoc_ast_parser( self.__json,
                 contentfilter.heading_extractor)
         for rHeading in raw_headings:
-            h = datastructures.heading(self.__path, self.__file_name)
+            h = datastructures.Heading(self.__path, self.__file_name)
             h.set_level( self.guess_heading_level( rHeading[0] ) )
             h.set_text( rHeading[1] )
             h.set_relative_heading_number(
