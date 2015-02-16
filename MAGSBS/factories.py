@@ -84,9 +84,9 @@ and in- or exclude it."""
 
 
 #pylint: disable=too-many-instance-attributes
-class image_description():
+class ImageDescription():
     """
-image_description(self, image_path, description)
+ImageDescription(image_path)
 
 
 Store and format a picture description. It is important here to read all the
@@ -94,11 +94,11 @@ method's doc-strings to understand how this class works.
 
 An example:
 
-i = image_description('bilder/bla.jpg', lang='de')  # language specifies whether bilder.md or images.md is used
+i = image_description('bilder/bla.jpg')
 i.set_description('''
 A cow on a meadow eating gras and staring a bit stupidly. It says "moo".
-    '''  # setting the description is optional
-i.use_outsourced_descriptions( True ) # outsource image descriptions
+    ''')  # setting the description is optional
+i.use_outsourced_descriptions(True) # outsource image descriptions
                                       # outsourced when length of alt attribut > 100
 i.set_title("a cow on a meadow") # not necessary for images which are not outsourced
 data = i.get_output()
@@ -109,57 +109,70 @@ document and in position 1 the string for the outsourcing document.
 """
     def __init__(self, image_path):
         c = config.confFactory().get_conf_instance()
-        self.format = c['format']
-        self.image_path = image_path
-        self.description = '\n'
-        self.lang = c['language']
-        self.title = None
-        self.outsource_long_descriptions = True
+        self.__image_path = image_path
+        self.__description = '\n'
+        self.__title = None
+        self.__outsource_descriptions = False
         # maximum length of image description before outsourcing it
         self.img_maxlength = 100
-        self.exclusion_file_name = _('images')
+        self.__outsource_path = _('images') + '.' + c['format']
 
-    def set_description(self, desc): self.description = desc
+    def set_description(self, desc):
+        """Set alternative image description."""
+        self.__description = desc
+
     def set_title(self, title):
-        self.title = title
-    def get_title(self): return self.title
-    def use_outsourced_descriptions(self, flag):
-        self.outsource_long_descriptions = flag
-    def get_outsourcing_path(self):
-        return self.exclusion_file_name + '.' + self.format
+        """Set the title for an image description. Only use, when image is
+        outsourced."""
+        self.__title = title
+
+    def get_title(self):
+        return self.__title
+
+    def set_outsource_descriptions(self, flag):
+        """If set to True, descriptions are always outsourced."""
+        self.__outsource_descriptions = flag
+
+    def get_outsource_path(self):
+        return self.__outsource_path
 
     def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
         label = datastructures.gen_id( self.get_title() )
         link_text = _('description of image outsourced')
-        return '[ ![%s](%s) ](%s#%s)' % (link_text, self.image_path,
-                self.get_outsourcing_path(), label)
+        return '[ ![%s](%s) ](%s#%s)' % (link_text, self.__image_path,
+                self.get_outsource_path(), label)
 
     def get_inline_description(self):
-        """Return the markdown syntax for an inline image description."""
-        desc = self.description.replace('\n',' ').replace('\r',' ').replace(' ',' ')
-        return '![%s](%s)' % (desc, self.image_path)
+        """Generate markdown image with description."""
+        desc = self.__description.replace('\n',' ').replace('\r',' ').replace(' ',' ')
+        return '![%s](%s)' % (desc, self.__image_path)
 
     def __get_outsourced_title(self):
-        if(not self.title):
+        if(not self.__title):
             raise MissingMandatoryField('"title" must be set for outsourced images.')
-        text = '###' + _('image description of').capitalize()
-        text += self.title
+        text = '### ' + _('image description of').capitalize()
+        text += ' ' + self.__title
         return text
+
+    def will_be_outsourced(self):
+        """Determine, depending on the setting, whether description is
+        outsourced. If outsourced is set, it will always return true, otherwise
+        it'll depend on the description length."""
+        if self.__outsource_descriptions:
+            return True
+        return (True if len(self.__description) > self.img_maxlength else False)
 
     def get_output(self):
         """Dispatcher function for get_inline_description and
-get_outsourcing_link; will be either a tuple of (link, content for outsourced
-    description) or just a tuple with the image description/the reference to the
-image. It'll always return a inline description if set by
-use_outsourced_descriptions(False) or will automatically exclude images longer
-than 100 characters."""
-        if(not self.outsource_long_descriptions):
-            if(len(self.description) < self.img_maxlength):
-                return (self.get_inline_description(), )
-        if(not self.title):
-            raise MissingMandatoryField("Image got outsourced, but no title present.")
+    get_outsourcing_link; will be either a tuple of (link, content for
+            outsourced description) or just a tuple with the image
+    description/the reference to the image. It'll always return an outsourced
+    description if set by set_outsource_descriptions(True) or will automatically
+    exclude images longer than 100 characters."""
+        if not self.will_be_outsourced():
+            return (self.get_inline_description(), )
         external_text = self.__get_outsourced_title() + '\n\n' +\
-                    self.description + '\n\n* * * * *\n'
+                    self.__description + '\n\n* * * * *\n'
         return (self.get_outsourcing_link(), external_text)
 

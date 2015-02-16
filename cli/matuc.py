@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Markdown AGSBS (TU) Command line
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
@@ -266,7 +265,7 @@ sense the navigation bar at the top and bottom.
                 help="if set, images will be outsourced, no matter how long they are.")
         parser.add_option("-t", "--title", dest="title",
                 default=None,
-                help="If image gets outsourced, a title must be set.")
+                help="set title for outsourced images (mandatory if outsourced)")
         (options, args) = parser.parse_args(sys.argv[2:])
         if(len(args)<1):
             parser.print_help()
@@ -277,13 +276,13 @@ sense the navigation bar at the top and bottom.
             desc = sys.stdin.read()
         else:
             desc = options.description
-        i = MAGSBS.factories.image_description( args[0])
-        i.set_description( desc )
-        i.use_outsourced_descriptions( options.outsource )
+        img = MAGSBS.factories.ImageDescription( args[0])
+        img.set_description(desc)
+        img.set_outsource_descriptions(options.outsource)
         if(options.title):
-            i.set_title( options.title )
+            img.set_title(options.title)
         try:
-            print('\n----\n'.join(i.get_output()))
+            print('\n----\n'.join(img.get_output()))
         except MissingMandatoryField as e:
             error_exit('Error: '+e.args[0]+'\n')
 
