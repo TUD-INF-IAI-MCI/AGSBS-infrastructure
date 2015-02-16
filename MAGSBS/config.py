@@ -47,9 +47,7 @@ Limitations: The decorated class cannot be inherited from.
         """Returns the singleton instance. Upon its first call, it creates a
 new instance of the decorated class and calls its `__init__` method.  On all
 subsequent calls, the already created instance is returned.  """
-        try:
-            return self._instance
-        except AttributeError:
+        if not self._instance:
             self._instance = self._decorated()
         return self._instance
 
@@ -268,8 +266,7 @@ Please note: if you are in a subdirectory, this will be a path like ../$CONF_FIL
         # if we reached this, we are in the lecture root
         return os.path.abspath( os.path.join(path, CONF_FILE_NAME) )
 
-@Singleton
-class translate():
+class Translate:
     """Replace me through gettext, as soon as its clear how easy it is to ship
 l10n with Windows."""
     def __init__(self):
@@ -313,5 +310,5 @@ l10n with Windows."""
         except KeyError:
             return origin
 
-L10N = translate()
+L10N = Translate()
 _ = L10N.get_translation
