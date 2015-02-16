@@ -285,7 +285,7 @@ sense the navigation bar at the top and bottom.
         try:
             print('\n----\n'.join(i.get_output()))
         except MissingMandatoryField as e:
-            error_exit('Error: '+e.message+'\n')
+            error_exit('Error: '+e.args[0]+'\n')
 
     def new(self):
         usage = sys.argv[0] + ''' new <directory>
