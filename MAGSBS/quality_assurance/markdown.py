@@ -1,5 +1,5 @@
 # vim: set expandtab sts=4 ts=4 sw=4 tw=0 ft=python:
-#pylint: disable=line-too-long
+#pylint: disable=line-too-long,arguments-differ,unused-variable
 """All mistakes made while writing Markdown files are put in here."""
 
 from .meta import Mistake, MistakeType, MistakePriority, onelinerMistake
@@ -55,10 +55,6 @@ class heading_is_paragraph(Mistake):
             raise ValueError("At least one parameter with the file content expected.")
         error_text = "Jede Ueberschrift muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
         error_text_number = "Die Überschriftsnummerierungen werden automatisch generiert und sollen daher weggelassen werden."
-        def check_numbering(num, line):
-            res = re.search(r"^(\#*)\s*(\d+\.\d*)", line)
-            if(res):
-                return self.error(error_text_number, num+1)
         paragraph_begun = True
         previous_line_heading = False
         previous_line = ''
@@ -69,15 +65,11 @@ class heading_is_paragraph(Mistake):
             else:
                 if(not paragraph_begun): # happens on the second line of a paragraph
                     if(line.startswith('---') or line.startswith('===')):
-                        #res = check_numbering(num, previous_line)
-                        #if(res): return (res[0]-1, res[1])
                         previous_line_heading = True
                         continue
                 if(previous_line_heading): # previous_line_heading and this is no empty line...
                     return self.error(error_text, num+1)
                 if(re.search(r'^#+.*', line)):
-                    #res = check_numbering(num, line)
-                    #if(res): return res
                     # line contains heading, is in front of a empty line?
                     if(not paragraph_begun):
                         return self.error(error_text, num+1)
@@ -291,7 +283,7 @@ dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, dass nur die
 Inhaltsverzeichnis erscheinen."""
         last_heading = None
         for lnum, heading_level, text in args[0]:
-            if(heading_level > config.confFactory().get_conf_instance()):
+            if(heading_level > config.confFactory().get_conf_instance()['tocDepth']):
                 continue # skip it
             if last_heading == text:
                 return self.error(error_message, lnum)

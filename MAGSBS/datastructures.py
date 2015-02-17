@@ -121,7 +121,7 @@ set_relative_heading_number(list) -> set relative heading number in document."""
 
     def get_markdown_link(self):
         if(self.get_level() == 1):
-            full_number = str( self.__chapter_number )
+            full_number = str(self.__chapter_number)
         elif(self.get_level() == -1):
             raise ValueError("Heading level not set.")
         else:
@@ -131,14 +131,14 @@ set_relative_heading_number(list) -> set relative heading number in document."""
             rh = self.get_relative_heading_number()[1:]
             # rh shall be .num.num.num if nested, else ''4
             rh = ('.' + '.'.join( [str(i) for i in rh] ) if len( rh ) else '' )
-            full_number = str( self.__chapter_number ) + rh
+            full_number = str(self.__chapter_number) + rh
 
         # prefix full_number with a capital 'A' for appendices, if wished
         if(self.get_type() == 'appendix' and self.__use_appendix_prefix):
             full_number = 'A.' + full_number
-        dir_above_file = os.path.split( self.__path )[1]
+        dir_above_file = os.path.split(self.__path)[1]
         return '[%s. %s](%s/%s.html#%s)' % (full_number, self.get_text(),
-                dir_above_file, self.__file_name[:-2], self.get_id())
+                dir_above_file, self.__file_name[:-3], self.get_id())
 
         def set_line_numer(self, lnum):
             """Set the line number, e.g. if heading was taken from a file."""

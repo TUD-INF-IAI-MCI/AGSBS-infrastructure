@@ -12,6 +12,7 @@ my_fancy_page = c.get_markdown_page()
 from . import factories
 from . import pandoc
 from . import quality_assurance
+from . import master
 
 __all__ = ["pandoc", "quality_assurance", "filesystem", "mparser",
         "errors", "datastructures", "contentfilter", "config", "master",
