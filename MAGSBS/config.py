@@ -274,27 +274,29 @@ l10n with Windows."""
         self.supported_languages = [ 'de', 'fr' ]
         self.en_fr = {
             'preface':'introduction',   'appendix':'appendice',
-            'chapters':'chapitres', 'pages':'pages',
             'table of contents':'table des matières',
+            'chapters':'chapitres',
+            'image description of image':'description à l'image',
+            'pages':'pages',
             'index':'index',
-            'image descriptions':"description à les image",
-            'image description outsourced':"description de l'image excluré",
-            'description of image outsourced':"description de l'image excluré",
+            'external image description' : "description de l'image externe",
             'images':'images',
+            'index' : ' index'
             'next':'suivant',  'previous':'précédent',
-            'chapter':'chapitre', 'paper':'document'
+            'chapter':'chapitre', 'paper':'document',
+            'Remarks about the accessible version':'Remarques à la version accessible',
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
             'table of contents' : 'inhaltsverzeichnis',
-            'chapters':'kapitel', 'image description of':'bildbeschreibung von',
-            'image description outsourced':'Bildbeschreibung ausgelagert',
-            'description of image outsourced':'Bildbeschreibung ausgelagert',
-            'images':'bilder',
+            'chapters':'kapitel',
+            'image description of image':'bildbeschreibung von Bild',
             'pages':'Seiten',
+            'external image description':'Bildbeschreibung ausgelagert',
+            'images':'bilder',
             'index':'Inhalt',
             'next':'weiter',   'previous':'zurück',
-            'Remarks about this accessible version':'Hinweise zur dieser barrierefreien Version',
             'chapter':'kapitel', 'paper':'blatt'
+            'Remarks about the accessible version':'Hinweise zur der barrierefreien Version',
             }
 
     def get_translation(self, origin):

@@ -151,7 +151,7 @@ document and in position 1 the string for the outsourcing document.
     def __get_outsourced_title(self):
         if(not self.__title):
             raise MissingMandatoryField('"title" must be set for outsourced images.')
-        text = '### ' + _('image description of').capitalize()
+        text = '### ' + _('image description of image').capitalize()
         text += ' ' + self.__title
         return text
 
