@@ -276,12 +276,12 @@ l10n with Windows."""
             'preface':'introduction',   'appendix':'appendice',
             'table of contents':'table des matières',
             'chapters':'chapitres',
-            'image description of image':'description à l'image',
+            'image description of image':"description à l'image",
             'pages':'pages',
             'index':'index',
             'external image description' : "description de l'image externe",
             'images':'images',
-            'index' : ' index'
+            'index' : ' index',
             'next':'suivant',  'previous':'précédent',
             'chapter':'chapitre', 'paper':'document',
             'Remarks about the accessible version':'Remarques à la version accessible',
@@ -295,8 +295,8 @@ l10n with Windows."""
             'images':'bilder',
             'index':'Inhalt',
             'next':'weiter',   'previous':'zurück',
-            'chapter':'kapitel', 'paper':'blatt'
-            'Remarks about the accessible version':'Hinweise zur der barrierefreien Version',
+            'chapter':'kapitel', 'paper':'blatt',
+            'Remarks about the accessible version':'Hinweise zur der barrierefreien Version'
             }
 
     def get_translation(self, origin):

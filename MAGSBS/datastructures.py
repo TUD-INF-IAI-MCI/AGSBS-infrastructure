@@ -4,7 +4,7 @@
 # (c) 2015 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """Common datastructures."""
 
-import os, re
+import os
 from .errors import WrongFileNameError
 from . import config
 
@@ -65,12 +65,14 @@ There is a list of valid types (heading.types) containing all possible types of
 a heading. heading.get_type() will only return those. set_type() however will
 raise a type error, if the type is not recognized.
 """
-    def __init__(self, path, file_name):
+    def __init__(self, path=None, file_name=None):
         self.__line_number = None
         self.__text = ''
         self.__id = ''
         self.__level = -1
-        self.__chapter_number = path2chapter(file_name)
+        self.__chapter_number = None
+        if file_name:
+            self.__chapter_number = path2chapter(file_name)
         self.__path = path
         self.__file_name = file_name
         c = config.confFactory()
@@ -78,12 +80,15 @@ raise a type error, if the type is not recognized.
         self.__use_appendix_prefix = c['appendixPrefix']
         self.types = ['main', # usual headings
                 'appendix', 'preface']
-        if(file_name.startswith('anh')):
+        if not file_name:
             self.__type = 'main'
-        elif(file_name.startswith('v')):
-            self.__type = 'preface'
         else:
-            self.__type = '__main__'
+            if file_name.startswith('anh'):
+                self.__type = 'appendix'
+            elif file_name.startswith('v'):
+                self.__type = 'preface'
+            else:
+                self.__type = 'main'
         self.__relative_heading_number = None
 
     def set_level(self, level):
@@ -98,7 +103,9 @@ raise a type error, if the type is not recognized.
         else:
             self.__type = type
 
-    def get_id(self):            return self.__id
+    def get_id(self):
+        return self.__id
+
     def set_text(self, text):
         self.__text = text
         self.__id = gen_id(text)
@@ -120,6 +127,8 @@ set_relative_heading_number(list) -> set relative heading number in document."""
         self.__use_appendix_prefix = usage
 
     def get_markdown_link(self):
+        if not self.__chapter_number:
+            raise ValueError("This heading got no information about the file name and hence cannot determine the chapter number used in the MarkDown link.")
         if(self.get_level() == 1):
             full_number = str(self.__chapter_number)
         elif(self.get_level() == -1):
@@ -134,18 +143,18 @@ set_relative_heading_number(list) -> set relative heading number in document."""
             full_number = str(self.__chapter_number) + rh
 
         # prefix full_number with a capital 'A' for appendices, if wished
-        if(self.get_type() == 'appendix' and self.__use_appendix_prefix):
+        if self.get_type() == 'appendix' and self.__use_appendix_prefix:
             full_number = 'A.' + full_number
         dir_above_file = os.path.split(self.__path)[1]
         return '[%s. %s](%s/%s.html#%s)' % (full_number, self.get_text(),
                 dir_above_file, self.__file_name[:-3], self.get_id())
 
-        def set_line_numer(self, lnum):
-            """Set the line number, e.g. if heading was taken from a file."""
-            self.__line_number = lnum
+    def set_line_number(self, lnum):
+        """Set the line number, e.g. if heading was taken from a file."""
+        self.__line_number = lnum
 
-        def get_line_number(self):
-            return self.__line_number
+    def get_line_number(self):
+        return self.__line_number
 
 
 def is_list_alike(obj):

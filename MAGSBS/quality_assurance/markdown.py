@@ -1,6 +1,6 @@
 # vim: set expandtab sts=4 ts=4 sw=4 tw=0 ft=python:
 #pylint: disable=line-too-long,arguments-differ,unused-variable
-"""All mistakes made while writing Markdown files are put in here."""
+"""All checkers for MarkDown files belong here."""
 
 from .meta import Mistake, MistakeType, MistakePriority, onelinerMistake
 import os, re
@@ -93,18 +93,18 @@ class level_one_heading(Mistake):
                 translate_dict = getattr(config.L10N, 'en_' + dest_lang)
                 if(path.lower().find(translate_dict["images"]) >= 0):
                     is_image_path = True
-            if(is_image_path or path.lower().find("images") >= 0):
+            if is_image_path or path.lower().find("images") >= 0:
                 continue # do not count h1's in bilder.md
 
-            for lnum, level, text in headings:
-                if(level == 1):
-                    if(found_h1):
-                        return self.__error("In diesem Verzeichnis gibt es mehr" +
-                                " als eine Überschrift der Ebene 1. Dies ist " +
-                                "nicht erlaubt. Beispielsweise hat jeder " +
-                                "Foliensatz nur eine Hauptüberschrift und auch" +
-                                " ein Kapitel wird nur mit einer Überschrift " +
-                                "bezeichnet.", lnum)
+            for heading in headings:
+                if heading.get_level() == 1:
+                    if found_h1:
+                        return self.__error("""In diesem Verzeichnis gibt es
+                                mehr als eine Überschrift der Ebene 1. Dies ist
+                                nicht erlaubt. Beispielsweise hat jeder
+                                Foliensatz nur eine Hauptüberschrift und auch
+                                ein Kapitel wird nur mit einer Überschrift
+                                bezeichnet.""", heading.get_line_number)
                     else:
                         found_h1 = True
 
@@ -229,14 +229,15 @@ self.threshold."""
     def worker(self, *args):
         levels = [0,0,0,0,0,0]
         for headings in args[0].values():
-            for lnum, level, title in headings:
-                if(level > self.maxdepth): continue
-                levels[level-1] += 1
+            for heading in headings:
+                if heading.get_level() > self.maxdepth:
+                    continue
+                levels[heading.get_level()-1] += 1
                 # + 1 for the current level and reset all levels below
-                for i in range(level, len(levels)):
+                for i in range(heading.get_level(), len(levels)):
                     levels[i] = 0
-                if(levels[level-1] > self.threshold):
-                    return self.__error(level)
+                if levels[heading.get_level()-1] > self.threshold:
+                    return self.__error(heading.get_level())
 
     def __error(self, heading_level):
         return super.error("Es existieren mehr als %d " % self.threshold + \
@@ -276,18 +277,19 @@ tocDepth."""
         self.set_type(MistakeType.need_headings)
     def worker(self, *args):
         error_message = """Überschriften gleichen Namens machen
-Inhaltsverzeichnisse schwer lesbar und erschweren die Navigation. Häufig kommt
-dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, dass nur die
-Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle
-Überschriften, mitsamt der Überschriften die doppelt sind, gar nicht erst im
-Inhaltsverzeichnis erscheinen."""
+                Inhaltsverzeichnisse schwer lesbar und erschweren die
+                Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten
+                man setzt das TocDepth so, dass nur die Überschrift des
+                Foliensatzes (oft Ebene 1) aufgenommen wird und alle
+                Überschriften, mitsamt der Überschriften die doppelt sind, gar
+                nicht erst im Inhaltsverzeichnis erscheinen."""
         last_heading = None
-        for lnum, heading_level, text in args[0]:
-            if(heading_level > config.confFactory().get_conf_instance()['tocDepth']):
+        for heading in args[0]:
+            if heading.get_level() > config.confFactory().get_conf_instance()['tocDepth']:
                 continue # skip it
-            if last_heading == text:
-                return self.error(error_message, lnum)
-            last_heading = text
+            if last_heading == heading.get_text():
+                return self.error(error_message, heading.get_line_number())
+            last_heading = heading.get_text()
 
 class PageNumbersWithoutDashes(onelinerMistake):
     """Page number should look like "|| - page 8 -", people sometimes write
