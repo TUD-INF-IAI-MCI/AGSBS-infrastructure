@@ -1,5 +1,8 @@
 0.1.2:
 
+ * Fehler in Auslagerung von Bildern behoben (unlogische Benennung von Methoden,
+   Auslagerung zum falschen Zeitpunkt)
+ * neue Mistkerl-Erweiterungen
  * Mistkerl völlig umgebaut; nun für alle möglichen Ausgabemethoden
    formatierbar
  * pylint-Sauberkeit für die meisten Klassen

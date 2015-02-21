@@ -9,7 +9,7 @@ import enum
 from abc import ABCMeta, abstractmethod
 from .. import datastructures
 
-def headingExtractor(text):
+def headingExtractor(paragraphs):
     headings = []
     def add_heading(num, level, text):
         h = datastructures.Heading()
@@ -17,46 +17,44 @@ def headingExtractor(text):
         h.set_line_number(num)
         h.set_text(text)
         headings.append(h)
-    paragraph_begun = True
-    previous_line_heading = False
-    previous_line = ''
-    for num, line in enumerate(text.split('\n')):
-        if(line.strip() == ''):
-            paragraph_begun = True
-            previous_line_heading = False
-        else:
-            if(not paragraph_begun): # happens on the second line of a paragraph
-                if(line.startswith('---')):
-                    previous_line_heading = True
-                    add_heading(num, 2, previous_line)
-                elif(line.startswith('===')):
-                    previous_line_heading = True
-                    add_heading(num, 1, previous_line) # heading level22
-                    continue
-            if line.startswith("#") and paragraph_begun:
-                level = 0
-                while(line.startswith("#") or line.startswith(" ")):
-                    if(line[0] == "#"): level += 1
-                    line = line[1:]
-                while(line.endswith("#") or line.endswith(" ")):
-                    line = line[:-1]
+    def split_into_level_text(text):
+        level = 0
+        while text.startswith('#'):
+            level += 1
+            text = text[1:]
+        while text.endswith('#'):
+            text = text[:-1]
+        text = text.lstrip().rstrip()
+        return (level, text)
 
-                add_heading(num+1, level, line)
-                previous_line_heading = True
-            paragraph_begun = False # one line of text ends "paragraph begun"
-        previous_line = line[:]
+    for start_line, paragraph in paragraphs.items():
+        level = 0
+        text = None
+        if len(paragraph) == 1:
+            if paragraph[0].startswith('#'):
+                level, text = split_into_level_text(paragraph[0])
+        else:
+            if paragraph[1].startswith('==='):
+                level = 1
+                text = paragraph[0]
+            elif paragraph[1].startswith('---'):
+                level = 2
+                text = paragraph[0]
+        if level and text:
+            add_heading(start_line, level, text)
     return headings
 
 
-def pageNumberExtractor(data):
-    """Iterate over lines and extract all those starting with ||. The page
-    number and the rest of the line is returned as a tuple."""
+def pageNumberExtractor(paragraphs):
+    """Iterate over paragraphs and return a list of page numbers extracted from
+    those paragraphs."""
     numbers = []
     rgx = re.compile(r"^\|\|\s*-\s*(.+?)\s*-")
-    for num, line in enumerate(data.split('\n')):
-        result = rgx.search(line)
-        if(result):
-            numbers.append((num+1, result.groups()[0]))
+    pars = [(l,e) for l,e in paragraphs.items() if len(e) == 1]
+    for start_line, par in pars:
+        result = rgx.search(par[0])
+        if result:
+            numbers.append((start_line, result.groups()[0]))
     return numbers
 
 class MistakePriority(enum.IntEnum):
@@ -147,9 +145,11 @@ should set the relevant properties in the constructor."""
     def error(self, msg, lnum=None, path=None):
         e = error_message()
         e.set_severity(self.get_priority())
-        e.set_message(msg)
-        if(lnum): e.set_lnum(lnum)
-        if(path): e.set_path(path)
+        e.set_message(' '.join(msg.split()))
+        if lnum:
+            e.set_lnum(lnum)
+        if path:
+            e.set_path(path)
         return e
 
 class onelinerMistake(Mistake):

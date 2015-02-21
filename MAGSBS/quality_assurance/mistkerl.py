@@ -36,14 +36,15 @@ from .markdown import *
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
     def __init__(self):
-        self.__issues = [common_latex_errors, page_number_is_paragraph,
-                heading_is_paragraph, level_one_heading, oldstyle_pagenumbering,
-                itemize_is_paragraph, page_numbering_text_is_lowercase,
-                page_string_but_no_page_number, uniform_pagestrings,
-                too_many_headings, LaTeXMatricesAreHardToRead,
+        self.__issues = [PageNumberIsParagraph, HeadingIsParagraph,
+                LevelOneHeading, oldstyle_pagenumbering,
+                ItemizeIsParagraph, PageNumberingTextIsLowercase,
+                ForgottenNumberInPageNumber, UniformPagestrings,
+                TooManyHeadings, LaTeXMatricesAreHardToRead,
                 PageNumbersWithoutDashes, DoNotEmbedHTMLLineBreaks,
-                EmbeddedHTMLComperators, pageNumberWordIsMispelled,
-                headingOccursMultipleTimes]
+                EmbeddedHTMLComperators, PageNumberWordIsMispelled,
+                HeadingOccursMultipleTimes,
+                HeadingsUseEitherUnderliningOrHashes, CasesSqueezedOnOneLine]
         self.__cache_pnums = collections.OrderedDict()
         self.__cache_headings = collections.OrderedDict()
         self.__output = []
@@ -84,15 +85,15 @@ recursively."""
             for file in file_list:
                 file_path = os.path.join(directoryname, file)
                 try:
-                    text = open(file, "r", encoding="utf-8").read()
+                    paragraphs = filesystem.file2paragraphs( \
+                            open(file, encoding="utf-8"))
                 except UnicodeDecodeError:
                     e = error_message()
                     e.set_severity(MistakePriority.critical)
                     e.set_path(file_path)
                     e.set_message('Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.')
                     continue
-                text = text.replace('\r\n','\n').replace('\r','\n')
-                self.__run_filters_on_file(file_path, text)
+                self.__run_filters_on_file(file_path, paragraphs)
             os.chdir(cwd)
         # the last directory must be processed, even so there was no directory
         # change
@@ -110,7 +111,7 @@ recursively."""
         self.__output.append(err)
 
 
-    def __run_filters_on_file(self, file_path, text):
+    def __run_filters_on_file(self, file_path, paragraphs):
         """Execute all filters which operate on one file. Also exclue filters
         which do not match for the file ending."""
         # presort issues
@@ -121,33 +122,35 @@ recursively."""
         NeedPnums = [e for e in self.get_issues(file_path)
                     if e.get_type() == MistakeType.need_pagenumbers]
         NeedHeadings = [e for e in self.get_issues(file_path)
-                        if e.get_type() == MistakeType.need_headings]
+                if e.get_type() == MistakeType.need_headings]
 
-        overlong = False
-        for issue in FullFile:
-            self.__append(file_path, issue.run(text))
-        for num, line in enumerate(text.split('\n')):
-            if(num > 2500 and not overlong):
-                overlong = True
-                e = error_message()
-                e.set_severity(MistakePriority.normal)
-                e.set_path(file_path)
-                e.set_message("Die Datei ist zu lang. Um die "+
+        if next(reversed(paragraphs)) > 2500:
+            e = error_message()
+            e.set_severity(MistakePriority.normal)
+            e.set_path(file_path)
+            e.set_message("Die Datei ist zu lang. Um die "+
                     " Navigation zu erleichtern und die einfache Lesbarkeit zu"+
                     " gewährleisten sollten lange Kapitel mit mehr als 2500 " +
                     "Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md" +
                     " oder kleiner aufgeteilt werden.")
+            self.__append(file_path, e)
 
-                self.__append(file_path, e)
-            for issue in OneLiner:
-                if(issue.should_be_run()):
-                    res = issue.run(num+1, line)
-                    if(res):
-                        self.__append(file_path, res)
-                        issue.set_run(False)
+        # ToDo: do not take full list of paragraphs, but rather one paragraph at
+        # a time; so one-liners and paragraph-aware checkers in one loop, better
+        # CPU cache usage
+        for issue in FullFile:
+            self.__append(file_path, issue.run(paragraphs))
+        for start_line, paragraph in paragraphs.items():
+            for lnum, line in enumerate(paragraph):
+                for issue in OneLiner:
+                    if issue.should_be_run():
+                        res = issue.run(start_line+lnum, line)
+                        if res:
+                            self.__append(file_path, res)
+                            issue.set_run(False)
         # cache headings and page numbers
-        pnums = pageNumberExtractor(text)
-        hdngs = headingExtractor(text)
+        pnums = pageNumberExtractor(paragraphs)
+        hdngs = headingExtractor(paragraphs)
         self.__cache_pnums[ file_path ] = pnums
         self.__cache_headings[ file_path ] = hdngs
 

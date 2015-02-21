@@ -155,7 +155,7 @@ title of the document, hence allow setting it separately."""
 
     def __guess_title(self, inputf):
         try:
-            mp = mparser.simpleMarkdownParser(
+            mp = mparser.SimpleMarkdownParser(
                     open(inputf, 'r', encoding='utf-8').read(),
                     os.path.split(inputf)[0], os.path.split(inputf)[1])
             mp.parse()

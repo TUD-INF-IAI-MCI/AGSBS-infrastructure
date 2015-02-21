@@ -13,7 +13,7 @@ import re, os
 from . import datastructures
 from . import contentfilter as contentfilter
 
-class simpleMarkdownParser():
+class SimpleMarkdownParser():
     """Implement an own simple markdown parser. Just reads in the headings of
 the given markdown string. If needs arises for more soffisticated stuff, use
 python-markdown."""

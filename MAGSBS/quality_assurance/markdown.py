@@ -6,141 +6,116 @@ from .meta import Mistake, MistakeType, MistakePriority, onelinerMistake
 import os, re
 from .. import config
 
-class page_number_is_paragraph(Mistake):
+class PageNumberIsParagraph(Mistake):
     """Check whether all page numbers are on a paragraph on their own."""
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self._error_text = "Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
+        self.pattern = re.compile(r'^\|\|\s*' + config.PAGENUMBERING_REGEX)
+
     def error(self, lnum):
         return super().error(self._error_text, lnum)
+
     def worker(self, *args):
-        if(len(args)<1):
-            raise ValueError("At least one argument (file content) expected.")
-        paragraph_begun = True
-        previous_line_pnum = False
-        for num, line in enumerate(args[0].split('\n')):
-            if(line.strip() == ''):
-                paragraph_begun = True
-                previous_line_pnum = False
-            else:
-                if(previous_line_pnum): # previous_line_pnum and this is no empty line...
-                    #previous_line_pnum = False
-                    return self.error(num+1)
-                elif(re.search(r'\|\|\s*' + config.PAGENUMBERING_REGEX,
-                        line.lower())):
-                    # line contains page number, is in front of a empty line?
-                    if(not paragraph_begun):
-                        return self.error(num+1)
-                    previous_line_pnum = True
-                paragraph_begun = False # one line of text ends "paragraph begun"
+        for start_line, paragraph in args[0].items():
+            if len(paragraph) == 1: continue # that's either a correct one or not interesting
+            for num, line in enumerate(paragraph):
+                # more than one line and a page number, bug
+                if self.pattern.search(line.lower()):
+                    return self.error(start_line + num)
 
 
-class heading_is_paragraph(Mistake):
-    # ToDo: two errors are here checked, instead split it into two error classes
-    # to avoid swallowed mistakes ;)
-    # ToDo II: check_numbering is commented out: it may be the case that we have
-    # an aabstract in a paper and therefore the first heading is NOT 1. but has
-    # no number; then the editor chooses to make the second heading with the
-    # number
-    # "1.". We ought to decide how to deal with that
+class HeadingIsParagraph(Mistake):
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self.set_type(MistakeType.full_file)
-    def worker(self, *args):
-        """Check whether all page numbers are on a paragraph on their own. Also
-        checks whether headings do NOT start with a number."""
-        if(len(args) < 1):
-            raise ValueError("At least one parameter with the file content expected.")
-        error_text = "Jede Ueberschrift muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
-        error_text_number = "Die Überschriftsnummerierungen werden automatisch generiert und sollen daher weggelassen werden."
-        paragraph_begun = True
-        previous_line_heading = False
-        previous_line = ''
-        for num, line in enumerate(args[0].split('\n')):
-            if(line.strip() == ''):
-                paragraph_begun = True
-                previous_line_heading = False
-            else:
-                if(not paragraph_begun): # happens on the second line of a paragraph
-                    if(line.startswith('---') or line.startswith('===')):
-                        previous_line_heading = True
-                        continue
-                if(previous_line_heading): # previous_line_heading and this is no empty line...
-                    return self.error(error_text, num+1)
-                if(re.search(r'^#+.*', line)):
-                    # line contains heading, is in front of a empty line?
-                    if(not paragraph_begun):
-                        return self.error(error_text, num+1)
-                    previous_line_heading = True
-                paragraph_begun = False # one line of text ends "paragraph begun"
-            previous_line = line
 
-class level_one_heading(Mistake):
+    def worker(self, *args):
+        """Check whether all headings are on a paragraph on it's own."""
+        error_text = "Jede Überschrift muss in der Zeile darüber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
+        for start_line, paragraph in args[0].items():
+            if len(paragraph) == 1:
+                continue # possibly correct
+            for lnum, line in enumerate(paragraph):
+                if line.startswith('===') or line.startswith('---'):
+                    # not on the first or last line of paragraph
+                    if lnum != 1 or lnum < (len(paragraph)-1):
+                        return self.error(error_text, start_line + lnum)
+                    elif line.startswith('#'):
+                        return self.error(error_text, start_line + lnum)
+
+class LevelOneHeading(Mistake):
     """Parse the directory and raise errors if more than one level-1-heading was encountered."""
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self.set_type(MistakeType.need_headings_dir)
-    def __error(self, msg, path):
-        super().error(msg, lnum=None, path=path)
+        self.namesForImage = ["images"]
+        for dest_lang in config.L10N.supported_languages:
+            translate_dict = getattr(config.L10N, 'en_' + dest_lang)
+            self.namesForImage.append(translate_dict['images'])
+
     def worker(self, *args):
         found_h1 = False
         for path, headings in args[0].items():
-            is_image_path = False
-            for dest_lang in config.L10N.supported_languages:
-                translate_dict = getattr(config.L10N, 'en_' + dest_lang)
-                if(path.lower().find(translate_dict["images"]) >= 0):
-                    is_image_path = True
-            if is_image_path or path.lower().find("images") >= 0:
+            if os.path.split(path)[-1] in self.namesForImage:
                 continue # do not count h1's in bilder.md
 
             for heading in headings:
                 if heading.get_level() == 1:
                     if found_h1:
-                        return self.__error("""In diesem Verzeichnis gibt es
+                        return self.error("""In diesem Verzeichnis gibt es
                                 mehr als eine Überschrift der Ebene 1. Dies ist
                                 nicht erlaubt. Beispielsweise hat jeder
                                 Foliensatz nur eine Hauptüberschrift und auch
                                 ein Kapitel wird nur mit einer Überschrift
-                                bezeichnet.""", heading.get_line_number)
+                                bezeichnet.""", heading.get_line_number())
                     else:
                         found_h1 = True
 
 
-class itemize_is_paragraph(Mistake):
+class ItemizeIsParagraph(Mistake):
+    """Go through each paragraph and check whether a line is a valid item for
+    an itemize environment. If Ignore first and last line of course. If it is,
+    check whether first and last line are valid, else return error."""
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self.set_type(MistakeType.full_file)
         self._match = re.compile(r"^\d+\. ")
         self.__lastlines = []
-    def __legalstart(self, line):
-        if(line.startswith("- ") or self._match.search(line)): return True
-        else: return False
-    def __in_itemize(self, line):
-        if(len(self.__lastlines) < 2): return False
-        elif(self.__legalstart(line)):
-            last = self.__lastlines[-1]
-            if(self.__legalstart(line)):
-                return True
+    def is_item_line(self, line):
+        for c in ['+ ', '* ', '- ']:
+            if line.startswith(c):
+                # ignore "* *" which are used for horizontal bars
+                if len(line) > 3 and line[2] != line[0]:
+                    return True
+        if self._match.search(line):
+            return True
         return False
 
+    def whole_paragraph_is_itemize(self, paragraph):
+        if not self.is_item_line(paragraph[0]):
+            return False
+        last_item = len(paragraph) - 1
+        while paragraph[last_item][0].isspace():
+            last_item -= 1
+        if self.is_item_line(paragraph[last_item]):
+            return True
+        else:
+            return False
+
     def worker(self, *args):
-        def empty(string):
-            return string.replace(" ","").replace("\t", "")
-        for num, line in enumerate(args[0].split("\n")):
-            if(self.__in_itemize(line)):
-                if(not (self.__lastlines[0] == '') and \
-                        not self.__legalstart(line)):
-                    return self.error("Jede Aufzählung muss darüber und darunter Leerzeilen haben, damit sie bei der Umwandlung als Aufzählung erkannt wird.", num)
-            if(len(self.__lastlines) == 2):
-                del self.__lastlines[0]
-            if(empty(line) == ''):
-                self.__lastlines.append('')
-            else:
-                self.__lastlines.append(line)
+        for start_line, paragraph in args[0].items():
+            for lnum, line in enumerate(paragraph):
+                if self.is_item_line(line):
+                    # check whether first and last line is an item
+                    if not self.whole_paragraph_is_itemize(paragraph):
+                        return self.error("""Eine Aufzählung muss in einem eigenen
+                                Absatz stehen, d. h. es muss davor und danach
+                                eine Leerzeile sein.""", start_line+lnum)
 
 
 class oldstyle_pagenumbering(Mistake):
@@ -148,6 +123,7 @@ class oldstyle_pagenumbering(Mistake):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
         self.set_type(MistakeType.oneliner)
+
     def worker(self, *args):
         """Check whether the old page numbering style "###### - page xyz -" is used."""
         if(len(args)< 2): raise ValueError("Two arguments expected.")
@@ -157,35 +133,41 @@ class oldstyle_pagenumbering(Mistake):
         if(obj):
             return self.error('Es wurde eine Seitenzahl im Format "###### - Seite xyz -" bzw. "###### - Seite xyz - ######" gefunden. dies ist nicht mehr erlaubt. Seitenzahlen müssen die Form "|| - Seite xyz -" haben.', args[0])
 
-class page_numbering_text_is_lowercase(Mistake):
+class PageNumberingTextIsLowercase(Mistake):
     def __init__(self):
         Mistake.__init__(self)
         self.set_type(MistakeType.need_pagenumbers)
+
     def worker(self, *args):
         for lnum, text in args[0]:
             if(text.find('seite')>=0 or text.find('folie')>=0):
                 return self.error('Das Wort "Seite" wurde klein geschrieben. Dadurch wird es vom MAGSBS-Modul nicht erkannt, sodass keine automatische Seitennavigation erstellt werden kann.', lnum)
 
-class pageNumberWordIsMispelled(Mistake):
+class PageNumberWordIsMispelled(Mistake):
     """Sometimes small typos are made when marking a new page. That breaks
 indexing of page numbers."""
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.critical)
-        self.set_type(MistakeType.need_pagenumbers)
-        self._match = re.compile(config.PAGENUMBERING_REGEX)
+        self.set_type(MistakeType.full_file)
+        self._match = re.compile(r'\|\|\s*-\s*(\w+)\s+.*-')
+
     def worker(self, *args):
-        for lnum, text in args[0]:
-            if not self._match.search(text):
-                self.error("Die Seitenzahl %s enthält keines der folgenden Wörter: %s. Eventuell ist dies lediglich ein Tippfehler." \
-                        % (text, ', '.join(config.PAGENUMBERINGTOKENS)), lnum)
+        for start, par in args[0].items():
+            if len(par) > 1: continue
+            res = self._match.search(par[0].lower())
+            if res and not (res.groups()[0] in config.PAGENUMBERINGTOKENS):
+                return self.error("""Die Seitenzahl %s wird nicht erkannt,
+                        wahrscheinlich handelt es sich um einen Tippfehler. Die
+                        Seitenzahl wird ignoriert.""" % res.groups()[0], start)
 
 
-class uniform_pagestrings(Mistake):
+class UniformPagestrings(Mistake):
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.normal)
         self.set_type(MistakeType.need_pagenumbers_dir)
+
     def _error(self, first, later_fn, later_lnum, later_text):
         first_fn = os.path.split(first[0])[-1]
         later_fn = os.path.split(later_fn)[-1]
@@ -214,7 +196,7 @@ class uniform_pagestrings(Mistake):
                 elif(first[2] != match[0]):
                     return self._error(first, fn, lnum, match[0])
 
-class too_many_headings(Mistake):
+class TooManyHeadings(Mistake):
     """Are there too many headings of the same level in a directory next to each
 other? E.g. 40 headings level 2. The figure can be controled using
 self.threshold."""
@@ -240,41 +222,46 @@ self.threshold."""
                     return self.__error(heading.get_level())
 
     def __error(self, heading_level):
-        return super.error("Es existieren mehr als %d " % self.threshold + \
-                "Überschriften der Ebene %d. " % heading_level + \
-                "Das macht das Inhaltsverzeichnis sehr übersichtlich."+\
-                " Man kann entweder in der Konfiguration tocDepth kleiner setzen, "+\
-                "um Überschriften dieser Ebene nicht ins Inhaltsverzeichnis"+\
-                " aufzunehmen (für Foliensätze z.B. tocDepth 1) oder die Anzahl "+\
-                "an Überschriften minimieren, sofern möglich.")
+        return super().error("""Es existieren mehr als %d Überschriften der Ebene
+                %d. Das macht das Inhaltsverzeichnis sehr unübersichtlich.  Man
+                kann entweder in der Konfiguration tocDepth kleiner setzen, um
+                Überschriften dieser Ebene nicht ins Inhaltsverzeichnis
+                aufzunehmen (für Foliensätze z.B. tocDepth 1) oder die Anzahl
+                an Überschriften minimieren, sofern möglich.""" % \
+                (self.threshold, heading_level), lnum=None)
 
 
-class page_string_but_no_page_number(Mistake):
+class ForgottenNumberInPageNumber(Mistake):
+    """This is not a oneliner, because it is more efficient to go though all
+    paragraphs and check for paragraphs with length 1 instead of iterating
+    through *all* lines."""
     def __init__(self):
-        Mistake.__init__(self)
+        super().__init__()
         # cannot be need_pagenumbers, because this leaves out incorrect page numbers
-        self.set_type(MistakeType.oneliner)
         self.set_priority(MistakePriority.critical)
+        self.set_type(MistakeType.full_file)
+        self.pattern = re.compile(r'\s*-\s*(%s)' +
+                '|'.join(config.PAGENUMBERINGTOKENS) + '\\s+')
 
     def worker(self, *args):
-        """Sometimes one types "- page -" and forgets the digit."""
-        line = args[1]
-        if(not line.startswith("||")): return None
-        line = line.replace(" ", "")
-        for t in config.PAGENUMBERINGTOKENS:
-            idx = line.lower().find(t)
-            if(idx >= 0):
-                if(len(line) > idx + len(t)):
-                    if(not line[idx + len(t)].isdigit()):
-                        return self.error("Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde.", args[0])
+        """Sometimes digits of page number get lost when typing."""
+        for start, par in args[0].items():
+            if len(par) > 1: continue # skip
+            line = par[0]
+            if not line.startswith("||"): return
+            match = self.pattern.search(line.lower())
+            if match:
+                if not re.search('.*\\d+', line):
+                    return self.error("Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde.", start)
 
-class headingOccursMultipleTimes(Mistake):
+class HeadingOccursMultipleTimes(Mistake):
     """Parse headings; report doubled headings; ignore headings below
 tocDepth."""
     def __init__(self):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.normal)
         self.set_type(MistakeType.need_headings)
+
     def worker(self, *args):
         error_message = """Überschriften gleichen Namens machen
                 Inhaltsverzeichnisse schwer lesbar und erschweren die
@@ -291,25 +278,30 @@ tocDepth."""
                 return self.error(error_message, heading.get_line_number())
             last_heading = heading.get_text()
 
-class PageNumbersWithoutDashes(onelinerMistake):
+class PageNumbersWithoutDashes(Mistake):
     """Page number should look like "|| - page 8 -", people sometimes write
 "|| page 8"."""
     def __init__(self):
-        onelinerMistake.__init__(self)
+        super().__init__()
         pattern = r'\|\|\s*(' + '|'.join(config.PAGENUMBERINGTOKENS) + ')'
+        self.set_type(MistakeType.full_file)
         self.pattern = re.compile(pattern.lower())
-    def check(self, num, line):
-        if(self.pattern.search(line.lower())):
-            return self.error("Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: " +
+
+    def worker(self, *args):
+        for num, par in args[0].items():
+            if len(par) > 1: continue
+            if self.pattern.search(par[0].lower()):
+                return self.error("Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: " +
                     "\"|| - Seite xyz -\"", num)
 
 class DoNotEmbedHTMLLineBreaks(onelinerMistake):
     """Instead of <br> for an empty line, a single \\ can be used."""
     def __init__(self):
-        onelinerMistake.__init__(self)
+        super().__init__()
         self.pattern = re.compile(r'<br.*/?>')
+
     def check(self, num, line):
-        if(self.pattern.search(line.lower())):
+        if self.pattern.search(line.lower()):
             return self.error("Es sollte kein Umbruch mittels HTML-Tags erzeugt " +
                     "werden. Platziert man einen \\ als einziges Zeichen auf " +
                     "eine Zeile und lässt davor und danach eine Zeile frei, " +
@@ -320,8 +312,24 @@ class EmbeddedHTMLComperators(onelinerMistake):
     def __init__(self):
         onelinerMistake.__init__(self)
         self.pattern = re.compile(r'&(lt|gt);')
+
     def check(self, num, line):
         if(self.pattern.search(line.lower())):
             return self.error("Relationsoperatoren sollten nicht mittels HTML, " +
                     "sondern mittels \\< und \\> erzeugt werden.", num)
+
+class HeadingsUseEitherUnderliningOrHashes(Mistake):
+    def __init__(self):
+        Mistake.__init__(self)
+        self.set_priority(MistakePriority.critical)
+        self.set_type(MistakeType.need_headings)
+
+    def worker(self, *args):
+        for heading in args[0]:
+            if heading.get_text().startswith('#'):
+                return self.error("""Die Überschrift wurde unterstrichen und
+                        gleichzeitig mit # bzw. ## als Überschrift
+                        gekennzeichnet. Am Besten ist es, die # zu entfernen,
+                        da sie sonst als Text angezeigt werden.""",
+                        lnum=heading.get_line_number())
 

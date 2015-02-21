@@ -164,7 +164,7 @@ By calling the function, the actual index is build."""
                 data = open(os.path.join(directory, file), 'r',
                         encoding='utf-8').read()
                 # ToDo: use pandoc?
-                m = mparser.simpleMarkdownParser(data, directory, file)
+                m = mparser.SimpleMarkdownParser(data, directory, file)
                 m.parse()
                 m.fetch_headings()
                 headings = []
@@ -303,7 +303,7 @@ and end again with
         if(has_next):
             has_next = fn2targetformat(has_next, self.__fmt)
         newpage = []
-        m = mparser.simpleMarkdownParser(page, self.__dir, file_name)
+        m = mparser.SimpleMarkdownParser(page, self.__dir, file_name)
         m.parse()
         lbr = self.linebreaks
 
@@ -423,4 +423,34 @@ Initialize basic configuration as well."""
         for index in range(1, self.__appendix_count + 1):
             self.__create_chapter('anh', index, False)
         os.chdir(cwd)
+
+def file2paragraphs(lines):
+    """
+file2paragraphs(lines)
+
+Return a dictionary mapping from line numbers (where paragraph started) to a
+paragraph. The paragraph itself is a list of lines, not ending on\n. The
+parameter must  be iterable, so can be a file object or a list of lines."""
+    paragraphs = collections.OrderedDict()
+    paragraphs[1] = []
+    for lnum, line in enumerate(lines):
+        current_paragraph = next(reversed(paragraphs))
+        if line.endswith('\n'):
+            line = line[:-1]
+        if not line.strip(): # empty line
+            # if previous paragraph is empty, this line as well, theere are
+            # multiple blank lines; update line number
+            if not paragraphs[current_paragraph]:
+                del paragraphs[current_paragraph]
+            # +1, because count starts from 1 and paragraph starts on _next_
+            # line
+            paragraphs[lnum+2] = []
+        else:
+            paragraphs[current_paragraph].append(line)
+    # strip empty paragraphs at the end (\n at EOF)
+    last = next(reversed(paragraphs))
+    if not paragraphs[last]:
+        del paragraphs[last]
+    return paragraphs
+
 
