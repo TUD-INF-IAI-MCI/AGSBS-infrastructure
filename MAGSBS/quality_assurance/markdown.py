@@ -167,6 +167,7 @@ class UniformPagestrings(Mistake):
         Mistake.__init__(self)
         self.set_priority(MistakePriority.normal)
         self.set_type(MistakeType.need_pagenumbers_dir)
+        self.pattern = re.compile('.*(%s).*' % '|'.join(config.PAGENUMBERINGTOKENS))
 
     def _error(self, first, later_fn, later_lnum, later_text):
         first_fn = os.path.split(first[0])[-1]
@@ -182,11 +183,10 @@ class UniformPagestrings(Mistake):
                 "einheitlich sein.", later_lnum)
 
     def worker(self, *args):
-        rgx = re.compile(config.PAGENUMBERING_REGEX)
         first = None # first page string found
         for fn, PNUMS in args[0].items():
             for lnum, text in PNUMS:
-                match = rgx.search(text.lower())
+                match = self.pattern.search(text.lower())
                 if(not match):
                     continue
                 else:
