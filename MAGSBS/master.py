@@ -42,7 +42,7 @@ files are converted."""
                 if(go_deeper):
                     dirs += [os.path.join(directory, e) \
                             for e in os.listdir(directory) \
-                            if( os.path.isdir( os.path.join(dir, e)) )]
+                            if os.path.isdir(os.path.join(directory, e))]
         found_md = False
         for directory, dlist, flist in os.walk(path):
             for f in flist:
