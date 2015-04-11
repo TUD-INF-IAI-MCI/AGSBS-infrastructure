@@ -340,7 +340,6 @@ class HtmlArrowsInMarkdown(onelinerMistake):
         self.set_priority(MistakePriority.normal)
 
     def check(self, num, line):
-        print("hi")
         if line.find('&rarr;') >= 0:
             return self.error(r"""Um MarkDown-Dateien auch in andere Formate
                     als HTML wandeln zu können, sollten HTML-spezifische Pfeile
