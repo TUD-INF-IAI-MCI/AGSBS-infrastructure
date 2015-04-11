@@ -333,3 +333,16 @@ class HeadingsUseEitherUnderliningOrHashes(Mistake):
                         da sie sonst als Text angezeigt werden.""",
                         lnum=heading.get_line_number())
 
+class HtmlArrowsInMarkdown(onelinerMistake):
+    """To decouple MarkDown from it's output format, HTML arrows are discouraged. Instead the LaTeX arrows are suggested."""
+    def __init__(self):
+        onelinerMistake.__init__(self)
+        self.set_priority(MistakePriority.normal)
+
+    def check(self, num, line):
+        print("hi")
+        if line.find('&rarr;') >= 0:
+            return self.error(r"""Um MarkDown-Dateien auch in andere Formate
+                    als HTML wandeln zu können, sollten HTML-spezifische Pfeile
+                    vermieden werden, stattdessen wird $\\to$ empfohlen""", num)
+

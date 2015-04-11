@@ -42,5 +42,3 @@ class LaTeXMatricesAreHardToRead(onelinerMistake):
             return self.error("Jede Zeile einer Matrix oder Tabelle sollte zur " +
                 "besseren Lesbarkeit auf eine eigene Zeile gesetzt werden.", num)
 
-
-

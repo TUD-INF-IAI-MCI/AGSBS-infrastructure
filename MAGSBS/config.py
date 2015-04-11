@@ -284,7 +284,7 @@ l10n with Windows."""
             'index' : ' index',
             'next':'suivant',  'previous':'précédent',
             'chapter':'chapitre', 'paper':'document',
-            'Remarks about the accessible version':'Remarques à la version accessible',
+            'Remarks about the accessible version':'Remarques concernant la version accessible',
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
             'table of contents' : 'inhaltsverzeichnis',

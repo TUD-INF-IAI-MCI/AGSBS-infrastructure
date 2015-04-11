@@ -212,13 +212,13 @@ it gave an error return code"""
         # strip .md, construct the output file name (different when using
         # GladTeX)
         inputfStripped = inputf[:inputf.rfind('.')]
-        if(self.use_gladtex):
+        if self.use_gladtex:
             outputf = inputfStripped + '.htex'
         else:
             outputf = inputfStripped + '.' + self.format
         template = self.mktemplate(inputf)
         pandoc_args = ['-s', '--template=%s' % template ]
-        if(self.use_gladtex):
+        if self.use_gladtex:
             pandoc_args.append('--gladtex')
 
         # run pandoc, read in the JSon output
