@@ -100,4 +100,65 @@ function findsit out."""
     def get_page_numbers(self):
         return self.__pagenumbers
 
+## The following is for those cases where parsing the Pandoc ast to get headings
+## or page numbers would mean a substancial overhead
+
+def create_heading(num, level, text):
+    """Add heading object to a collection."""
+    h = datastructures.Heading()
+    h.set_level(level)
+    h.set_line_number(num)
+    h.set_text(text)
+    return h
+
+def split_into_level_text(text):
+    """For markdown headings starting with #, return level and text as tuple."""
+    level = 0
+    while text.startswith('#'):
+        level += 1
+        text = text[1:]
+    while text.endswith('#'):
+        text = text[:-1]
+    text = text.lstrip().rstrip()
+    return (level, text)
+
+def headingExtractor(paragraphs, max_headings=-1):
+    """headingExtractor(list_of_paragraphs, max_headings=-1)
+    Return list of heading objects; if max_headings is set to a value > -1, only
+    this number of headings will be parsed."""
+    headings = []
+    headings_encountered = 0
+    for start_line, paragraph in paragraphs.items():
+        if max_headings > -1 and headings_encountered >= max_headings:
+            break
+        level = 0
+        text = None
+        if len(paragraph) == 1:
+            if paragraph[0].startswith('#'):
+                level, text = split_into_level_text(paragraph[0])
+        else:
+            if paragraph[1].startswith('==='):
+                level = 1
+                text = paragraph[0]
+            elif paragraph[1].startswith('---'):
+                level = 2
+                text = paragraph[0]
+        if level and text:
+            headings.append(create_heading(start_line, level, text))
+            headings_encountered += 1
+    return headings
+
+
+def pageNumberExtractor(paragraphs):
+    """Iterate over paragraphs and return a list of page numbers extracted from
+    those paragraphs."""
+    numbers = []
+    rgx = re.compile(r"^\|\|\s*-\s*(.+?)\s*-")
+    pars = [(l,e) for l,e in paragraphs.items() if len(e) == 1]
+    for start_line, par in pars:
+        result = rgx.search(par[0])
+        if result:
+            numbers.append((start_line, result.groups()[0]))
+    return numbers
+
 

@@ -32,6 +32,7 @@ from .. import filesystem as filesystem
 from .meta import *
 from .latex import *
 from .markdown import *
+from ..mparser import headingExtractor, pageNumberExtractor
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""

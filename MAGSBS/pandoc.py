@@ -1,15 +1,18 @@
 # vim: set expandtab sts=4 ts=4 sw=4:
 """
 This module abstracts everything related to calling pandoc and modifiying the
-template for additional meta data in the output document(s)."""
+template for additional meta data in the output document(s).
 
-import datetime, tempfile
-import html
-import os, sys, subprocess
+Converter to different output formats can be easily added by adding the class to
+the field converters of the pandoc class.
+"""
+
+import html, re
+import tempfile, os, sys, subprocess
 from . import config
-from . import mparser
 from . import contentfilter
-from .errors import SubprocessError, WrongFileNameError, FileNotFoundError
+from . import filesystem
+from . import mparser
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -75,9 +78,35 @@ $endfor$
 
 
 def remove_temp(fn):
-    if(fn == None): return
-    if( os.path.exists(fn)):
-        os.remove( fn )
+    if fn == None: return
+    if os.path.exists(fn):
+        try:
+            os.remove( fn )
+        except OSError:
+            sys.stderr.write("Error, couldn't remove tempfile %s.\n" % fn)
+
+def execute(args, stdin=None):
+    """Convenience wrapper to subprocess.Popen). It'll append the process' stderr
+    to the message from the raised exception. Returned is the unicode stdout
+    output of the program. If stdin=some_value, a pipe to the child is opened
+    and the argument passed."""
+    decode = lambda x: x.decode(sys.stdout.encoding)
+    if stdin:
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        text = proc.communicate(stdin.encode(sys.stdin.encoding))
+    else:
+        try:
+            proc = subprocess.Popen(args, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+            text = proc.communicate()
+            ret = proc.wait()
+            if ret:
+                msg = '\n'.join(map(decode, text))
+                raise subprocess.SubprocessError(' '.join(args) + ': ' + msg)
+        except FileNotFoundError as e:
+            raise subprocess.SubprocessError(e)
+    return decode(text[0])
 
 class OutFilter():
     """If desired, you can here add functionality to alter the generated source.
@@ -116,15 +145,122 @@ generator fails."""
                 data = data[:div_end] + '</p>' +data[div_end + 6 :]
         open(self.inputf, 'w', encoding='utf-8').write( data )
 
+class OutputGenerator():
+    """Base class for all converters to provide a common type.
+
+General usage:
+gen = MyGenerator()
+# Supply optional dictionary of meta information. Some converter might require
+# that step.
+gen.set_meta_data(dict)
+# step for children to implement (optional) things like template creation
+gen.setup()
+# convert json of document and write it to basefilename + '.' + format; may
+# throw SubprocessError
+gen.convert(json, title, basefilename)
+# clean up, e.g. deletion of templates. Should be xecuted even if gen.convert()
+# threw error
+gen.cleanup()."""
+    def __init__(self):
+        self.__meta = {}
+        self.format = '.html'
+
+    def set_format(self, fmt):
+        self.format = fmt
+
+    def get_format(self):
+        return self.format
+
+    def set_meta_data(self, data):
+        self.__meta = data
+
+    def get_meta_data(self):
+        return self.__meta
+
+    def get_output_file_name(self, base_fn):
+        return base_fn + '.' + self.get_format()
+
+    def setup(self):
+        pass
+
+    def convert(self, title, json, base_fn):
+        """The actual conversion process."""
+        pass
+
+    def cleanup(self):
+        pass
+
+class HtmlConverter(OutputGenerator):
+    """HTML output format generator. For documentation see super class;."""
+    format = 'html'
+    def __init__(self):
+        super().__init__()
+        super().set_format('html')
+        self.template_path = None
+        self.template_copy = ''
+
+    def setup(self):
+        data = HTML_template[:]
+        for key, value in self.get_meta_data().items():
+            if value == None:
+                continue
+            data = data.replace('$$'+key, html.escape( value ))
+        self.template_path = tempfile.mktemp() + '.html'
+        self.template_copy = data[:]
+        open(self.template_path, "w", encoding="utf-8").write(data)
+
+    def update_title_in_template(self, title):
+        self.template_copy = re.sub('(<title>).*?(</title>)', r'\1%s\2' % title,
+                self.template_copy)
+        open(self.template_path, "w", encoding="utf-8").write(self.template_copy)
+
+    def convert(self, jsonstr, title, base_name):
+        """See super class documentation."""
+        outputf = self.get_output_file_name(base_name)
+        pandoc_args = ['-s', '--template=%s' % self.template_path]
+        use_gladtex = False
+        # filter json and give it as input to pandoc
+        # check whether "Math" occurs and therefore if GladTeX needs to be run
+        need_gladtex = contentfilter.pandoc_ast_parser( jsonstr,
+                contentfilter.has_math)
+        if type(need_gladtex) == list and len(need_gladtex) != 0:
+            use_gladtex = need_gladtex[0]
+            outputf = base_name + '.htex'
+            pandoc_args.append('--gladtex')
+        self.update_title_in_template(title)
+        execute(['pandoc'] + pandoc_args + ['-t', super().get_format(), '-f','json',
+            '-o', outputf], stdin=jsonstr)
+        if use_gladtex:
+            try:
+                execute(["gladtex", "-a", "-d", "bilder", outputf])
+            except:
+                raise
+            finally: # remove GladTeX .htex file
+                if use_gladtex:
+                    remove_temp(base_name + '.htex')
+
+    def cleanup(self):
+        remove_temp(self.template_path)
+
 class pandoc():
     """Abstract the translation by pandoc into a class which add meta-information
 to the output, handles errors and checks for the correct encoding."""
-    def __init__(self, use_gladtex=False):
+    def __init__(self):
+        self.converters = [HtmlConverter]
         c = config.confFactory()
         self.conf = c.get_conf_instance()
-        self.format = self.conf['format']
-        self.tempfile = None
-        self.use_gladtex = use_gladtex
+        supported_formats = [f.format for f in self.converters]
+        format = self.conf['format']
+        if not format in supported_formats:
+            raise ValueError("The configured format " + format + ' is not ' +
+                    'supported" at the moment. Supported formats: ' +
+                    ', '.join(supported_formats))
+        self.format = format
+        self.converter_class = None
+        for c in self.converters:
+            if c.format == format:
+                self.converter_class = c
+                break
         self.__hvalues = {
                 'editor' : self.conf['editor'],
                 'SourceAuthor' : self.conf['SourceAuthor'],
@@ -135,11 +271,6 @@ to the output, handles errors and checks for the correct encoding."""
                 'semesterofedit': self.conf['semesterofedit'],
                 'title':None}
 
-    def set_title(self, title):
-        """set_title(title) - set title for document
-In some cases, the lecture title / the level-1-heading is not sufficient for the
-title of the document, hence allow setting it separately."""
-        self.__hvalues['title'] = title
     def set_workinggroup(self, group):
         self.__hvalues['workinggroup'] = group
     def set_source(self, source):
@@ -154,124 +285,38 @@ title of the document, hence allow setting it separately."""
         self.__hvalues['semesterofedit'] = date
 
     def __guess_title(self, inputf):
+        """Guess the title from the first heading and return it."""
+        paragraphs = filesystem.file2paragraphs(open(inputf, encoding="utf-8"))
+        headings = mparser.headingExtractor(paragraphs, 1)
+        return (headings[0].get_text() if headings else 'UNKNOWN')
+
+    def convert_files(self, files):
+        """Convert a list of files. They should share all the meta data, except
+        for the title."""
+        conv = self.converter_class()
+        conv.set_meta_data(self.__hvalues)
+        conv.setup()
         try:
-            mp = mparser.SimpleMarkdownParser(
-                    open(inputf, 'r', encoding='utf-8').read(),
-                    os.path.split(inputf)[0], os.path.split(inputf)[1])
-            mp.parse()
-            mp.fetch_headings()
-            hs = mp.get_headings()
-            for h in hs:
-                if(h.get_level() == 1):
-                    return h.get_text()
-            return inputf[:-3].capitalize()
-        except WrongFileNameError:
-            return inputf[:-3].capitalize()
+            for file_name in files:
+                dot = file_name.rfind('.')
+                base_name = (file_name[:dot]  if dot > 0  else file_name)
+                title = self.__guess_title(file_name)
+                jsonstr = self.load_json(file_name)
+                # modify ast, recognize page numbers
+                jsonstr = contentfilter.jsonfilter(jsonstr,
+                    contentfilter.page_number_extractor, self.conf['format'] )
+                conv.convert(jsonstr, title, base_name)
+        except:
+            raise
+        finally:
+            conv.cleanup()
 
+    def convert_file(self, inputf):
+        self.convert_files([inputf])
 
-    def mktemplate(self, inputf):
-        if(self.format != 'html'):
-            raise NotImplementedError("Only HTML is supported currently.")
-        return self.mktemplate_html(inputf)
-
-    def mktemplate_html(self, inputf):
-        assert inputf != bytes
-        # is file name unicode?
-
-        # adjust semesterofedit and title:
-        if(not self.__hvalues['semesterofedit']):
-            self.__hvalues['semesterofedit'] = datetime.datetime.now().strftime('%m/%Y')
-        if(not self.__hvalues['title']):
-            self.__hvalues['title'] = self.__guess_title(inputf)
-        # filter configuration variables whether one is None
-        if(list(filter(lambda x: x==None, self.__hvalues.values())) != []):
-            print(repr(self.__hvalues))
-            raise ValueError("One of the required fields for the HTML meta data has not been set.")
-        data = HTML_template[:]
-        for key, value in self.__hvalues.items():
-            data = data.replace('$$'+key, html.escape( value ))
-        self.tempfile = tempfile.mktemp() + '.html'
-        open(self.tempfile, "w", encoding="utf-8").write(data)
-        return self.tempfile
-
-    def convert(self, inputf):
-        if(self.format != 'html'):
-            raise NotImplementedError("Only HTML output is supported currently.")
-        else:
-            try:
-                self.convert_html(inputf)
-            except FileNotFoundError:
-                raise SubprocessError("Pandoc not found. Make sure it is in the PATH environment variable.")
-        # ToDo: make me a real pandoc filter
-        OutFilter(self.format, inputf[:inputf.rfind('.')]+'.'+self.format)
-
-    def convert_html(self, inputf):
-        """convert_html(inputf) -> write to inputf.html
-Convert inputf to outputf. raise OSError if either pandoc  has not been found or
-it gave an error return code"""
-        # strip .md, construct the output file name (different when using
-        # GladTeX)
-        inputfStripped = inputf[:inputf.rfind('.')]
-        if self.use_gladtex:
-            outputf = inputfStripped + '.htex'
-        else:
-            outputf = inputfStripped + '.' + self.format
-        template = self.mktemplate(inputf)
-        pandoc_args = ['-s', '--template=%s' % template ]
-        if self.use_gladtex:
-            pandoc_args.append('--gladtex')
-
+    def load_json(self, inputf):
+        """Load JSon input from ''inputf`` and return a reference to the loaded
+        object."""
         # run pandoc, read in the JSon output
-        proc = subprocess.Popen(['pandoc'] + pandoc_args + \
-                ['-t','json', inputf],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        text = proc.communicate()
-        JSon = text[0].decode( sys.getdefaultencoding() )
-        ret = proc.wait()
-        if(ret): # if ret != 0, error; clean up
-            remove_temp( self.tempfile)
-            print('\n'.join(text))
-            raise OSError("Pandoc gave error status %s." % ret)
-
-        # filter json and give it as input to pandoc
-        JSon = contentfilter.jsonfilter( JSon,
-                contentfilter.page_number_extractor, self.conf['format'] )
-        # check whether "Math" occurs and therefore if GladTeX needs to be run
-        if( not self.use_gladtex ): # only check if GladTeX is not selected yet
-            need_gladtex = contentfilter.pandoc_ast_parser( JSon,
-                contentfilter.has_math)
-            if( type(need_gladtex) == list and len(need_gladtex) != 0):
-                self.use_gladtex = need_gladtex[0]
-                outputf = inputfStripped + '.htex'
-                pandoc_args.append('--gladtex')
-        JSon = JSon.encode( sys.getdefaultencoding() )
-        proc = subprocess.Popen(['pandoc'] + pandoc_args + \
-                ['-t', self.conf['format'], '-f','json', '-o', outputf],
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        data = proc.communicate( JSon )
-        ret = proc.wait()
-        if(ret):
-            remove_temp( self.tempfile)
-            print('\n'.join([e.decode( sys.getdefaultencoding() )
-                    for e in data]))
-            raise OSError("Pandoc gave error status %s." % ret)
-        remove_temp( self.tempfile)
-
-        if(self.use_gladtex):
-            # read in the generated file. Its a dirt-fix: pandoc strips newlines
-            # from equations, try to get some back
-            data = open(outputf, 'r', encoding='utf-8').read()
-            data = data.replace('\\\\', '\\\\\n')
-            open(outputf, 'w', encoding='utf-8').write( data )
-            try:
-                proc = subprocess.Popen(['gladtex'] + \
-                        self.conf['GladTeXopts'].split(' ') + [outputf],
-                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            except OSError:
-                raise SubprocessError("Either GladTeX is not installed or not in the search path.")
-            text = proc.communicate()
-            ret = proc.wait()
-            if(ret):
-                raise SubprocessError(text[1].decode( sys.getdefaultencoding()))
-            os.remove( outputf )
+        return execute(['pandoc', '-f', 'markdown', '-t', 'json', inputf])
 

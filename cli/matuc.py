@@ -51,9 +51,9 @@ def getTerminalSize():
     cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
     if not cr:
         try:
-           fd = os.open(os.ctermid(), os.O_RDONLY)
-           cr = ioctl_GWINSZ(fd)
-           os.close(fd)
+            fd = os.open(os.ctermid(), os.O_RDONLY)
+            cr = ioctl_GWINSZ(fd)
+            os.close(fd)
         except:
             pass
         if not cr:
@@ -117,7 +117,7 @@ class main():
         except OSError:
             error_exit("OSError: " + e.message+'\n')
         except TOCError as e:
-            error_exit("TOCError: " + e.message+'\n')
+            error_exit("TOCError: " + str(e.args[0]) + '\n')
 
     def conf_cmd(self):
         """Create or update configuration."""
@@ -203,29 +203,23 @@ sub-directory configurations or initialization of a new project.'''
 
 
     def conv(self):
-        usage = sys.argv[0]+' conv [options] input_directory | input_file'
-        usage += "\n\nNote: the output file name will be the input file name + the new extension.\n\n"
-        parser = OptionParser(usage=usage)
-        parser.add_option("-g", dest="gladtex", action="store_true",
-                  help="run gladtex after pandoc", default=False)
-        parser.add_option("-t", "--title", dest="title", default=None,
-                  help="set title for output document (if supported, e.g. in HTML)")
-        (options, args) = parser.parse_args(sys.argv[2:])
-        if(len(args)<1):
-            parser.print_help()
+        usage = sys.argv[0]+' conv <input_directory | input_file>'
+        if len(sys.argv) < 3 or sys.argv[2].startswith("-"):
+            print(usage)
             sys.exit(1)
-        elif(not os.path.exists( args[0] )):
-            print('Error: '+args[0]+' not found')
+        elif not os.path.exists(sys.argv[2]):
+            print('Error: '+sys.argv[2]+' not found')
             sys.exit(127)
 
         try:
-            p = MAGSBS.pandoc.pandoc(use_gladtex=options.gladtex)
-            if(options.title):
-                p.set_title( options.title )
-            if(PYVERSION < 3):
-                p.convert(args[0].decode(Guess()))
+            p = MAGSBS.pandoc.pandoc()
+            files = []
+            path = sys.argv[2]
+            if os.path.isdir(path):
+                files += [os.path.join(path, e) for e in os.listdir(path)]
             else:
-                p.convert(args[0])
+                files.append(path)
+            p.convert_files(files)
         except MAGSBS.errors.SubprocessError as e:
             print('Error: '+str(e))
             sys.exit(127)

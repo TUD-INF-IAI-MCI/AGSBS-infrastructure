@@ -9,54 +9,6 @@ import enum
 from abc import ABCMeta, abstractmethod
 from .. import datastructures
 
-def headingExtractor(paragraphs):
-    headings = []
-    def add_heading(num, level, text):
-        h = datastructures.Heading()
-        h.set_level(level)
-        h.set_line_number(num)
-        h.set_text(text)
-        headings.append(h)
-    def split_into_level_text(text):
-        level = 0
-        while text.startswith('#'):
-            level += 1
-            text = text[1:]
-        while text.endswith('#'):
-            text = text[:-1]
-        text = text.lstrip().rstrip()
-        return (level, text)
-
-    for start_line, paragraph in paragraphs.items():
-        level = 0
-        text = None
-        if len(paragraph) == 1:
-            if paragraph[0].startswith('#'):
-                level, text = split_into_level_text(paragraph[0])
-        else:
-            if paragraph[1].startswith('==='):
-                level = 1
-                text = paragraph[0]
-            elif paragraph[1].startswith('---'):
-                level = 2
-                text = paragraph[0]
-        if level and text:
-            add_heading(start_line, level, text)
-    return headings
-
-
-def pageNumberExtractor(paragraphs):
-    """Iterate over paragraphs and return a list of page numbers extracted from
-    those paragraphs."""
-    numbers = []
-    rgx = re.compile(r"^\|\|\s*-\s*(.+?)\s*-")
-    pars = [(l,e) for l,e in paragraphs.items() if len(e) == 1]
-    for start_line, par in pars:
-        result = rgx.search(par[0])
-        if result:
-            numbers.append((start_line, result.groups()[0]))
-    return numbers
-
 class MistakePriority(enum.IntEnum):
     critical = 1
     normal = 2
