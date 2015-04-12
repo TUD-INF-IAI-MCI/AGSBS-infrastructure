@@ -4,6 +4,10 @@
 """
 This module provides some extensions to the python-pandoc API as well as a few
 custom filters for the extended version of MarkDown.
+Additionally, a parser is introduced for documents with LaTeX formulas. This one
+pre-parses a document and changes all inline equations to displaymath equations.
+This way Pandoc preserves the line breaks which ware curcial for alternative
+image descriptions.
 """
 
 import pandocfilters
@@ -11,6 +15,7 @@ import json
 import sys, subprocess, re
 from . import config
 from . import datastructures
+from .errors import StructuralError
 
 
 def html(x):
@@ -62,7 +67,6 @@ numbering information."""
                         else:
                             return (text, id)
 
-
 def heading_extractor(key, value, format, meta, modify_ast=False):
     """Extract all headings from the JSon AST."""
     if(key == 'Header'):
@@ -70,15 +74,12 @@ def heading_extractor(key, value, format, meta, modify_ast=False):
         return (value[0], pandocfilters.stringify( value ))
 
 
-def jsonfilter(text, action, format='html'):
-    """NOTE: this is a copy from pandocfilters, it uses also the infrastructure
-    of this module, but doesn't read from stdin (but from an argument) and
-    doesn't write to stdout.
-    Converts an action into a filter that reads a JSON-formatted
-    pandoc document from stdin, transforms it by walking the tree
-    with the action, and returns a new JSON-formatted pandoc document
-    to stdout.  The argument is a function action(key, value, format, meta),
-    where key is the type of the pandoc object (e.g. 'Str', 'Para'),
+def jsonfilter(doc, action, format='html'):
+    """Run a filter on the given json (parameter doc) with the specified action
+    (parameter action). Return the altered structure (effectively a copy).
+    The action argument is effectively a method:  The argument is a function
+    action(key, value, format, meta), where key is the type of the pandoc object
+    (e.g. 'Str', 'Para'),
     value is the contents of the object (e.g. a string for 'Str',
     a list of inline elements for 'Para'), format is the target
     output format (which will be taken for the first command line
@@ -89,9 +90,8 @@ def jsonfilter(text, action, format='html'):
     the list to which the target object belongs.  (So, returning an
     empty list deletes the object.)
     """
-    doc = json.loads( text )
     altered = pandocfilters.walk(doc, action, format, doc[0]['unMeta'])
-    return json.dumps( altered )
+    return altered
 
 
 def run_pandoc(text):
@@ -118,4 +118,90 @@ def pandoc_ast_parser(text, action):
             result.append( res )
     pandocfilters.walk(doc, go, "", doc[0]['unMeta'])
     return result
+
+
+class Text:
+    """A text chunk."""
+    def __init__(self, text):
+        self.text = text
+    def __repr__(self):
+        return 'T<%s>' % self.text
+    def __str__(self):
+        return self.text
+
+class Formula:
+    """A formula, represented as displaymath by __str__."""
+    def __init__(self, formula):
+        self.formula = formula
+    def __str__(self):
+        return '$$%s$$' % self.formula
+    def __repr__(self):
+        return 'F<%s>' % self.__str__()
+
+class InlineToDisplayMath:
+    """Parse math formulas and modify them to be always displaymath so that
+    Pandoc will preserve white space."""
+    def __init__(self, document):
+        self.__document = document
+        self.__pieces = []
+
+    def is_followed_by_dollar_sign(self, pos, string):
+        """Return true if the character after the one at position ''pos`` is
+        also a dollar character."""
+        if pos >= (len(string)-1):
+            return False # is already at end of string
+        # we can now expect that there's a character after string[pos]
+        return string[pos+1] == '$'
+
+    def parse(self):
+        """Parse the document string into chunks of Text and Formula's.
+Algorithm (ignoring $$-enclosed formulas); the position in the text is
+implicitely memorized.
+
+1.  Find dollar. If followed by dollar, tread the text before and the two text
+    dollars as text and save it. Continue on this vey same step.
+    - if no dollar found: 5.
+2.  Find the matching dollar sign.
+3.  Text between the two dollars is added as Formula() to self.__pieces.
+4.  Position is updated, start from one.
+5.  Save current position until end as Text() and exit.
+"""
+        current_pos = 0
+        while current_pos < len(self.__document):
+            dollar = self.__document[current_pos:].find('$')
+            if dollar == -1: # no dollar found, end
+                self.__pieces.append(Text(self.__document[current_pos:]))
+                break
+            if self.is_followed_by_dollar_sign(current_pos+dollar, self.__document):
+                # ignore $$ environments, they are already like desired; save
+                # everything til the $$ and those as well and "continue" to
+                # search on
+                self.__pieces.append(Text(self.__document[current_pos:current_pos
+                    + dollar + 2]))
+                current_pos += (dollar + 2)
+                continue
+
+            begin = dollar + current_pos + 1
+            # save text before formula
+            self.__pieces.append(Text(self.__document[current_pos:begin-1]))
+
+
+            # find closing dollar(s)
+            dollar = self.__document[begin+1:].find('$') # +1 to ignore current char
+            if dollar == -1: # opening dollar, but no closing
+                raise StructuralError("At position %d an opening " % begin +
+                        "math environment was found that was never closed!")
+            end = dollar + begin + 1
+            # add math formula to chunks
+            self.__pieces.append(Formula(self.__document[begin:end]))
+            if self.is_followed_by_dollar_sign(end, self.__document):
+                raise StructuralError("Parser encountered a closing $$ " +
+                        "environment, although that should never happen. " +
+                        "Possibly a bug.")
+            current_pos = end + 1 # ignore dollar sign
+
+    def get_document(self):
+        """Return the document as a string."""
+        return ''.join(map(str, self.__pieces))
+
 

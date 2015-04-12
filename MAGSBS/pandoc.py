@@ -7,7 +7,7 @@ Converter to different output formats can be easily added by adding the class to
 the field converters of the pandoc class.
 """
 
-import html, re
+import html, re, json
 import tempfile, os, sys, subprocess
 from . import config
 from . import contentfilter
@@ -183,8 +183,11 @@ gen.cleanup()."""
     def setup(self):
         pass
 
-    def convert(self, title, json, base_fn):
-        """The actual conversion process."""
+    def convert(self, json_str, title, base_fn):
+        """The actual conversion process.
+        json_str: json representation of the documented, encoded as string
+        title: title of document
+        base_fn: file path without file extension and dot."""
         pass
 
     def cleanup(self):
@@ -284,9 +287,9 @@ to the output, handles errors and checks for the correct encoding."""
     def set_semesterofedit(self, date):
         self.__hvalues['semesterofedit'] = date
 
-    def __guess_title(self, inputf):
+    def __guess_title(self, document):
         """Guess the title from the first heading and return it."""
-        paragraphs = filesystem.file2paragraphs(open(inputf, encoding="utf-8"))
+        paragraphs = filesystem.file2paragraphs(document)
         headings = mparser.headingExtractor(paragraphs, 1)
         return (headings[0].get_text() if headings else 'UNKNOWN')
 
@@ -300,12 +303,20 @@ to the output, handles errors and checks for the correct encoding."""
             for file_name in files:
                 dot = file_name.rfind('.')
                 base_name = (file_name[:dot]  if dot > 0  else file_name)
-                title = self.__guess_title(file_name)
-                jsonstr = self.load_json(file_name)
+                document = open(file_name, encoding='utf-8').read()
+                title = self.__guess_title(document)
+                # pre-filter document, to replace all inline math environments
+                # through displaymath environments
+                mathfilter = contentfilter.InlineToDisplayMath(document)
+                mathfilter.parse()
+                document = mathfilter.get_document()
+                json_ast = self.load_json(document)
+                filters = [contentfilter.page_number_extractor]
                 # modify ast, recognize page numbers
-                jsonstr = contentfilter.jsonfilter(jsonstr,
-                    contentfilter.page_number_extractor, self.conf['format'] )
-                conv.convert(jsonstr, title, base_name)
+                for filter in filters:
+                    json_ast = contentfilter.jsonfilter(json_ast, filter,
+                            self.conf['format'] )
+                conv.convert(json.dumps(json_ast), title, base_name)
         except:
             raise
         finally:
@@ -314,9 +325,10 @@ to the output, handles errors and checks for the correct encoding."""
     def convert_file(self, inputf):
         self.convert_files([inputf])
 
-    def load_json(self, inputf):
+    def load_json(self, document):
         """Load JSon input from ''inputf`` and return a reference to the loaded
         object."""
         # run pandoc, read in the JSon output
-        return execute(['pandoc', '-f', 'markdown', '-t', 'json', inputf])
+        js = execute(['pandoc', '-f', 'markdown', '-t', 'json'], stdin=document)
+        return json.loads(js)
 
