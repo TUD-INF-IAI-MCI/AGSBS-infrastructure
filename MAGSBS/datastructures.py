@@ -4,7 +4,7 @@
 # (c) 2015 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """Common datastructures."""
 
-import os
+import os, sys
 from .errors import WrongFileNameError
 from . import config
 
@@ -163,14 +163,18 @@ def is_list_alike(obj):
     b = hasattr(obj, '__getitem__')
     return a and b
 
-def decode(string):
-    """Safe version to decode data from subprocesses."""
-    if not isinstance(string, str):
-        raise TypeError("Only strings are supported here.")
+def get_encoding():
+    """Return encoding for stdin/stdout."""
     encoding = sys.getdefaultencoding() # fallback
     if hasattr(sys.stdout, encoding):
         if sys.stdout.encoding:
             encoding = sys.st
-    return string.decode(encoding)
+    return encoding
+
+def decode(input):
+    """Safe version to decode data from subprocesses."""
+    if not isinstance(input, bytes):
+        raise TypeError("Only inputs are supported here.")
+    return input.decode(get_encoding())
 
 

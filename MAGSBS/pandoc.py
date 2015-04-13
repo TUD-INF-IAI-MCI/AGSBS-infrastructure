@@ -8,7 +8,8 @@ the field converters of the pandoc class.
 """
 
 import html, re, json
-import tempfile, os, sys, subprocess
+import sys
+import tempfile, os, subprocess
 from . import config
 from . import contentfilter
 from .datastructures import decode
