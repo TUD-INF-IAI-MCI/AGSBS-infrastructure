@@ -11,6 +11,7 @@ import html, re, json
 import tempfile, os, sys, subprocess
 from . import config
 from . import contentfilter
+from .datastructures import decode
 from . import filesystem
 from . import mparser
 
@@ -90,7 +91,6 @@ def execute(args, stdin=None):
     to the message from the raised exception. Returned is the unicode stdout
     output of the program. If stdin=some_value, a pipe to the child is opened
     and the argument passed."""
-    decode = lambda x: x.decode(sys.stdout.encoding)
     if stdin:
         proc = subprocess.Popen(args, stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, stdin=subprocess.PIPE)

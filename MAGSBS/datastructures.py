@@ -162,3 +162,15 @@ def is_list_alike(obj):
     a = hasattr(obj, '__iter__')
     b = hasattr(obj, '__getitem__')
     return a and b
+
+def decode(string):
+    """Safe version to decode data from subprocesses."""
+    if not isinstance(string, str):
+        raise TypeError("Only strings are supported here.")
+    encoding = sys.getdefaultencoding() # fallback
+    if hasattr(sys.stdout, encoding):
+        if sys.stdout.encoding:
+            encoding = sys.st
+    return string.decode(encoding)
+
+
