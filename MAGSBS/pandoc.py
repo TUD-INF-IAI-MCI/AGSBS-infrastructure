@@ -109,42 +109,7 @@ def execute(args, stdin=None):
             raise subprocess.SubprocessError(e)
     return decode(text[0])
 
-class OutFilter():
-    """If desired, you can here add functionality to alter the generated source.
-Please note: this code will be highly pandoc-version-dependend, since
-post-processing auto-generated data is likely to fail as soon as the pandoc
-generator fails."""
-    def __init__(self, format, inputf):
-        self.__supported = ['html']
-        self.format = format
-        self.inputf = inputf
-        if(not (format in self.__supported)):
-            self.noop()
-        else:
-            self.filter_html()
-    def noop(self):    pass
-    def filter_html(self):
-        """Images will be in a extra div with a caption - remove that."""
-        data = open(self.inputf, 'r', encoding='utf-8').read()
-        while( (data.find('<div class="figure">')>=0)):
-            pos = data.find('<div class="figure">')
-            data = data[:pos] + '<p>' + data[pos + len('<div class="figure">') : ]
-            div_end = data[pos:].find('</div>') + pos
-            p_start = data[pos:].find('<p class="caption">') + pos
-            p_end = data[p_start:].find('</p>') + p_start
-            if(div_end == -1 or p_start == -1 or p_end == -1 or
-                    p_start > div_end):
-                #raise ValueError("Something is wrong in the HTML file, p and diff tag in wrong order?")
-                pass # Todo: nicer solution anyway
-            data = data[:p_start] + data[p_end+len('</p>'):]
-            div_end = data[pos:].find('</div>')
-            if(div_end == -1):
-                #raise ValueError('no matching </div> for image div block')
-                break # just skip this file
-            else:
-                div_end += pos
-                data = data[:div_end] + '</p>' +data[div_end + 6 :]
-        open(self.inputf, 'w', encoding='utf-8').write( data )
+
 
 class OutputGenerator():
     """Base class for all converters to provide a common type.
@@ -312,8 +277,9 @@ to the output, handles errors and checks for the correct encoding."""
                 mathfilter.parse()
                 document = mathfilter.get_document()
                 json_ast = self.load_json(document)
-                filters = [contentfilter.page_number_extractor]
-                # modify ast, recognize page numbers
+                filters = [contentfilter.page_number_extractor,
+                        contentfilter.suppress_captions]
+                # modify ast, recognize page numbers, etc.
                 for filter in filters:
                     json_ast = contentfilter.jsonfilter(json_ast, filter,
                             self.conf['format'] )

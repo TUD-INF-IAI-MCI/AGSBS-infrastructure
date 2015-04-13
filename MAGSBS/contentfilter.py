@@ -52,8 +52,8 @@ numbering information."""
     if(modify_ast):
         if(not (format == 'html' or format == 'html5')):
             return
-    if(key == 'Para'):
-        if(len(value)>0):
+    if key == 'Para':
+        if len(value)>0:
             text = value[0]['c']
             if(type(text) == str):
                 if(text.startswith('||')):
@@ -63,9 +63,21 @@ numbering information."""
                         text = text[2:]
                         id = datastructures.gen_id( text )
                         if(modify_ast):
-                            return html( generate_link( text, id ) )
+                            return html(generate_link(text, id))
                         else:
                             return (text, id)
+
+def suppress_captions(key, value, format, meta, modify_ast=True):
+    """Images on a paragraph of its own get a caption, suppress that."""
+    if modify_ast and not format in ['html', 'html5']:
+        return
+    if key == 'Image':
+        # value consists of a list with two items, second contains ('bildpath',
+                # x) where x is either 'fig' for a proper figure with caption or
+        # '' (which is what is desired)
+        value[1][1] = ''
+        print(value)
+        #return value
 
 def heading_extractor(key, value, format, meta, modify_ast=False):
     """Extract all headings from the JSon AST."""
