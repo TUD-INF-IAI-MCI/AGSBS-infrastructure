@@ -76,8 +76,6 @@ def suppress_captions(key, value, format, meta, modify_ast=True):
                 # x) where x is either 'fig' for a proper figure with caption or
         # '' (which is what is desired)
         value[1][1] = ''
-        print(value)
-        #return value
 
 def heading_extractor(key, value, format, meta, modify_ast=False):
     """Extract all headings from the JSon AST."""

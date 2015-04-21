@@ -139,7 +139,7 @@ document and in position 1 the string for the outsourcing document.
     def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
         label = datastructures.gen_id( self.get_title() )
-        link_text = _('description of image outsourced')
+        link_text = _('external image description')
         return '[ ![%s](%s) ](%s#%s)' % (link_text, self.__image_path,
                 self.get_outsource_path(), label)
 
