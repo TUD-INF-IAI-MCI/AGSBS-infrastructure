@@ -86,6 +86,7 @@ class ItemizeIsParagraph(Mistake):
         self.set_type(MistakeType.full_file)
         self._match = re.compile(r"^\d+\. ")
         self.__lastlines = []
+
     def is_item_line(self, line):
         for c in ['+ ', '* ', '- ']:
             if line.startswith(c):

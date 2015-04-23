@@ -28,6 +28,7 @@ For the documentation of the mistake types, see the appropriate class."""
 import os
 import collections
 from .. import filesystem as filesystem
+from ..config import _
 
 from .meta import *
 from .latex import *
@@ -48,7 +49,7 @@ class Mistkerl():
                 HeadingsUseEitherUnderliningOrHashes, CasesSqueezedOnOneLine,
                 HtmlArrowsInMarkdown]
         self.__cache_pnums = collections.OrderedDict()
-        self.__cache_headings = collections.OrderedDict()
+        self.__cached_headings = collections.OrderedDict()
         self.__output = []
         self.__priority = MistakePriority.normal
         self.requested_level = MistakePriority.normal
@@ -65,7 +66,7 @@ class Mistkerl():
                 else:
                     yield i
     def set_priority(self, p):
-        assert type(p) == MistakePriority
+        assert isinstance(p, MistakePriority)
         self.__priority = p
     def get_priority(self): return self.__priority
     def run(self, path):
@@ -79,7 +80,7 @@ recursively."""
         cwd = os.getcwd()
         for directoryname, dir_list, file_list in fw.walk():
             os.chdir(directoryname)
-            if(not (last_dir == directoryname)):
+            if last_dir is not directoryname:
                 self.run_directory_filters(last_dir)
                 last_dir = directoryname
 
@@ -105,7 +106,7 @@ recursively."""
     def __append(self, path, err):
         """Add an error to the internal output dict."""
         if(not err): return
-        if(type(err) != error_message):
+        if not isinstance(err, error_message):
             raise TypeError("Errors may only be of type error_message, got '%s'"
                     % str(err))
         if not err.get_path():
@@ -117,13 +118,13 @@ recursively."""
         """Execute all filters which operate on one file. Also exclue filters
         which do not match for the file ending."""
         # presort issues
-        FullFile = [e for e in self.get_issues(file_path) \
+        fullFile = [e for e in self.get_issues(file_path) \
                 if e.get_type() == MistakeType.full_file]
-        OneLiner = [e for e in self.get_issues(file_path)
+        oneLiner = [e for e in self.get_issues(file_path)
                         if e.get_type() == MistakeType.oneliner]
-        NeedPnums = [e for e in self.get_issues(file_path)
+        needPnums = [e for e in self.get_issues(file_path)
                     if e.get_type() == MistakeType.need_pagenumbers]
-        NeedHeadings = [e for e in self.get_issues(file_path)
+        needHeadings = [e for e in self.get_issues(file_path)
                 if e.get_type() == MistakeType.need_headings]
 
         if next(reversed(paragraphs)) > 2500:
@@ -140,25 +141,27 @@ recursively."""
         # ToDo: do not take full list of paragraphs, but rather one paragraph at
         # a time; so one-liners and paragraph-aware checkers in one loop, better
         # CPU cache usage
-        for issue in FullFile:
+        for issue in fullFile:
             self.__append(file_path, issue.run(paragraphs))
         for start_line, paragraph in paragraphs.items():
             for lnum, line in enumerate(paragraph):
-                for issue in OneLiner:
+                for issue in oneLiner:
                     if issue.should_be_run():
                         res = issue.run(start_line+lnum, line)
                         if res:
                             self.__append(file_path, res)
                             issue.set_run(False)
-        # cache headings and page numbers
         pnums = pageNumberExtractor(paragraphs)
         hdngs = headingExtractor(paragraphs)
-        self.__cache_pnums[ file_path ] = pnums
-        self.__cache_headings[ file_path ] = hdngs
+        # cache headings and page numbers, but only if file is not an image
+        # description file. In those this error category doesn't matter.
+        if _('images') in file_path:
+            self.__cache_pnums[ file_path ] = pnums
+            self.__cached_headings[ file_path ] = hdngs
 
-        for issue in NeedPnums:
+        for issue in needPnums:
             self.__append(file_path, issue.run(pnums))
-        for issue in NeedHeadings:
+        for issue in needHeadings:
             self.__append(file_path, issue.run(hdngs))
 
     def run_directory_filters(self, dname):
@@ -168,10 +171,10 @@ recursively."""
                     if e.get_type() == MistakeType.need_pagenumbers_dir]
             for issue in x:
                 self.__append(dname, issue.run(self.__cache_pnums))
-        if(len(self.__cache_headings) > 0):
+        if self.__cached_headings:
             x = [e for e in self.get_issues(False) if e.get_type() == MistakeType.need_headings_dir]
             for issue in x:
-                self.__append(dname, issue.run(self.__cache_headings))
+                self.__append(dname, issue.run(self.__cached_headings))
         self.__cache_pnums.clear()
-        self.__cache_headings.clear()
+        self.__cached_headings.clear()
 
