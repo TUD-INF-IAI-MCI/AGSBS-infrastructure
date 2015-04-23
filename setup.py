@@ -1,12 +1,14 @@
 from distutils.core import setup
 import sys, os
+import shutil
+sys.path.insert(0, '.') # MaGSBS must be from _this_ directory
 import MAGSBS.config
 
 #path = os.path.dirname( sys.argv[0] )
 #path = os.path.split( path )[0]
 #path ) # add src root to also install MAGSBS
 
-if(sys.platform.lower().find('win')>= 0):
+if 'win32' in sys.platform.lower() or 'wind' in sys.platform.lower():
     scripts = [os.path.join('cli','matuc.py')],
     packages = ['MAGSBS']
     modules = ["MAGSBS.quality_assurance"]
@@ -33,3 +35,7 @@ setup(name='MAGSBS/matuc',
       )
 
 
+# optional clean up
+shutil.rmtree('build')
+os.chdir('..')
+shutil.rmtree('build')

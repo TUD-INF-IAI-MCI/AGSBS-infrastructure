@@ -5,6 +5,7 @@
 """Common datastructures."""
 
 import os, sys
+import enum
 from .errors import WrongFileNameError
 from . import config
 
@@ -61,10 +62,12 @@ This class represents a heading to ease the handling of headings.
 - set_text must be called to set heading text and generate id
 - set_level must be called to set the heading level in the source document
 
-There is a list of valid types (heading.types) containing all possible types of
-a heading. heading.get_type() will only return those. set_type() however will
-raise a type error, if the type is not recognized.
+For specifying the type of a heading, Heading.Type is used, which is an enum.
 """
+    class Type(enum.Enum):
+        NORMAL = 0 # most headings are of that type
+        APPENDIX = 1
+        PREFACE = 2
     def __init__(self, path=None, file_name=None):
         self.__line_number = None
         self.__text = ''
@@ -78,30 +81,32 @@ raise a type error, if the type is not recognized.
         c = config.confFactory()
         c = c.get_conf_instance()
         self.__use_appendix_prefix = c['appendixPrefix']
-        self.types = ['main', # usual headings
-                'appendix', 'preface']
         if not file_name:
-            self.__type = 'main'
-        else:
+            self.__type = Heading.Type.NORMAL
+        else: # guess heading type
             if file_name.startswith('anh'):
-                self.__type = 'appendix'
+                self.__type = Heading.Type.APPENDIX
             elif file_name.startswith('v'):
-                self.__type = 'preface'
+                self.__type = Heading.Type.PREFACE
             else:
-                self.__type = 'main'
+                self.__type = Heading.Type.NORMAL
         self.__relative_heading_number = None
 
     def set_level(self, level):
         self.__level = level
+
     def get_level(self):
         return self.__level
+
     def get_type(self):
+        """Return of which Heading.Type this heading is."""
         return self.__type
+
     def set_type(self, a_type): # ToDo: do not use strings, but enum
-        if(not a_type in self.types):
-            raise ValueError("Wrong heading type. Must be either main, appendix or preface.")
+        if not isinstance(a_type, Heading.Type):
+            raise ValueError("Wrong heading type. Must be of type Heading.Type.")
         else:
-            self.__type = type
+            self.__type = a_type
 
     def get_id(self):
         return self.__id
@@ -143,7 +148,7 @@ set_relative_heading_number(list) -> set relative heading number in document."""
             full_number = str(self.__chapter_number) + rh
 
         # prefix full_number with a capital 'A' for appendices, if wished
-        if self.get_type() == 'appendix' and self.__use_appendix_prefix:
+        if self.get_type() == Heading.Type.APPENDIX and self.__use_appendix_prefix:
             full_number = 'A.' + full_number
         dir_above_file = os.path.split(self.__path)[1]
         return '[%s. %s](%s/%s.html#%s)' % (full_number, self.get_text(),
