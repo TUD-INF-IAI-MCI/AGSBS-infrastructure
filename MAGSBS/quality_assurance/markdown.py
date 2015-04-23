@@ -38,13 +38,18 @@ class HeadingIsParagraph(Mistake):
         for start_line, paragraph in args[0].items():
             if len(paragraph) == 1:
                 continue # possibly correct
+            # if --- is encountered, it is first checked whether there is another --- in the paragraph, if so it is ignored because it is a table
             for lnum, line in enumerate(paragraph):
                 if line.startswith('===') or line.startswith('---'):
-                    # not on the first or last line of paragraph
-                    if lnum != 1 or lnum < (len(paragraph)-1):
-                        return self.error(error_text, start_line + lnum)
-                    elif line.startswith('#'):
-                        return self.error(error_text, start_line + lnum)
+                    if len(paragraph) == 2:
+                        return # one line text, one ascii line, so it's all right
+                    # check whether marker comes up again, if yes, it's a table -> ignore. Else error.
+                    for line in paragraph[lnum+1:]:
+                        if line.startswith('---'):
+                            return # found it again, is a table, ignore
+                    return self.error(error_text, start_line + lnum)
+                elif line.startswith('#'):
+                    return self.error(error_text, start_line + lnum)
 
 class LevelOneHeading(Mistake):
     """Parse the directory and raise errors if more than one level-1-heading was encountered."""
