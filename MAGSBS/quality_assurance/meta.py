@@ -1,10 +1,10 @@
 # Disabling the checkers above is discouraged, but encouraged for this file;
 # pylint makes mistakes itself
-#pylint: disable=line-too-long,abstract-class-little-used,no-init,too-few-public-methods
+#pylint: disable=line-too-long,no-init,too-few-public-methods
 """This file contains all helper functions and classes to represent a
 mistake."""
 
-import re, textwrap
+import textwrap
 import enum
 from abc import ABCMeta, abstractmethod
 from .. import datastructures
@@ -64,7 +64,7 @@ should set the relevant properties in the constructor."""
         return self.__apply
 
     def set_run(self, value):
-        assert type(value) == bool
+        assert isinstance(value, bool)
         self.__apply = value
 
     def get_type(self):
@@ -147,33 +147,30 @@ e.set_path("/dev/null")
         self.__severity = None
 
     def set_severity(self, level):
-        if(type(level) != MistakePriority):
+        if not isinstance(level, MistakePriority):
             raise ValueError("Priority must be of type MistakePriority.")
         self.__severity = level
 
     def set_message(self, msg):
-        if(type(msg) == str):
+        if isinstance(msg, str):
             self.__msg = msg
         else:
             self.__msg = str(msg)
 
     def set_lnum(self, lnum):
-        if(type(lnum) != int):
+        if not isinstance(lnum, int):
             raise ValueError("Line number must be an integer.")
         self.__lnum = lnum
 
     def set_path(self, path):
-        if(type(path) == str):
+        if isinstance(path, str):
             self.__path = path
         else:
             self.__path = str(path)
 
     def is_valid(self):
-        if(self.__path != None and self.__msg != None and
-                self.__severity != None):
-            return True
-        else:
-            return False
+        return self.__path is not None and self.__msg is not None and \
+                self.__severity is not None
 
     def get_severity(self):
         return self.__severity
@@ -187,7 +184,18 @@ e.set_path("/dev/null")
     def get_lnum(self):
         return self.__lnum
 
-class error_formatter(object):
+    def __hash__(self):
+        """Generate a unique identifier - useful for sorting."""
+        return hash(self.__path) + (self.__lnum if self.__lnum else 0)
+
+    def __lt__(self, other):
+        return hash(self) < hash(other)
+
+    def __et__(self, other):
+        return hash(self) == hash(other)
+
+
+class error_formatter:
     """Format an error message according to options set. One use case might be
 the output on the command line.
 
@@ -251,7 +259,7 @@ self.sort_critical_first(True)."""
         if self.__sort_critical_first:
             return sorted(errors, key=error_message.get_severity)
         else:
-            return sorted(errors, key=error_message.get_path)
+            return sorted(errors)
 
     def format_errors(self, errors):
         errors = self.__sort(errors)

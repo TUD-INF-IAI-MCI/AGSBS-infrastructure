@@ -65,10 +65,14 @@ class Mistkerl():
                         yield i
                 else:
                     yield i
+
     def set_priority(self, p):
         assert isinstance(p, MistakePriority)
         self.__priority = p
-    def get_priority(self): return self.__priority
+
+    def get_priority(self):
+        return self.__priority
+
     def run(self, path):
         """Take either a file and run checks or do the same for a directory
 recursively."""
@@ -127,16 +131,19 @@ recursively."""
         needHeadings = [e for e in self.get_issues(file_path)
                 if e.get_type() == MistakeType.need_headings]
 
-        if next(reversed(paragraphs)) > 2500:
-            e = error_message()
-            e.set_severity(MistakePriority.normal)
-            e.set_path(file_path)
-            e.set_message("Die Datei ist zu lang. Um die "+
+        try:
+            if next(reversed(paragraphs)) > 2500:
+                e = error_message()
+                e.set_severity(MistakePriority.normal)
+                e.set_path(file_path)
+                e.set_message("Die Datei ist zu lang. Um die "+
                     " Navigation zu erleichtern und die einfache Lesbarkeit zu"+
                     " gewährleisten sollten lange Kapitel mit mehr als 2500 " +
                     "Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md" +
                     " oder kleiner aufgeteilt werden.")
-            self.__append(file_path, e)
+                self.__append(file_path, e)
+        except StopIteration:
+            pass # empty file, that we need to except as well
 
         # ToDo: do not take full list of paragraphs, but rather one paragraph at
         # a time; so one-liners and paragraph-aware checkers in one loop, better
