@@ -1,3 +1,15 @@
+0.1.3 (UNRELEASED):
+
+ * weitere Mistkerl-Überprüfer
+	 * einige Korrekturen vorgenommen
+ * ignore bilder.md, wenn auf der Suche nach doppelten H1-Überschriften
+ * verlinke Bildbeschreibungen mit dem richtigen Text
+ * füge Filter hinzu, der die Bildunterschriften unterdrückt, die Pandoc
+   automatisch generiert
+ * füge einen Preparser hinzu, der alle mathematischen Umgebungen automatisch in
+   Displaymath setzt; erhält Zeilenumbrüche für das Alt-Attribut
+ * verbessere Konvertierungsprozess (schneller, robuster)
+
 0.1.2:
 
  * Fehler in Auslagerung von Bildern behoben (unlogische Benennung von Methoden,
