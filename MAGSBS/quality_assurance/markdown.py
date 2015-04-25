@@ -103,23 +103,16 @@ class ItemizeIsParagraph(Mistake):
             return True
         return False
 
-    def whole_paragraph_is_itemize(self, paragraph):
-        if not self.is_item_line(paragraph[0]):
-            return False
-        last_item = len(paragraph) - 1
-        while paragraph[last_item][0].isspace():
-            last_item -= 1
-        if self.is_item_line(paragraph[last_item]):
-            return True
-        else:
-            return False
-
     def worker(self, *args):
         for start_line, paragraph in args[0].items():
+            # if first line is itemize, don't check this paragraph
+            if len(paragraph) > 0:
+                if self.is_item_line(paragraph[0]):
+                    continue
             for lnum, line in enumerate(paragraph):
                 if self.is_item_line(line):
-                    # check whether first and last line is an item
-                    if not self.whole_paragraph_is_itemize(paragraph):
+                    # itemize encountered and first line was no itemize line?
+                    if lnum != 0:
                         return self.error("""Eine Aufzählung muss in einem eigenen
                                 Absatz stehen, d. h. es muss davor und danach
                                 eine Leerzeile sein.""", start_line+lnum)
@@ -318,12 +311,13 @@ class EmbeddedHTMLComperators(onelinerMistake):
     """Instead of &lt;&gt;, use \\< \\>."""
     def __init__(self):
         onelinerMistake.__init__(self)
+        self.set_priority(MistakePriority.pedantic)
         self.pattern = re.compile(r'&(lt|gt);')
 
     def check(self, num, line):
         if(self.pattern.search(line.lower())):
-            return self.error("Relationsoperatoren sollten nicht mittels HTML, " +
-                    "sondern mittels \\< und \\> erzeugt werden.", num)
+            return self.error("Relationsoperatoren sollten möglichst nicht mittels HTML, " +
+                    "sondern besser mittels \\< und \\> erzeugt werden.", num)
 
 class HeadingsUseEitherUnderliningOrHashes(Mistake):
     def __init__(self):
@@ -340,15 +334,4 @@ class HeadingsUseEitherUnderliningOrHashes(Mistake):
                         da sie sonst als Text angezeigt werden.""",
                         lnum=heading.get_line_number())
 
-class HtmlArrowsInMarkdown(onelinerMistake):
-    """To decouple MarkDown from it's output format, HTML arrows are discouraged. Instead the LaTeX arrows are suggested."""
-    def __init__(self):
-        onelinerMistake.__init__(self)
-        self.set_priority(MistakePriority.normal)
-
-    def check(self, num, line):
-        if line.find('&rarr;') >= 0:
-            return self.error(r"""Um MarkDown-Dateien auch in andere Formate
-                    als HTML wandeln zu können, sollten HTML-spezifische Pfeile
-                    vermieden werden, stattdessen wird $\\to$ empfohlen""", num)
 

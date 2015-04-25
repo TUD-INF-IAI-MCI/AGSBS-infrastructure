@@ -46,8 +46,7 @@ class Mistkerl():
                 PageNumbersWithoutDashes, DoNotEmbedHTMLLineBreaks,
                 EmbeddedHTMLComperators, PageNumberWordIsMispelled,
                 HeadingOccursMultipleTimes,
-                HeadingsUseEitherUnderliningOrHashes, CasesSqueezedOnOneLine,
-                HtmlArrowsInMarkdown]
+                HeadingsUseEitherUnderliningOrHashes, CasesSqueezedOnOneLine]
         self.__cache_pnums = collections.OrderedDict()
         self.__cached_headings = collections.OrderedDict()
         self.__output = []
