@@ -93,7 +93,7 @@ recursively."""
                 file_path = os.path.join(directoryname, file)
                 try:
                     paragraphs = filesystem.file2paragraphs( \
-                            open(file, encoding="utf-8"))
+                            open(file, encoding="utf-8"), join_lines=True)
                 except UnicodeDecodeError:
                     e = error_message()
                     e.set_severity(MistakePriority.critical)

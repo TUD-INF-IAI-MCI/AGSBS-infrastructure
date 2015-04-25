@@ -424,16 +424,64 @@ Initialize basic configuration as well."""
             self.__create_chapter('anh', index, False)
         os.chdir(cwd)
 
-def file2paragraphs(lines):
+def newline_wrapper(lines):
+    """Wrapper which wraps around an iterator emitting lines of text. If a line
+    ends on \\, that will be joined with the next line before it is returned.
+
+    If a line has been joined, another empty line is inserted to retain the line
+    number count. They are inserted at the end of the just encountered paragraph
+    to not cause confusion.
+
+    This method is useful for Mistkerl checkers so they don't need to bother
+    about line continuation
+    This method behaves as an iterator."""
+    has_next = True
+    myiter = iter(lines)
+    lines_to_insert = 0
+    insert_blank_lines_now = False
+    while has_next:
+        try: # try to fetch next line
+            line = next(myiter)
+        except StopIteration:
+            has_next = False
+        # join as long as a \ is at the end
+        while line.rstrip().endswith('\\'): # rstrip strips \n
+            line = line.rstrip()[:-1] + ' ' # strip \
+            try:
+                nextline = next(myiter)
+            except StopIteration:
+                break
+            lines_to_insert += 1
+            if nextline.strip() == '': # empty lines don't get appended at the end of previous line
+                insert_blank_lines_now = True
+                line = '' # reset it to '' so that following code inserts blank lines
+                break
+            line += nextline
+        # return line
+        yield line
+        if insert_blank_lines_now:
+            insert_blank_lines_now = False
+            line = '' # trigger line insertion for missing joined lines
+        if lines_to_insert > 0 and line.strip() == '':
+            # insert as many lines as were joined to retain line numbering
+            for i in range(0, lines_to_insert):
+                yield ''
+            lines_to_insert = 0
+    raise StopIteration()
+
+def file2paragraphs(lines, join_lines=False):
     """
-file2paragraphs(lines)
+file2paragraphs(lines, join_lines=False)
 
 Return a dictionary mapping from line numbers (where paragraph started) to a
-paragraph. The paragraph itself is a list of lines, not ending on\n. The
-parameter must  be iterable, so can be a file object or a list of lines."""
+paragraph. The paragraph itself is a list of lines, not ending on\\n. The
+parameter must  be iterable, so can be a file object or a list of lines.
+If join_lines is set, lines ending on \\ will we joined with the next one.
+"""
     paragraphs = collections.OrderedDict()
     paragraphs[1] = []
-    for lnum, line in enumerate(lines):
+    iterator_wrappper = (newline_wrapper if join_lines else iter)
+    for lnum, line in enumerate(iterator_wrappper(lines)):
         current_paragraph = next(reversed(paragraphs))
         if line.endswith('\n'):
             line = line[:-1]

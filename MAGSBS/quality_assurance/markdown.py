@@ -39,6 +39,7 @@ class HeadingIsParagraph(Mistake):
             if len(paragraph) == 1:
                 continue # possibly correct
             # if --- is encountered, it is first checked whether there is another --- in the paragraph, if so it is ignored because it is a table
+            last_line = ''
             for lnum, line in enumerate(paragraph):
                 if line.startswith('===') or line.startswith('---'):
                     if len(paragraph) == 2:
