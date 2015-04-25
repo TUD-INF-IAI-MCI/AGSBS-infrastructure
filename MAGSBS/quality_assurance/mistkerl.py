@@ -29,11 +29,12 @@ import os
 import collections
 from .. import filesystem as filesystem
 from ..config import _
+from ..mparser import headingExtractor, pageNumberExtractor
 
-from .meta import *
+from .all_formats import *
 from .latex import *
 from .markdown import *
-from ..mparser import headingExtractor, pageNumberExtractor
+from .meta import *
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
@@ -46,7 +47,8 @@ class Mistkerl():
                 PageNumbersWithoutDashes, DoNotEmbedHTMLLineBreaks,
                 EmbeddedHTMLComperators, PageNumberWordIsMispelled,
                 HeadingOccursMultipleTimes,
-                HeadingsUseEitherUnderliningOrHashes, CasesSqueezedOnOneLine]
+                HeadingsUseEitherUnderliningOrHashes, CasesSqueezedOnOneLine,
+                ConfigurationValuesAreAllSet]
         self.__cache_pnums = collections.OrderedDict()
         self.__cached_headings = collections.OrderedDict()
         self.__output = []
@@ -57,10 +59,10 @@ class Mistkerl():
         """Instanciate issue classes and filter for file endings."""
         for issue in self.__issues:
             i = issue()
-            if(self.get_priority().value >= i.get_priority().value):
-                if(fname): # fname exists -> no directory -> check for extension
+            if self.get_priority().value >= i.get_priority().value:
+                if fname: # fname exists -> no directory -> check for extension
                     ext = fname[fname.rfind(".")+1:]
-                    if(ext in i.get_file_types()):
+                    if ext in i.get_file_types():
                         yield i
                 else:
                     yield i
@@ -79,7 +81,7 @@ recursively."""
         directoryname = None
         fw = filesystem.FileWalker(path)
         fw.set_ignore_non_chapter_prefixed(False)
-        fw.set_endings([".md","tex"])
+        fw.set_endings(["md","tex", "dcxml"])
         cwd = os.getcwd()
         for directoryname, dir_list, file_list in fw.walk():
             os.chdir(directoryname)
@@ -90,6 +92,9 @@ recursively."""
 
             for file in file_list:
                 file_path = os.path.join(directoryname, file)
+                if file.endswith('dcxml'):
+                    self.__handle_configuration(directoryname, file)
+                    continue # do no more checks
                 try:
                     paragraphs = filesystem.file2paragraphs( \
                             open(file, encoding="utf-8"), join_lines=True)
@@ -183,4 +188,12 @@ recursively."""
                 self.__append(dname, issue.run(self.__cached_headings))
         self.__cache_pnums.clear()
         self.__cached_headings.clear()
+
+    def __handle_configuration(self, directory, file):
+        """Execute all checkers dealing with the configuration."""
+        needConfiguration = [e for e in self.get_issues(file)
+                if e.get_type() == MistakeType.need_configuration]
+        for issue in needConfiguration:
+            path = os.path.join(directory, file)
+            self.__append(path, issue.run(file))
 

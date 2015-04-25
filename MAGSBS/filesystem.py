@@ -47,9 +47,9 @@ Files picked up: ending on configured file endings."""
 
     def add_blacklisted(self, new):
         self.black_list += new
-    def set_endings(self, e):
-        assert isinstance(e, list) or isinstance(e, tuple)
-        self.endings = e
+
+    def set_endings(self, endings):
+        self.endings = [(e[1:] if e.startswith('.') else e)  for e in endings]
 
 
     def set_ignore_non_chapter_prefixed(self, x):

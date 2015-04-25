@@ -28,13 +28,16 @@ need_headings_dir   {path : [H(),   applied to all headings in a directory
                      ...]
 need_pagenumbers    (lnum, level,   applied to all page numbers of page
                  string)
-need_pagenumbers_dir   see headings applied to all page numbers of directory"""
+need_pagenumbers_dir   see headings applied to all page numbers of directory
+need_configuration      take configuration as input
+"""
     full_file = 1
     oneliner = 2
     need_headings = 3
     need_headings_dir = 4
     need_pagenumbers = 5
     need_pagenumbers_dir = 6
+    need_configuration = 7
 
 class Mistake:
     """This class implements the actual mistake checker.
