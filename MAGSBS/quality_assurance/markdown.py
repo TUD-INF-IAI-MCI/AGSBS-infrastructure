@@ -26,31 +26,35 @@ class PageNumberIsParagraph(Mistake):
                     return self.error(start_line + num)
 
 
-class HeadingIsParagraph(Mistake):
-    def __init__(self):
-        Mistake.__init__(self)
-        self.set_priority(MistakePriority.critical)
-        self.set_type(MistakeType.full_file)
-
-    def worker(self, *args):
-        """Check whether all headings are on a paragraph on it's own."""
-        error_text = "Jede Überschrift muss in der Zeile darüber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
-        for start_line, paragraph in args[0].items():
-            if len(paragraph) == 1:
-                continue # possibly correct
-            # if --- is encountered, it is first checked whether there is another --- in the paragraph, if so it is ignored because it is a table
-            last_line = ''
-            for lnum, line in enumerate(paragraph):
-                if line.startswith('===') or line.startswith('---'):
-                    if len(paragraph) == 2:
-                        return # one line text, one ascii line, so it's all right
-                    # check whether marker comes up again, if yes, it's a table -> ignore. Else error.
-                    for line in paragraph[lnum+1:]:
-                        if line.startswith('---'):
-                            return # found it again, is a table, ignore
-                    return self.error(error_text, start_line + lnum)
-                elif line.startswith('#'):
-                    return self.error(error_text, start_line + lnum)
+# previous versions of Pandoc weren#t clever enough to detect that
+#class HeadingIsParagraph(Mistake):
+#    """Only check for ==== or ---- headings, for the others Pandoc is clever enough."""
+#    def __init__(self):
+#        Mistake.__init__(self)
+#        self.set_priority(MistakePriority.critical)
+#        self.set_type(MistakeType.full_file)
+#
+#    def worker(self, *args):
+#        """Check whether all headings are on a paragraph on it's own."""
+#        error_text = "Jede Überschrift muss in der Zeile darüber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
+#        for start_line, paragraph in args[0].items():
+#            if len(paragraph) == 1:
+#                continue # possibly correct
+#            # if --- is encountered, it is first checked whether there is another --- in the paragraph, if so it is ignored because it is a table
+#            last_line = ''
+#            for lnum, line in enumerate(paragraph):
+#                if line.startswith('===') or line.startswith('---'):
+#                    if "|" in line or " " in line.rstrip():
+#                        continue # that's a table
+#                    if len(paragraph) == 2:
+#                        return # one line text, one ascii line, so it's all right
+#                    # check whether marker comes up again, if yes, it's a table -> ignore. Else error.
+#                    for line in paragraph[lnum+1:]:
+#                        if line.startswith('---'):
+#                            return # found it again, is a table, ignore
+#                    return self.error(error_text, start_line + lnum)
+#                elif line.startswith('#'):
+#                    return self.error(error_text, start_line + lnum)
 
 class LevelOneHeading(Mistake):
     """Parse the directory and raise errors if more than one level-1-heading was encountered."""
@@ -97,7 +101,7 @@ class ItemizeIsParagraph(Mistake):
         for c in ['+ ', '* ', '- ']:
             if line.startswith(c):
                 # ignore "* *" which are used for horizontal bars
-                if len(line) > 3 and line[2] != line[0]:
+                if '* *' not in line:
                     return True
         if self._match.search(line):
             return True
@@ -108,6 +112,10 @@ class ItemizeIsParagraph(Mistake):
             # if first line is itemize, don't check this paragraph
             if len(paragraph) > 0:
                 if self.is_item_line(paragraph[0]):
+                    continue
+            # abort if it's a table
+            if len(paragraph) >= 2:
+                if '---' in paragraph[1] and ' ' in paragraph[1].rstrip():
                     continue
             for lnum, line in enumerate(paragraph):
                 if self.is_item_line(line):

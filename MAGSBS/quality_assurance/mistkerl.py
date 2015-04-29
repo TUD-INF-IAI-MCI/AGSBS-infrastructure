@@ -39,11 +39,10 @@ from .meta import *
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
     def __init__(self):
-        self.__issues = [PageNumberIsParagraph, HeadingIsParagraph,
-                LevelOneHeading, oldstyle_pagenumbering,
-                ItemizeIsParagraph, PageNumberingTextIsLowercase,
-                ForgottenNumberInPageNumber, UniformPagestrings,
-                TooManyHeadings, LaTeXMatricesAreHardToRead,
+        self.__issues = [PageNumberIsParagraph, LevelOneHeading,
+                oldstyle_pagenumbering, ItemizeIsParagraph,
+                PageNumberingTextIsLowercase, ForgottenNumberInPageNumber,
+                UniformPagestrings, TooManyHeadings, LaTeXMatricesAreHardToRead,
                 PageNumbersWithoutDashes, DoNotEmbedHTMLLineBreaks,
                 EmbeddedHTMLComperators, PageNumberWordIsMispelled,
                 HeadingOccursMultipleTimes,
