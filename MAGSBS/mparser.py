@@ -3,14 +3,12 @@
 #
 # (c) 2014 Sebastian Humenda <shumenda@gmx.de>
 """
-This file contains all helper data structure which are not local to a specific
-module. One example is the Heading class, used in mparser and quality_assurance.
-Other datastructures might be in here as well to have them defined in a global
-place.
+This file contains a simplistic MarkDown parser. It is not intended as a full
+parser for Pandoc's markDown, replicating it would be tedious.
 """
 
 import re, os
-from . import datastructures
+from .datastructures import Heading
 from . import contentfilter as contentfilter
 
 class SimpleMarkdownParser():
@@ -54,17 +52,17 @@ xported JSon tree is then used for post-processing."""
         raw_headings = contentfilter.pandoc_ast_parser( self.__json,
                 contentfilter.heading_extractor)
         for rHeading in raw_headings:
-            h = datastructures.Heading(self.__path, self.__file_name)
+            h = Heading(self.__path, self.__file_name)
             h.set_level( self.guess_heading_level( rHeading[0] ) )
-            h.set_text( rHeading[1] )
+            h.set_text(rHeading[1])
             h.set_relative_heading_number(
                 self.determine_relative_heading_number( rHeading[0] ) )
             dirname = os.path.split( self.__path )[-1]
             if dirname.startswith("anh"):
-                h.set_type('appendix')
+                h.set_type(Heading.Type.APPENDIX)
             elif dirname.startswith("v"): # is it a preface?
                 if len(dirname) > 1 and dirname[1].isdigit():
-                    h.set_type( "preface" )
+                    h.set_type(Heading.Type.PREFACE)
             self.__headings.append( h )
 
     def guess_heading_level( self, internal_level ):
@@ -105,7 +103,7 @@ function findsit out."""
 
 def create_heading(num, level, text):
     """Add heading object to a collection."""
-    h = datastructures.Heading()
+    h = Heading()
     h.set_level(level)
     h.set_line_number(num)
     h.set_text(text)

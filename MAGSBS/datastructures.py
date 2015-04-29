@@ -102,7 +102,7 @@ For specifying the type of a heading, Heading.Type is used, which is an enum.
         """Return of which Heading.Type this heading is."""
         return self.__type
 
-    def set_type(self, a_type): # ToDo: do not use strings, but enum
+    def set_type(self, a_type):
         if not isinstance(a_type, Heading.Type):
             raise ValueError("Wrong heading type. Must be of type Heading.Type.")
         else:
