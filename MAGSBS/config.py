@@ -16,7 +16,6 @@ VERSION = '0.1.1'
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 GLADTEX_OPTS = '-a -d bilder'
-PYVERSION = int(sys.version[0])
 # as a regular expression all kinds of token which can mark a page
 PAGENUMBERINGTOKENS = ['slide','folie','seite','page']
 PAGENUMBERING_REGEX = r'-\s*(' + '|'.join(PAGENUMBERINGTOKENS) + \
@@ -182,8 +181,6 @@ one instance at a time exists.
 
             # py 2 / 3:
             data = codecs.open( self.__path, 'r', 'utf-8').read()
-            if(PYVERSION == 2):
-                data = data.encode('utf-8')
             root = ET.fromstring( data )
             for child in root:
                 try:
@@ -224,8 +221,8 @@ configuration and then, if present, the corresponding subdirectory configuration
         """Return either an old object if already created or create a new one
 (kind of singleton). Automatically read the configuration upon creation."""
         path = self.__getpath()
-        if(path in self._instances.keys()):
-            return self._instances[ path ]
+        if path in self._instances.keys():
+            return self._instances[path]
         else:
             try:
                 self._instances[ path ] = LectureMetaData( path )
