@@ -77,6 +77,7 @@ class main():
     def __init__(self, args):
         self.conf = MAGSBS.config.confFactory().get_conf_instance()
         self.args = args
+        self.progname = 'matuc'
 
     def run(self):
         if len(self.args) < 2:
@@ -226,24 +227,15 @@ sub-directory configurations or initialization of a new project."""
             error_exit('Error: ' + str(e))
 
     def handle_navbar(self, cmd, args):
-        usage = cmd + """ [OPTIONS] <input_directory>\n
-Work recursively through <input_directory> and add to each file where it makes
-sense the navigation bar at the top and bottom.
-"""
-        parser = HelpfulParser(usage=usage)
-        parser.add_argument("-p", "--pnum-gap", dest="pnum_gap",
-                  help="gap in numbering between page links. (temporary setting)",
-                  metavar="NUM", default=None)
-        options = parser.parse_args(args)
-        if len(args) < 1:
-            directory = '.'
-        else:
-            directory = args[0]
-        if options.pnum_gap:
-            try:
-                self.conf['pageNumberingGap'] = int(options.pnum_gap)
-            except ValueError:
-                error_exit("Argument of -p must be an integer.")
+        usage = ("{} input_directory\n"
+        "Add a navigation bar to all the files found in `input_directory`."). \
+                format(cmd)
+        if not args:
+            print("Error: no parameters specified.")
+            error_exit(usage)
+        directory = args[0]
+        if not os.path.exists(directory):
+            error_exit("Error: %s dosn't exist." % directory)
 
         p = MAGSBS.filesystem.page_navigation(directory)
         p.iterate()

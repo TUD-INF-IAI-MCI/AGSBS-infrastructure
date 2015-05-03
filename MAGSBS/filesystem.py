@@ -215,6 +215,7 @@ have for the pages."""
         self.__lang = c['language']
         self.__fmt = c['format']
         self.linebreaks = '\n'
+
     def __preorder(self):
         preface = []
         main = []
@@ -242,7 +243,6 @@ have for the pages."""
                     stop = True
                     break
         return preface + main + appendix
-
 
     def iterate(self):
         """Iterate over the files and call self.trail_nav and self.gen_nav. Write
