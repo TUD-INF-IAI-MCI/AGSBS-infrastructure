@@ -6,7 +6,7 @@
 
 
 import os, sys
-from optparse import OptionParser
+import argparse
 
 import MAGSBS, MAGSBS.quality_assurance
 from MAGSBS.errors import  MissingMandatoryField, TOCError
@@ -57,6 +57,20 @@ def getTerminalSize():
             cr = (env.get('LINES', 25), env.get('COLUMNS', 80))
     return int(cr[1]), int(cr[0])
 
+class HelpfulParser(argparse.ArgumentParser):
+    """Unlike the super class, this arg parse instance will print the error it
+    encountered as well as the complete usage of the program."""
+    def __init__(self, usage=None):
+        if usage:
+            super().__init__(usage=usage)
+        else:
+            super().__init__()
+
+    def error(self, message):
+        sys.stderr.write('error: %s\n' % message)
+        self.print_help()
+        sys.exit(2)
+
 class main():
     def __init__(self, args):
         self.conf = MAGSBS.config.confFactory().get_conf_instance()
@@ -78,11 +92,11 @@ class main():
     def handle_toc(self, cmd, args):
         "Table Of Contents"
         usage = cmd + ' [OPTIONS] -o output_file input_directory'
-        parser = OptionParser(usage=usage)
-        parser.add_option("-o", "--output", dest="output",
+        parser = HelpfulParser(usage=usage)
+        parser.add_argument("-o", "--output", dest="output",
                   help="write output to file instead of stdout",
                   metavar="FILENAME", default='stdout')
-        (options, args) = parser.parse_args(args)
+        options = parser.parse_args(args)
 
         file = None
         if options.output == 'stdout':
@@ -109,9 +123,9 @@ class main():
 
     def handle_conf(self, cmd, args):
         """Create or update configuration."""
-        usage = cmd + """ [options] <action>
+        usage = cmd + """ <subcmd> [options] <action>
 
-Allowed actions are `show`, `update` and `init`. `show` shows the current
+Allowed subcommands are `show`, `update` and `init`. `show` shows the current
 configuration settings, default values if none present.
 `update` and `show` try to find the correct configuration: if none exists
 in the current directory and you are in a subdirectory of a project, they try to
@@ -121,43 +135,44 @@ the default values are used).
 `init` on the other hand behaves basically like update (it sets configuration
 values), but it does that for the current directory. This is handy for
 sub-directory configurations or initialization of a new project."""
-        parser = OptionParser(usage=usage)
-        parser.add_option("-a", dest="appendixPrefix",
+        parser = HelpfulParser(usage=usage)
+        parser.add_argument("-a", dest="appendixPrefix",
                   help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
                   action="store_true", default=False)
-        parser.add_option("-f", dest="format",
+        parser.add_argument("-f", dest="format",
                   help="select output format",
                   metavar="FMT", default=None)
-        parser.add_option("-e", dest="editor",
+        parser.add_argument("-e", dest="editor",
                   help="set editor",
                   metavar="NAME", default=None)
-        parser.add_option("-i", dest="institution",
+        parser.add_argument("-i", dest="institution",
                   help="set institution (default TU Dresden)",
                   metavar="NAME", default=None)
-        parser.add_option("-l", dest="lecturetitle",
+        parser.add_argument("-l", dest="lecturetitle",
                   help="set lecture title (else try to use h1 heading, if present)",
                   metavar="TITLE", default=None)
-        parser.add_option("-L", dest='language',
+        parser.add_argument("-L", dest='language',
                   help="set language (default de)", metavar="LANG",
                   default='de')
-        parser.add_option("-p", "--pnum-gap", dest="pageNumberingGap",
+        parser.add_argument("-p", "--pnum-gap", dest="pageNumberingGap",
                   help="gap in numbering between page links.",
                   metavar="NUM", default=None)
-        parser.add_option("-s", dest="source",
+        parser.add_argument("-s", dest="source",
                   help="set source document",
                   metavar="SRC", default=None)
-        parser.add_option("-S", dest="semesterofedit",
+        parser.add_argument("-S", dest="semesterofedit",
                   help="set semester of edit (will be guessed else)",
                   metavar="SEMYEAR", default=None)
-        parser.add_option("--toc-depth", dest="tocDepth",
+        parser.add_argument("--toc-depth", dest="tocDepth",
                   help="to which depth headings should be included in the table of contents",
                   metavar="NUM", default=None)
-        parser.add_option("-w", dest="workinggroup",
+        parser.add_argument("-w", dest="workinggroup",
                   help="set working group",
                   metavar="GROUP", default=None)
 
-        (options, args) = parser.parse_args(args)
-        if len(args) != 1:
+        options = parser.parse_args(args[1:])
+        if len(args) == 0:
+            sys.stderr.write("Error: no subcommand specified.\n")
             parser.print_help()
             sys.exit(88)
 
@@ -186,7 +201,8 @@ sub-directory configurations or initialization of a new project."""
 
 
     def handle_conv(self, cmd, args):
-        usage = cmd + ' <input_directory | input_file>'
+        usage = 'Usage: ' + cmd + ' <input_directory | input_file>\n\nConvert" +
+        " given input files and/or directories from MarkDown to HTML'
         if len(args) < 1 or sys.argv[0].startswith("-"):
             print(usage)
             sys.exit(1)
@@ -211,11 +227,11 @@ sub-directory configurations or initialization of a new project."""
 Work recursively through <input_directory> and add to each file where it makes
 sense the navigation bar at the top and bottom.
 """
-        parser = OptionParser(usage=usage)
-        parser.add_option("-p", "--pnum-gap", dest="pnum_gap",
+        parser = HelpfulParser(usage=usage)
+        parser.add_argument("-p", "--pnum-gap", dest="pnum_gap",
                   help="gap in numbering between page links. (temporary setting)",
                   metavar="NUM", default=None)
-        (options, args) = parser.parse_args(args)
+        options = parser.parse_args(args)
         if len(args) < 1:
             directory = '.'
         else:
@@ -232,17 +248,17 @@ sense the navigation bar at the top and bottom.
     def imgdsc(self, cmd, args):
         usage = cmd + ' [OPTIONS] image_name\n' + \
                 "The working directory must be a chapter; the image name must be a relative path like 'images/image.jpg'\n"
-        parser = OptionParser(usage=usage)
-        parser.add_option("-d", "--description", dest="description",
+        parser = HelpfulParser(usage=usage)
+        parser.add_argument("-d", "--description", dest="description",
                 help="image description string (or - for stdin)",
                 metavar="DESC", default='no description')
-        parser.add_option("-o", "--outsource-descriptions", dest="outsource",
+        parser.add_argument("-o", "--outsource-descriptions", dest="outsource",
                 action="store_true", default=False,
                 help="if set, images will be outsourced, no matter how long they are.")
-        parser.add_option("-t", "--title", dest="title",
+        parser.add_argument("-t", "--title", dest="title",
                 default=None,
                 help="set title for outsourced images (mandatory if outsourced)")
-        (options, args) = parser.parse_args(args)
+        options = parser.parse_args(args)
         if len(args) != 1:
             parser.print_help()
             exit(0)
@@ -265,22 +281,22 @@ sense the navigation bar at the top and bottom.
         usage = cmd + ''' <directory>
 Initialize a new lecture.
 '''
-        parser = OptionParser(usage=usage)
-        parser.add_option("-a", dest="appendix_count", default="0",
+        parser = HelpfulParser(usage=usage)
+        parser.add_argument("-a", dest="appendix_count", default="0",
                 metavar="COUNT",
                 help="number of appendix chapters (default 0)")
-        parser.add_option("-c", dest="chapter_count", default="2",
+        parser.add_argument("-c", dest="chapter_count", default="2",
                 metavar="COUNT",
                 help="number of chapters (default 2)")
-        parser.add_option("-p", dest="preface", default=False,
+        parser.add_argument("-p", dest="preface", default=False,
                 action="store_true",
                 help="sets whether a preface exists (default None)")
-        parser.add_option("-n", dest="nochapter", default=False,
+        parser.add_argument("-n", dest="nochapter", default=False,
                 action="store_true",
                 help='if set, blattxx will be used instead of kxx')
-        parser.add_option("-l", dest="lang", default="de",
+        parser.add_argument("-l", dest="lang", default="de",
                 help="sets language (default de)")
-        (options, args) = parser.parse_args(args)
+        options = parser.parse_args(args)
         if len(args) != 1:
             parser.print_help()
             sys.exit(1)
@@ -301,12 +317,12 @@ Initialize a new lecture.
         usage = cmd + ''' [FILE|DIRECTORY]
         Run "mistkerl", a quality assurance helper. It checks for common errors and
         outputs it on the command line.'''
-        parser = OptionParser(usage=usage)
-        parser.add_option("-c", dest="critical_first", action="store_true",
+        parser = HelpfulParser(usage=usage)
+        parser.add_argument("-c", dest="critical_first", action="store_true",
                 help="Sort critical errors first")
-        parser.add_option("-s", dest="squeeze_output", action="store_true",
+        parser.add_argument("-s", dest="squeeze_output", action="store_true",
                 help="use less blank lines")
-        (options, args) = parser.parse_args(args)
+        options = parser.parse_args(args)
 
         if (len(args) != 1):
             print(usage)
