@@ -15,7 +15,6 @@ if not (sys.platform.lower().startswith("win")):
 VERSION = '0.1.1'
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
-GLADTEX_OPTS = '-a -d bilder'
 # as a regular expression all kinds of token which can mark a page
 PAGENUMBERINGTOKENS = ['slide','folie','seite','page']
 PAGENUMBERING_REGEX = r'-\s*(' + '|'.join(PAGENUMBERINGTOKENS) + \
@@ -134,8 +133,7 @@ one instance at a time exists.
         self['tocDepth'] = 5
         self['appendixPrefix'] = 0
         self['pageNumberingGap'] = 5
-        self['SourceAuthor'] = 'unknown'
-        self['GladTeXopts'] = '-a -d bilder'
+        self['sourceAuthor'] = 'unknown'
         self.dictkey2xml = {
                 'workinggroup' : 'contributor', 'editor' : 'creator',
                 'semesterofedit' : 'date', 'lecturetitle' : 'title',
@@ -146,7 +144,6 @@ one instance at a time exists.
                 'appendixPrefix' : 'MAGSBS:appendixPrefix',
                 'pageNumberingGap' : 'MAGSBS:pageNumberingGap',
                 'SourceAuthor':'MAGSBS:SourceAuthor',
-                'GladTeXopts':'MAGSBS:GladTeXopts'
         }
         dict.__init__(self)
 

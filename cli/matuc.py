@@ -60,11 +60,11 @@ def getTerminalSize():
 class HelpfulParser(argparse.ArgumentParser):
     """Unlike the super class, this arg parse instance will print the error it
     encountered as well as the complete usage of the program."""
-    def __init__(self, usage=None):
-        if usage:
-            super().__init__(usage=usage)
+    def __init__(self, name, description=None):
+        if description:
+            super().__init__(prog=name, description=description)
         else:
-            super().__init__()
+            super().__init__(name=name)
 
     def error(self, message):
         sys.stderr.write('error: %s\n' % message)
@@ -91,23 +91,26 @@ class main():
 
     def handle_toc(self, cmd, args):
         "Table Of Contents"
-        usage = cmd + ' [OPTIONS] -o output_file input_directory'
-        parser = HelpfulParser(usage=usage)
+        parser = HelpfulParser(cmd, description="Generate table of contents.")
         parser.add_argument("-o", "--output", dest="output",
                   help="write output to file instead of stdout",
                   metavar="FILENAME", default='stdout')
+        parser.add_argument('directory', nargs='?',
+                help='Input directory where search for headings is performed.')
         options = parser.parse_args(args)
+        if not options.directory:
+            print("You must specify an input directory.")
+            parser.print_help()
+            sys.exit(9)
 
         file = None
         if options.output == 'stdout':
             file = sys.stdout
         else:
             file = open(options.output, 'w', encoding='utf-8')
-        directory = '.'
-        if args:
-            directory = args[0]
-            if not os.path.exists(directory):
-                error_exit("Directory %s does not exist" % directory)
+        directory = options.directory
+        if not os.path.exists(directory):
+            error_exit("Directory %s does not exist" % directory)
 
         try:
             c = MAGSBS.filesystem.create_index(directory)
@@ -123,19 +126,16 @@ class main():
 
     def handle_conf(self, cmd, args):
         """Create or update configuration."""
-        usage = cmd + """ <subcmd> [options] <action>
-
-Allowed subcommands are `show`, `update` and `init`. `show` shows the current
+        description="""Allowed subcommands are `show`, `update` and `init`. `show` shows the current
 configuration settings, default values if none present.
 `update` and `show` try to find the correct configuration: if none exists
 in the current directory and you are in a subdirectory of a project, they try to
 determine the project root and read the configuration for there if present
-(else
-the default values are used).
+(else the default values are used).
 `init` on the other hand behaves basically like update (it sets configuration
 values), but it does that for the current directory. This is handy for
 sub-directory configurations or initialization of a new project."""
-        parser = HelpfulParser(usage=usage)
+        parser = HelpfulParser(cmd, description)
         parser.add_argument("-a", dest="appendixPrefix",
                   help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
                   action="store_true", default=False)
@@ -170,13 +170,14 @@ sub-directory configurations or initialization of a new project."""
                   help="set working group",
                   metavar="GROUP", default=None)
 
-        options = parser.parse_args(args[1:])
-        if len(args) == 0:
+        if len(args) == 0 or args[0] not in ['show', 'update', 'init']:
             sys.stderr.write("Error: no subcommand specified.\n")
             parser.print_help()
             sys.exit(88)
+        subcmd = args[0]
 
-        if args[0] == 'init':
+        options = parser.parse_args(args[1:])
+        if subcmd == 'init':
             # read configuration from cwd, if present
             inst = MAGSBS.config.LectureMetaData(MAGSBS.config.CONF_FILE_NAME)
             inst.read()
@@ -187,9 +188,9 @@ sub-directory configurations or initialization of a new project."""
         print_conf = lambda prefix: print('{}\n{}'.format(prefix, '\n'.join(
                 ['{:<20}{}'.format(k,v)  for k, v in inst.items()])))
 
-        if args[0] == 'show':
+        if subcmd == 'show':
             print_conf("Current settings are:\n\n")
-        elif args[0] == 'update' or args[0] == 'init':
+        elif subcmd == 'update' or subcmd == 'init':
             for opt, value in options.__dict__.items():
                 if value is not None:
                     inst[opt] = value
@@ -201,13 +202,13 @@ sub-directory configurations or initialization of a new project."""
 
 
     def handle_conv(self, cmd, args):
-        usage = 'Usage: ' + cmd + ' <input_directory | input_file>\n\nConvert" +
-        " given input files and/or directories from MarkDown to HTML'
-        if len(args) < 1 or sys.argv[0].startswith("-"):
-            print(usage)
-            sys.exit(1)
-        elif not os.path.exists(args[0]):
-            print('Error: '+sys.argv[2]+' not found')
+        "Convert files."
+        parser = HelpfulParser(cmd, "Convert a file/directory full of files" + \
+                        " from MarkDown to HTML.")
+        parser.add_argument("FILE/DIRECTORY", nargs="?", dest="input")
+        args = parser.parse_args(args)
+        if not os.path.exists(args[0]):
+            print('Error: ' + args[0] + ' not found')
             sys.exit(127)
 
         try:
