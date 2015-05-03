@@ -5,15 +5,19 @@
      * ignoriere unbekannte XML-Tags, gebe einfach eine Warnung aus
  * weitere Mistkerl-Überprüfer
 	 * einige Korrekturen vorgenommen
- * ignore bilder.md, wenn auf der Suche nach doppelten H1-Überschriften
+	 * erkenne Umlaute in LaTeX-Dateien, die mit Kontrollsequenzen geschrieben
+	   wurden und damit die Lesbarkeit beeinträchtigen
+	 * erkenne eine kleine Auswahl an Kopieren-Einfüge-Fehlern aus PDF's, wenn
+	   Umlaute verloren gegangen sind
+	 * entferne Mistkerl-Überprüfer, der überprüft ob Überschriften wirklich Absätze
+	   sind; Pandoc erkennt dies mittlerweile selbst
+ * ignoriere bilder.md, wenn auf der Suche nach doppelten H1-Überschriften
  * verlinke Bildbeschreibungen mit dem richtigen Text
  * füge Filter hinzu, der die Bildunterschriften unterdrückt, die Pandoc
    automatisch generiert
  * füge einen Preparser hinzu, der alle mathematischen Umgebungen automatisch in
    Displaymath setzt; erhält Zeilenumbrüche für das Alt-Attribut
  * verbessere Konvertierungsprozess (schneller, robuster)
- * entferne Mistkerl-Überprüfer, der überprüft ob Überschriften wirklich Absätze
-   sind; Pandoc erkennt dies mittlerweile selbst
 
 0.1.2:
 
