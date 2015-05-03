@@ -47,7 +47,7 @@ class Mistkerl():
                 EmbeddedHTMLComperators, PageNumberWordIsMispelled,
                 HeadingOccursMultipleTimes,
                 HeadingsUseEitherUnderliningOrHashes, CasesSqueezedOnOneLine,
-                ConfigurationValuesAreAllSet]
+                ConfigurationValuesAreAllSet, LaTeXUmlautsUsed]
         self.__cache_pnums = collections.OrderedDict()
         self.__cached_headings = collections.OrderedDict()
         self.__output = []

@@ -43,3 +43,21 @@ class LaTeXMatricesAreHardToRead(OnelinerMistake):
                 "besseren Lesbarkeit auf eine eigene Zeile gesetzt werden.", num)
 
 
+class LaTeXUmlautsUsed(OnelinerMistake):
+    r"""Some people tend to use \"a etc. to display umlauts. That is hard to read."""
+    def __init__(self):
+        super().__init__()
+        self.set_file_types(["tex"])
+        # generate all permutations of umlauts with control sequences
+        self.umlauts = ['\\"a', '{"a', '\\"u', '{u}', '\\"o', '"o', '\\3',
+            '{"s}', '\\"s']
+        self.set_priority(MistakePriority.normal)
+
+    def check(self, num, line):
+        lower = line.lower()
+        for token in self.umlauts:
+            if token in lower:
+                return super().error("Anstatt einen Umlaut zu schreiben, wurde "
+                    "eine LaTeX-Kontrollsequenz verwendet. Das ist schwer "
+                    "leserlich und kann außerdem einfach durch setzen des "
+                    "Zeichensatzes umgangen werden.", num)
