@@ -53,23 +53,24 @@ subsequent calls, the already created instance is returned.  """
         return isinstance(inst, self._decorated)
 
 def get_semester():
+    """Guess from the time in the year the semester (summer or winter, looking
+    at German semesters, though."""
     semester = ''
     month = datetime.datetime.now().month
-    if(month < 4 or month > 10):
+    if month < 4 or month > 10:
         semester = 'WS'
         year = datetime.datetime.now().year
-        if(month < 4):
+        if month < 4: # if before April, that's still previous winter semester
             year -= 1
     else:
         semester = 'SS'
         year = datetime.datetime.now().year
-    if(semester == 'WS'):
-        semester += str( year )[-2:] + '/' + str( year + 1 )[-2:]
-    else:
-        semester += str( year )[-2:]
-    return semester
+    yearstring = str(year)
+    if semester == 'WS': # winter semester stretches across the years boundary:
+        yearstring += '/' + str(year + 1)
+    return '%s %s' % (semester, yearstring)
 
-def has_meta_data(path):
+def has_configuration(path):
     """Return whether lecture meta data can be found in the specified path."""
     if(not path.endswith(CONF_FILE_NAME)):
         path = os.path.join(path, CONF_FILE_NAME)
@@ -143,7 +144,7 @@ one instance at a time exists.
                 'tocDepth':'MAGSBS:tocDepth',
                 'appendixPrefix' : 'MAGSBS:appendixPrefix',
                 'pageNumberingGap' : 'MAGSBS:pageNumberingGap',
-                'SourceAuthor':'MAGSBS:SourceAuthor',
+                'sourceAuthor':'MAGSBS:sourceAuthor',
         }
         dict.__init__(self)
 
@@ -170,27 +171,33 @@ one instance at a time exists.
             return tag
 
     def read(self):
-        if(has_meta_data(self.__path)):
-            xmlkey2dict = {}
-            for value,key in self.dictkey2xml.items():
-                if(key.startswith('MAGSBS')): key = key[7:]
-                xmlkey2dict[ key ] = value
+        if not has_configuration(self.__path):
+            return
+        xmlkey2dict = {}
+        for value,key in self.dictkey2xml.items():
+            if key.startswith('MAGSBS'):
+                key = key.split(':')[1]
+            xmlkey2dict[key] = value
 
-            # py 2 / 3:
-            data = codecs.open( self.__path, 'r', 'utf-8').read()
-            root = ET.fromstring( data )
+        # py 2 / 3:
+        with open(self.__path, 'r', encoding='utf-8') as data_source:
+            root = ET.fromstring(data_source.read())
             for child in root:
                 try:
-                    key = xmlkey2dict[ self.normalize_tag( child.tag )]
+                    key = xmlkey2dict[self.normalize_tag(child.tag)]
+                except KeyError:
+                    print("Warning: Unknown key %s, skipping." % key)
+                    continue
+                try:
                     value = child.text
-                    if(value in self.__numerical):
+                    if value in self.__numerical:
                         try:
                             value = int( value )
                         except ValueError:
                             raise ConfigurationError("Option " + key +
                                     "has invalid,  non-numerical value of " +
                                     value)
-                    self[ key ] = value
+                    self[key] = value
                 except IndexError:
                     print(ET.dump( child ))
 
