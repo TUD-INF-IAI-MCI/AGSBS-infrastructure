@@ -84,8 +84,8 @@ class LectureMetaData(dict):
 The lecture conversion needs meta data which is then embedded into the HTML
 document. Those fields are e.g. source, editor, etc.
 
-This class provides a writer and also a reader for those files. The usage is as
-follows:
+This class provides a writer and also a reader for those files. A usage scenario
+could look like this:
 
 l = LectureMetaData("directory")
 l.read()
@@ -108,7 +108,7 @@ workinggroup    - default is 'AGSBS'
 semesterofedit  - either WSYY or SS/WSYY, where YY are the last two digits of
                   the year and the letters in ront are literals
 
-Please note: you should not use this clss, except you can make sure that exactly
+Please note: you should not use this class, except you can make sure that exactly
 one instance at a time exists.
 """
     def __init__(self, path):
@@ -116,11 +116,11 @@ one instance at a time exists.
         self.__path = path
         self.__numerical = ['tocDepth', 'appendixPrefix', 'pageNumberingGap']
         self['workinggroup'] = 'AGSBS'
-        if(sys.platform.lower().startswith('win')>=0):
+        if 'win32' in sys.platform or 'wind' in sys.platform:
             self['editor'] = getpass.getuser()
         else: # full name with the unix way
             self['editor'] = pwd.getpwuid(os.getuid())[4]
-            # on some systems, real name ends with commas, strip those
+            # on some systems, real name end with commas, strip those
             while(self['editor'].endswith(',')):
                 self['editor'] = self['editor'][:-1]
         self['semesterofedit'] = get_semester()
@@ -179,14 +179,13 @@ one instance at a time exists.
                 key = key.split(':')[1]
             xmlkey2dict[key] = value
 
-        # py 2 / 3:
         with open(self.__path, 'r', encoding='utf-8') as data_source:
             root = ET.fromstring(data_source.read())
             for child in root:
                 try:
                     key = xmlkey2dict[self.normalize_tag(child.tag)]
-                except KeyError:
-                    print("Warning: Unknown key %s, skipping." % key)
+                except KeyError as e:
+                    print("Warning: Unknown key %s, skipping." % e.args[0])
                     continue
                 try:
                     value = child.text
