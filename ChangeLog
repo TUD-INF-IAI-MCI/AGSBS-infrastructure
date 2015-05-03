@@ -1,5 +1,8 @@
-0.1.3 (UNRELEASED):
+0.2 (UNRELEASED):
 
+ * Konfigurationsoption MAGSBS:GladTeX_opts abgeschafft, SourceAutor zu
+   sourceAuthor geändert
+     * ignoriere unbekannte XML-Tags, gebe einfach eine Warnung aus
  * weitere Mistkerl-Überprüfer
 	 * einige Korrekturen vorgenommen
  * ignore bilder.md, wenn auf der Suche nach doppelten H1-Überschriften
@@ -9,6 +12,8 @@
  * füge einen Preparser hinzu, der alle mathematischen Umgebungen automatisch in
    Displaymath setzt; erhält Zeilenumbrüche für das Alt-Attribut
  * verbessere Konvertierungsprozess (schneller, robuster)
+ * entferne Mistkerl-Überprüfer, der überprüft ob Überschriften wirklich Absätze
+   sind; Pandoc erkennt dies mittlerweile selbst
 
 0.1.2:
 

@@ -73,8 +73,8 @@ Files picked up: ending on configured file endings."""
         return False
 
     def walk(self):
-        if(not os.path.exists(self.path) ):
-            raise OSError("Specified directory %s does not exist." % dir)
+        if not os.path.exists(self.path):
+            raise OSError("Specified directory %s does not exist." % self.path)
         elif os.path.isfile(self.path):
             path, file = os.path.split(self.path)
             if path == '':

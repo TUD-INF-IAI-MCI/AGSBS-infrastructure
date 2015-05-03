@@ -5,8 +5,10 @@
 # (c) 2014 Sebastian Humenda <shumenda@gmx.de>
 
 
-import os, sys
 import argparse
+import os
+import sys
+import textwrap
 
 import MAGSBS, MAGSBS.quality_assurance
 from MAGSBS.errors import  MissingMandatoryField, TOCError
@@ -279,14 +281,12 @@ sense the navigation bar at the top and bottom.
             error_exit('Error: ' + e.args[0] + '\n')
 
     def handle_new(self, cmd, args):
-        usage = cmd + ''' <directory>
-Initialize a new lecture.
-'''
-        parser = HelpfulParser(usage=usage)
-        parser.add_argument("-a", dest="appendix_count", default="0",
+        description = "Initialize a new lecture material or book directory (tree)."
+        parser = HelpfulParser(cmd, description)
+        parser.add_argument("-a", dest="appendix_count", default="0", type=int,
                 metavar="COUNT",
                 help="number of appendix chapters (default 0)")
-        parser.add_argument("-c", dest="chapter_count", default="2",
+        parser.add_argument("-c", dest="chapter_count", default="2", type=int,
                 metavar="COUNT",
                 help="number of chapters (default 2)")
         parser.add_argument("-p", dest="preface", default=False,
@@ -297,8 +297,10 @@ Initialize a new lecture.
                 help='if set, blattxx will be used instead of kxx')
         parser.add_argument("-l", dest="lang", default="de",
                 help="sets language (default de)")
+        parser.add_argument('directory',
+                help="new directory to create lecture in")
         options = parser.parse_args(args)
-        if len(args) != 1:
+        if not options.directory:
             parser.print_help()
             sys.exit(1)
         try:
@@ -306,7 +308,7 @@ Initialize a new lecture.
             c = int(options.chapter_count)
         except ValueError:
             error_exit("The number of chapters and appendix chapters must be integers.")
-        builder = MAGSBS.filesystem.init_lecture(args[0], c, options.lang)
+        builder = MAGSBS.filesystem.init_lecture(options.directory, c, options.lang)
         builder.set_amount_appendix_chapters(a)
         if options.preface:
             builder.set_has_preface(True)
@@ -315,24 +317,26 @@ Initialize a new lecture.
         builder.generate_structure()
 
     def handle_mk(self, cmd, args):
-        usage = cmd + ''' [FILE|DIRECTORY]
+        description = textwrap.dedent("""
         Run "mistkerl", a quality assurance helper. It checks for common errors and
-        outputs it on the command line.'''
-        parser = HelpfulParser(usage=usage)
+        outputs them on the command line.""")
+        parser = HelpfulParser(cmd, description)
         parser.add_argument("-c", dest="critical_first", action="store_true",
                 help="Sort critical errors first")
         parser.add_argument("-s", dest="squeeze_output", action="store_true",
                 help="use less blank lines")
+        parser.add_argument("input",
+                help="specify file or directory to be checked")
         options = parser.parse_args(args)
 
-        if (len(args) != 1):
-            print(usage)
+        if not options.input:
+            parser.print_help()
             sys.exit( 127 )
-        if not os.path.exists( args[0] ):
-            print("Error: %s does not exist." % args[0] )
+        if not os.path.exists(options.input):
+            print("Error: %s does not exist." % options.input)
             sys.exit(5)
         mistkerl = MAGSBS.quality_assurance.Mistkerl()
-        errors = mistkerl.run(args[0])
+        errors = mistkerl.run(options.input)
         if len(errors) == 0:
             print("Nun denn, ich konnte keine Fehler entdecken. Hoffen wir, dass es auch wirklich\nkeine gibt ;-).")
             sys.exit( 0 )
@@ -357,7 +361,7 @@ Initialize a new lecture.
             m = MAGSBS.master.Master(args[0])
             m.run()
 
-    def version(self):
+    def handle_version(self, dont, care):
         print('Version: ' + str(MAGSBS.config.VERSION))
 
 main_inst = main(sys.argv)
