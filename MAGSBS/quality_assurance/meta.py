@@ -107,11 +107,11 @@ should set the relevant properties in the constructor."""
             e.set_path(path)
         return e
 
-class onelinerMistake(Mistake):
+class OnelinerMistake(Mistake):
     """Class to ease the creation of onliner checks further:
-class myMistake(onelinerMistake):
+class myMistake(OnelinerMistake):
     def __init__(self):
-        onelinerMistake.__init__(self)
+        OnelinerMistake.__init__(self)
     def check(self, num, line):
         # ToDo: implement checks here
 It'll save typing."""

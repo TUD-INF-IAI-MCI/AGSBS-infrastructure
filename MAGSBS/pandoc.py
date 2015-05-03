@@ -22,7 +22,7 @@ HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="generator" content="pandoc" />
-  <meta name="author" content="$$SourceAuthor" />
+  <meta name="author" content="$$sourceAuthor" />
 $if(date-meta)$
   <meta name="date" content="$date-meta$" />
 $endif$
@@ -232,7 +232,7 @@ to the output, handles errors and checks for the correct encoding."""
                 break
         self.__hvalues = {
                 'editor' : self.conf['editor'],
-                'SourceAuthor' : self.conf['SourceAuthor'],
+                'sourceAuthor' : self.conf['sourceAuthor'],
                 'workinggroup': self.conf['workinggroup'],
                 'institution': self.conf['institution'],
                 'source': self.conf['source'],

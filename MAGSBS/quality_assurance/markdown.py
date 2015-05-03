@@ -2,7 +2,7 @@
 #pylint: disable=line-too-long,arguments-differ,unused-variable
 """All checkers for MarkDown files belong here."""
 
-from .meta import Mistake, MistakeType, MistakePriority, onelinerMistake
+from .meta import Mistake, MistakeType, MistakePriority, OnelinerMistake
 import os, re
 from .. import config
 
@@ -302,7 +302,7 @@ class PageNumbersWithoutDashes(Mistake):
                 return self.error("Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: " +
                     "\"|| - Seite xyz -\"", num)
 
-class DoNotEmbedHTMLLineBreaks(onelinerMistake):
+class DoNotEmbedHTMLLineBreaks(OnelinerMistake):
     """Instead of <br> for an empty line, a single \\ can be used."""
     def __init__(self):
         super().__init__()
@@ -315,10 +315,10 @@ class DoNotEmbedHTMLLineBreaks(onelinerMistake):
                     "eine Zeile und lässt davor und danach eine Zeile frei, " +
                     "hat dies denselben Effekt.",  num)
 
-class EmbeddedHTMLComperators(onelinerMistake):
+class EmbeddedHTMLComperators(OnelinerMistake):
     """Instead of &lt;&gt;, use \\< \\>."""
     def __init__(self):
-        onelinerMistake.__init__(self)
+        OnelinerMistake.__init__(self)
         self.set_priority(MistakePriority.pedantic)
         self.pattern = re.compile(r'&(lt|gt);')
 

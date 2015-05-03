@@ -3,15 +3,15 @@
 here. Please note that they are also applied to *.md-files, since LaTeX can be
 embedded there as well."""
 
-from .meta import MistakePriority, onelinerMistake
+from .meta import MistakePriority, OnelinerMistake
 import re
 
 
-class CasesSqueezedOnOneLine(onelinerMistake):
+class CasesSqueezedOnOneLine(OnelinerMistake):
     r"""\begin{cases} ... lots of stuff \end{cases} is hard to read. There
     should be actual line breaks after \\\\."""
     def __init__(self):
-        onelinerMistake.__init__(self)
+        OnelinerMistake.__init__(self)
         self.set_file_types(["md","tex"])
         self.set_priority(MistakePriority.pedantic)
 
@@ -22,11 +22,11 @@ class CasesSqueezedOnOneLine(onelinerMistake):
 
 
 
-class LaTeXMatricesAreHardToRead(onelinerMistake):
+class LaTeXMatricesAreHardToRead(OnelinerMistake):
     """There are various ways to make matrices hard to read. Spot and report
     them."""
     def __init__(self):
-        onelinerMistake.__init__(self)
+        super().__init__()
         self.set_file_types(["md","tex"])
         self.set_priority(MistakePriority.normal)
         self.pat1 = re.compile(r"\\left\(.*?begin{(array|matrix)")
@@ -41,4 +41,5 @@ class LaTeXMatricesAreHardToRead(onelinerMistake):
         elif(self.pat2.search(line)):
             return self.error("Jede Zeile einer Matrix oder Tabelle sollte zur " +
                 "besseren Lesbarkeit auf eine eigene Zeile gesetzt werden.", num)
+
 

@@ -206,18 +206,18 @@ sub-directory configurations or initialization of a new project."""
 
     def handle_conv(self, cmd, args):
         "Convert files."
-        parser = HelpfulParser(cmd, "Convert a file/directory full of files" + \
-                        " from MarkDown to HTML.")
-        parser.add_argument("FILE/DIRECTORY", nargs="?", dest="input")
+        parser = HelpfulParser(cmd, "Convert a file/directory from MarkDown "
+                    "to HTML.")
+        parser.add_argument("input", nargs="?", help="input file or directory")
         args = parser.parse_args(args)
-        if not os.path.exists(args[0]):
+        if not os.path.exists(args.input):
             print('Error: ' + args[0] + ' not found')
             sys.exit(127)
 
         try:
             p = MAGSBS.pandoc.pandoc()
             files = []
-            path = args[0]
+            path = args.input
             if os.path.isdir(path):
                 files += [os.path.join(path, e) for e in os.listdir(path)]
             else:
@@ -240,10 +240,11 @@ sub-directory configurations or initialization of a new project."""
         p = MAGSBS.filesystem.page_navigation(directory)
         p.iterate()
 
-    def imgdsc(self, cmd, args):
-        usage = cmd + ' [OPTIONS] image_name\n' + \
-                "The working directory must be a chapter; the image name must be a relative path like 'images/image.jpg'\n"
-        parser = HelpfulParser(usage=usage)
+    def handle_imgdsc(self, cmd, args):
+        description = ("The working directory must be a chapter of a book or of "
+                      "another kind of material; the image name must be a path "
+                      "relative to the current working directory.")
+        parser = HelpfulParser(cmd, description)
         parser.add_argument("-d", "--description", dest="description",
                 help="image description string (or - for stdin)",
                 metavar="DESC", default='no description')
@@ -253,16 +254,17 @@ sub-directory configurations or initialization of a new project."""
         parser.add_argument("-t", "--title", dest="title",
                 default=None,
                 help="set title for outsourced images (mandatory if outsourced)")
+        parser.add_argument('path', nargs="?", help="path to image file")
         options = parser.parse_args(args)
-        if len(args) != 1:
+        if not options.path:
+            print("You must specify a path.")
             parser.print_help()
             exit(0)
-        path = args[0]
         if options.description == "-":
             desc = sys.stdin.read()
         else:
             desc = options.description
-        img = MAGSBS.factories.ImageDescription(path)
+        img = MAGSBS.factories.ImageDescription(options.path)
         img.set_description(desc)
         img.set_outsource_descriptions(options.outsource)
         if options.title:
@@ -289,7 +291,7 @@ sub-directory configurations or initialization of a new project."""
                 help='if set, blattxx will be used instead of kxx')
         parser.add_argument("-l", dest="lang", default="de",
                 help="sets language (default de)")
-        parser.add_argument('directory',
+        parser.add_argument('directory', nargs="?",
                 help="new directory to create lecture in")
         options = parser.parse_args(args)
         if not options.directory:
@@ -317,7 +319,7 @@ sub-directory configurations or initialization of a new project."""
                 help="Sort critical errors first")
         parser.add_argument("-s", dest="squeeze_output", action="store_true",
                 help="use less blank lines")
-        parser.add_argument("input",
+        parser.add_argument("input", nargs="?",
                 help="specify file or directory to be checked")
         options = parser.parse_args(args)
 
