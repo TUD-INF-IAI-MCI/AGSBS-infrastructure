@@ -4,9 +4,10 @@ Read in user configuration.
 #pylint: disable=invalid-encoded-data,line-too-long,too-few-public-methods
 
 import getpass, os, sys
-import datetime, codecs
+import datetime
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from . import common
 from .errors import ConfigurationError, ConfigurationNotFoundError
 
 if not (sys.platform.lower().startswith("win")):
@@ -153,12 +154,11 @@ one instance at a time exists.
         root.attrib['xmlns:dc'] = 'http://purl.org/dc/elements/1.1'
         root.attrib['xmlns:MAGSBS'] = 'http://elvis.inf.tu-dresden.de'
         for key, value in self.items():
-            if(not self.dictkey2xml[key].startswith('MAGSBS:')):
+            if not self.dictkey2xml[key].startswith('MAGSBS:'):
                 c = ET.SubElement(root, 'dc:'+self.dictkey2xml[ key ] )
             else:
                 c = ET.SubElement(root, self.dictkey2xml[key])
-            if(key in self.__numerical): value = str(value)
-            c.text = value
+            c.text = str(value)
         out = minidom.parseString('<?xml version="1.0" encoding="UTF-8"?>' + \
                 ET.tostring(root, encoding="unicode")
                 ).toprettyxml(indent="  ", encoding="utf-8")
@@ -185,7 +185,7 @@ one instance at a time exists.
                 try:
                     key = xmlkey2dict[self.normalize_tag(child.tag)]
                 except KeyError as e:
-                    print("Warning: Unknown key %s, skipping." % e.args[0])
+                    common.warn("Unknown key %s, skipping." % e.args[0])
                     continue
                 try:
                     value = child.text
@@ -281,7 +281,6 @@ l10n with Windows."""
             'index':'index',
             'external image description' : "description de l'image externe",
             'images':'images',
-            'index' : ' index',
             'next':'suivant',  'previous':'précédent',
             'chapter':'chapitre', 'paper':'document',
             'Remarks about the accessible version':'Remarques concernant la version accessible',

@@ -444,6 +444,7 @@ def newline_wrapper(lines):
             line = next(myiter)
         except StopIteration:
             has_next = False
+            break
         # join as long as a \ is at the end
         while line.rstrip().endswith('\\'): # rstrip strips \n
             line = line.rstrip()[:-1] + ' ' # strip \
