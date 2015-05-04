@@ -2,6 +2,122 @@
 
 ## Markdown
 
+## Aufzählungen und Nummerierungen
+
+### Listen
+
+Einfache Listen beginnen am Anfang einer Zeile mit einem `*`, `+` oder `-`.
+Sie müssen immer in einem eigenen Absatz stehen
+([Beispiel](#einfache-liste)).  Nach dem Aufzählungszeichen muss ein
+Leerzeichen folgen.
+
+Für längere Aufzählungen empfiehlt es sich weitere Zeilen, die noch zum gleichen
+Aufzählungspunkt gehören, mit 1-4 Leerzeichen einzurücke, wobei empfohlen wird 4
+Zeichen zu verwenden ([Beispiel](#längere-absätze)). Dies erhöht nicht nur die
+Lesbarkeit, sondern stellt sicher, dass Pandoc den Text korrekt zum
+Aufzählungspunkt zuordnet. Werden vier Leerzeichen verwendet, können sogar
+weitere MarkDown-Elemente verwendet werden
+([Beispiel](#verschachtelte-liste-mit-weiteren-elementen)).
+
+Listen können weitere Elemente enthalten. Dafür muss aber immer mit vier
+Leerzeichen eingerückt werden. Auf diese Weise kann Pandoc die Elemente in  der
+Aufzählung erkennen und sie dem korrekten 
+
+### Aufzählungen
+
+Alle Regeln für [Listen](#listen) gelten für Aufzählungen. Eine Aufzählung kann
+entweder mit einer Zahl, einer römischen Ziffer oder einer Raute beginnen und
+mit einem Punkt oder einen runden Klammer beendet werden. Ein Leerzeichen danach
+ist Pflicht. Wenn eine schließende Runde Klammer verwendet wird, kann optional
+vor der Zahl auch eine öffnende Klammer verwendet werden. Ferner sich in runden Klammern auch Buchstaben zulässig.
+
+Eine Aufzählung beginnt immer mit der Zahl, mit der sie im Markdown-Dokument gestartet wurde. Möchte man sich keine Gedanken über die Reihenfolge machen, nimmt man `#`.
+
+[zu den Beispielen](aufzählungen)
+
+
+### Beispiele
+
+[überspringe](#ueberspringen)
+
+#### Einfache Liste
+
+~~~~
+- Name: Horst
+- Alter: 5
+
++ Name: Sabine
++ Alter 6
+~~~~
+
+#### Längere Absätze
+
+~~~~
+1. Dieser Text ist lang. Dieser Text ist lang. Dieser Text ist lang. Dieser Text
+  ist lang. Dieser Text ist lang. Dieser Text ist lang. Dieser Text ist lang.
+  Dieser Text ist lang. Dieser Text ist lang. Dieser Text ist lang. Dieser Text
+  ist lang. Dieser Text ist lang. Dieser Text ist lang. Dieser Text ist lang.
+  Dieser Text ist lang. Dieser Text ist lang. 
+
+  Kann auch Leerzeilen, Tabellen o.ä. enthalten.
+
+2. Dieser Text ist langweilig. Dieser Text ist langweilig. Dieser Text ist
+  langweilig.
+
+  Und geht hier langweilig unter 2. weiter. Und geht hier langweilig unter 2.
+  weiter.
+~~~~
+
+#### Verschachtelte Aufzählungen mit weiteren Elementen
+
+~~~~
+-   Tagesordnungspunkte
+    1.  Nennung kritischer Punkte
+    2.  Diskussion im Plenum
+    3.  …
+-   Weitere Veranstaltungen
+    -   Teamlunch
+        + nicht ohne Buchungsbestätigung
+    -   …
+    -   kultureller Abendausklang
+-   undiskutable Punkte vorab:
+
+    Aktion            Belohnung
+    ----------------- ---------
+    Nutzung von HTML  Faule Eier
+    Gutes MarkDown    heiliger Gral
+    21 · 2            42
+    ----------------- ---------
+~~~~
+
+
+<span id="ueberspringen"></span>
+
+#### Aufzählungen
+
+~~~~
+**Biersorten**:
+
+1. Schwarzbier
+2. Pils
+3. Obergärig (English Ale, Kölsch)
+
+**Sammelsorium**:
+
+#.  misch
+#.  mich
+#.  durch
+
+
+I.  Antike
+    1)  ...
+    2)  ...
+II. Mittelalter
+    (a) …
+~~~~
+
+
+
 ## Sprungmarken setzen (um Elemente zu überspringen)
 
 Um etwas zu überspringen, ist ein Link sowie eine Sprungmarke (auch Sprunganker)
@@ -23,20 +139,20 @@ Ein Beispiel könnte so aussehen:
 Nahrung         Preis
 --------------  ------------------
 Schokolade      0,99 EUR
-Brot            2,80 EUR
+Brot            2,40 EUR
 --------------  ------------------
 
-<span id="endetabelle1"></span>
+<span id="endetabelle1" /></span>
 ~~~~
 
 Zwischen `<span id="text">` und `</span>` darf selbstverständich weiterer Text
-stehen, falls gewünscht.
+stehen, falls gewünscht. Ein leeres Span-Element wie `<span id="beispiel" />` ist nicht nach HTML-Standard nicht erlaubt.
 
 ## Spracherweiterungen
-#
+
 Folgende Spracherweiterungen gibt es:
 
-## Seitenzahlen
+### Seitenzahlen
 
 Seitenzahlen werden mit "||" eingeleitet und müssen das Format 
 `<Identifier> <Zahl>` haben, wobei "Identifier" entwerder "Seite, Folie, slide,
@@ -48,4 +164,11 @@ Beispiel:
 || - Seite 80 -
 
 ~~~~
+
+### Mathematische Umgebung
+
+Um Zeilenumbrüche für Alternativtexte zu erhalten, werden alle mathematischen
+Umgebung vor dem Konvertieren mit Pandoc von dem Typ `inlineMath` auf den Typ
+`displayMath` umgestellt. Annsonsten würden z.B. Matrizen für Benutzer von
+Bildschirmlesern in nur einer Zeile dargestellt.
 
