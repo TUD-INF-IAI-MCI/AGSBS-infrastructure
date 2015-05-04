@@ -108,6 +108,9 @@ class ItemizeIsParagraph(Mistake):
         return False
 
     def worker(self, *args):
+        """Only mark this as an error, when more than two itemize signs have
+        been found at the beginning of a line, so that e.g. a dash which is ust
+        in a text is not recognized as an itemize environment."""
         for start_line, paragraph in args[0].items():
             # if first line is itemize, don't check this paragraph
             if len(paragraph) > 0:
@@ -117,13 +120,17 @@ class ItemizeIsParagraph(Mistake):
             if len(paragraph) >= 2:
                 if '---' in paragraph[1] and ' ' in paragraph[1].rstrip():
                     continue
+            item_encountered = False
             for lnum, line in enumerate(paragraph):
                 if self.is_item_line(line):
                     # itemize encountered and first line was no itemize line?
                     if lnum != 0:
-                        return self.error("""Eine Aufzählung muss in einem eigenen
+                        if item_encountered:
+                            return self.error("""Eine Aufzählung muss in einem eigenen
                                 Absatz stehen, d. h. es muss davor und danach
                                 eine Leerzeile sein.""", start_line+lnum)
+                        else:
+                            item_encountered = True
 
 
 class oldstyle_pagenumbering(Mistake):
