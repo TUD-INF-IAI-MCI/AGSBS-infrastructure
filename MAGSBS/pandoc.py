@@ -192,7 +192,7 @@ class HtmlConverter(OutputGenerator):
         # check whether "Math" occurs and therefore if GladTeX needs to be run
         need_gladtex = contentfilter.pandoc_ast_parser( jsonstr,
                 contentfilter.has_math)
-        if isinstance(need_gladtex, list and len(need_gladtex) != 0:
+        if isinstance(need_gladtex, list) and len(need_gladtex) != 0:
             use_gladtex = need_gladtex[0]
             outputf = base_name + '.htex'
             pandoc_args.append('--gladtex')
