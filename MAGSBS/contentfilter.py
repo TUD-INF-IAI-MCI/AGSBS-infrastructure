@@ -155,18 +155,30 @@ class InlineToDisplayMath:
         self.__document = document
         self.__pieces = []
 
-    def is_followed_by_dollar_sign(self, pos, string):
-        """Return true if the character after the one at position ''pos`` is
-        also a dollar character."""
-        if pos >= (len(string)-1):
-            return False # is already at end of string
-        # we can now expect that there's a character after string[pos]
-        return string[pos+1] == '$'
+    def tokenize(self, separator="$", escape='\\'):
+        """Tokenize a string, correctly treating escaped sequences."""
+        encountered = False
+        token = ''
+        result = []
+        for c in self.__document:
+            if not encountered:
+                if c == escape:
+                    encountered = True
+                elif c == separator:
+                    result.append(token)
+                    token = ''
+                else:
+                    token += c
+            else: # encountered:
+                token += c
+                encountered = False
+        result.append(token)
+        return result
 
     def parse(self):
         """Parse the document string into chunks of Text and Formula's.
 Algorithm (ignoring $$-enclosed formulas); the position in the text is
-implicitely memorized.
+implicitly remembered.
 
 1.  Find dollar. If followed by dollar, tread the text before and the two text
     dollars as text and save it. Continue on this vey same step.
@@ -176,39 +188,22 @@ implicitely memorized.
 4.  Position is updated, start from one.
 5.  Save current position until end as Text() and exit.
 """
-        current_pos = 0
-        while current_pos < len(self.__document):
-            dollar = self.__document[current_pos:].find('$')
-            if dollar == -1: # no dollar found, end
-                self.__pieces.append(Text(self.__document[current_pos:]))
-                break
-            if self.is_followed_by_dollar_sign(current_pos+dollar, self.__document):
-                # ignore $$ environments, they are already like desired; save
-                # everything til the $$ and those as well and "continue" to
-                # search on
-                self.__pieces.append(Text(self.__document[current_pos:current_pos
-                    + dollar + 2]))
-                current_pos += (dollar + 2)
-                continue
-
-            begin = dollar + current_pos + 1
-            # save text before formula
-            self.__pieces.append(Text(self.__document[current_pos:begin-1]))
-
-
-            # find closing dollar(s)
-            dollar = self.__document[begin+1:].find('$') # +1 to ignore current char
-            if dollar == -1: # opening dollar, but no closing
-                raise StructuralError("At position %d an opening " % begin +
-                        "math environment was found that was never closed!")
-            end = dollar + begin + 1
-            # add math formula to chunks
-            self.__pieces.append(Formula(self.__document[begin:end]))
-            if self.is_followed_by_dollar_sign(end, self.__document):
-                raise StructuralError("Parser encountered a closing $$ " +
-                        "environment, although that should never happen. " +
-                        "Possibly a bug.")
-            current_pos = end + 1 # ignore dollar sign
+        ismath = False # set to true after a token wasn't formula, (so is alternating)
+        for token in self.tokenize():
+            if token == '':
+                continue # ignore, caused by $$ (empty token)
+            token = token.replace('$', '\\$')
+            if ismath:
+                self.__pieces.append('$${}$$'.format(token))
+                ismath = False
+            else: # is ordinary text, if not last_token_empty
+                self.__pieces.append(token)
+                ismath = True
+        if not ismath: # if last was text, ismath has been set to true because
+                    # expecting another math; if last was math it is complicated
+                    # and again negated
+            raise StructuralError(("Somewhere in the document a $$-"
+                "environment wasn't closed."))
 
     def get_document(self):
         """Return the document as a string."""

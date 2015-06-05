@@ -53,7 +53,7 @@ and in- or exclude it."""
         title = _('table of contents').title() + ' - ' + \
                 self.conf['lecturetitle']
         output = [ '%s\n' % title, '='*len(title), '\n\n'  ]
-        if(self.__preface):
+        if self.__preface:
             output.append( _('preface').capitalize() + '\n' + '-'*len(_('preface')) + '\n\n')
             for h in self.__preface:
                 output += [ h, '\\\n']
