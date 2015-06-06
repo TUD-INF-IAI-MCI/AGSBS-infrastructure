@@ -13,6 +13,7 @@ import tempfile, os, subprocess
 from . import config
 from . import contentfilter
 from .datastructures import decode
+from . import errors
 from . import filesystem
 from . import mparser
 
@@ -284,8 +285,10 @@ to the output, handles errors and checks for the correct encoding."""
                     json_ast = contentfilter.jsonfilter(json_ast, filter,
                             self.conf['format'] )
                 conv.convert(json.dumps(json_ast), title, base_name)
-        except:
-            raise
+        except errors.MAGSBS_error as e:
+            # args[0] is message for MAGSBS_error
+            e.args = ('in file {}: {}'.format(file_name, e.args[0]),)
+            raise e
         finally:
             conv.cleanup()
 

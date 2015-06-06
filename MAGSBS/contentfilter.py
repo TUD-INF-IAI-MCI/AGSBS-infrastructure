@@ -156,23 +156,32 @@ class InlineToDisplayMath:
         self.__pieces = []
 
     def tokenize(self, separator="$", escape='\\'):
-        """Tokenize a string, correctly treating escaped sequences."""
+        """Tokenize a string, correctly treating escaped sequences.
+        Each token is a tuple with a line number where this token started and
+        the token itself."""
         encountered = False
         token = ''
         result = []
+        line_number = 1
+        last_token_started_at= 1
         for c in self.__document:
+            if c == '\n':
+                line_number += 1
             if not encountered:
                 if c == escape:
                     encountered = True
                 elif c == separator:
-                    result.append(token)
+                    result.append((last_token_started_at, token))
                     token = ''
+                    last_token_started_at = line_number
                 else:
                     token += c
             else: # encountered:
+                if token != separator: # wasn't a escape \, so add it literally
+                    token += '\\'
                 token += c
                 encountered = False
-        result.append(token)
+        result.append((last_token_started_at, token))
         return result
 
     def parse(self):
@@ -189,7 +198,7 @@ implicitly remembered.
 5.  Save current position until end as Text() and exit.
 """
         ismath = False # set to true after a token wasn't formula, (so is alternating)
-        for token in self.tokenize():
+        for lnum, token in self.tokenize():
             if token == '':
                 continue # ignore, caused by $$ (empty token)
             token = token.replace('$', '\\$')
@@ -202,6 +211,18 @@ implicitly remembered.
         if not ismath: # if last was text, ismath has been set to true because
                     # expecting another math; if last was math it is complicated
                     # and again negated
+            # try to find a token which is math and contains \n\n; math may not
+            # have a paragraph break, possible error source
+            ismath = False # set to true after a token wasn't formula, (so is alternating)
+            for lnum, token in self.tokenize():
+                if token == '':
+                    continue # ignore, caused by $$ (empty token)
+                token = token.replace('$', '\\$')
+                if ismath and '\n\n' in token:
+                    raise StructuralError(("Somewhere before or after line {}"
+                            " a math environment wasn't ended correctly.").
+                            format(lnum))
+                ismath = not ismath
             raise StructuralError(("Somewhere in the document a $$-"
                 "environment wasn't closed."))
 
