@@ -41,7 +41,7 @@ xported JSon tree is then used for post-processing."""
                 contentfilter.page_number_extractor)
         for text, id in pages:
             try:
-                num = int(re.search(r'- \w+\s+(\d+)', text).groups()[0])
+                num = int(re.search(r'-\s*\w+\s+(\d+)', text).groups()[0])
             except AttributeError:
                 raise errors.PageNumberError(('Could not extract a page number '
                         'from "{}"').format(text))
