@@ -26,3 +26,6 @@ class StructuralError(MAGSBS_error):
 
 class FileNotFoundError(MAGSBS_error):
     pass
+
+class PageNumberError(MAGSBS_error):
+    pass

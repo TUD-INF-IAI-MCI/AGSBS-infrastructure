@@ -2,18 +2,62 @@
 # details.
 #
 # (c) 2015 Sebastian Humenda <shumenda |at| gmx |dot| de>
-"""This module contains all file system related functionality. Starting from a
-customized os.walk()-alike function to classes modifying Markdown documents."""
+"""This module contains all factories for autote processes for lecture creation.
+This is e.g. the creation of a table of contents, etc."""
 
 import os
 from . import datastructures
-from .datastructures import Heading
+from . import datastructures
 from . import config
 from .errors import MissingMandatoryField
 _ = config._
 
 
+class ChapterNumberEnumerator:
+    """Track headings and calculate chapter numbers. For that to work it is
+    crucial that the headings are registered in the right order.
+
+    Example:
+    c = ChapterNumberEnumerator()
+    c.register(some_level1_heading)
+    c.register(some_level1_heading)
+    c.register(some_level2_heading)
+    assert c.fmtChapterNumber()) == '2.1'
+    """
+    def __init__(self):
+        self.__registered = [0, 0, 0, 0, 0, 0]
+        self.__lastchapter = None
+
+    def register(self, heading):
+        """Register heading for chapter number calculation.
+        Return the result of fmtChapterNumber; fmtChapterNumber will return the same
+        after this register call."""
+        if not hasattr(heading, 'get_level') or not hasattr(heading,
+                'get_chapter_number'):
+            raise TypeError("The heading object must provide a "
+                "get_level and get_chapter_number method, got " + str(type(heading)))
+        if heading.get_chapter_number() != self.__lastchapter:
+            # new chapter, new enumeration
+            self.__registered = list(0 for x in range(len(self.__registered)))
+            self.__registered[0] = heading.get_chapter_number()
+            self.__lastchapter = heading.get_chapter_number()
+        # increment received level
+        if heading.get_level() > 1:
+            self.__registered[heading.get_level()-1] += 1
+            # all headings below level must be reset to 0 (e.g. 2.1.1 is followed by
+            # 2.2 not 2.2.1)
+            for index in range(heading.get_level(), len(self.__registered)):
+                self.__registered[index] = 0
+        return self.fmtChapterNumber()
+
+    def fmtChapterNumber(self):
+        """Format the current chapter number (as calculated by all registered
+                headings) as a chapter num (string), delimited by "."."""
+        return '.'.join(map(str, filter(bool, self.__registered)))
+
+
 class index2markdown_TOC():
+    # ToDo: make this class not dependent on the current working directory
     """index2markdown_TOC( OrderedDict(), lang, depth=4, use_appendix_prefix=False)
 Take the ordered dict produced by create_index() and transform it  to a markdown
 file. The language specifies in which language to output the title of the TOC.
@@ -25,63 +69,69 @@ This class must be run from the lecture root.
         c = config.confFactory()
         self.conf  = c.get_conf_instance()
         self.__use_appendix_prefix = self.conf['appendixPrefix']
-        # three lists for headings
-        self.__main = []
-        self.__appendix = []
-        self.__preface = []
+        self.__headings = {'appendix' : [], 'normal' : [], 'preface': []}
         self.transform_index()
 
     def transform_index(self):
         """Walk through dictionary of file names and headings and create lists
 for later output. For each heading, decide whether conf['depth'] > heading.depth,
 and in- or exclude it."""
-        for headings in self.__index.values():
+        enumerator = ChapterNumberEnumerator()
+        for path, headings in self.__index.items():
+            dummy, file = os.path.split(path)
+            dummy, directory_above = os.path.split(dummy)
             for heading in headings:
                 if heading.get_level() > self.conf['tocDepth']:
                     continue # skip those headings
 
-                if heading.get_type() == Heading.Type.APPENDIX:
-                    if self.__use_appendix_prefix:
-                        heading.use_appendix_prefix(True)
-                    self.__appendix.append(heading.get_markdown_link())
-                elif heading.get_type() == Heading.Type.PREFACE:
-                    self.__preface.append( heading.get_markdown_link() )
-                else:
-                    self.__main.append(heading.get_markdown_link())
+                type = heading.get_type().name.lower()
+                enumerator.register(heading)
+                self.__headings[type].append(self.__heading2toclink(enumerator,
+                    heading, directory_above, file))
+
 
     def get_markdown_page(self):
+        """Format all headings into a markdown page."""
         title = _('table of contents').title() + ' - ' + \
                 self.conf['lecturetitle']
         output = [ '%s\n' % title, '='*len(title), '\n\n'  ]
-        if self.__preface:
-            output.append( _('preface').capitalize() + '\n' + '-'*len(_('preface')) + '\n\n')
-            for h in self.__preface:
-                output += [ h, '\\\n']
-            # strip last \ at end of last line
-            output[-1] = output[-1][:-2]
-            output.append('\n\n')
-            output.append(_('chapters').title())
+        if self.__headings['preface']:
+            output.append('{}\n{}\n'.format(_('preface').capitalize(),
+                '-'*len(_('preface'))))
+            for h in self.__headings['preface']:
+                output.append('\n%s\\' % h)
+            output[-1] = output[-1][:-1] # strip last backslash
+            output.append('\n\n{}'.format(_('chapters').title()))
             output.append('\n--------\n\n')
-        for num,h in enumerate(self.__main):
-            output.append( h )
-            if(not num == len(self.__main)-1):
+        for num, h in enumerate(self.__headings['normal']):
+            output.append(h)
+            if not num == len(self.__headings['normal'])-1:
                 output.append('\\\n')
-        if(len(self.__appendix)>0):
+        if self.__headings['appendix']:
             output.append('\n\n\n')
-            if(not self.__use_appendix_prefix):
-                output.append(_('appendix').title())
-                output.append('\n------\n\n')
-            for h in self.__appendix:
-                output.append( h )
-                output.append('\\\n')
+            # only appendix heading if appendix chapters are not prefixed
+            if not self.__use_appendix_prefix:
+                output.append('{}\n------\n\n'.format(_('appendix').title()))
+            for h in self.__headings['appendix']:
+                output.append('%s\\\n' % h)
 
-        if( os.path.exists( "info.md" ) ):
+        if os.path.exists("info.md"):
             output.append('\n\n* * * * *\n\n[')
             output.append(_("remarks about the accessible edited version"))
-            output.append('](info.html)')
-            output.append("\n")
-
+            output.append('](info.html)\n')
         return ''.join(output) + '\n'
+
+    def __heading2toclink(self, enumerator, heading, directory, file):
+        """Convert a heading to a link as required in a TOC.
+        The enumerator object must provide a method called fmtChapterNumber
+        yielding the formatted chapter number."""
+        prefix = ''
+        if self.__use_appendix_prefix and \
+                heading.get_type() == datastructures.Heading.Type.APPENDIX:
+            prefix = 'A.'
+        return '[{}{}. {}]({}/{}#{})'.format(prefix,
+                enumerator.fmtChapterNumber(), heading.get_text(), directory,
+                file, heading.get_id())
 
 
 #pylint: disable=too-many-instance-attributes

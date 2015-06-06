@@ -1,10 +1,17 @@
+# This is free software, licensed under the LGPL v3. See the file "COPYING" for
+# details.
+#
+# (c) 2015 Sebastian Humenda <shumenda |at|gmx |dot| de>
+
 """Everything file system related goes in here."""
 
-import os, collections
+import collections
+import os
 
-from . import mparser
 from . import config
+from . import datastructures
 from . import errors
+from . import mparser
 _ = config._
 #pylint: disable=redefined-builtin
 
@@ -170,7 +177,7 @@ By calling the function, the actual index is build."""
                 headings = []
                 if(os.path.split(directory)[-1].startswith("anh") ):
                     for heading in m.get_headings():
-                        heading.set_type( "appendix" )
+                        heading.set_type(datastructures.Heading.Type.APPENDIX)
                         headings.append( heading )
                 else:
                     headings = m.get_headings()

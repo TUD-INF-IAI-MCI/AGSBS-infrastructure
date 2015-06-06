@@ -122,7 +122,7 @@ one instance at a time exists.
         else: # full name with the unix way
             self['editor'] = pwd.getpwuid(os.getuid())[4]
             # on some systems, real name end with commas, strip those
-            while(self['editor'].endswith(',')):
+            while self['editor'].endswith(','):
                 self['editor'] = self['editor'][:-1]
         self['semesterofedit'] = get_semester()
         self['lecturetitle'] = 'Unknown'
