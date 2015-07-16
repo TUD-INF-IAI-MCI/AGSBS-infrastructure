@@ -129,6 +129,10 @@ and in- or exclude it."""
         if self.__use_appendix_prefix and \
                 heading.get_type() == datastructures.Heading.Type.APPENDIX:
             prefix = 'A.'
+        if not file.endswith('.md'):
+            raise ValueError("File name must end on .md!")
+        else:
+            file = file[:-2] + 'html'
         return '[{}{}. {}]({}/{}#{})'.format(prefix,
                 enumerator.fmtChapterNumber(), heading.get_text(), directory,
                 file, heading.get_id())
