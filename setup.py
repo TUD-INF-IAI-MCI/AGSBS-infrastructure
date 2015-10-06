@@ -29,7 +29,7 @@ setup(name='MAGSBS',
 # matuc distribution:
 os.chdir('cli')
 setup(name='MAGSBS/matuc',
-      version='0.1',
+      version=MAGSBS.config.VERSION,
       py_modules = modules,
       scripts=scripts
       )

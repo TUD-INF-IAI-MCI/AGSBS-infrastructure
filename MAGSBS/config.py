@@ -13,7 +13,7 @@ from .errors import ConfigurationError, ConfigurationNotFoundError
 if not (sys.platform.lower().startswith("win")):
     import pwd
 
-VERSION = '0.2'
+VERSION = '0.3'
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 # as a regular expression all kinds of token which can mark a page
