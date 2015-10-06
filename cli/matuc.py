@@ -98,13 +98,9 @@ class main():
         parser.add_argument("-o", "--output", dest="output",
                   help="write output to file instead of stdout",
                   metavar="FILENAME", default='stdout')
-        parser.add_argument('directory', nargs='?',
+        parser.add_argument('directory',
                 help='Input directory where search for headings is performed.')
         options = parser.parse_args(args)
-        if not options.directory:
-            print("You must specify an input directory.")
-            parser.print_help()
-            sys.exit(9)
 
         file = None
         if options.output == 'stdout':
@@ -205,10 +201,10 @@ sub-directory configurations or initialization of a new project."""
 
 
     def handle_conv(self, cmd, args):
-        "Convert files."
+        """Convert files."""
         parser = HelpfulParser(cmd, "Convert a file/directory from MarkDown "
                     "to HTML.")
-        parser.add_argument("input", nargs="?", help="input file or directory")
+        parser.add_argument("input", help="input file or directory")
         args = parser.parse_args(args)
         if not os.path.exists(args.input):
             print('Error: ' + args[0] + ' not found')
