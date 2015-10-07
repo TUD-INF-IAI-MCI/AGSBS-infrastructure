@@ -1,15 +1,14 @@
+This directory contains documentation for the MAGSBS module, mostly in German.
+These are snippets to document certain aspects to allow full documentation later
+on.
+
 To Do
 =====
 
-- allow specifying gladtex arguments
-- docx output format
-    - pandoc path: 
-C:\Users\voegler\AppData\Local\Pandoc\pandoc.exe
-- tabulars with:
+- tables with:
     - automatic creation of basic structure
     - automatic link to skip the table
-* python3?
-* wiki (?)
+- wiki (?)
 
 Dokumentation
 --------------

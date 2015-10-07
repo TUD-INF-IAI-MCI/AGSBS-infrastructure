@@ -10,8 +10,7 @@ import MAGSBS.config
 
 if 'win32' in sys.platform.lower() or 'wind' in sys.platform.lower():
     scripts = [os.path.join('cli','matuc.py')],
-    packages = ['MAGSBS']
-    modules = ["MAGSBS.quality_assurance"]
+    modules = ["MAGSBS"]
 else:
     # on UNIX, we want a nice shell script ;)
     sys.path.append( 'cli' )

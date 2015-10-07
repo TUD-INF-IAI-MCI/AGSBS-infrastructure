@@ -1,0 +1,13 @@
+HTML-spezifische Kodierungen von Zeichen wie `&xa;` o.ä. sollten in MarkDown
+unbedingt vermieden werden. Da MarkDown auch in andere Formate überführt werden
+kann, würden diese Zeichen dann verloren gehen.
+Folgende Zeichen können in MarkDown verwendet werden und werden korrekt in
+andere Formate überführt:
+
+----------- ------------------------
+&rarr;      Pfeil nach rechts
+&gt;        größer als
+\>          größer als
+\<          kleiner als
+&lt;        kleiner als
+----------- ------------------------
