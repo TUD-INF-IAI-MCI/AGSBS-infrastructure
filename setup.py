@@ -7,12 +7,12 @@ import MAGSBS.config
 # slightly fishy
 packages = []
 if 'win32' in sys.platform.lower() or 'wind' in sys.platform.lower():
-    scripts = [os.path.join('cli','matuc.py')],
+    scripts = [os.path.join('cli','matuc.py')]
     modules = ["MAGSBS"]
 else:
     # on UNIX, we want a nice shell script ;)
     sys.path.append('cli')
-    scripts = [os.path.join('bin', 'matuc')]
+    scripts = [os.path.join('bin', 'matuc')],
     packages = ['MAGSBS']
     modules = ['matuc']
 
