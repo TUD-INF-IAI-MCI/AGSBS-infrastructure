@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Markdown AGSBS (TU) Command line
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
