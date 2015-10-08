@@ -342,7 +342,7 @@ sub-directory configurations or initialization of a new project."""
     def handle_master(self, cmd, args):
         #pylint: disable=unused-argument
         if not os.path.exists(args[0]):
-            print("No such file or directory.")
+            print("No such file or directory: " + args[0])
             sys.exit(1)
         elif not os.path.isdir(args[0]):
             print("%s: is not a directory" % args[0])

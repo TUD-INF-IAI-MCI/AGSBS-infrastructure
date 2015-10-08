@@ -4,18 +4,16 @@ import shutil
 sys.path.insert(0, '.') # MaGSBS must be from _this_ directory
 import MAGSBS.config
 
-#path = os.path.dirname( sys.argv[0] )
-#path = os.path.split( path )[0]
-#path ) # add src root to also install MAGSBS
-
+# slightly fishy
+packages = []
 if 'win32' in sys.platform.lower() or 'wind' in sys.platform.lower():
     scripts = [os.path.join('cli','matuc.py')],
     modules = ["MAGSBS"]
 else:
     # on UNIX, we want a nice shell script ;)
-    sys.path.append( 'cli' )
-    scripts = [os.path.join('bin','matuc')]
-    packages = ['MAGSBS', 'MAGSBS.quality_assurance']
+    sys.path.append('cli')
+    scripts = [os.path.join('bin', 'matuc')]
+    packages = ['MAGSBS']
     modules = ['matuc']
 
 # install MAGSBS-module
@@ -23,6 +21,7 @@ else:
 setup(name='MAGSBS',
       version=MAGSBS.config.VERSION,
       packages=packages,
+      py_modules=modules
       )
 
 # matuc distribution:

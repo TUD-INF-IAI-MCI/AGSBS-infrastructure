@@ -27,6 +27,7 @@ files are converted."""
 
     def get_roots(self):
         return self._roots
+
     def __findroot(self, path):
         roots = []
         dirs = [path]
