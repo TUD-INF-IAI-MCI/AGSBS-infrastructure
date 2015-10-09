@@ -7,6 +7,7 @@
 
 import collections
 import os
+import posixpath
 
 from . import config
 from . import datastructures
@@ -140,11 +141,14 @@ def is_lecture_root(directory):
         return True
     return False
 
-def fn2targetformat( fn, fmt ):
-    """Alters a path to have the file name extension of the target format."""
-    if( not fn.endswith('.md') ):
+def local_url2target_url( fn, fmt ):
+    """Rewrite a local MarkDown file to a URL to be use din an HTML file. The md
+    file extension is replaced by html and all backslashes are replaced by
+    forward slashes."""
+    if not fn.endswith('.md'):
         raise ValueError("File must end on .md")
-    return fn.replace('.md', '.'+fmt )
+    fn = fn.replace('.md', '.' + fmt)
+    return posixpath.join(*fn.split('\\'))
 
 
 class create_index():
@@ -210,9 +214,9 @@ have for the pages."""
     NAVIGATION_BEGIN = '<!-- page navigation -->'
 
     def __init__(self, dir):
-        if( not os.path.exists( dir ) ):
+        if not os.path.exists(dir):
             raise OSError("The directory \"%s\" doesn't exist." % dir)
-        if( not is_lecture_root( dir ) ):
+        if not is_lecture_root(dir):
             raise errors.StructuralError("This command must be run from " + \
                     "the lecture root!")
         self.__dir = dir
@@ -245,7 +249,7 @@ have for the pages."""
             if stop:
                 continue
             for t in config.VALID_APPENDIX_BGN:
-                if( tmp.startswith( t) ):
+                if tmp.startswith(t):
                     appendix.append( (dir, dlist, flist) )
                     stop = True
                     break
@@ -259,22 +263,22 @@ back the file."""
         files = []
         for directoryname, directory_list, file_list in self.__preorder():
             for file in file_list:
-                files.append( directoryname + os.sep + file )
+                files.append(directoryname + os.sep + file)
         has_prev = None
         has_next = None
         for pos, file in enumerate( files ):
-            if(pos):
-                has_prev = files[ pos -1 ]
-            if(pos == (len(files)-1)):
+            if pos:
+                has_prev = files[pos - 1]
+            if pos == (len(files)-1):
                 has_next = None
             else:
                 has_next = files[ pos + 1 ]
             data = open(file, 'r', encoding='utf-8').read()
             # guess line breaks
-            if(data.find('\r\n')>=0):
+            if data.find('\r\n')>=0:
                 self.linebreaks = '\r\n'
             else:
-                if(len(data.split('\n')) < 2):
+                if len(data.split('\n')) < 2:
                     self.linebreaks = '\r'
                 else:
                     self.linebreaks = '\n'
@@ -305,10 +309,10 @@ and end again with
 
     def gen_nav(self, page, file_name, has_prev, has_next):
         """Generate language-specific site navigation."""
-        if(has_prev):
-            has_prev = fn2targetformat( has_prev, self.__fmt )
+        if has_prev:
+            has_prev = local_url2target_url( has_prev, self.__fmt )
         if(has_next):
-            has_next = fn2targetformat(has_next, self.__fmt)
+            has_next = local_url2target_url(has_next, self.__fmt)
         newpage = []
         m = mparser.SimpleMarkdownParser(page, self.__dir, file_name)
         m.parse()

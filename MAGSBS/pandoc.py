@@ -107,7 +107,8 @@ def execute(args, stdin=None):
                 msg = '\n'.join(map(decode, text))
                 raise subprocess.SubprocessError(' '.join(args) + ': ' + msg)
         except FileNotFoundError as e:
-            raise subprocess.SubprocessError(e)
+            msg = str(args[0]) + ': ' + str(e)
+            raise subprocess.SubprocessError(msg)
     return decode(text[0])
 
 
