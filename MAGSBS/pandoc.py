@@ -273,11 +273,6 @@ to the output, handles errors and checks for the correct encoding."""
                 base_name = (file_name[:dot]  if dot > 0  else file_name)
                 document = open(file_name, encoding='utf-8').read()
                 title = self.__guess_title(document)
-                # pre-filter document, to replace all inline math environments
-                # through displaymath environments
-                mathfilter = contentfilter.InlineToDisplayMath(document)
-                mathfilter.parse()
-                document = mathfilter.get_document()
                 json_ast = self.load_json(document)
                 filters = [contentfilter.page_number_extractor,
                         contentfilter.suppress_captions]
