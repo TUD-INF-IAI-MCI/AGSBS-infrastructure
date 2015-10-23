@@ -42,16 +42,16 @@ This function tries to generate the same text's as pandoc."""
     text = text.lower()
     res_id = ''
     for char in text:
-        if(char == ' '):
+        if char == ' ':
             res_id += '-'
-        elif(char.isalpha() or char.isdigit()):
+        elif char.isalpha() or char.isdigit():
             res_id += char
-        elif(char in ['.','_', '-']):
+        elif char in ['.','_', '-']:
             res_id += char
         else:
             continue
-    # strip hyphens at the beginning
-    while(res_id.startswith('-')):
+    # strip hyphens at the beginning, as well as numbers
+    while res_id.startswith('-') or (res_id and res_id[0].isdigit()):
         res_id = res_id[1:]
     return res_id
 
