@@ -288,7 +288,8 @@ to the output, handles errors and checks for the correct encoding."""
                 conv.convert(json.dumps(json_ast), title, base_name)
         except errors.MAGSBS_error as e:
             # args[0] is message for MAGSBS_error
-            e.args = ('in file {}: {}'.format(os.path.abspath(file_name
+            e.args = ('in file {}: {}'.format(os.path.abspath(file_name),
+                e.args))
             raise e
         finally:
             conv.cleanup()
