@@ -206,9 +206,9 @@ class HtmlConverter(OutputGenerator):
                 execute(["gladtex", "-a", "-d", "bilder", outputf])
             except:
                 raise
-            finally: # remove GladTeX .htex file
-                if use_gladtex:
-                    remove_temp(base_name + '.htex')
+            # remove GladTeX .htex file
+            if os.path.exists(base_name + '.htex'):
+                remove_temp(base_name + '.htex')
 
     def cleanup(self):
         remove_temp(self.template_path)
@@ -288,7 +288,7 @@ to the output, handles errors and checks for the correct encoding."""
                 conv.convert(json.dumps(json_ast), title, base_name)
         except errors.MAGSBS_error as e:
             # args[0] is message for MAGSBS_error
-            e.args = ('in file {}: {}'.format(file_name, e.args[0]),)
+            e.args = ('in file {}: {}'.format(os.path.abspath(file_name
             raise e
         finally:
             conv.cleanup()

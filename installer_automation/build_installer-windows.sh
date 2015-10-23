@@ -4,7 +4,7 @@ set -e
 
 rm -rf build
 mkdir build
-cp ../cli/matuc.py build
+cp ../matuc.py build
 cp matuc.nsi build
 cp EnvVarUpdate.nsh build
 cp -dpr ../MAGSBS build

@@ -174,12 +174,11 @@ By calling the function, the actual index is build."""
                 # try systems default encoding, then utf-8, then fail
                 data = open(os.path.join(directory, file), 'r',
                         encoding='utf-8').read()
-                # ToDo: use pandoc?
                 m = mparser.SimpleMarkdownParser(data, directory, file)
                 m.parse()
                 m.fetch_headings()
                 headings = []
-                if(os.path.split(directory)[-1].startswith("anh") ):
+                if os.path.split(directory)[-1].startswith("anh") :
                     for heading in m.get_headings():
                         heading.set_type(datastructures.Heading.Type.APPENDIX)
                         headings.append( heading )
