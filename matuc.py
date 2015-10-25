@@ -342,6 +342,17 @@ sub-directory configurations or initialization of a new project."""
 
     def handle_master(self, cmd, args):
         #pylint: disable=unused-argument
+        if not args: # empty arg list
+            print("matuc master <lecture directory>\n")
+            print("The master command will perform all actions available to"
+                    "automate lecture editing:\n")
+            print("-    create navigation bars at the top / bottom of a file")
+            print("-    generate a table of contents")
+            print("-    convert custom MarkDown extensions")
+            print("-    apply custom layout definition")
+            print("-    and do that for all MarkDown files within the "
+                    "specified directory")
+            error_exit("", 82)
         if not os.path.exists(args[0]):
             print("No such file or directory: " + args[0])
             sys.exit(1)
