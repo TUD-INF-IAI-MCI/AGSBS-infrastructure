@@ -33,9 +33,9 @@ toc     - generate table of contents
 version - output program version
 """ % (sys.argv[0], sys.argv[0])
 
-def error_exit(string):
+def error_exit(string, code=127):
     sys.stderr.write( string + ('\n' if not string.endswith('\n') else '') )
-    sys.exit(127)
+    sys.exit(code)
 
 def getTerminalSize():
     """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""

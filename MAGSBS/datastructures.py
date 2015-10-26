@@ -51,7 +51,7 @@ This function tries to generate the same text's as pandoc."""
         else:
             continue
     # strip hyphens at the beginning, as well as numbers
-    while res_id.startswith('-') or (res_id and res_id[0].isdigit()):
+    while res_id and not res_id[0].isalpha():
         res_id = res_id[1:]
     return res_id
 

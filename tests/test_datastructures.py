@@ -31,3 +31,6 @@ class test_gen_id(unittest.TestCase):
         # no exception, please
         self.assertEqual(datastructures.gen_id(''), '')
 
+    def test_that_dots_at_beginning_are_ignored(self):
+        self.assertFalse(datastructures.gen_id('...foo').startswith('.'))
+
