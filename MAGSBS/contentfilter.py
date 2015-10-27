@@ -37,12 +37,15 @@ Pandoc's json is recursively nested. To search for a particular string (like we
     return str
 
 def generate_link(ltext, id):
-    """GEnerate the HTML paragraph with the HTML anchor and the Text."""
-    return '<p><a name="%s"/>%s</p>' % (id, ltext)
+    """generate_link(ltext, id)
+    Generate the HTML paragraph with the HTML anchor and the Text.
+    :param ltext    Text to be displayed for the link
+    :param id       id for the anchor"""
+    return '<p><span id="%s">%s</span></p>' % (id, ltext)
 
 def has_math(key, value, format, meta, modify_ast=False):
     """Return True, if a math environment has been found."""
-    if( key.lower() == "math" ):
+    if key.lower() == "math":
         return True
 
 
