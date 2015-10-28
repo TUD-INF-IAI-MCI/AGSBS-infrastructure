@@ -320,7 +320,9 @@ class HeadingsUseEitherUnderliningOrHashes(Mistake):
                         lnum=heading.get_line_number())
 
 class ParagraphMayNotEndOnBackslash(Mistake):
-    r"""If a paragraph ends on a backslash, the next line will be treated as being part of the paragraph. Therefore the intentional paragraph break is lost. Example:
+    r"""If a paragraph ends on a backslash, the next line will be treated as
+    being part of the paragraph. Therefore the intentional paragraph break is
+    lost. Example:
 
         ~~~~
         some text\
@@ -335,11 +337,11 @@ class ParagraphMayNotEndOnBackslash(Mistake):
 
     def worker(self, *args):
         content, file_name = args
-        for start_line, paragraph in content:
-            if paragraph and paragraph[-1] == '\\':
-                self.error(("Wenn ein Absatz mit einem \\ umgebrochen wird, so "
-                    "wird die nächste (leere) Zeile dem vorigen Absatz "
-                    "zugeordnet. Der Absatz geht verloren und in der Folge wird "
-                    "das folgende Element falsch formatiert."),
+        for start_line, paragraph in content.items():
+            if paragraph and paragraph[-1].endswith('\\'):
+                return self.error(("Wenn ein Absatz mit einem \\ umgebrochen "
+                    "wird, so wird die nächste (leere) Zeile dem vorigen "
+                    "Absatz zugeordnet. Der Absatz geht verloren und in der "
+                    "Folge wird das folgende Element falsch formatiert."),
                     lnum=start_line + len(paragraph), path=file_name)
 
