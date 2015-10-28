@@ -18,10 +18,12 @@ class MistakeType(enum.Enum):
     """The mistake type determines the arguments and the environment in which to
     run the tests.
 
-Note for this table: from datastructures import Heading as H
+Shortcuts for this table: par == paragraph, h == datastructures.Heading
 
 type                parameters      Explanation
-full_file           (content, name) applied to a whole file
+full_file           (content, name) content: dict mapping from line number to
+                                    par, par is a list of lines; name is the
+                                    path to the file
 oneliner            (num, line)     applied to line, starting num = 1
 need_headings       [H(), ...]      applied to all headings
 need_headings_dir   {path : [H(),   applied to all headings in a directory
