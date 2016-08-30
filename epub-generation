@@ -1,0 +1,18 @@
+tutorial: http://pandoc.org/epub.html
+command: pandoc -S -o out.epub title.txt k01.md k02.md ...
+
+Implementation:
+
+-   copy lecture to tmp directory
+-   rename all image links to include chapter, so k01/bilder/eqn000.png becomes
+    k01/bilder/k01_eqn000.png.
+-   master
+-   make new directory containing all HTML files and a subdirectory called
+    images with all images which reside in biler/ or in images/; because of the
+    prefix, no name clashes occur
+-   call above command
+
+Implementierung:
+
+-   should've hook which removes everything in case of an error
+-   should not be instanceable (enter/leave)

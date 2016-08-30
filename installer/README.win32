@@ -1,0 +1,36 @@
+Installer Automation
+====================
+
+Currently, there is binary data in this git repository. It is only for
+convenience.
+
+Execute 
+
+    ./build_installer-windows.sh
+
+This creates a build directory, copies all relevant files into it and runs
+makensis.
+
+The same file could be written as a batch file for Windows. Any takers?
+
+About The Binaries
+==================
+
+To build your own binary distribution, download a recent Python release > 3.2.
+The best way to get a good starting base is to install Python first and copy the
+installed directory. Remove the directory "scripts" inside the Python directory.
+
+Afterwards you have to unzip the Installer file.  Inside you find a file named
+"python", if on Windows, rename this one to "python.cab". Extract this file (use
+7-zip i.e.). There  you copy `msvcr100.dll` and `pythonxyz.dll`, where xyz is
+the version number of python without dots. copy those into your just referenced
+folder containing a fresh *copy* of the installed Python.
+
+Now rename the directory to "binary" and add the GladTeX executable. Voila!
+
+Building A Debian Package
+=========================
+
+$ sudo apt-get install dpkg-dev dh-python debhelper
+
+$ sh debian.sh

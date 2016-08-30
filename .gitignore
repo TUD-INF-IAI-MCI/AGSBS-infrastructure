@@ -1,0 +1,5 @@
+*.pyc
+build
+cli/build
+dist
+installer_automation/matuc_installer*.exe

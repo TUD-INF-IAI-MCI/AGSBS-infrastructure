@@ -1,0 +1,14 @@
+Source: magsbs
+Maintainer: Sebastian Humenda <shumenda@gmx.de>
+Section: python
+Priority: optional
+Build-Depends: python3-all, debhelper (>= 9), dh-python, python3-setuptools
+Standards-Version: 3.9.6
+X-Python3-Version: >= 3.2
+
+Package: python3-magsbs
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}, python3-pandocfilters, gladtex, zip
+Description: MAGSBS library for internal usage of the AGSBS
+ Provides all utilities and a few scripts to automate lecture conversion and distribution for visually impaired students.
+
