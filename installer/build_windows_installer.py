@@ -23,7 +23,7 @@ BUILD_DIRECTORY = "build"
 def subprocess_call(cmd):
     ret = os.system(cmd)
     if ret:
-        print("Generation halted.")
+        print("Subprocess halted, command:", cmd)
         sys.exit(127)
 
 def retrieve_dependencies():
