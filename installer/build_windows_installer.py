@@ -233,7 +233,8 @@ def build_installer():
     shutil.copy('matuc.nsi', os.path.join(BUILD_DIRECTORY, 'matuc.nsi'))
 
     # update installer version number and size
-    update_installer_info("matuc.nsi", VERSION, get_size("."))
+    update_installer_info(os.path.join(BUILD_DIRECTORY, 'matuc.nsi'), VERSION,
+            get_size("."))
     subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
 
     out_file = "matuc-installer-" + str(VERSION) + ".exe"
