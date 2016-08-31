@@ -74,15 +74,10 @@ section ""
   FileWrite $0 "endlocal"
   FileClose $0
 
-  # select the files to install / to ship
-  File /r "binary"
-  file /r MAGSBS
-  file matuc.py
-  file COPYING.txt
-  file 3rdparty\pandocfilters.py
+  # select the files to install
+  File /r "build\*.*"
 
   ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR"
-
 
   # Start Menu
   createDirectory "$SMPROGRAMS\${APPNAME}"

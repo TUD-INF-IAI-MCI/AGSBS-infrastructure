@@ -12,13 +12,16 @@ If running from Windows: haskell-platform
 import os
 import shutil
 import stat
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
 from MAGSBS.config import VERSION
 
 GLADTEX_BINARY_URL = "https://github.com/humenda/GladTeX/releases/download/v2.0/gladtex-embeddable-2.0.zip"
+PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/1.17.2/pandoc-1.17.2-windows.msi"
 BUILD_DIRECTORY = "build"
+
 
 def subprocess_call(cmd):
     ret = os.system(cmd)
@@ -26,59 +29,114 @@ def subprocess_call(cmd):
         print("Subprocess halted, command:", cmd)
         sys.exit(127)
 
-def retrieve_dependencies():
-    """Check whether all dependencies have been installed and downloaded."""
-    #pylint: disable=unused-variable,multiple-imports
-    def checkfor(cmd, debian_pkg, install_otherwise):
-        if not shutil.which(cmd):
-            print("`%s` not installed, which is required for building the Windows installer." % cmd)
-            if shutil.which('dpkg'):
-                print("  Install it using `sudo apt-get install %s`." % debian_pkg)
-            else:
-                print("  " + install_otherwise)
-            sys.exit(2)
-    try:
-        import pandocfilters
-    except ImportError:
-        print("Error: module pandocfilters is missing.")
-        if shutil.which('dpkg'): # Debian-based OS
-            print("  Install it using `sudo apt-get install python3-pandocfilters`.")
+
+class SetUp:
+    """Check and retrieve build dependencies."""
+    def __init__(self):
+        self.python = 'python'
+        self.needs_wine = (True if not sys.platform.startswith('win') else
+                False)
+
+    def check_for_command(self, cmd, debian_pkg, install_otherwise, silent=False):
+        """Check whether given command exists and give instruction how to
+        install, if not found. If silent=True, no messages are printed and
+        True/False is returned."""
+        if shutil.which(cmd):
+            return True
         else:
-            print("  Install it using `sudo pip install pandocfilters`.")
-        sys.exit(2)
-    # test for makensis
-    checkfor('makensis', 'nsis', "Please install it from http://nsis.sourceforge.net/Download.")
+            if silent:
+                return False
+            else:
+                print("`%s` not installed, which is required for building the Windows installer." % cmd)
+                if shutil.which('dpkg'):
+                    print("  Install it using `sudo apt-get install %s`." % debian_pkg)
+                else:
+                    print("  " + install_otherwise)
+                sys.exit(2)
 
-    # fetch gladtex
-    os.mkdir(BUILD_DIRECTORY)
-    import io, urllib.request, zipfile
-    print("Downloading " + GLADTEX_BINARY_URL)
-    with urllib.request.urlopen(GLADTEX_BINARY_URL) as u:
-        zip = u.read()
-    zip = zipfile.ZipFile(io.BytesIO(zip))
-    zip.extractall(BUILD_DIRECTORY)
-    # if it had a subdirectory, move contents out of it
-    build_contents = os.listdir(BUILD_DIRECTORY)
-    if len(build_contents) == 1:
-        subdir = os.path.join(BUILD_DIRECTORY, build_contents[0])
-        if os.path.isdir(subdir):
-            # move all files from subdirectory one level higher
-            for f in (os.path.join(subdir, f) for f in os.listdir(subdir)):
-                shutil.move(f, BUILD_DIRECTORY)
-            os.rmdir(subdir)
 
-    if sys.platform.lower().startswith('win'):
-        checkfor('cabal', 'cabal-install', 'https://www.haskell.org/platform')
-        # build static pandoc
-        subprocess_call('cabal update')
-        subprocess_call('cabal install hsb2hs')
-        subprocess_call('cabal install --flags="embed_data_files" citeproc-hs')
-        subprocess_call('cabal configure --flags="embed_data_files"')
-        subprocess_call('cabal build')
-        shutil.move('dist/build/pandoc.exe', BUILD_DIRECTORY)
-        shutil.rmtree('dist')
-    else:
-        print("Sorry, but cannot build Windows executables from another platform.")
+    def check_for_module(self, module):
+        """Check whether a library exists."""
+        command_prefix = ('wine ' if self.needs_wine else '')
+        module_found = os.system('%s%s -c "import %s"' % \
+                (command_prefix, self.python, module)) == 0
+        if not module_found:
+            print("%s missing, install using `%spip install %s`" % (
+                module, command_prefix, module))
+            sys.exit(10)
+
+    def detect_build_dependencies(self):
+        if self.needs_wine:
+            self.check_for_command('wine', 'wine64', 'Install it from https://www.winehq.org/download')
+            # detect python; -h switch is used to notprint output
+            if os.system('wine python -h 2>&1 > /dev/null'):
+                # if command python3 not found, try python
+                print("Python not installed, install it in wine using ?`wine msiexec /i <msi-name>`")
+        else:
+            self.check_for_command('python -h')
+
+        import re
+        # detect python version
+        wine = (['wine'] if self.needs_wine else [])
+        proc = subprocess.Popen(wine + [self.python, '--version'],
+                    stdout=subprocess.PIPE)
+        data = proc.communicate()[0].decode(sys.getdefaultencoding())
+        if proc.wait():
+            print('error while retrieving python version: ', repr(data))
+            sys.exit(3)
+        pyversion = re.search(r'.*ython.*\s+(3\.\d+).*', data)
+        if pyversion:
+            pyversion = pyversion.groups()[0]
+            if not pyversion.startswith('3'):
+                print("Python version >= 3.2 required, found %s" % pyversion.groups()[0])
+        else:
+            print("Python version >= 3.2 required.")
+
+        # test for py2exe
+        self.check_for_module('py2exe')
+        self.check_for_module('pandocfilters')
+        # check for nsis generator
+        self.check_for_command('makensis', 'nsis',
+                "Please install it from http://nsis.sourceforge.net/Download.")
+        self.check_for_command('7z', 'p7zip-full',
+                'Please install it from http://7-zip.org')
+
+
+    def retrieve_dependencies(self):
+        """Check whether all dependencies have been installed and downloaded."""
+        #pylint: disable=unused-variable,multiple-imports
+        # fetch gladtex
+        os.mkdir(BUILD_DIRECTORY)
+        import io, urllib.request, zipfile
+        print("Downloading " + GLADTEX_BINARY_URL)
+        with urllib.request.urlopen(GLADTEX_BINARY_URL) as u:
+            zip = u.read()
+        zip = zipfile.ZipFile(io.BytesIO(zip))
+        zip.extractall(BUILD_DIRECTORY)
+        # if it had a subdirectory, move contents out of it
+        build_contents = os.listdir(BUILD_DIRECTORY)
+        if len(build_contents) == 1:
+            subdir = os.path.join(BUILD_DIRECTORY, build_contents[0])
+            if os.path.isdir(subdir):
+                # move all files from subdirectory one level higher
+                for f in (os.path.join(subdir, f) for f in os.listdir(subdir)):
+                    shutil.move(f, BUILD_DIRECTORY)
+                os.rmdir(subdir)
+
+        # fetch pandoc installer, extract pandoc.exe (is a static binary)
+        tmp = os.path.join(BUILD_DIRECTORY, 'tmp.pandoc')
+        os.mkdir(tmp)
+        print("Downloading", PANDOC_INSTALLER_URL)
+        with urllib.request.urlopen(PANDOC_INSTALLER_URL) as u:
+            with open(os.path.join(tmp, 'x.msi'), 'wb') as f:
+                f.write(u.read())
+        os.chdir(tmp)
+        subprocess_call('7z x x.msi')
+        os.rename('pandocEXE', os.path.join('..', 'pandoc.exe'))
+        os.chdir("..")
+        shutil.rmtree(os.path.basename(tmp)) # remove pandoc's temp directory
+        os.chdir("..")
+
 
 def clean():
     """Remove build directory."""
@@ -111,15 +169,7 @@ def get_size(directory):
 def update_installer_info(filename, version, total_size):
     """Update fields in the installer nsi script like size and version
     number."""
-    vlist = version.split(".")
-    if not all(map(str.isdigit, vlist)):
-        raise ValueError("Version may only contain numbers")
-    else:
-        vlist = list(map(int, vlist))
-    if len(vlist) > 3 or len(vlist) < 2:
-        raise ValueError("Version must have either two or three steps.")
-    if len(vlist) == 2:
-        vlist.append(0)
+    vlist = tuple(version.version)
     data = []
     with open(filename, encoding="utf-8") as file:
         for line in file:
@@ -168,6 +218,7 @@ def build_installer():
 
 
 clean()
-retrieve_dependencies()
+st = SetUp()
+st.detect_build_dependencies()
+st.retrieve_dependencies()
 build_installer()
-clean()
