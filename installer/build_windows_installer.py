@@ -15,7 +15,6 @@ import subprocess
 import sys
 
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
-from MAGSBS.config import VERSION
 
 GLADTEX_BINARY_URL = "https://github.com/humenda/GladTeX/releases/download/v2.0/gladtex-embeddable-2.0.zip"
 PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/1.17.2/pandoc-1.17.2-windows.msi"
@@ -233,6 +232,7 @@ def build_installer():
     shutil.copy('matuc.nsi', os.path.join(BUILD_DIRECTORY, 'matuc.nsi'))
 
     # update installer version number and size
+    from MAGSBS.config import VERSION
     update_installer_info(os.path.join(BUILD_DIRECTORY, 'matuc.nsi'), VERSION,
             get_size("."))
     subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
