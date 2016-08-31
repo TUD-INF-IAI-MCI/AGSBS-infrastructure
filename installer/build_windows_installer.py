@@ -11,7 +11,6 @@ If running from Windows: haskell-platform
 
 import os
 import shutil
-import stat
 import subprocess
 import sys
 
@@ -23,19 +22,24 @@ PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/1.17.2/p
 BUILD_DIRECTORY = "build"
 
 
-def subprocess_call(cmd):
+def subprocess_call(cmd, other_dir=None):
+    cwd = os.getcwd()
+    if other_dir:
+        os.chdir(other_dir)
     ret = os.system(cmd)
     if ret:
         print("Subprocess halted, command:", cmd)
         sys.exit(127)
+    if other_dir:
+        os.chdir(cwd)
 
 
 class SetUp:
     """Check and retrieve build dependencies."""
     def __init__(self):
-        self.python = 'python'
         self.needs_wine = (True if not sys.platform.startswith('win') else
                 False)
+        self.python_command = ('wine python' if self.needs_wine else 'python')
 
     def check_for_command(self, cmd, debian_pkg, install_otherwise, silent=False):
         """Check whether given command exists and give instruction how to
@@ -58,8 +62,8 @@ class SetUp:
     def check_for_module(self, module):
         """Check whether a library exists."""
         command_prefix = ('wine ' if self.needs_wine else '')
-        module_found = os.system('%s%s -c "import %s"' % \
-                (command_prefix, self.python, module)) == 0
+        module_found = os.system('%s -c "import %s"' % \
+                (self.python_command, module)) == 0
         if not module_found:
             print("%s missing, install using `%spip install %s`" % (
                 module, command_prefix, module))
@@ -73,12 +77,11 @@ class SetUp:
                 # if command python3 not found, try python
                 print("Python not installed, install it in wine using ?`wine msiexec /i <msi-name>`")
         else:
-            self.check_for_command('python -h')
+            self.check_for_command('python', 'python3', 'Install it from https://www.winehq.org/download')
 
         import re
         # detect python version
-        wine = (['wine'] if self.needs_wine else [])
-        proc = subprocess.Popen(wine + [self.python, '--version'],
+        proc = subprocess.Popen(self.python_command.split(' ') + ['--version'],
                     stdout=subprocess.PIPE)
         data = proc.communicate()[0].decode(sys.getdefaultencoding())
         if proc.wait():
@@ -140,20 +143,13 @@ class SetUp:
 
 def clean():
     """Remove build directory."""
+    if not os.path.basename(os.getcwd()) == 'installer':
+        raise ValueError("BUG, expected to be in directory `installer`, but am in " + os.getcwd())
     if os.path.exists(BUILD_DIRECTORY):
         shutil.rmtree(BUILD_DIRECTORY)
+    if os.path.exists(os.path.join('..', 'dist')):
+        shutil.rmtree(os.path.join('..', 'dist'))
 
-
-def remove(directory):
-    """Remove directory, without asking."""
-    if not os.path.exists(directory):
-        return
-    # use onerror callback to clear readonly bit and reattempt removal
-    def remove_readonly(func, fpath, _):
-        "Clear the readonly bit and reattempt the removal"
-        os.chmod(fpath, stat.S_IWRITE)
-        func(fpath)
-    shutil.rmtree(directory, onerror=remove_readonly)
 
 def get_size(directory):
     """Return the size of a directory by recursively querying the size of all
@@ -188,10 +184,26 @@ def update_installer_info(filename, version, total_size):
             file.write(line)
 
 
+def compile_scripts(python_command):
+    """Compile matuc using py2exe. Cross-compilation is determined by
+    `python_command` (either 'python' or 'wine python')."""
+    os.chdir('..') # change to source root
+    ret = os.system('%s -m py2exe -b 3 matuc.py' % python_command )
+    if ret: # error
+        print("Stop installer creation.")
+        sys.exit(8)
+    ret = os.system('%s -m py2exe -b 3 -i matuc matuc_js.py' % python_command )
+    if ret:
+        print("Stopping compilation.")
+        sys.exit(9)
+    os.chdir('installer')
+
 def build_installer():
     """Prepare environment to build Windows installer using makensis."""
-    for path in ["../matuc.py", "matuc.nsi", "../MAGSBS", "EnvVarUpdate.nsh",
-            "../COPYING"]:
+    # move a few files like e.g. README to distribution; MAGSBS and matuc.py are
+    # required, since py2exe doesn't include them properly
+    for path in [os.path.join('..', 'matuc.py'), os.path.join('..', 'MAGSBS'),
+            os.path.join('..', 'COPYING'), os.path.join('..', 'README.en')]:
         basename = os.path.basename(path)
         if not os.path.exists(path):
             raise OSError("%s not found!" % path)
@@ -199,20 +211,34 @@ def build_installer():
             shutil.copyfile(path, os.path.join(BUILD_DIRECTORY, basename))
         else:
             shutil.copytree(path, os.path.join(BUILD_DIRECTORY, basename))
-
+    # make text files readable for Windows users
     os.chdir(BUILD_DIRECTORY)
-    os.rename("COPYING", "COPYING.txt")
-    if shutil.which('flip'):
-        subprocess_call("flip -bu COPYING.txt")
+    for file in ('README.en', 'COPYING'):
+        os.rename(file, os.path.splitext(file)[0] + '.txt')
+        if shutil.which('flip'):
+            os.system('flip -bu COPYING.txt')
+    os.chdir('..')
+
+
+
+    # move all files from BUILD_DIRECTORY to a subdirectory; this way a
+    # temporary .nsis-file can be used
+    os.rename(BUILD_DIRECTORY, 'binary')
+    os.mkdir(BUILD_DIRECTORY)
+    os.rename('binary', os.path.join(BUILD_DIRECTORY, 'binary'))
+
+    # copy matuc.nsi and *.nsh to build/
+    shutil.copy('EnvVarUpdate.nsh', os.path.join(BUILD_DIRECTORY,
+        'EnvVarUpdate.nsh'))
+    shutil.copy('matuc.nsi', os.path.join(BUILD_DIRECTORY, 'matuc.nsi'))
 
     # update installer version number and size
     update_installer_info("matuc.nsi", VERSION, get_size("."))
-    subprocess_call("makensis matuc.nsi")
+    subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
 
-    out_file = "matuc_installer_" + VERSION + ".exe"
+    out_file = "matuc-installer-" + str(VERSION) + ".exe"
 
-    os.rename("matuc_installer.exe", os.path.join("..", out_file))
-    os.chdir("..")
+    os.rename(os.path.join(BUILD_DIRECTORY, "matuc-installer.exe"), out_file)
     if shutil.which("chmod"):
         os.system("chmod a+r " + out_file)
 
@@ -221,4 +247,6 @@ clean()
 st = SetUp()
 st.detect_build_dependencies()
 st.retrieve_dependencies()
+compile_scripts(st.python_command)
 build_installer()
+clean()

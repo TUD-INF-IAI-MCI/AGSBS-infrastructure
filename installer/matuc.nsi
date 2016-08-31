@@ -2,22 +2,22 @@
 !define DESCRIPTION "Command-line driven AGSBS utility for converting markdown with extensions"
 # version digits must be integers
 !define VERSIONMAJOR 0
-!define VERSIONMINOR 1
-!define VERSIONBUILD 1
+!define VERSIONMINOR 5
+!define VERSIONBUILD 0
 
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # email link which would open the email address in the email program
 !define HELPURL "mailto:agsbs@groups.tu-dresden.de"
 # This is the size (in kB) of all the files copied into "Program Files"
-!define INSTALLSIZE 83700
+!define INSTALLSIZE 58985741
 # installer/uninstaller's title bar
 Name "${APPNAME}"
   
 !include "EnvVarUpdate.nsh"
 
 # plain text files must have \r\n line delimiters
-LicenseData "COPYING.txt"
-Outfile "matuc_installer.exe"
+LicenseData "binary/COPYING.txt"
+Outfile "matuc-installer.exe"
 InstallDir "$PROGRAMFILES\agsbs\matuc"
 
 # installation flow
@@ -75,7 +75,7 @@ section ""
   FileClose $0
 
   # select the files to install
-  File /r "build\*.*"
+  File /r "binary\*.*"
 
   ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR"
 
