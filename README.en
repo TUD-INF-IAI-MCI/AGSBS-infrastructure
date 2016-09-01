@@ -1,6 +1,4 @@
 <!-- vim: set ft=markdown sts=4 ts=4 sw=4 expandtab: -->
-To Do: TRANSLATION INTO GERMAN
-
 MAGSBS - MarkDown AG SBS module
 ===============================
 
@@ -33,7 +31,7 @@ requests.
 
 ### Dependencies
 
-This version of MAGSBS / matuc depends on Python in version >= 3.5.
+This version of MAGSBS / matuc depends on Python in version >= 3.4.
 
 To test what your default Python is, execute:
 
@@ -44,22 +42,15 @@ all commands below with "python". If however the command returns something like
 2.x.x, you need to call every mentioned command instead with "python3". In the
 latter case, you should also check that Python3 is instaled.
 
-In addition you need Pandoc (version >= 1.12) and Python-Pandocfilters.
-Python-Pandocfilters can be obtained either from
-<https://github.com/jgm/pandocfilters.git> or from your favorite package
-manager.\
-You can also use `pip` (available with every default Python installation) like
-this:
+In addition you need [Pandoc](http://pandoc.org) (version >= 1.12),
+[GladTeX](http://humenda.github.io/GladTeX) and Python-Pandocfilters.
+
+**Note:** For Windows, there are pre-compiled installers available. If you don't want to
+use those, you have to set up the dependencies manually:
+
     pip install pandocfilters
 
-or on Windows, if Python is not on the path (and Python 3.4 is used)
-
-    c:\python34\scripts\pip install pandocfilters
-
-You also need GladTeX, see <https://humenda.github.io/GladTeX>.
-
-
-### Installation On Windows
+### Installation From Source On Windows
 
 
 + Windows: open a cmd window (e.g. press Windows + r and type there cmd<enter>),
@@ -72,15 +63,15 @@ Now you can run matuc, which was installed to `c:\python<version>\scripts`.
 Consider adding this path to the `%PATH%` variable. Also keep in mind that by
 default, you have to type matuc.py.
 
-### Debian/Ubuntu/Mint
+### Debian/Ubuntu/Mint, et al.
 
-    sudo apt install python3-pandocfilters gladtex
+    sudo apt install python3-pandocfilters gladtex pandoc
 
 Then proceed with the next section.
 
 ### unixoid systems
 
-Please test, whether oyu have to run python3 or python. Try `python3 --version`
+Please test, whether you have to run python3 or python. Try `python3 --version`
 to find out whether python3 exists and if so, use that. Otherwise use python as
 this:
 
