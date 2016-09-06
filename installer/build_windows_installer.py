@@ -16,7 +16,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
 
-GLADTEX_BINARY_URL = "/humenda/GladTeX/releases/download/v2.0.1/gladtex-2.0-py_3.4.4-embeddable.zip"
+GLADTEX_BINARY_URL = "http://github.com/humenda/GladTeX/releases/download/v2.0.1/gladtex-2.0-py_3.4.4-embeddable.zip"
 PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/1.17.2/pandoc-1.17.2-windows.msi"
 BUILD_DIRECTORY = "build"
 
