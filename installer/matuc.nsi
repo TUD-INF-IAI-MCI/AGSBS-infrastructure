@@ -69,8 +69,8 @@ section ""
   FileOpen $0 "$INSTDIR\matuc.bat" w
   FileWrite $0 "@echo off$\r$\n"
   FileWrite $0 "setlocal$\r$\n"
-  FileWrite $0 "SET PATH=%PATH%;$\"$INSTDIR\binary$\"$\r$\n"
-  FileWrite $0 "$\"$INSTDIR\binary\python$\" $\"$INSTDIR\matuc.py$\" %*$\r$\n"
+  FileWrite $0 "SET PATH=%PATH%;$\"$INSTDIR\"$\r$\n"
+  FileWrite $0 "$\"$INSTDIR\matuc.exe$\" %*$\r$\n"
   FileWrite $0 "endlocal"
   FileClose $0
 
