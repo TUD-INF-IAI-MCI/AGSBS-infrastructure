@@ -5,7 +5,7 @@ building a Windows installer. It also executes makensis.
 
 The version is automatically extracted from MAGSBS.config.VERSION.
 
-Dependencies: nsis (Nullsoft Installer), python3.4, pandocfilters, 
+Dependencies: nsis (Nullsoft Installer), python3.4, pandocfilters,
 If running from Windows: haskell-platform
 """
 
@@ -186,6 +186,7 @@ def update_installer_info(filename, version, total_size):
 def compile_scripts(python_command):
     """Compile matuc using py2exe. Cross-compilation is determined by
     `python_command` (either 'python' or 'wine python')."""
+    origin = os.path.basename(os.getcwd())
     os.chdir('..') # change to source root
     ret = os.system('%s -m py2exe -b 3 matuc.py' % python_command )
     if ret: # error
@@ -195,7 +196,12 @@ def compile_scripts(python_command):
     if ret:
         print("Stopping compilation.")
         sys.exit(9)
-    os.chdir('installer')
+    # move compiled binary files
+    for file in os.listdir('dist'):
+        dest = os.path.join(os.path.join(origin, BUILD_DIRECTORY), file)
+        if not os.path.exists(dest):
+            os.rename(os.path.join('dist', file), dest)
+    os.chdir(origin)
 
 def build_installer():
     """Prepare environment to build Windows installer using makensis."""
@@ -231,6 +237,7 @@ def build_installer():
         'EnvVarUpdate.nsh'))
     shutil.copy('matuc.nsi', os.path.join(BUILD_DIRECTORY, 'matuc.nsi'))
 
+    #pylint: disable=import-error
     # update installer version number and size
     from MAGSBS.config import VERSION
     update_installer_info(os.path.join(BUILD_DIRECTORY, 'matuc.nsi'), VERSION,
