@@ -29,7 +29,6 @@ HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta http-equiv="Content-Style-Type" content="text/css" />
   <meta name="author" content="{sourceAuthor}" />
 $if(date-meta)$
   <meta name="date" content="$date-meta$" />
@@ -38,7 +37,7 @@ $endif$
   <style type="text/css">
     code {{ white-space: pre; }}
     .underline {{ text-decoration: underline }}
-    .frame {{ border:2px solid #000000; }}
+    .frame {{ border:1px solid #000000; }}
     .annotation {{ border:2px solid #000000; background-color: #FCFCFC; }}
     .annotation:before {{ content: "{annotation}: "; }}
     table, th {{ border:2px solid #000000; }}
