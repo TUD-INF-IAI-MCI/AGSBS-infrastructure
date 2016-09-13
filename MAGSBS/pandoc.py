@@ -40,7 +40,7 @@ $endif$
     .frame {{ border:1px solid #000000; }}
     .annotation {{ border:2px solid #000000; background-color: #FCFCFC; }}
     .annotation:before {{ content: "{annotation}: "; }}
-    table, th {{ border:2px solid #000000; }}
+    table, th, td {{ border:1px solid #000000; }}
 $if(highlighting-css)$
 $highlighting-css$
 $endif$
