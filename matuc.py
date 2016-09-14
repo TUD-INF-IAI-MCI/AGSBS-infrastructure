@@ -418,7 +418,7 @@ sub-directory configurations or initialization of a new project."""
 
         with ErrorHandler(self.output_formatter):
             p = MAGSBS.pandoc.Pandoc()
-            p.convert_files(args.file)
+            p.convert_files((args.file,))
 
 
     def handle_imgdsc(self, cmd, args):

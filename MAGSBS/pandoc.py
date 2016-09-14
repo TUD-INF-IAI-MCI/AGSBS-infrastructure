@@ -351,7 +351,9 @@ The parameter `format` can be supplied to override the configured output format.
         """Convert a list of files. They should share all the meta data, except
         for the title. All files must be part of one lecture.
         `files` can be either a cache object or a list of files to convert."""
-        if isinstance(files, datastructures.FileCache):
+        if isinstance(files, str):
+            raise TypeError("list or tuple of files required.")
+        elif isinstance(files, datastructures.FileCache):
             cache = files
             files = cache.get_all_files()
         else:
@@ -382,12 +384,13 @@ The parameter `format` can be supplied to override the configured output format.
             if converter:
                 converter.cleanup()
 
-    # ToDo: doc
     def __convert_document(self, path, file_cache, converter, conf):
         """Convert a document by a given path. It takes a converter which takes
         actual care of the underlying format. The filecache caches the list of
-        files in the lecture.
-        This funciton also takes care of inserting a page navigation bar."""
+        files in the lecture. The list of files within a lecture is required to
+        build navigation links.
+        This function also inserts a page navigation bar to navigate between
+        chapters and the table of contents."""
         # if output file name exists and is newer than the original, it doesn need to be converted again
         if not converter.needs_update(path):
             return
