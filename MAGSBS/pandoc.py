@@ -339,7 +339,8 @@ The parameter `format` can be supplied to override the configured output format.
         path = os.path.abspath(some_file)
         if os.path.isfile(path):
             path = os.path.split(path)[0]
-        while path and not common.is_lecture_root(path):
+        is_fs_root = lambda path: os.path.dirname(path) == path
+        while path and not is_fs_root(path) and not common.is_lecture_root(path):
             path = os.path.split(path)[0]
         if path:
             return path
