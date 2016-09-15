@@ -1,5 +1,6 @@
 0.5
 
+* use GladTeX -L switch to convert using LuaLaTeX
 * performance enhancements
 	* write as few templates as possible (only when configuration for a given
 		path is different from the previous one); that reduces writes on persistant
