@@ -208,7 +208,7 @@ def build_installer():
     # move a few files like e.g. README to distribution; MAGSBS and matuc.py are
     # required, since py2exe doesn't include them properly
     for path in [os.path.join('..', 'matuc.py'), os.path.join('..', 'MAGSBS'),
-            os.path.join('..', 'COPYING'), os.path.join('..', 'README.en')]:
+            os.path.join('..', 'COPYING'), os.path.join('..', 'README.md')]:
         basename = os.path.basename(path)
         if not os.path.exists(path):
             raise OSError("%s not found!" % path)
@@ -218,10 +218,9 @@ def build_installer():
             shutil.copytree(path, os.path.join(BUILD_DIRECTORY, basename))
     # make text files readable for Windows users
     os.chdir(BUILD_DIRECTORY)
-    for file in ('README.en', 'COPYING'):
-        os.rename(file, os.path.splitext(file)[0] + '.txt')
-        if shutil.which('flip'):
-            os.system('flip -bu COPYING.txt')
+    os.rename('COPYING', 'COPYING.txt')
+    if shutil.which('flip'):
+        os.system('flip -bm COPYING.txt')
     os.chdir('..')
 
 
