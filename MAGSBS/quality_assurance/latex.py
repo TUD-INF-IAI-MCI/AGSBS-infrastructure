@@ -100,29 +100,6 @@ class SpacingInFormulaShouldBeDoneWithQuad(FormulaMistake):
                 return self.error(r"Leerräume in Formeln sollten mit \quad oder \qquad gekennzeichnet werden, da sie sonst mit Sprachausgabe schwer lesbar sind.",
                     lnum=line, pos=pos)
 
-class NonAsciiCharactersInFormulaDetected(FormulaMistake):
-    """LaTeX 2e doesn't support umlauts in maths and as long as no lualatex is
-    used, this has to be flagged as an error."""
-    def __init__(self):
-        super().__init__()
-        self.textenv = re.compile(r'\\text\{.*?\}')
-
-    def worker(self, *args):
-        for (line, pos), formula in args[0].items():
-            formula = formula[:] # need a copy, because stuff gets modified and it's just a reference
-            found = False
-            for c in formula:
-                if ord(c) > 128:
-                    found = True
-                    break
-            if found and not '\\text' in formula:
-                return self.error(("LaTeX 2e unterstützt nur Zeichen aus dem "
-                    "ASCII-Zeichensatz in Formeln, d.h. nur Zeichen, die auf "
-                    "einer US-amerikanischen Tastatur vorhanden sind. Alle "
-                    "anderen Zeichen müssen durch Befehle dargestellt werden."),
-                    lnum=line, pos=pos)
-
-
 class UseProperCommandsForMathOperatorsAndFunctions(FormulaMistake):
     r"""\min, \max, ... should be marked up correctly."""
     def __init__(self):

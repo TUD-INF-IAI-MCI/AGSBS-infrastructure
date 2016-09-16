@@ -55,7 +55,6 @@ class Mistkerl():
                 BrokenImageLinksAreDetected,
                 HyphensFromJustifiedTextWereRemoved,
                 DisplayMathShouldNotBeUsedWithinAParagraph,
-                NonAsciiCharactersInFormulaDetected,
                 UseProperCommandsForMathOperatorsAndFunctions,
                 FormulasSpanningAParagraphShouldBeDisplayMath,
                 DetectEmptyImageDescriptions]
