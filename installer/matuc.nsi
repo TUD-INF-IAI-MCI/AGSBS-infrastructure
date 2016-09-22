@@ -16,7 +16,7 @@ Name "${APPNAME}"
 !include "EnvVarUpdate.nsh"
 
 # plain text files must have \r\n line delimiters
-LicenseData "binary/COPYING.txt"
+LicenseData "binary\COPYING.txt"
 Outfile "matuc-installer.exe"
 InstallDir "$PROGRAMFILES\agsbs\matuc"
 
@@ -105,7 +105,7 @@ section ""
 SectionEnd
 
 Section "Uninstall"
-  ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR\binary"
+  ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR"
   RMDir /r "$INSTDIR"
   rmDir /r "$SMPROGRAMS\${APPNAME}"
 

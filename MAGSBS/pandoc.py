@@ -94,6 +94,7 @@ def execute(args, stdin=None, cwd=None):
     proc = None
     text = None
     cwd = (cwd if cwd else '.')
+    text = ''
     try:
         if stdin:
             proc = subprocess.Popen(args, stdout=subprocess.PIPE,
@@ -104,7 +105,7 @@ def execute(args, stdin=None, cwd=None):
                 stderr=subprocess.PIPE, cwd=cwd)
             text = proc.communicate()
     except FileNotFoundError as e:
-        msg = str(args[0]) + ': ' + str(e)
+        msg = str(args[0]) + ': ' + str(e + ' ' + str(text))
         raise errors.SubprocessError(args, msg)
     if not proc:
         raise ValueError("No subprocess handle exists, even though it " + \
