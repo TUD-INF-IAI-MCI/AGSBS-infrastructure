@@ -65,15 +65,6 @@ section ""
   # set values
   SetOutPath $INSTDIR
 
-  # create batch file to run matuc
-  FileOpen $0 "$INSTDIR\matuc.bat" w
-  FileWrite $0 "@echo off$\r$\n"
-  FileWrite $0 "setlocal$\r$\n"
-  FileWrite $0 "SET PATH=%PATH%;$\"$INSTDIR$\"$\r$\n"
-  FileWrite $0 "$\"$INSTDIR\matuc.exe$\" %*$\r$\n"
-  FileWrite $0 "endlocal"
-  FileClose $0
-
   # select the files to install
   File /r "binary\*.*"
 
