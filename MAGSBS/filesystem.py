@@ -160,6 +160,7 @@ Initialize basic configuration as well."""
         os.chdir(self.__path)
         # initialize configuration:
         inst = config.LectureMetaData(config.CONF_FILE_NAME)
+        inst['language'] = self.__lang
         inst.write()
         # read this configuration back in again using singleton
         inst = config.confFactory().get_conf_instance(".")
