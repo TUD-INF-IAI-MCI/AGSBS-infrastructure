@@ -236,7 +236,7 @@ class HtmlConverter(OutputGenerator):
             '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
         if use_gladtex:
             try:
-                execute(["gladtex", "-L", "-n", "-m", "-a", "-d", "bilder",
+                execute(["gladtex", "-R", "-n", "-m", "-a", "-d", "bilder",
                     outputf], cwd=dirname)
             except errors.SubprocessError as e:
                 raise self.__handle_gladtex_error(e, filename, dirname)
