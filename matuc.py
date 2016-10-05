@@ -337,8 +337,10 @@ values), but it does that for the current directory. This is handy for
 sub-directory configurations or initialization of a new project."""
         parser = HelpfulParser(cmd, self.output_formatter, description)
         parser.add_argument("-a", dest="appendixPrefix",
-                  help='use "A" as prefix to appendix chapter numbering and turn the extra heading "appendix" (or translated equivalent) off',
+                  help='use "A" as prefix to appendix chapter numbering and omit the additional header "appendix" (or its localized version)',
                   action="store_true", default=False)
+        parser.add_argument("-A", dest="sourceAuthor",
+                  help="set author of source document", default=None)
         parser.add_argument("-f", dest="format",
                   help="select output format",
                   metavar="FMT", default=None)
@@ -358,7 +360,7 @@ sub-directory configurations or initialization of a new project."""
                   help="gap in numbering between page links.",
                   metavar="NUM", default=None)
         parser.add_argument("-s", dest="source",
-                  help="set source document",
+                  help="set source document information",
                   metavar="SRC", default=None)
         parser.add_argument("-S", dest="semesterofedit",
                   help="set semester of edit (will be guessed else)",
