@@ -9,23 +9,14 @@ matuc and alters the OutputFormatter to print JSON."""
 import json
 import os
 import sys
-import imp
+import matuc_impl
 
-binary_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
-# check for the matuc "program" to use as library."""
-if not any('matuc' in e   for e in os.listdir(binary_directory)):
-    raise OSError('Could not find matuc in "%s" % binary_directory'
-if 'matuc.py' in os.listdir(binary_directory):
-    matuc = imp.load_source('matuc', os.path.join(binary_directory,
-        'matuc.py'))
-elif 'matuc' in os.listdir(binary_directory):
-    matuc = imp.load_source('matuc', os.path.join(binary_directory, 'matuc'))
-
-# enable debugging for matuc_js, since it is a programatic internface and it is
+# enable debugging for matuc_js, since it is an API internface and it is
 # useful to report errors when they occur
 os.environ['DEBUG'] = str(1)
 
-class JsonFormatter(matuc.OutputFormatter):
+class JsonFormatter(matuc_impl.OutputFormatter):
+    """Out formatter which displays all messages and objects as JSON objects."""
     def __emit_json(self, object):
         sys.stdout.write(json.dumps(object, indent=2, sort_keys=True) + '\n')
 
@@ -41,7 +32,7 @@ class JsonFormatter(matuc.OutputFormatter):
         warnings = self.get_warnings()
         output = {'error': error}
         if warnings:
-            output['warnings'] = warnings 
+            output['warnings'] = warnings
         self.__emit_json(output)
 
     def emit_usage(self, usage, error=None):
@@ -55,6 +46,6 @@ class JsonFormatter(matuc.OutputFormatter):
         pass
 
 if __name__ == '__main__':
-    main_inst = matuc.main(JsonFormatter())
+    main_inst = matuc_impl.main(JsonFormatter())
     main_inst.run(sys.argv)
 
