@@ -23,7 +23,7 @@ os.umask(0o22) # everybody can read, only owner can write
 
 setup(name='MAGSBS-matuc',
       version=str(MAGSBS.config.VERSION),
-      packages=['MAGSBS', 'MAGSBS.quality_assurance'],
+      packages=['MAGSBS', 'MAGSBS.quality_assurance', 'matuc_impl'],
       scripts=["matuc.py", "matuc_js.py"],
       cmdclass = {"install_scripts": my_install}
     )
