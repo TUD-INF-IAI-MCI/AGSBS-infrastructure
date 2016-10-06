@@ -192,7 +192,7 @@ def compile_scripts(python_command):
     if ret: # error
         print("Stop installer creation.")
         sys.exit(8)
-    ret = os.system('%s -m py2exe -b 3 -i matuc matuc_js.py' % python_command )
+    ret = os.system('%s -m py2exe -b 3 -i matuc_impl matuc_js.py' % python_command )
     if ret:
         print("Stopping compilation.")
         sys.exit(9)
@@ -205,9 +205,9 @@ def compile_scripts(python_command):
 
 def build_installer():
     """Prepare environment to build Windows installer using makensis."""
-    # move a few files like e.g. README to distribution; MAGSBS and matuc.py are
+    # move a few files like e.g. README to distribution; MAGSBS and matuc_impl are
     # required, since py2exe doesn't include them properly
-    for path in [os.path.join('..', 'matuc.py'), os.path.join('..', 'MAGSBS'),
+    for path in [os.path.join('..', 'matuc_impl'), os.path.join('..', 'MAGSBS'),
             os.path.join('..', 'COPYING'), os.path.join('..', 'README.md')]:
         basename = os.path.basename(path)
         if not os.path.exists(path):
