@@ -207,18 +207,13 @@ def build_installer():
     """Prepare environment to build Windows installer using makensis."""
     # move a few files like e.g. README to distribution; MAGSBS and matuc_impl are
     # required, since py2exe doesn't include them properly
-    for path in [os.path.join('..', 'matuc_impl'), os.path.join('..', 'MAGSBS'),
-            os.path.join('..', 'COPYING'), os.path.join('..', 'README.md')]:
-        basename = os.path.basename(path)
-        if not os.path.exists(path):
-            raise OSError("%s not found!" % path)
-        elif os.path.isfile(path):
-            shutil.copyfile(path, os.path.join(BUILD_DIRECTORY, basename))
-        else:
-            shutil.copytree(path, os.path.join(BUILD_DIRECTORY, basename))
+    target = lambda x: os.path.join(BUILD_DIRECTORY, x)
+    shutil.copytree(os.path.join('..', 'matuc_impl'), target('matuc_impl'))
+    shutil.copytree(os.path.join('..', 'MAGSBS'), target('MAGSBS'))
+    shutil.copyfile(os.path.join('..', 'COPYING'), target('COPYING.txt'))
+    shutil.copytree(os.path.join('..', 'README.md'), target('README.md'))
     # make text files readable for Windows users
     os.chdir(BUILD_DIRECTORY)
-    os.rename('COPYING', 'COPYING.txt')
     if shutil.which('flip'):
         os.system('flip -bm COPYING.txt')
     os.chdir('..')
