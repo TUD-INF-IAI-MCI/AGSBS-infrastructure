@@ -43,6 +43,9 @@ file containing outsourced image descriptions.
         l10N.set_language(self.__conf['language'])
         self.__translate = _ = l10N.get_translation
         self.__image_path = image_path
+        # replace \\ through / on windows
+        if sys.platform.lower().startswith('win') and os.sep in image_path:
+            self.__image_path = '/'.join(image_path.split(os.sep))
         self.__description = '\n'
         self.__title = None
         self.__outsource_descriptions = False
