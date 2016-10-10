@@ -211,7 +211,7 @@ def build_installer():
     shutil.copytree(os.path.join('..', 'matuc_impl'), target('matuc_impl'))
     shutil.copytree(os.path.join('..', 'MAGSBS'), target('MAGSBS'))
     shutil.copyfile(os.path.join('..', 'COPYING'), target('COPYING.txt'))
-    shutil.copytree(os.path.join('..', 'README.md'), target('README.md'))
+    shutil.copyfile(os.path.join('..', 'README.md'), target('README.md'))
     # make text files readable for Windows users
     os.chdir(BUILD_DIRECTORY)
     if shutil.which('flip'):
