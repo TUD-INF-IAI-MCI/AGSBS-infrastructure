@@ -7,6 +7,7 @@ documents or parts of it from data read in other modules. The purpose is the
 auto-generation of certain aspects of the generated material."""
 
 import os
+import sys
 from . import datastructures
 from . import config
 
