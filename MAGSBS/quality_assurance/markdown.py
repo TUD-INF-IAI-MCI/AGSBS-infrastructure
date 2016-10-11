@@ -319,17 +319,26 @@ class ParagraphMayNotEndOnBackslash(Mistake):
                     "Folge wird das folgende Element falsch formatiert."),
                     lnum=start_line + len(paragraph))
 
-class InlineMathsShouldntContainNewlines(OnelinerMistake):
-    """Inline formula environments with a newline are not allowed, use $$
-    instead."""
+class DetectStrayingDollars(OnelinerMistake):
+    """An uneven number of dollar signs can indicate either a multi-line formula enclosed by only $...$ or a forgotten closing formula. Both is errorneous."""
     def check(self, lnum, line):
-        line = line.replace("$$", "")
-        # counts single $-signs
-        numDollars = len([c for c in line if c == '$'])
+        if not '$' in line:
+            return
+        line = line.replace("$$", "").replace('\\$', '')
+        # count single $-signs
+        numDollars = line.count('$')
+        # check that no $<num> (US-american price) is contained in the line:
+        if numDollars == 1:
+            index = line.index('$')
+            if index < (len(line)-1) and line[index+1].isdigit():
+                return
+
         if numDollars % 2: # odd number of dollars
-            return self.error(("Formel mit Zeilenumbruch sollen in doppelte "
-                    "$$-Zeichen eingeschlossen werden, damit der Zeilenumbruch "
-                    "erhalten bleibt."), lnum)
+            return self.error(("Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile "
+                "entdeckt. Entweder eine Formel wurde nicht geschlossen, oder es wurde "
+                "versucht, eine eingebettete Formel über mehrere Zeilen zu strecken. "
+                "Im ersteren Fall muss ein weiteres Dollar eingefügt werden, im zweiten "
+                "Fall sollte die Formel mit doppelten Dollarzeichen umrahmt werden."), lnum)
 
 
 class TextInItemizeShouldntStartWithItemizeCharacter(Mistake):

@@ -57,7 +57,7 @@ class Mistkerl():
                 DisplayMathShouldNotBeUsedWithinAParagraph,
                 UseProperCommandsForMathOperatorsAndFunctions,
                 FormulasSpanningAParagraphShouldBeDisplayMath,
-                DetectEmptyImageDescriptions]
+                DetectEmptyImageDescriptions, DetectStrayingDollars]
         self.__cache_pnums = collections.OrderedDict()
         self.__cached_headings = collections.OrderedDict()
         self.__output = []

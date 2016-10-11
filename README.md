@@ -53,7 +53,7 @@ use those, you have to set up the dependencies manually:
 ### Installation From Source On Windows
 
 
-+ Windows: open a cmd window (e.g. press Windows + r and type there cmd<enter>),
++ Windows: open a cmd window (e.g. press Windows + r and type there `cmd<enter>`),
   switch with the "cd"-command to the correct directory and execute the
   following command:
 
