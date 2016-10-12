@@ -157,11 +157,11 @@ def get_size(directory):
     for path, _, files in os.walk(directory):
         for file in files:
             size += os.path.getsize(os.path.join(path, file))
-    return size
+    return size / 1024 # bytes -> kB
 
 
 
-def update_installer_info(filename, version, total_size):
+def update_installer_info(filename, version, total_size_kb):
     """Update fields in the installer nsi script like size and version
     number."""
     vlist = tuple(version.version)
@@ -175,7 +175,7 @@ def update_installer_info(filename, version, total_size):
             elif '!define VERSIONBUILD' in line:
                 line = '!define VERSIONBUILD %d\n' % vlist[2]
             elif '!define INSTALLSIZE' in line:
-                line = '!define INSTALLSIZE %d\n' % total_size
+                line = '!define INSTALLSIZE %d\n' % total_size_kb
             # else: keep line
             data.append(line)
     with open(filename, 'w', encoding="utf-8") as file:
@@ -235,7 +235,7 @@ def build_installer():
     # update installer version number and size
     from MAGSBS.config import VERSION
     update_installer_info(os.path.join(BUILD_DIRECTORY, 'matuc.nsi'), VERSION,
-            get_size("."))
+            get_size(BUILD_DIRECTORY))
     subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
 
     out_file = "matuc-installer-" + str(VERSION) + ".exe"
