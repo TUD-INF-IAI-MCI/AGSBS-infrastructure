@@ -3,3 +3,4 @@ build
 cli/build
 dist
 installer/matuc-installer*.exe
+__pycache__

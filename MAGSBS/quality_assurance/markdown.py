@@ -378,9 +378,9 @@ This will lead to Pandoc identifying these as sublists.
                             break # an error case was encountered
             if errorneous_line:
                 return self.error(('In Aufzählungen und Nummerierungen darf '
-                    'direkt nach dem Aufzählungszeichen nicht ein Weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, '
+                    'direkt nach dem Aufzählungszeichen nicht ein weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, '
                     'da dies sonst als Unterliste erkannt wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt verhindert dies.'),
-                        lnum=errorneous_line)
+                        lnum=errorneous_line-1)
 
 
 class ToDosInImageDescriptionsAreBad(OnelinerMistake):
