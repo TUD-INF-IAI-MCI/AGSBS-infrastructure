@@ -266,6 +266,9 @@ the TOC corrrectly."""
         if self.__use_appendix_prefix and heading.get_type() == HeadingType.APPENDIX:
             prefix = 'A.'
         path = path.replace('.md', '.' + self.conf['format'])
+        # replace \ through / on windows:
+        if '\\' in path:
+            path = path.replace('\\', '/')
         return '[{}{}. {}]({}#{})'.format(prefix,
                 '.'.join(map(str, chapter_number)), # (int, int...) -> str
                 heading.get_text(), path, heading.get_id())
