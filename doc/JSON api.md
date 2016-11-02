@@ -13,11 +13,17 @@ Specification
 
 In the following specification, an array is a list of elements, i.e. `[element1, ...]` and a mapping refers to JSON objects with keys and values like `{key : value, ...}`.
 
+One special exception are mappings / dictionaries with the key "verbatim". This
+indicates that verbatim text is supplied. This means that the string may not be
+re-formatted for the user. So while it might be desirable to re-format some
+message produced by Mistkerl, verbatim (e.g. table of contents) may not be
+reformatted. Example: `[{'verbatim: '\n123\n'}, ...]`.
+
 JSON output is obtained by using the command `matuc_js`. It works exactly like
 `matuc`.
 
 There are four top-level keys which can occur within the JSON output. They are
-discussed in the subesequent sections.
+discussed in the subsequent sections.
 
 ### `usage`
 

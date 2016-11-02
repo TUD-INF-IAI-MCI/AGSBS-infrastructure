@@ -1,4 +1,4 @@
-#] vim: set expandtab sts=4 ts=4 sw=4:
+# vim: set expandtab sts=4 ts=4 sw=4:
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
@@ -282,6 +282,7 @@ class HtmlConverter(OutputGenerator):
         if not os.path.exists(output):
             return True
         # True if source file is newer:
+
         return os.path.getmtime(path) > os.path.getmtime(output)
 
 
@@ -362,9 +363,10 @@ The parameter `format` can be supplied to override the configured output format.
         else:
             fw = filesystem.FileWalker(self.get_lecture_root(files[0]))
             cache = datastructures.FileCache(fw.walk())
-        converter = None # outer scope for finally
+        converter = None # declare in outer scope for finally
         try:
             c = config.confFactory()
+            # configuration for current directory, directory changes, configuration might change too
             conf = None
             converter = None
             for file_name in files:
@@ -460,7 +462,6 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     navigation bar itself is a string.
     """
     if not os.path.exists(file_path):
-        print('jo',file_path, os.getcwd())
         raise errors.StructuralError("File doesn't exist", file_path)
     if not file_cache:
         raise ValueError("Cache with values may not be null")

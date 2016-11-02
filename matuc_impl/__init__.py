@@ -74,7 +74,7 @@ class OutputFormatter:
     will be handled appropriately. If a dict is found with the key verbatim, the
     value of that field will be printed without modification. The rest of this
     dictionary is ignored. Note: anything exporting to an JSON API must convert
-    this special case of {'verbatim:' 'something'} into 'something'. to be
+    this special case of {'verbatim': 'something'} into 'something'. to be
     compliant with the JSON API specification."""
     __metaclass__ = ABCMeta
     def register_warning(self, warn):
@@ -214,7 +214,7 @@ class main():
                 file.write(fmt.format())
                 if isinstance(file, io.StringIO):
                     file.seek(0)
-                    self.output_formatter.emit_result(file.read())
+                    self.output_formatter.emit_result({'verbatim': file.read()})
                 else:
                     file.close()
 
