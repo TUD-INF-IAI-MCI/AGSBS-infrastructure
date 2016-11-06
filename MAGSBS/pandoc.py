@@ -294,7 +294,8 @@ The parameter `format` can be supplied to override the configured output format.
     # json content filters:
     CONTENT_FILTERS = [contentfilter.page_number_extractor,
                     contentfilter.suppress_captions]
-    IS_CHAPTER = re.compile(r'^[a-z|A-Z]\d+\.md$')
+    # recognize chapter prefixes in paths, e.g. "anh01" for appendix chapter one
+    IS_CHAPTER = re.compile(r'^%s\d+\.md$' % '|'.join(common.VALID_FILE_BGN))
 
     def __init__(self, conf=None):
         self.converters = [HtmlConverter]
