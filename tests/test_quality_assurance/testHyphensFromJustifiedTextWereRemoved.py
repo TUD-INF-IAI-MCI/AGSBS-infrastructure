@@ -37,4 +37,11 @@ class TestHyphensFromJustifiedTextWereRemoved(unittest.TestCase):
 
     def test_that_hyphen_at_end_of_line_and_no_word_at_next_line_is_ignored(self):
         par = str2par('foo bar-\n+-----+...')
+        self.assertEqual(checker(par), None)
+
+    def test_that_and_or_und_on_next_line_are_tolerated(self):
+        par = str2par('hard-\nand software')
+        self.assertEqual(checker(par), None)
+        par = str2par('Hard-\nund Software')
+        self.assertEqual(checker(par), None)
 

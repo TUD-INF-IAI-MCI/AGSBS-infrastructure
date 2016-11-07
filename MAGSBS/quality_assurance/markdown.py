@@ -444,7 +444,8 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
                 if self.is_hyphenated_word(line) and has_next_line(lnum, lines):
                     next_line = lines[lnum+1].lstrip()
                     # it was justified text, if next line starts with a word
-                    if next_line and next_line[0].isalpha():
+                    if next_line and next_line[0].isalpha() and not \
+                            (next_line.startswith('und') or next_line.startswith('and')):
                         return self.error("Es wurde ein Trennstrich gefunden, "
                                 "der wahrscheinlich aus einem Text mit "
                                 "Blocksatz kopiert wurde. Dies wird in der "
