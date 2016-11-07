@@ -455,12 +455,16 @@ class DetectEmptyImageDescriptions(Mistake):
     """Detect headings in bilder.md with no described images below."""
     mistake_type = MistakeType.headings_dir
     def get_heading_ranges(self, headings, last_line):
-        last_line = 0
         for pair in common.pairwise(headings):
             yield tuple(p.get_line_number() for p in pair)
-        # at the end, emit a pair with last heading line number and the line number from the end of the document
+        # at the end, emit a pair with last heading line number and the line
+        # number from the end of the document
         if headings:
-            yield (headings[-1].get_line_number(), last_line)
+            # last_line + 1 is necessary, because normally, -1 is subtracted to
+            # not include the next heading in the range. At the enf of the
+            # file, all lines should be included, because they might be part of
+            # the image description
+            yield (headings[-1].get_line_number(), last_line + 1)
 
     def worker(self, *args):
         imgdesc = [(p, h) for p, h in args[0].items()
@@ -478,7 +482,7 @@ class DetectEmptyImageDescriptions(Mistake):
                 if not line or not line.strip():
                     continue # nothing found, check next line
                 elif '===' in line or '---' in line:
-                    continue # underline of heading has to be ignored
+                    continue # underline of heading needss to be ignored
                 else: # some text, not a heading, so image described
                     image_description_found = True
                     break
