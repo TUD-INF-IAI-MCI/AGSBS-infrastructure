@@ -259,6 +259,29 @@ class TestCodeBlockRemoval(unittest.TestCase):
                 "The code block in the middle should be empty; document is: " \
                     + repr(data))
 
+    def test_backprime_tilde_code_blocks_at_beginning_and_end_are_removed(self):
+        data = par('```\nsome_code\nok\n```\n\nla\nle\nlu\n\n```\nmore_code\nb\n```\n')
+        self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
+        self.assertTrue(6 in data, format_ln(6, data.keys()))
+        self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
+
+    def test_backprime_that_code_blocks_in_the_middle_work(self):
+        data = par('heading\n======\n\ndum-\nmy\n\n```\nremoved\n```\n\ntest\ndone\n')
+        self.assertFalse('removed' in '\n'.join(flatten(data.values())))
+        # code block exists and is empty
+        self.assertTrue(7 in data, format_ln(7, data.keys()))
+        self.assertEqual(''.join(flatten(data[7])).strip(), '',
+                "The code block in the middle should be empty; document is: " \
+                    + repr(data))
+
+    def test_that_backprime_blocks_with_prg_language_are_removed(self):
+        data = par('```rust\nsome_code\nok\n```\n\nla\nle\nlu\n\n```\nmore_code\nb\n```\n')
+        self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
+        self.assertTrue(6 in data, format_ln(6, data.keys()))
+        self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
+    
+
+
     def test_that_indentedcode_blocks_at_beginning_and_end_are_removed(self):
         data = par('\tsome_code\n\tok\n\nla\nle\nlu\n\n\tmore_code\n\tb\n')
         self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
@@ -292,4 +315,3 @@ class TestCodeBlockRemoval(unittest.TestCase):
         data = par('-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup')
         self.assertFalse('ok, here' in seralize_doc(data))
         self.assertTrue(7 in data)
-

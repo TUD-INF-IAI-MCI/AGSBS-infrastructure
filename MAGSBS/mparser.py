@@ -277,14 +277,17 @@ class remove_codeblocks:
                         return True
 
         for start_line, par in self.paragraphs.items():
-            had_tilde_blocks = self.handle_tilde_blocks(start_line, par)
+            had_tilde_blocks = self.handle_fenced_blocks(start_line, par, '~~~')
             if had_tilde_blocks:
+                continue # no more code blocks expected
+            had_backprime_blocks = self.handle_fenced_blocks(start_line, par, '```')
+            if had_backprime_blocks:
                 continue # no more code blocks expected
 
             # if all lines start with indentation
-            elif all(e[0].isspace() for e in par) and not prev_par_is_itemize(start_line):
+            if all(e[0].isspace() for e in par) and not prev_par_is_itemize(start_line):
                 self.modified_paragraphs[start_line] = [''] * (len(par) +1)
-            else: # try to replace `verbatim`-environments
+            else: # try to replace `inline`-environments
                 for index, line in enumerate(par):
                     if line.find('`') and is_even(line.count('`')):
                         par[index] = re.sub('`.*?`', '  ', line)
@@ -292,11 +295,11 @@ class remove_codeblocks:
         return self.modified_paragraphs
 
 
-    def handle_tilde_blocks(self, start_line, paragraph):
+    def handle_fenced_blocks(self, start_line, paragraph, indicator):
         """Parse code blocks surrounded by ~~~~-characters."""
         # return true if block is surrounded by ~~~~
         tilde_blocks = tuple(i for i, line in enumerate(paragraph)
-                if line.lstrip().startswith('~~~'))
+                if line.lstrip().startswith(indicator))
 
         if tilde_blocks and len(tilde_blocks) > 1:
             paragraph = paragraph[:]
