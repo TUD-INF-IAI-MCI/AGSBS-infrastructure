@@ -263,7 +263,7 @@ class HtmlConverter(OutputGenerator):
             number = int(output['Number'])
             with open(os.path.join(dirname, file_path), 'r', encoding='utf-8') as f:
                 paragraphs = mparser.remove_codeblocks(mparser.file2paragraphs(
-                    f.read().split('\n')))
+                    f.read().split('\n')))()
                 formulas = mparser.parse_formulas(paragraphs)
             pos = list(formulas.keys())[number-1]
             # get LaTeX error output

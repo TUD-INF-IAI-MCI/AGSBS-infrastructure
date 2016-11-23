@@ -93,9 +93,11 @@ class TextFormatter(matuc_impl.OutputFormatter):
     def emit_result(self, result):
         self.__emit_warnings()
         text = ''.join(flatten(self.format_recursive(result, 0)))
-        if not text.endswith('\n'):
-            text += '\n'
-        sys.stdout.write(text)
+        try:
+            print(text.rstrip())
+        except UnicodeEncodeError as e:
+            print("Error while printing non-ascii text.\n")
+            print(text.encode('ascii', errors='ignore'))
 
     def emit_error(self, error):
         if isinstance(error, str):

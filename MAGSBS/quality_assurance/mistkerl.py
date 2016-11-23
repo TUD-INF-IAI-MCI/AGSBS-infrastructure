@@ -94,7 +94,7 @@ recursively."""
                 try:
                     with open(file_path, encoding="utf-8") as f:
                         paragraphs = mparser.remove_codeblocks(
-                                mparser.file2paragraphs(f.read(), join_lines=True))
+                                mparser.file2paragraphs(f.read(), join_lines=True))()
                 except UnicodeDecodeError:
                     msg = 'Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'
                     e = ErrorMessage(msg, 1, file_path)

@@ -244,42 +244,70 @@ def compute_position(text_before, accumulated_stringlength=1):
         return len(text_before[pos + 1 :]) + 1
 
 
-def remove_codeblocks(paragraphs):
-    """Iterate over list of paragraphs and remove those which are code blocks.
-    Since identifying a code block is really tricky, this function removes only
-    those for which it can easily determine that it is a code block. Code blocks
-    are replaced with empty lines to preserve the document structure."""
-    keys = list(paragraphs.keys())
-    modified_paragraphs = collections.OrderedDict()
-    is_even = lambda x: (x%2) == 0
-    def prev_par_is_itemize(current_startline):
-        """Return true if previous paragraph is an itemize of first level."""
-        prev = keys[keys.index(current_startline) - 1]
-        if prev > 0:
-            for line in reversed(paragraphs[prev]):
-                if len(line) > 1 and line.lstrip()[:2] in ['- ', '+ ', '* ']:
-                    return True
+################################################################################
+# remove code blocks
 
-    # return true if block is surrounded by ~~~~
-    get_tilde_blocks = lambda x: (i for i, line in enumerate(x)
-            if line.lstrip().startswith('~~~'))
-    for start_line, par in paragraphs.items():
-        tilde_blocks = list(get_tilde_blocks(par))
-        if tilde_blocks and (len(tilde_blocks)%2) == 0:
+class remove_codeblocks:
+    """This could be technically a function, but it's easier to maintain from a
+    class.
+
+    The methods of this class iterate over a list of paragraphs and remove those
+    which are code blocks.
+    Since identifying a code block is really tricky, this function removes only
+    those for which it can assure that it is a code block. Code blocks
+    are replaced with empty lines to preserve the document structure."""
+
+    def __init__(self, paragraphs): # dummy
+        self.paragraphs = paragraphs
+        self.modified_paragraphs = collections.OrderedDict()
+
+    def __call__(self):
+        return self.run()
+
+    def run(self):
+        """Parse the given paragraphs and return the modified document."""
+        keys = list(self.paragraphs.keys())
+        is_even = lambda x: (x%2) == 0
+        def prev_par_is_itemize(current_startline):
+            """Return true if previous paragraph is an itemize of first level."""
+            prev = keys[keys.index(current_startline) - 1]
+            if prev > 0:
+                for line in reversed(self.paragraphs[prev]):
+                    if len(line) > 1 and line.lstrip()[:2] in ['- ', '+ ', '* ']:
+                        return True
+
+        for start_line, par in self.paragraphs.items():
+            had_tilde_blocks = self.handle_tilde_blocks(start_line, par)
+            if had_tilde_blocks:
+                continue # no more code blocks expected
+
+            # if all lines start with indentation
+            elif all(e[0].isspace() for e in par) and not prev_par_is_itemize(start_line):
+                self.modified_paragraphs[start_line] = [''] * (len(par) +1)
+            else: # try to replace `verbatim`-environments
+                for index, line in enumerate(par):
+                    if line.find('`') and is_even(line.count('`')):
+                        par[index] = re.sub('`.*?`', '  ', line)
+                self.modified_paragraphs[start_line] = par
+        return self.modified_paragraphs
+
+
+    def handle_tilde_blocks(self, start_line, paragraph):
+        """Parse code blocks surrounded by ~~~~-characters."""
+        # return true if block is surrounded by ~~~~
+        tilde_blocks = tuple(i for i, line in enumerate(paragraph)
+                if line.lstrip().startswith('~~~'))
+
+        if tilde_blocks and len(tilde_blocks) > 1:
+            paragraph = paragraph[:]
             # replace all lines found with ''
-            for rng in (range(s, e+1) for s,e in common.pairwise(tilde_blocks)):
-                for lnum in rng:
-                    par[lnum] = ''
-            modified_paragraphs[start_line] = par
-        # if all lines start with indentation
-        elif all(e[0].isspace() for e in par) and not prev_par_is_itemize(start_line):
-            modified_paragraphs[start_line] = [''] * (len(par) +1)
-        else: # try to replace `verbatim`-environments
-            for index, line in enumerate(par):
-                if line.find('`') and is_even(line.count('`')):
-                    par[index] = re.sub('`.*?`', '  ', line)
-            modified_paragraphs[start_line] = par
-    return modified_paragraphs
+            for ranges in (range(s, e+1) for s,e in common.pairwise(tilde_blocks)):
+                for enclosind_lines in ranges:
+                    paragraph[enclosind_lines] = ''
+            self.modified_paragraphs[start_line] = paragraph
+            return True
+        else:
+            return False
 
 
 def parse_environments(document, indicator='$$', stripped_document=None,

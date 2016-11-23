@@ -230,7 +230,7 @@ seralize_doc = lambda x: '\n'.join(flatten(x.values()))
 
 def par(string):
     return mp.remove_codeblocks(
-            mp.file2paragraphs(string.split('\n')))
+            mp.file2paragraphs(string.split('\n')))()
 
 def format_ln(line, lines):
     """Format error message, see usage for explanation."""
