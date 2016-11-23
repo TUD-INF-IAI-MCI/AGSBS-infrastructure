@@ -262,7 +262,7 @@ class HtmlConverter(OutputGenerator):
         if output and 'Number' in output and 'Message' in output:
             number = int(output['Number'])
             with open(os.path.join(dirname, file_path), 'r', encoding='utf-8') as f:
-                paragraphs = mparser.remove_codeblocks(mparser.file2paragraphs(
+                paragraphs = mparser.RemoveCodeblocks(mparser.file2paragraphs(
                     f.read().split('\n')))()
                 formulas = mparser.parse_formulas(paragraphs)
             pos = list(formulas.keys())[number-1]

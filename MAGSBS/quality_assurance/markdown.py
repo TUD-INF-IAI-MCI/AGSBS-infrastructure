@@ -474,13 +474,13 @@ class DetectEmptyImageDescriptions(Mistake):
             return
         path, headings = imgdesc[0]
         with open(path, 'r', encoding='utf-8') as f:
-            lines = f.read().split('\n')
+            lines = f.readlines()
 
         headings = [h for h in headings if h.get_level() > 1] # ignore level 1 headings
         for start_line, end_line in self.get_heading_ranges(headings, len(lines)):
             image_description_found = False
             for line in lines[start_line : end_line-1]: # lines counted from 1; ignore heading line
-                if not line or not line.strip():
+                if not line.strip():
                     continue # nothing found, check next line
                 elif '===' in line or '---' in line:
                     continue # underline of heading needss to be ignored

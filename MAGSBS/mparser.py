@@ -9,9 +9,12 @@ specialized subset parser.
 """
 
 import collections
+import enum
 import os
 import re
-from . import datastructures, errors, common
+
+from . import datastructures, errors
+
 
 _hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*\w+')
 
@@ -244,10 +247,8 @@ def compute_position(text_before, accumulated_stringlength=1):
         return len(text_before[pos + 1 :]) + 1
 
 
-################################################################################
-# remove code blocks
 
-class remove_codeblocks:
+class RemoveCodeblocks:
     """This could be technically a function, but it's easier to maintain from a
     class.
 
@@ -256,61 +257,78 @@ class remove_codeblocks:
     Since identifying a code block is really tricky, this function removes only
     those for which it can assure that it is a code block. Code blocks
     are replaced with empty lines to preserve the document structure."""
+    class CodeBlock(enum.Enum): # which kind of code block detected
+        no_codeblock = 0
+        has_codeblock = 1
+        has_unclosed_codeblock = 2
 
     def __init__(self, paragraphs): # dummy
         self.paragraphs = paragraphs
+        self.keys = list(paragraphs.keys())
         self.modified_paragraphs = collections.OrderedDict()
 
     def __call__(self):
         return self.run()
 
+    def is_even(self, number):
+        return (number % 2) == 0
+
     def run(self):
         """Parse the given paragraphs and return the modified document."""
         keys = list(self.paragraphs.keys())
-        is_even = lambda x: (x%2) == 0
-        def prev_par_is_itemize(current_startline):
-            """Return true if previous paragraph is an itemize of first level."""
-            prev = keys[keys.index(current_startline) - 1]
-            if prev > 0:
-                for line in reversed(self.paragraphs[prev]):
-                    if len(line) > 1 and line.lstrip()[:2] in ['- ', '+ ', '* ']:
-                        return True
+        prev_par_had_codeblock = RemoveCodeblocks.CodeBlock.no_codeblock
 
         for start_line, par in self.paragraphs.items():
-            had_tilde_blocks = self.handle_fenced_blocks(start_line, par, '~~~')
-            if had_tilde_blocks:
-                continue # no more code blocks expected
-            had_backprime_blocks = self.handle_fenced_blocks(start_line, par, '```')
-            if had_backprime_blocks:
-                continue # no more code blocks expected
+            had_code_blocks = self.handle_fenced_blocks(start_line, par, '~~~',
+                    prev_par_had_codeblock)
+            if had_code_blocks is RemoveCodeblocks.CodeBlock.no_codeblock:
+                had_code_blocks = self.handle_fenced_blocks(start_line, par,
+                    '```', prev_par_had_codeblock)
+            prev_par_had_codeblock = had_code_blocks
+            if had_code_blocks is not RemoveCodeblocks.CodeBlock.no_codeblock:
+                par = self.modified_paragraphs[start_line] # get updated reference
 
             # if all lines start with indentation
-            if all(e[0].isspace() for e in par) and not prev_par_is_itemize(start_line):
+            if all(not e or e[0].isspace() for e in par) and not \
+                    self.prev_par_is_itemize(start_line):
                 self.modified_paragraphs[start_line] = [''] * (len(par) +1)
             else: # try to replace `inline`-environments
                 for index, line in enumerate(par):
-                    if line.find('`') and is_even(line.count('`')):
+                    if line.find('`') and self.is_even(line.count('`')):
                         par[index] = re.sub('`.*?`', '  ', line)
                 self.modified_paragraphs[start_line] = par
         return self.modified_paragraphs
 
 
-    def handle_fenced_blocks(self, start_line, paragraph, indicator):
-        """Parse code blocks surrounded by ~~~~-characters."""
-        # return true if block is surrounded by ~~~~
-        tilde_blocks = tuple(i for i, line in enumerate(paragraph)
+    def prev_par_is_itemize(self, current_startline):
+        """Return true if previous paragraph is an itemize of first level."""
+        prev = self.keys[self.keys.index(current_startline) - 1]
+        if prev > 0:
+            for line in reversed(self.paragraphs[prev]):
+                if len(line) > 1 and line.lstrip()[:2] in ['- ', '+ ', '* ']:
+                    return True
+
+    def handle_fenced_blocks(self, start_line, paragraph, indicator,
+            prev_par_codeblocks): # no/unclosed/proper code blocks found in prev paragraph?
+        """Parse code blocks surrounded by ~~~ or ``` characters. Return whether
+        complete, incomplete or no code blocks were found."""
+        indicator_lines = tuple(i for i, line in enumerate(paragraph)
                 if line.lstrip().startswith(indicator))
 
-        if tilde_blocks and len(tilde_blocks) > 1:
-            paragraph = paragraph[:]
-            # replace all lines found with ''
-            for ranges in (range(s, e+1) for s,e in common.pairwise(tilde_blocks)):
-                for enclosind_lines in ranges:
-                    paragraph[enclosind_lines] = ''
-            self.modified_paragraphs[start_line] = paragraph
-            return True
-        else:
-            return False
+        if not indicator_lines:
+            return RemoveCodeblocks.CodeBlock.no_codeblock
+
+        paragraph = paragraph[:]
+        # get ranges of code blocks; note: code blocks which don't end in this
+        # paragraph are not a problem, they are ignored; +1 for end position
+        # because ranges are exclusive in python
+        ranges = map(lambda x: range(x[0], x[1]+1),
+                zip(*[iter(indicator_lines)]*2))
+        lines_to_replace = (ln for r in ranges for ln in r)
+        for line_number in lines_to_replace:
+            paragraph[line_number] = ''
+        self.modified_paragraphs[start_line] = paragraph
+        return RemoveCodeblocks.CodeBlock.has_codeblock
 
 
 def parse_environments(document, indicator='$$', stripped_document=None,

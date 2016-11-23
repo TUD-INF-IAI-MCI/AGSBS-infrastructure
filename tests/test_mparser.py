@@ -229,7 +229,7 @@ flatten = lambda x: list(itertools.chain.from_iterable(x))
 seralize_doc = lambda x: '\n'.join(flatten(x.values()))
 
 def par(string):
-    return mp.remove_codeblocks(
+    return mp.RemoveCodeblocks(
             mp.file2paragraphs(string.split('\n')))()
 
 def format_ln(line, lines):
@@ -315,3 +315,4 @@ class TestCodeBlockRemoval(unittest.TestCase):
         data = par('-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup')
         self.assertFalse('ok, here' in seralize_doc(data))
         self.assertTrue(7 in data)
+

@@ -51,7 +51,7 @@ def get_lnum_of_tag(path, tag):
     tag = tag.replace('{http://purl.org/dc/elements/1.1}', ''). \
             replace('{http://elvis.inf.tu-dresden.de}', 'MAGSBS:')
     with open(path, 'r', encoding='utf-8') as f:
-        for lnum, line in enumerate(f.read().split('\n')):
+        for lnum, line in enumerate(f.readlines()):
             if tag in line:
                 return lnum + 1
 
