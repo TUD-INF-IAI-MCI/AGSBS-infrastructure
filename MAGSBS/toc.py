@@ -145,7 +145,8 @@ class ChapterNumberEnumerator:
         # strip all 0's beginning from the right; this way leading 0's are kept
         while chapter_number and chapter_number[-1] == 0:
             chapter_number = chapter_number[:-1]
-        return chapter_number
+        # if chapter_number is empty, probably chapter 0, so insert the 0 back
+        return (chapter_number if chapter_number  else [0])
 
 
 class TOCFormatter:
