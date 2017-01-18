@@ -7,6 +7,7 @@
 
 import os
 from . import config
+from . import common
 from . import errors
 from . import filesystem
 from . import pandoc
@@ -27,7 +28,13 @@ lectures containing e.g. lecture and exercise material.  For each root the
 navigation bar and the table of contents is generated; afterwards all MarkDown
 files are converted."""
     def __init__(self, path):
-        self._roots = self.__findroot( path )
+        if os.path.exists(path):
+            if os.path.isfile(path):
+                raise OSError("Operation can only be applied to directories.")
+            if common.is_valid_file(os.path.abspath(path)):
+                raise errors.StructuralError(("The master command can only be called "
+                    "on a whole lecture, not on particular chapters."), path)
+        self._roots = self.__findroot(path)
 
     def get_roots(self):
         return self._roots
