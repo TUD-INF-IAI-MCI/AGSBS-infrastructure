@@ -265,7 +265,20 @@ class HtmlConverter(OutputGenerator):
                 paragraphs = mparser.RemoveCodeblocks(mparser.file2paragraphs(
                     f.read().split('\n')))()
                 formulas = mparser.parse_formulas(paragraphs)
-            pos = list(formulas.keys())[number-1]
+            try:
+                pos = list(formulas.keys())[number-1]
+            except IndexError:
+                # if improperly closed maths environments eixst, formulas cannot
+                # be counted; although there's somewhere a LaTeX error which
+                # we're trying to report, the improper maths environments HAVE
+                # to reported and fixed first
+                raise errors.SubprocessError(error.command, ("LaTeX reported an error "
+                    "while converting a fomrula. Unfortunately, improperly closed "
+                    "maths environments exist, therefore it cannot be determined "
+                    "which formula was errorneous. Please re-read the document "
+                    "and fix any unclosed maths environments."),
+                        os.path.join(file_path))
+
             # get LaTeX error output
             msg = output['Message'].rstrip().lstrip()
             msg = 'formula: {}\n{}'.format(list(formulas.values())[number-1], msg)
