@@ -1,3 +1,16 @@
+0.5.1 [UNRELEASED]
+
+Bug fix release:
+
+*	table of contents:
+    * always use / in TOC links
+	* print number "0" for chapter 0, instead of omitting it
+* recognize ``` code blocks
+* properly handle cases of improperly closed maths environments + LaTeX errors
+  within one document
+* Mistkerl: don't flag hypenated abbreviated wordgroups as error (Fixes #37)
+    * Do not treat image descriptions at the end of a file as missing
+
 0.5
 
 * use GladTeX -R switch to replace non-ascii characters through LaTeX commands

@@ -19,7 +19,7 @@ from xml.dom import minidom
 from . import common
 from .errors import ConfigurationError
 
-VERSION = StrictVersion('0.5')
+VERSION = StrictVersion('0.5.1')
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
