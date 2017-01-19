@@ -279,6 +279,9 @@ configuration and then, if present, the corresponding subdirectory configuration
                     self._instances[conf_path].read()
             except UnicodeDecodeError:
                 raise ValueError(conf_path + ": File must be encoded in UTF-8")
+            except ET.ParseError as e:
+                raise ConfigurationError("Configuration errorneous: " + str(e),
+                        conf_path, e.position[0])
         return self._instances[conf_path]
 
     def get_conf_instance_safe(self, path):
