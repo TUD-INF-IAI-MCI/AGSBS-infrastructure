@@ -6,7 +6,7 @@ MAGSBS-specific extensions.
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 #pylint: disable=line-too-long,too-few-public-methods
 
 import datetime
@@ -18,6 +18,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from . import common
 from .errors import ConfigurationError
+from . import roman
 
 VERSION = StrictVersion('0.5.1')
 
@@ -28,9 +29,16 @@ CONF_FILE_NAME = ".lecture_meta_data.dcxml"
 PAGENUMBERINGTOKENS = ['slide', 'folie', 'seite', 'page']
 PAGENUMBERINGTOKENS += [t.title() for t in PAGENUMBERINGTOKENS] # recognize with both case spellings
 
-# regular expression to recognize page numbers
-PAGENUMBERING_PATTERN = re.compile(r'-\s*(' + '|'.join(PAGENUMBERINGTOKENS) + \
-                r')\s+(\d+)\s*-')
+# regular expression to recognize page numbers, includes both arabic and roman
+# numbers
+__roman_ptrn = roman.roman_numeral_pattern_string.strip().lstrip('^').rstrip('$')
+PAGENUMBERING_PATTERN = re.compile(r'''
+        # recognize all different languages which are supported for the words
+        # "slide" and "page"
+        -\s*(%s)\s+
+        (\d+|%s)\s*- # arabic or roman numbers
+        ''' % ('|'.join(PAGENUMBERINGTOKENS), __roman_ptrn),
+        re.VERBOSE)
 
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on

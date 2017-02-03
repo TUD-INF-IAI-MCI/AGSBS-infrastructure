@@ -6,6 +6,7 @@ from . import factories
 from . import filesystem
 from . import master
 from . import mparser
+from . import roman
 from . import quality_assurance
 from . import pandoc
 from . import toc

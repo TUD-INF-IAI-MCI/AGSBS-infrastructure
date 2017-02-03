@@ -1,3 +1,8 @@
+This software is (c) 2013-2017 Sebastian Humenda, on behalf of the AG SBS,
+TU Dresden. All files are licensed under the terms of the LGPL (see below),
+except for the file MAGSBS/roman.py. For the license of that file, please see [
+[PYTHON-LICENSE.md](PYTHON-LICENSE.md).
+
                    GNU LESSER GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

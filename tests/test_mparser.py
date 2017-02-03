@@ -53,15 +53,11 @@ class test_mparser(unittest.TestCase):
         pars = {1:['|| - alles fehlerhaft hier -']}
         self.assertEqual(len(mp.extract_page_numbers_from_par(pars)), 0)
 
-    def test_that_any_strings_work_as_page_number(self):
-        """This is a concious design decision. The editor might have made a
-        mistake so that the page number is misformatted. Only by parsing them
-        all, it enables the program to peform checks. Otherwise those numbers
-        would get swallowed."""
+    def test_that_invalid_page_numbers_are_ignored(self):
         pnums = mp.extract_page_numbers_from_par({1:['|| - Seite abc -']})
-        self.assertEqual(len(pnums), 1)
+        self.assertEqual(len(pnums), 0)
 
-    def test__that_lower_case_page_identifiers_are_recognized(self):
+    def test_that_lower_case_page_identifiers_are_recognized(self):
         pnums = mp.extract_page_numbers_from_par({999:['|| - seite 80 -']})
         self.assertEqual(len(pnums), 1)
 
@@ -69,6 +65,17 @@ class test_mparser(unittest.TestCase):
         pnums = mp.extract_page_numbers_from_par({1:['|| -Seite  80 -'],
             7:['||  - Seite 80-']})
         self.assertEqual(len(pnums), 2)
+
+    def test_that_roman_numbers_work(self):
+        pnums = mp.extract_page_numbers_from_par({1:['|| - Seite I -'],
+            7:['|| - Seite XVI -'], 20:['|| - Seite CCC -']})
+        self.assertEqual(len(pnums), 3)
+
+    def test_invalid_roman_numbers_trigger_exception(self):
+        pnums = mp.extract_page_numbers_from_par({1:['|| - Seite IIIIIVC -']})
+        self.assertEqual(len(pnums), 0)
+
+
 
     ##############################################################
     # test file2paragraphs

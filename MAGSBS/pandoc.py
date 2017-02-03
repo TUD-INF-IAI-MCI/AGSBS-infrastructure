@@ -2,7 +2,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """
 This module abstracts everything related to calling pandoc and modifiying the
 template for additional meta data in the output document(s).
@@ -24,6 +24,7 @@ from . import datastructures
 from . import errors
 from . import filesystem
 from . import mparser
+from . import roman
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -496,7 +497,11 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
         try:
             page_numbers[index] = int(number_str)
         except ValueError:
-            raise errors.FormattingError("cannot recognize page number on %d as number"\
+            # try roman number
+            try:
+                page_numbers[index] = roman.from_roman(number_str)
+            except roman.InvalidRomanNumeralError:
+                raise errors.FormattingError("cannot recognize page number on line %d as number"\
                             % line, number_str, file_path)
 
     navbar = []

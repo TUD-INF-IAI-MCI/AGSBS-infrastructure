@@ -13,7 +13,7 @@ import enum
 import os
 import re
 
-from . import datastructures, errors
+from . import config, datastructures, errors
 
 
 _hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*\w+')
@@ -214,8 +214,10 @@ def extract_page_numbers_from_par(paragraphs):
     To enable Mistkerl to check for page numbers not consisting of numbers, the
     page number is not converted to an integer, this left for a later stage."""
     numbers = []
-    rgx = re.compile(r"^\|\|\s*-\s*([a-z|A-Z]+)\s+([0-9|a-z|A-Z]+?)\s*-$")
-    pars = [(l,e) for l,e in paragraphs.items() if len(e) == 1]
+    rgx = config.PAGENUMBERING_PATTERN
+    # filter for paragraphs with exactly one line and the line starting with||
+    pars = [(l,e) for l,e in paragraphs.items() \
+            if len(e) == 1 and e[0].startswith('||')]
     for start_line, par in pars:
         result = rgx.search(par[0])
         if result:
