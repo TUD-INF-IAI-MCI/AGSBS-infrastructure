@@ -37,7 +37,7 @@ romanNumeralMap = (('M',  1000),
                    ('IV', 4),
                    ('I',  1))
 
-def toRoman(n):
+def to_roman(n):
     """convert integer to Roman numeral"""
     if not (0 < n < 5000):
         raise OutOfRangeError("number out of range (must be 1..4999)")

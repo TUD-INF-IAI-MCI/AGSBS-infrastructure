@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """
 This file contains a parser parsing certain syntactical structures of MarkDown
 to be used for further post-processing. It is not a full MarkDown parser, but a
@@ -13,7 +13,7 @@ import enum
 import os
 import re
 
-from . import config, datastructures, errors
+from . import config, datastructures, errors, roman
 
 
 _hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*\w+')
@@ -220,9 +220,25 @@ def extract_page_numbers_from_par(paragraphs):
             if len(e) == 1 and e[0].startswith('||')]
     for start_line, par in pars:
         result = rgx.search(par[0])
-        if result:
-            result = result.groups() # *result.groups() only support > 3.5
-            numbers.append((start_line, result[0], result[1]))
+        if not result:
+            continue
+        id, number = result.groups()[:2]
+        # figure out whether arabic or roman number
+        is_arabic = True
+        try:
+            number = int(number)
+        except ValueError: # try roman number
+            try:
+                number = roman.from_roman(number)
+                is_arabic = False
+            except roman.InvalidRomanNumeralError:
+                raise errors.FormattingError("cannot recognize page number on line %d as number"\
+                            % start_line, number)
+
+
+        pnum = datastructures.PageNumber(id, number, is_arabic=is_arabic)
+        pnum.line_no = start_line
+        numbers.append(pnum)
     return numbers
 
 ################################################################################

@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """Common datastructures."""
 
 import enum
@@ -10,6 +10,7 @@ import sys
 import re
 from . import errors
 from . import common
+from . import roman
 
 def path2chapter(path):
     """Convert a file name similar to as k010508.md, anh__.md or v__ to a tuple
@@ -257,4 +258,19 @@ class FileCache:
         raise errors.StructuralError(("The file was not found in the lecture. "
             "This indicates a bug."), path)
 
+
+
+class PageNumber:
+    """Abstract representation of a page number."""
+    def __init__(self, identification, number, is_arabic=True):
+        self.arabic = is_arabic
+        self.identification = identification
+        self.number = number
+        self.line_no = None
+
+    def __str__(self):
+        if self.arabic:
+            return str(self.number)
+        else:
+            return roman.to_roman(self.number)
 

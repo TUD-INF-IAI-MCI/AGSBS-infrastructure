@@ -24,7 +24,6 @@ from . import datastructures
 from . import errors
 from . import filesystem
 from . import mparser
-from . import roman
 
 HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
@@ -493,23 +492,11 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
                 make_path(previous))
     if next:
         next = '[{}]({})'.format(trans.get_translation('next').title(), make_path(next))
-    for index, (line, _x, number_str) in enumerate(page_numbers):
-        try:
-            page_numbers[index] = int(number_str)
-        except ValueError:
-            # try roman number
-            try:
-                page_numbers[index] = roman.from_roman(number_str)
-            except roman.InvalidRomanNumeralError:
-                raise errors.FormattingError("cannot recognize page number on line %d as number"\
-                            % line, number_str, file_path)
-
     navbar = []
+    page_numbers = page_numbers[::5]
     if page_numbers:
         navbar.append(trans.get_translation('pages').title() + ': ')
-        for num in range(0, page_numbers[-1], conf['pageNumberingGap']):
-            if num in page_numbers:
-                navbar.append('[[{0}]](#p{0}), '.format(num))
+        navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
         navbar[-1] = navbar[-1][:-2] # strip ", " from last chunk
     navbar = ''.join(navbar)
     chapternav = '[{}](../inhalt.{})'.format(trans.get_translation(
