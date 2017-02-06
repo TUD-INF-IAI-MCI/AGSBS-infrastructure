@@ -1,7 +1,7 @@
 # This is free software licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2014-2017 Sebastian Humenda <shumenda@gmx.de>
 # line-too-long is overridden, because error messages should be not broken up.
 # Else it is strongly discouraged! Wild-card imports are here because we are
 # importing the mistakes and it is cumbersome to add them to the imports every
@@ -28,9 +28,11 @@ For the documentation of the mistake types, see the appropriate class."""
 import os
 import collections
 from xml.etree import ElementTree as ET
-from .. import filesystem as filesystem
 from .. import config
+from .. import errors
+from .. import filesystem as filesystem
 from .. import mparser
+from .. import roman
 
 from .all_formats import *
 from .latex import *
@@ -39,6 +41,13 @@ from .meta import *
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
+    TOLERANT_PAGE_NUMBERING_PATTERN = re.compile(r'''
+        # match any word or two-word phrase
+        -\s*([a-z|A-Z]\s*[a-z|A-Z]*)\s+
+        (\d+|%s)\s*- # arabic or roman numbers
+        ''' % roman.roman_numeral_pattern_string.strip().lstrip('^').rstrip('$'),
+        re.VERBOSE) # ^ strip begin and end-of-line matcher
+
     def __init__(self):
         self.__issues = [PageNumberIsParagraph, LevelOneHeading,
                 oldstyle_pagenumbering, ItemizeIsParagraph,
@@ -140,12 +149,17 @@ recursively."""
                             issue.set_run(False)
             if not any(e.should_be_run() for e in oneliners):
                 break # no oneliner left which needs to be executed
-        pnums = mparser.extract_page_numbers_from_par(paragraphs)
+        pnums = []
+        try:
+            pnums = mparser.extract_page_numbers_from_par(paragraphs,
+                    regex=Mistkerl.TOLERANT_PAGE_NUMBERING_PATTERN)
+            # if the file name does not end of any of the image description names,
+            # it's a "proper" chapter and only for those the page number cache is relevant
+            if not file_path.endswith("bilder.md"):
+                self.__cache_pnums[file_path] = pnums
+        except errors.FormattingError as e:
+            pass # checkers are able to handle this case and will report
         hdngs = mparser.extract_headings_from_par(paragraphs)
-        # if the file name does not end of any of the image description names,
-        # it's a "proper" chapter and only for those the cache is relevant
-        if not file_path.endswith("bilder.md"):
-            self.__cache_pnums[file_path] = pnums
         self.__cached_headings[file_path] = hdngs
 
         for issue in self.get_issues(MistakeType.pagenumbers, file_path):

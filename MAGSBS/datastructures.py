@@ -264,7 +264,7 @@ class PageNumber:
     """Abstract representation of a page number."""
     def __init__(self, identification, number, is_arabic=True):
         self.arabic = is_arabic
-        self.identification = identification
+        self.identifier = identification
         self.number = number
         self.line_no = None
 

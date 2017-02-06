@@ -203,23 +203,20 @@ def extract_headings_from_par(paragraphs, max_headings=-1):
     return headings
 
 
-def extract_page_numbers_from_par(paragraphs):
+def extract_page_numbers_from_par(paragraphs, regex=config.PAGENUMBERING_PATTERN):
     """Extract all page numbers from given paragraph list. Paragraph must be in
     the format as returned by file2paragraphs, see documentation of this
     function for details.
-    Return a list of page numbers. Each page number is a tuple of
-    (line number, pagination string, page number), where pagination string is
-    i.e. "slide" and the number is the extracted number.
-    Since the editor of the MarkDown document might have made a mistake
-    To enable Mistkerl to check for page numbers not consisting of numbers, the
-    page number is not converted to an integer, this left for a later stage."""
+    Return a list of page numbers. Each page number is a
+    datastructures.PageNumber. A custom regular expression for recognizing page
+    numbers can be given, to e.g. detect page numbers with incorrect
+    identifiers."""
     numbers = []
-    rgx = config.PAGENUMBERING_PATTERN
     # filter for paragraphs with exactly one line and the line starting with||
-    pars = [(l,e) for l,e in paragraphs.items() \
-            if len(e) == 1 and e[0].startswith('||')]
+    pars = [(l,p) for l,p in paragraphs.items() \
+            if len(p) == 1 and p[0].startswith('||')]
     for start_line, par in pars:
-        result = rgx.search(par[0])
+        result = regex.search(par[0])
         if not result:
             continue
         id, number = result.groups()[:2]
@@ -232,8 +229,8 @@ def extract_page_numbers_from_par(paragraphs):
                 number = roman.from_roman(number)
                 is_arabic = False
             except roman.InvalidRomanNumeralError:
-                raise errors.FormattingError("cannot recognize page number on line %d as number"\
-                            % start_line, number)
+                raise errors.FormattingError("cannot recognize page number",
+                        number, line=start_line)
 
 
         pnum = datastructures.PageNumber(id, number, is_arabic=is_arabic)

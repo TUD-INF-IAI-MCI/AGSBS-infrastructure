@@ -31,13 +31,13 @@ PAGENUMBERINGTOKENS += [t.title() for t in PAGENUMBERINGTOKENS] # recognize with
 
 # regular expression to recognize page numbers, includes both arabic and roman
 # numbers
-__roman_ptrn = roman.roman_numeral_pattern_string.strip().lstrip('^').rstrip('$')
+roman_number_regex = roman.roman_numeral_pattern_string.strip().lstrip('^').rstrip('$')
 PAGENUMBERING_PATTERN = re.compile(r'''
         # recognize all different languages which are supported for the words
         # "slide" and "page"
         -\s*(%s)\s+
         (\d+|%s)\s*- # arabic or roman numbers
-        ''' % ('|'.join(PAGENUMBERINGTOKENS), __roman_ptrn),
+        ''' % ('|'.join(PAGENUMBERINGTOKENS), roman_number_regex),
         re.VERBOSE)
 
 def get_semester():

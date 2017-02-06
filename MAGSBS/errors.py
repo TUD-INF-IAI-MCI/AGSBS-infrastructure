@@ -85,16 +85,20 @@ class FormattingError(MAGSBS_error):
     Report formatting error. It is adviced to provide a path, but it is not
     mandatory. the `excerpt` is used to show an example of where the formatting
     error occurred."""
-    def __init__(self, msg, excerpt, path=None):
+    def __init__(self, msg, excerpt, path=None, line=None):
         self.excerpt = excerpt
         self.message = msg
         super().__init__(msg + ':' + excerpt)
-        self.path = (path if path else None)
+        self.path = path
+        self.line_no = line
 
     def __str__(self):
         prefix = ''
         if self.path:
             prefix += 'error in ' + self.path
-        return '%s: %s\nExcerpt: %s' % (prefix, self.message, self.excerpt)
+        if self.line_no:
+            prefix += (' ' if prefix else '') + str(self.line_no)
+        return '%s%s%s\nExcerpt: %s' % (prefix, (': ' if prefix else ''),
+                self.message, self.excerpt)
 
 

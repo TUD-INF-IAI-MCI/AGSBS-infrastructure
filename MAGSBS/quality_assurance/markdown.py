@@ -109,15 +109,15 @@ indexing of page numbers."""
     mistake_type = MistakeType.pagenumbers
     def __init__(self):
         Mistake.__init__(self)
-        self.PAGENUMBERINGTOKENS = config.PAGENUMBERINGTOKENS + \
+        self.page_identifiers = config.PAGENUMBERINGTOKENS + \
                 [e.title() for e in config.PAGENUMBERINGTOKENS]
 
     def worker(self, *args):
-        for lnum, text, _pnumber in args[0]:
-            if not text in self.PAGENUMBERINGTOKENS:
+        for pnum in args[0]:
+            if not pnum.identifier in self.page_identifiers:
                 return self.error("""Die Seitenzahl "%s" wird nicht erkannt,
                         wahrscheinlich handelt es sich um einen Tippfehler. Die
-                        Seitenzahl wird ignoriert.""" % text, lnum)
+                        Seitenzahl wird ignoriert.""" % pnum.identifier, pnum.line_no)
 
 
 class UniformPagestrings(Mistake):
@@ -126,32 +126,32 @@ class UniformPagestrings(Mistake):
         Mistake.__init__(self)
         self.pattern = re.compile('.*(%s).*' % '|'.join(config.PAGENUMBERINGTOKENS))
 
-    def _error(self, first, later_fn, later_lnum, later_text):
-        first_fn = os.path.split(first[0])[-1]
-        later_fn = os.path.split(later_fn)[-1]
+    def _error(self, first_fn, first_pnum, later_fn, later_pnum):
+        first_fn = os.path.basename(first_fn)
+        later_fn = os.path.basename(later_fn)
         second_piece = ''
+        # add glue to make messages more readable
         if first_fn == later_fn:
-            second_piece = "später dann aber \"%s\"" % (later_text)
+            second_piece = "später dann aber \"%s\"" % later_pnum.identifier
         else:
             second_piece = "in der Datei \"%s\" dann aber \"%s\"" \
-                        % (later_fn, later_text)
+                        % (later_fn, later_pnum.identifier)
         return self.error("In der Datei \"%s\"  wurde zuerst \"%s\" verwendet, " \
-                % (first_fn, first[-1]) + second_piece + ". Dies sollte " +
-                "einheitlich sein.", later_lnum)
+                % (first_fn, first_pnum.identifier) + second_piece + ". Dies sollte " +
+                "einheitlich sein.", later_pnum.line_no)
 
     def worker(self, *args):
-        first = None # first page string found
-        for fn, pnums in args[0].items():
-            for lnum, text, _number in pnums:
-                match = self.pattern.search(text.lower())
+        first = () # (fn, first page number)
+        for fn, page_numbers in args[0].items():
+            for pnum in page_numbers:
+                match = self.pattern.search(pnum.identifier.lower())
                 if not match:
                     continue
-                else:
-                    match = match.groups()
-                if first is None:
-                    first = (fn, lnum, match[0])
-                elif first[2] != match[0]:
-                    return self._error(first, fn, lnum, match[0])
+                match = match.groups()
+                if not first:
+                    first = (fn, pnum)
+                elif first[1].identifier.lower() != match[0].lower():
+                    return self._error(first[0], first[1], fn, pnum)
 
 
 class TooManyHeadings(Mistake):
@@ -195,22 +195,30 @@ class ForgottenNumberInPageNumber(Mistake):
     paragraphs and check for paragraphs with length 1 instead of iterating
     through *all* lines."""
     mistake_type = MistakeType.full_file
+    PAGE_IDENTIFICATION = re.compile(r'\s*-\s*(%s)' +
+                '|'.join(config.PAGENUMBERINGTOKENS) + '\\s+')
+    HAS_ARABIC_OR_ROMAN = re.compile(r'\s+(\d+|%s)\s*-\s*$' % \
+                config.roman_number_regex, re.VERBOSE)
+
+
     def __init__(self):
         super().__init__()
-        # cannot be pagenumbers, because this leaves out incorrect page numbers
-        self.pattern = re.compile(r'\s*-\s*(%s)' +
-                '|'.join(config.PAGENUMBERINGTOKENS) + '\\s+')
+        # cannot be of Mistaketype.pagenumbers, because this leaves out
+        # incorrect page numbers
 
     def worker(self, *args):
         """Sometimes digits of page number get lost when typing."""
-        for start, par in args[0].items():
-            if len(par) > 1: continue # skip
+        for start, par in (p for p in args[0].items() if len(p[1]) == 1):
             line = par[0]
-            if not line.startswith("||"): return
-            match = self.pattern.search(line.lower())
-            if match:
-                if not re.search('.*\\d+', line):
-                    return self.error("Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde.", start)
+            if not line.startswith("||"):
+                continue
+            match = ForgottenNumberInPageNumber.PAGE_IDENTIFICATION.search(line.lower())
+            if not match:
+                continue
+            match = ForgottenNumberInPageNumber.HAS_ARABIC_OR_ROMAN.search(line)
+            # no match or not one of the groups contains something, it's broken
+            if match and not any(match.groups()):
+                return self.error("Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde.", start)
 
 class HeadingOccursMultipleTimes(Mistake):
     """Parse headings; report doubled headings; ignore headings below

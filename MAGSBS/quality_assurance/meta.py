@@ -23,9 +23,8 @@ full_file       content             content: dict mapping from line number to
 oneliner        (num, line)         applied to line, starting num = 1
 headings        [H(), ...]          applied to all headings
 headings_dir    {path : [H(), …]    applied to all headings in a directory
-pagenumbers     (lnum, level,       applied to all page numbers of page
-                 string)
-pagenumbers_dir see headings        applied to all page numbers of directory
+pagenumbers     [page numbers]      applied to all page numbers of page
+pagenumbers_dir {path: [numbers]}   applied to all page numbers of each file of a directory
 configuration   (LectureMetaData    apply checks on the configuration
                  instance)
 formulas        (path, formulas)    apply checks on the ordered list of formulas
