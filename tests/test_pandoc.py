@@ -1,7 +1,6 @@
-# disclaimer: this file does NOT test pandoc, but MAGSBS.pandoc ;)
+# This file does NOT test pandoc, but MAGSBS.pandoc ;)
 #pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
 import os, shutil, tempfile, unittest, json
-import MAGSBS.config as config
 import MAGSBS.datastructures as datastructures
 import MAGSBS.errors as errors
 import MAGSBS.pandoc as pandoc
@@ -110,7 +109,7 @@ class TestNavbarGeneration(unittest.TestCase):
         self.cache = datastructures.FileCache(self.files)
         self.pagenumbers = []
         for i in range(1,50):
-            self.pagenumbers.append((i*10, 'Seite', str(i)))
+            self.pagenumbers.append(datastructures.PageNumber('Seite', i))
 
         # set up test directory
         self.original_directory = os.getcwd()
@@ -148,6 +147,15 @@ class TestNavbarGeneration(unittest.TestCase):
         self.assertTrue('[5]' not in start+end) # links to page 5 don't exist
         self.assertTrue('[10]' in start+end, # links to page 10 do exist
                 "page number 10 doesn't exist; got: " + repr(start))
+
+    def test_that_roman_numbers_work(self):
+        pnums = [datastructures.PageNumber('page', i, is_arabic=False) for i in
+                range(1, 20)]
+        conf = {'language' : 'de',  'pageNumberingGap' : 5, 'format' : 'html'}
+        path = 'k01/k01.md' # that has been initilized in the setup method
+        start, end = pandoc.generate_page_navigation(path, self.cache, pnums, conf=conf)
+        self.assertTrue('[V]' in start+end,
+            "Expected page number V in output, but couldn't be found: " + repr(start))
 
     def test_that_language_is_used(self):
         conf = {'language' : 'en',  'pageNumberingGap' : 5, 'format' : 'html'}

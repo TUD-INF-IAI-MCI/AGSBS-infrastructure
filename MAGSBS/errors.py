@@ -88,9 +88,8 @@ class FormattingError(MAGSBS_error):
     def __init__(self, msg, excerpt, path=None):
         self.excerpt = excerpt
         self.message = msg
-        super().__init__(msg + ':' )
-        if path:
-            self.path = path
+        super().__init__(msg + ':' + excerpt)
+        self.path = (path if path else None)
 
     def __str__(self):
         prefix = ''

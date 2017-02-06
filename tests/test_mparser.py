@@ -36,7 +36,7 @@ class test_mparser(unittest.TestCase):
     def test_that_correct_pnum_is_recognized(self):
         pnums = mp.extract_page_numbers_from_par({1:['|| - Seite 80 -']})
         self.assertTrue(len(pnums) == 1, "exactly one page number is expectd.")
-        self.assertEqual(pnums[0][2], '80')
+        self.assertEqual(pnums[0].number, 80)
 
     def test_that_more_than_one_pnum_is_parsed_and_line_numbers_are_correct(self):
         pars = collections.OrderedDict()
@@ -45,7 +45,7 @@ class test_mparser(unittest.TestCase):
         pars[5] = ['|| - Seite 81 -']
         pnums = mp.extract_page_numbers_from_par(pars)
         self.assertEqual(len(pnums), 2)
-        lnums = [line for line, _1, _2 in pnums]
+        lnums = [pnum.line_no for pnum in pnums]
         self.assertTrue(1 in lnums and 5 in lnums)
 
 

@@ -417,12 +417,13 @@ The parameter `format` can be supplied to override the configured output format.
             document = f.read()
         if not document:
             return # skip empty documents
-        ## ToDo: rethink: is it better to parse pandoc ast or use own mparser
-        ## for pnum extraction? Own pnum extraction does a lot of string splitting
-        ## while splitting document into paragraphs
-        if self.IS_CHAPTER.search(os.path.split(path)[-1]):
-            nav_start, nav_end = generate_page_navigation(path, file_cache,
+        if self.IS_CHAPTER.search(os.path.basename(path)):
+            try:
+                nav_start, nav_end = generate_page_navigation(path, file_cache,
                     mparser.extract_page_numbers_from_par(mparser.file2paragraphs(document)))
+            except errors.FormattingError as e:
+                e.path = path
+                raise e
             document = remove_nav(document) # remove old style nav bar from document
             document = '{}\n\n{}\n\n{}\n'.format(nav_start, document, nav_end)
         json_ast = self.load_json(document)
@@ -493,7 +494,8 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     if next:
         next = '[{}]({})'.format(trans.get_translation('next').title(), make_path(next))
     navbar = []
-    page_numbers = page_numbers[::5]
+    page_numbers = [pnum for pnum in page_numbers
+        if (pnum.number % conf['pageNumberingGap']) == 0] # take each pnumgapth element
     if page_numbers:
         navbar.append(trans.get_translation('pages').title() + ': ')
         navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
