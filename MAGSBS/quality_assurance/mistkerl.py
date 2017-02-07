@@ -50,7 +50,7 @@ class Mistkerl():
 
     def __init__(self):
         self.__issues = [PageNumberIsParagraph, LevelOneHeading,
-                oldstyle_pagenumbering, ItemizeIsParagraph,
+                ItemizeIsParagraph,
                 ForgottenNumberInPageNumber, UniformPagestrings,
                 TooManyHeadings, LaTeXMatricesShouldBeConstructeedUsingPmatrix,
                 LaTeXMatricesShouldHaveLineBreaks, PageNumbersWithoutDashes,

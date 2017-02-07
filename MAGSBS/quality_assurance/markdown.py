@@ -89,20 +89,6 @@ class ItemizeIsParagraph(Mistake):
                         item_encountered = True
 
 
-class oldstyle_pagenumbering(Mistake):
-    mistake_type = MistakeType.oneliner
-    def __init__(self):
-        Mistake.__init__(self)
-
-    def worker(self, *args):
-        """Check whether the old page numbering style "###### - page xyz -" is used."""
-        if(len(args)< 2): raise ValueError("Two arguments expected.")
-        obj = re.search(r'\s*######\s*-\s*(' +
-            '|'.join(config.PAGENUMBERINGTOKENS)+')',
-            args[1].lower())
-        if(obj):
-            return self.error('Es wurde eine Seitenzahl im Format "###### - Seite xyz -" bzw. "###### - Seite xyz - ######" gefunden. dies ist nicht mehr erlaubt. Seitenzahlen müssen die Form "|| - Seite xyz -" haben.', args[0])
-
 class PageNumberWordIsMispelled(Mistake):
     """Sometimes small typos are made when marking a new page. That breaks
 indexing of page numbers."""
