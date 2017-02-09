@@ -76,7 +76,6 @@ class test_mparser(unittest.TestCase):
         self.assertEqual(len(pnums), 0)
 
 
-
     ##############################################################
     # test file2paragraphs
     def test_that_a_simple_paragraph_is_recognized(self):
@@ -101,6 +100,11 @@ class test_mparser(unittest.TestCase):
         # paragraph after joined line starts with correct line number
         self.assertTrue(4 in result)
         self.assertFalse('\\' in '\n'.join(result[1]))
+
+    def test_that_all_paragraphs_before_line_number_are_listed(self):
+        lines = '|| - Seite 1 -\n\nHier kommt ein Text\n\n|| - Seite 2 -'
+        pars = mp.file2paragraphs(lines.split('\n'), 3)
+        self.assertEqual(len(pars), 2)
 
     ##############################################################
     # get_chapter_number_from_path
@@ -286,7 +290,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
         self.assertTrue(6 in data, format_ln(6, data.keys()))
         self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
-    
+
 
 
     def test_that_indentedcode_blocks_at_beginning_and_end_are_removed(self):
@@ -322,4 +326,3 @@ class TestCodeBlockRemoval(unittest.TestCase):
         data = par('-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup')
         self.assertFalse('ok, here' in seralize_doc(data))
         self.assertTrue(7 in data)
-

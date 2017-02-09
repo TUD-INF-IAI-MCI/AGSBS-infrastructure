@@ -88,7 +88,7 @@ def joined_line_iterator(lines):
             lines_to_insert = 0
     raise StopIteration()
 
-def file2paragraphs(lines, line_number, join_lines=False):
+def file2paragraphs(lines, line_number=0, join_lines=False):
     """
 file2paragraphs(lines, line_number, join_lines=False)
 
