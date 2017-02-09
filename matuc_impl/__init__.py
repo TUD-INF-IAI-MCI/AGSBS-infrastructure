@@ -173,7 +173,6 @@ class main():
         self.output_formatter = output_formatter
 
     def run(self, args):
-        print("args", args, "\n")
         if len(args) < 2:
             self.output_formatter.emit_usage(main_usage)
         else:
@@ -507,11 +506,19 @@ sub-directory configurations or initialization of a new project."""
         It returns the numbering style also basing on the previous one.
         If the page number is a roman number also a roman number is returnes
         """
-        pagenumbers = MAGSBS.mparser.extract_page_numbers(args[0])
+        line_number = 0
+        pagenum = 1
+        try:
+            line_number = int(args[1])
+        except:
+            self.output_formatter.emit_error("line_number is not a number")
+            return
+        pagenumbers = MAGSBS.mparser.extract_page_numbers(args[0], line_number)
         # increment pagenumber
-        pagenum = int(pagenumbers[len(pagenumbers)-1].number)+1
-        if not pagenumbers[len(pagenumbers)-1].arabic:
-            pagenum = MAGSBS.roman.to_roman(pagenum)
+        if len(pagenumbers) > 0:
+            pagenum = int(pagenumbers[len(pagenumbers)-1].number)+1
+            if not pagenumbers[len(pagenumbers)-1].arabic:
+                pagenum = MAGSBS.roman.to_roman(pagenum)
         self.output_formatter.emit_result({ 'pagenumber': str(pagenum)})
 
 

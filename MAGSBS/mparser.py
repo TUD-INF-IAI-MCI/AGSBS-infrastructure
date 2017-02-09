@@ -88,9 +88,9 @@ def joined_line_iterator(lines):
             lines_to_insert = 0
     raise StopIteration()
 
-def file2paragraphs(lines, join_lines=False):
+def file2paragraphs(lines, line_number, join_lines=False):
     """
-file2paragraphs(lines, join_lines=False)
+file2paragraphs(lines, line_number, join_lines=False)
 
 Return a dictionary mapping from line numbers (where paragraph started) to a
 paragraph. The paragraph itself is a list of lines, not ending on\\n. The
@@ -101,7 +101,10 @@ If join_lines is set, lines ending on \\ will we joined with the next one.
     #pylint: disable=bad-reversed-sequence
     if isinstance(lines, str):
         lines = lines.split('\n')
+    if line_number:
+        lines = lines[:line_number]
     paragraphs = collections.OrderedDict()
+
     paragraphs[1] = []
     iterator_wrappper = (joined_line_iterator if join_lines else iter)
     for lnum, line in enumerate(iterator_wrappper(lines)):
@@ -138,13 +141,13 @@ def extract_headings(path, paragraphs):
         headings.append(heading)
     return headings
 
-def extract_page_numbers(path):
+def extract_page_numbers(path, line_number):
     """Extract page numbers from given file.
     Internally, extract_page_numbers_from_par is called.
     Returned is a list of page numbers. See extract_page_numbers_from_string for
     the actual format."""
     with open(path, 'r', encoding='utf-8') as f:
-        paragraphs = file2paragraphs(f.read())
+        paragraphs = file2paragraphs(f.read(), line_number)
         return extract_page_numbers_from_par(paragraphs)
 
 def is_hashed_heading(line):
@@ -436,4 +439,3 @@ def parse_formulas(paragraphs):
     for key in sorted(formulas):
         ordered[key] = formulas[key]
     return ordered
-
