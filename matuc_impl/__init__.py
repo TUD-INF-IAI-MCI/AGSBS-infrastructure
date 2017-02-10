@@ -36,7 +36,7 @@ iswithinlecture - test, whether a certain path is part of a lecture
 new             - create new project structure
 master          - perform toc generation (see below) and call `conv` on every file
 mk              - invoke "mistkerl", a quality assurance helper
-pagenumber      - returns a page number depending in the previous page number
+addpagenum      - returns a page number depending in the previous page number
 toc             - generate table of contents
 version         - output program version
 """ % (PROCNAME, PROCNAME)
@@ -497,9 +497,9 @@ sub-directory configurations or initialization of a new project."""
                 m = MAGSBS.master.Master(args[0])
                 m.run()
 
-    def handle_pagenumber(self, cmd, args):
+    def addpagenum(self, cmd, args):
         """
-        handle_pagenumber(self, cmd, args) -> return page number in roman or arabic
+        addpagenum(self, cmd, args) -> return page number in roman or arabic
         style
         The handle_pagenumber parses a text for previous page number and generates
         the new page number basing on the previous one.
@@ -513,13 +513,7 @@ sub-directory configurations or initialization of a new project."""
         except:
             self.output_formatter.emit_error("line_number is not a number")
             return
-        pagenumbers = MAGSBS.mparser.extract_page_numbers(args[0], line_number)
-        # increment pagenumber
-        if len(pagenumbers) > 0:
-            pagenum = int(pagenumbers[-1].number)+1
-            if not pagenumbers[-1].arabic:
-                pagenum = MAGSBS.roman.to_roman(pagenum)
-        self.output_formatter.emit_result({ 'pagenumber': str(pagenum)})
+        self.output_formatter.emit_result({ 'pagenumber': MAGSBS.pagenumber(args[0], line_number)})
 
 
     #pylint: disable=unused-argument
