@@ -516,8 +516,8 @@ sub-directory configurations or initialization of a new project."""
         pagenumbers = MAGSBS.mparser.extract_page_numbers(args[0], line_number)
         # increment pagenumber
         if len(pagenumbers) > 0:
-            pagenum = int(pagenumbers[len(pagenumbers)-1].number)+1
-            if not pagenumbers[len(pagenumbers)-1].arabic:
+            pagenum = int(pagenumbers[-1].number)+1
+            if not pagenumbers[-1].arabic:
                 pagenum = MAGSBS.roman.to_roman(pagenum)
         self.output_formatter.emit_result({ 'pagenumber': str(pagenum)})
 

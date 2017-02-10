@@ -101,7 +101,7 @@ class test_mparser(unittest.TestCase):
         self.assertTrue(4 in result)
         self.assertFalse('\\' in '\n'.join(result[1]))
 
-    def test_that_all_paragraphs_before_line_number_are_listed(self):
+    def test_that_only_paragraphs_before_line_number_are_found(self):
         lines = '|| - Seite 1 -\n\nHier kommt ein Text\n\n|| - Seite 2 -'
         pars = mp.file2paragraphs(lines.split('\n'), 3)
         self.assertEqual(len(pars), 2)
