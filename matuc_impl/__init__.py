@@ -19,6 +19,7 @@ import textwrap
 
 import MAGSBS
 import MAGSBS.quality_assurance
+from MAGSBS.pagenumber import get_page_number
 
 PROCNAME = os.path.basename(sys.argv[0])
 
@@ -497,9 +498,9 @@ sub-directory configurations or initialization of a new project."""
                 m = MAGSBS.master.Master(args[0])
                 m.run()
 
-    def addpagenum(self, cmd, args):
+    def handle_addpagenum(self, cmd, args):
         """
-        addpagenum(self, cmd, args) -> return page number in roman or arabic
+        handle_addpagenum(self, cmd, args) -> return page number in roman or arabic
         style
         The handle_pagenumber parses a text for previous page number and generates
         the new page number basing on the previous one.
@@ -513,7 +514,7 @@ sub-directory configurations or initialization of a new project."""
         except:
             self.output_formatter.emit_error("line_number is not a number")
             return
-        self.output_formatter.emit_result({ 'pagenumber': MAGSBS.pagenumber(args[0], line_number)})
+        self.output_formatter.emit_result({ 'pagenumber': get_page_number(args[0], line_number)})
 
 
     #pylint: disable=unused-argument
