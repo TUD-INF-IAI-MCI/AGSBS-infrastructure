@@ -88,9 +88,9 @@ def joined_line_iterator(lines):
             lines_to_insert = 0
     raise StopIteration()
 
-def file2paragraphs(lines, line_number=0, join_lines=False):
+def file2paragraphs(lines, join_lines=False):
     """
-file2paragraphs(lines, line_number, join_lines=False)
+file2paragraphs(lines, last_line=0, join_lines=False)
 
 Return a dictionary mapping from line numbers (where paragraph started) to a
 paragraph. The paragraph itself is a list of lines, not ending on\\n. The
@@ -101,23 +101,19 @@ If join_lines is set, lines ending on \\ will we joined with the next one.
     #pylint: disable=bad-reversed-sequence
     if isinstance(lines, str):
         lines = lines.split('\n')
-    if line_number:
-        lines = lines[:line_number]
     paragraphs = collections.OrderedDict()
-
     paragraphs[1] = []
+
     iterator_wrappper = (joined_line_iterator if join_lines else iter)
     for lnum, line in enumerate(iterator_wrappper(lines)):
         current_paragraph = next(reversed(paragraphs))
-        if line.endswith('\n'):
-            line = line[:-1]
-        if not line.strip(): # empty line
+        line = line.rstrip() # remove \n, if it exists
+        if not line: # empty line
             # if previous paragraph is empty, this line as well, theere are
             # multiple blank lines; update line number
             if not paragraphs[current_paragraph]:
                 del paragraphs[current_paragraph]
-            # +1, because count starts from 1 and paragraph starts on _next_
-            # line
+            # +1, because count starts from 1 and paragraph starts on next line
             paragraphs[lnum+2] = []
         else:
             paragraphs[current_paragraph].append(line)
@@ -141,14 +137,17 @@ def extract_headings(path, paragraphs):
         headings.append(heading)
     return headings
 
-def extract_page_numbers(path, line_number):
+def extract_page_numbers(path, ignore_after_lnum=-1):
     """Extract page numbers from given file.
     Internally, extract_page_numbers_from_par is called.
+    If ignore_after_lnum is passed, all line numbers after this one are ignored.
+    It is set to -1 by default.
     Returned is a list of page numbers. See extract_page_numbers_from_string for
     the actual format."""
     with open(path, 'r', encoding='utf-8') as f:
-        paragraphs = file2paragraphs(f.read(), line_number)
-        return extract_page_numbers_from_par(paragraphs)
+        paragraphs = file2paragraphs(f.read())
+        return extract_page_numbers_from_par(paragraphs,
+                ignore_after_lnum=ignore_after_lnum)
 
 def is_hashed_heading(line):
     r"""Return whether line is a heading of the form r"#{1,6}\s+\w+"."""
@@ -206,19 +205,27 @@ def extract_headings_from_par(paragraphs, max_headings=-1):
     return headings
 
 
-def extract_page_numbers_from_par(paragraphs, regex=config.PAGENUMBERING_PATTERN):
-    """Extract all page numbers from given paragraph list. Paragraph must be in
-    the format as returned by file2paragraphs, see documentation of this
-    function for details.
-    Return a list of page numbers. Each page number is a
-    datastructures.PageNumber. A custom regular expression for recognizing page
-    numbers can be given, to e.g. detect page numbers with incorrect
-    identifiers."""
+def extract_page_numbers_from_par(paragraphs, ignore_after_lnum=-1,
+        regex=config.PAGENUMBERING_PATTERN):
+    """Extract all page numbers from a document.
+    Arguments:
+    
+    1.  paragraph list, a list of all paragraphs in the document, see `file2paragraphs` for more details.
+    2.  `ignore_after_lnum=-1`: if set to a non-negative value, all page numbers
+        after the specified line are ignored.
+    3.  `regex=...`, specify a different regular expression to identify page
+        numbers.
+    Returned is  a list of page numbers. Each page number is a
+    datastructures.PageNumber."""
     numbers = []
+    if ignore_after_lnum <= 0:
+        ignore_after_lnum = (next(reversed(paragraphs)) if paragraphs else 0)
     # filter for paragraphs with exactly one line and the line starting with||
-    pars = [(l,p) for l,p in paragraphs.items() \
-            if len(p) == 1 and p[0].startswith('||')]
-    for start_line, par in pars:
+    # and before ignore_after_lnum
+    paragraphs = ((l,p) for l,p in paragraphs.items() \
+            if len(p) == 1 and p[0].startswith('||') and l < ignore_after_lnum)
+
+    for start_line, par in paragraphs:
         result = regex.search(par[0])
         if not result:
             continue

@@ -314,6 +314,7 @@ class Translate:
     supported_languages = ['de', 'fr', 'en']
     def __init__(self):
         self.en_fr = {
+            "page": "page", "slide": "diapositive",
             'preface':'introduction',   'appendix':'appendice',
             'table of contents':'table des matières',
             'chapters':'chapitres',
@@ -333,6 +334,7 @@ class Translate:
             'not edited': 'pas édité'
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
+                "page": "Seite", "slide": "Folie",
             'table of contents' : 'inhaltsverzeichnis',
             'chapters':'kapitel',
             'image description of image':'bildbeschreibung von Bild',

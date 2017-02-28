@@ -142,7 +142,7 @@ class UniformPagestrings(Mistake):
 
 class TooManyHeadings(Mistake):
     """Are there too many headings of the same level in a directory next to each
-other? E.g. 40 headings level 2. The figure can be controled using
+other? E.g. 40 headings level 2. The number can be controled using
 self.threshold."""
     mistake_type = MistakeType.headings_dir
     def __init__(self):
