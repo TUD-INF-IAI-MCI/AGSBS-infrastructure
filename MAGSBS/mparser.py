@@ -219,12 +219,13 @@ def extract_page_numbers_from_par(paragraphs, ignore_after_lnum=-1,
     datastructures.PageNumber."""
     numbers = []
     if ignore_after_lnum <= 0:
-        ignore_after_lnum = (next(reversed(paragraphs)) if paragraphs else 0)
+        ignore_after_lnum = max(paragraphs.keys()) + 1
     # filter for paragraphs with exactly one line and the line starting with||
     # and before ignore_after_lnum
     paragraphs = ((l,p) for l,p in paragraphs.items() \
-            if len(p) == 1 and p[0].startswith('||') and l < ignore_after_lnum)
+            if len(p) == 1 and p[0].startswith('||') and l <= ignore_after_lnum)
 
+    paragraphs=list(paragraphs)
     for start_line, par in paragraphs:
         result = regex.search(par[0])
         if not result:

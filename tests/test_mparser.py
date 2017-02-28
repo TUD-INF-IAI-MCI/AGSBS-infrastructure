@@ -35,7 +35,7 @@ class test_mparser(unittest.TestCase):
 
     def test_that_correct_pnum_is_recognized(self):
         pnums = mp.extract_page_numbers_from_par({1:['|| - Seite 80 -']})
-        self.assertTrue(len(pnums) == 1, "exactly one page number is expectd.")
+        self.assertEqual(len(pnums), 1, "exactly one page number is expected.")
         self.assertEqual(pnums[0].number, 80)
 
     def test_that_more_than_one_pnum_is_parsed_and_line_numbers_are_correct(self):
@@ -100,11 +100,6 @@ class test_mparser(unittest.TestCase):
         # paragraph after joined line starts with correct line number
         self.assertTrue(4 in result)
         self.assertFalse('\\' in '\n'.join(result[1]))
-
-    def test_that_only_paragraphs_before_line_number_are_found(self):
-        lines = '|| - Seite 1 -\n\nHier kommt ein Text\n\n|| - Seite 2 -'
-        pars = mp.file2paragraphs(lines.split('\n'), 3)
-        self.assertEqual(len(pars), 2)
 
     ##############################################################
     # get_chapter_number_from_path
