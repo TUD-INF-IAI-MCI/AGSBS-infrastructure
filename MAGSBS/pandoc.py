@@ -233,6 +233,7 @@ class HtmlConverter(OutputGenerator):
             outputf = os.path.splitext(filename)[0] + '.htex'
             pandoc_args.append('--gladtex')
         execute(['pandoc'] + pandoc_args + ['-t', super().get_format(), '-f','json',
+            '-K25000000', '+RTS', # increase stack size
             '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
         if use_gladtex:
             try:
