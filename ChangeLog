@@ -1,7 +1,7 @@
-0.5.1 [UNRELEASED]
+0.6 [UNRELEASED]
 
-Bug fix release:
-
+*	add new `addpnum` functionality to matuc to allow for better autogeneration
+	of page numbers from an IDE
 *	table of contents:
     * always use / in TOC links
 	* print number "0" for chapter 0, instead of omitting it

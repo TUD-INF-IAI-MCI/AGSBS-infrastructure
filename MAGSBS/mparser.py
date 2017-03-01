@@ -218,6 +218,8 @@ def extract_page_numbers_from_par(paragraphs, ignore_after_lnum=-1,
     Returned is  a list of page numbers. Each page number is a
     datastructures.PageNumber."""
     numbers = []
+    if not paragraphs:
+        return []
     if ignore_after_lnum <= 0:
         ignore_after_lnum = max(paragraphs.keys()) + 1
     # filter for paragraphs with exactly one line and the line starting with||

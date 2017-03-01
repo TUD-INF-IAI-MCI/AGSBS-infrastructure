@@ -7,6 +7,10 @@ MAGSBS:
     interface)
 -   A few methods to parse arguments and to control all the functionality
     offered by the MAGSBS module.
+
+The output is done using scripts called matuc and matuc_js. They share *all* of
+the functionality of this module and just define a text and a JSON interface.
+This is why this module exists in the first place.
 """
 from abc import ABCMeta, abstractmethod
 import argparse
@@ -505,21 +509,46 @@ sub-directory configurations or initialization of a new project."""
         The new page number is generated using it's predecessors. It both
         respects the numbering from the predecessor, as also the format (roman
         or arabic)."""
-        if len(args) < 2:
-            print("Usage: %s <path> <line_number>" % PROCNAME)
-            print("For instance: %s addpnum k01/k01.md 20" % PROCNAME)
-            return 1
-        path, line_number = args[:2]
-        if not os.path.exists(path) or os.path.isdir(path):
-            self.output_formatter.emit_error("Given path has to exist and has to be a file.")
+        parser = HelpfulParser(cmd, self.output_formatter, description=("Add a "
+            "new page number at the specified line. The given document is parsed"
+            " and the page number is created using its predecessors. Even though"
+            " this is basically just incrementing the number, it takes into "
+            "account the language of the document for labelling the page numbers,"
+            " whether it's a roman or an arabic number and whether there were "
+            "page numbers in the first place."))
+        parser.add_argument("-f", dest="read_from_file", action="store_true",
+                default=False, help="read from specified path instead of reading from standard input")
+        parser.add_argument('path', nargs=1,
+                help=("Path to load configuration from. This can be either a "
+                "file or a directory. If -f is given, the path is used as "
+                "input file (by default, input is read from stdin)."))
+        parser.add_argument('line_number', nargs=1,
+                help="Line number for which to generate the page number")
+
+        options = parser.parse_args(args)
+
+        path = options.path[0]
+        if not os.path.exists(path):
+            self.output_formatter.emit_error("Given path has to exist.")
             sys.exit(29)
         try:
-            line_number = int(line_number)
+            line_number = int(options.line_number[0])
         except ValueError:
             self.output_formatter.emit_error("Argument 2 is not a number.")
             return 5
-        self.output_formatter.emit_result({ 'pagenumber':
-            pagenumbering.add_page_number(path, line_number).format()})
+        if options.read_from_file:
+            if not os.path.isfile(path):
+                self.output_formatter.emit_error("Given path is not a file, "
+                        "but reading from it with -f has been requested.")
+                sys.exit(99)
+            self.output_formatter.emit_result({ 'pagenumber':
+                pagenumbering.add_page_number(path, line_number).format()})
+        else:
+            data = sys.stdin.read()
+            self.output_formatter.emit_result({ 'pagenumber':
+                pagenumbering.add_page_number_from_str(data, line_number,
+                    path=path).format()})
+            
 
 
     #pylint: disable=unused-argument
