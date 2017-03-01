@@ -2,7 +2,7 @@
 This module defines everything required to write a command-line frontend for
 MAGSBS:
 
--   A base output formatter, that control how the text is displayed
+-   A base output formatter that controls how the text is displayed
     (currently matuc.py implements a text interface, matuc_js a json.
     interface)
 -   A few methods to parse arguments and to control all the functionality
@@ -19,6 +19,7 @@ import textwrap
 
 import MAGSBS
 import MAGSBS.quality_assurance
+from MAGSBS import pagenumbering
 
 PROCNAME = os.path.basename(sys.argv[0])
 
@@ -27,8 +28,9 @@ main_usage = """%s <command> <options>
 <command> determines which action to take. The syntax might vary between
 commands. Use %s <command> -h for help.
 
-Available commands are:
+Available commands are:0
 
+addpnum         - generate new page number, relative to its predecessors
 conf            - set, init or update a configuration
 conv            - convert a markdown file using pandoc
 imgdsc          - generate image description (snippets)
@@ -182,8 +184,10 @@ class main():
             except AttributeError:
                 self.output_formatter.emit_usage(main_usage, "Invalid command: " + args[1])
                 sys.exit(127)
-            func(invokation_command, args[2:])
-            sys.exit(0)
+            ret = func(invokation_command, args[2:])
+            if not ret:
+                ret = 0
+            sys.exit(ret)
 
     def handle_toc(self, cmd, args):
         "Table Of Contents"
@@ -496,7 +500,28 @@ sub-directory configurations or initialization of a new project."""
                 m = MAGSBS.master.Master(args[0])
                 m.run()
 
+    def handle_addpnum(self, cmd, args):
+        """Return a new page number (roman and arabic supported).
+        The new page number is generated using it's predecessors. It both
+        respects the numbering from the predecessor, as also the format (roman
+        or arabic)."""
+        if len(args) < 2:
+            print("Usage: %s <path> <line_number>" % PROCNAME)
+            print("For instance: %s addpnum k01/k01.md 20" % PROCNAME)
+            return 1
+        path, line_number = args[:2]
+        if not os.path.exists(path) or os.path.isdir(path):
+            self.output_formatter.emit_error("Given path has to exist and has to be a file.")
+            sys.exit(29)
+        try:
+            line_number = int(line_number)
+        except ValueError:
+            self.output_formatter.emit_error("Argument 2 is not a number.")
+            return 5
+        self.output_formatter.emit_result({ 'pagenumber':
+            pagenumbering.add_page_number(path, line_number).format()})
+
+
     #pylint: disable=unused-argument
     def handle_version(self, dont, care):
         self.output_formatter.emit_result({'version': str(MAGSBS.config.VERSION)})
-

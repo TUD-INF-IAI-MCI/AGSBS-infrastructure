@@ -274,3 +274,8 @@ class PageNumber:
         else:
             return roman.to_roman(self.number)
 
+    def format(self):
+        """Format this page number to a Markdown page number representation.
+        Note: this is one of the MAGSBS-syntax extensions."""
+        return '|| - %s %s -' % (self.identifier, str(self))
+

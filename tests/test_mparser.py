@@ -35,7 +35,7 @@ class test_mparser(unittest.TestCase):
 
     def test_that_correct_pnum_is_recognized(self):
         pnums = mp.extract_page_numbers_from_par({1:['|| - Seite 80 -']})
-        self.assertTrue(len(pnums) == 1, "exactly one page number is expectd.")
+        self.assertEqual(len(pnums), 1, "exactly one page number is expected.")
         self.assertEqual(pnums[0].number, 80)
 
     def test_that_more_than_one_pnum_is_parsed_and_line_numbers_are_correct(self):
@@ -74,7 +74,6 @@ class test_mparser(unittest.TestCase):
     def test_invalid_roman_numbers_trigger_exception(self):
         pnums = mp.extract_page_numbers_from_par({1:['|| - Seite IIIIIVC -']})
         self.assertEqual(len(pnums), 0)
-
 
 
     ##############################################################
@@ -286,7 +285,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
         self.assertTrue(6 in data, format_ln(6, data.keys()))
         self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
-    
+
 
 
     def test_that_indentedcode_blocks_at_beginning_and_end_are_removed(self):
@@ -322,4 +321,3 @@ class TestCodeBlockRemoval(unittest.TestCase):
         data = par('-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup')
         self.assertFalse('ok, here' in seralize_doc(data))
         self.assertTrue(7 in data)
-
