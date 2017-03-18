@@ -21,4 +21,9 @@ class TestUseProperCommandsForMathOperatorsAndFunctions(unittest.TestCase):
         self.assertTrue(check(r'cos(\frac\pi2)'))
 
  
+    def test_infix_matches_dont_trigger(self):
+        self.assertFalse(check(r'A\setminus B'))
+        self.assertFalse(check(r'A\setminus B'))
+
+ 
 

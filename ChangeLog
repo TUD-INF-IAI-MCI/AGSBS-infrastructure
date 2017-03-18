@@ -10,8 +10,10 @@
   within one document
 * recognize roman numbers as valid page numbers
   * update mistkerl to understand roman numbers
-* Mistkerl: don't flag hypenated abbreviated wordgroups as error (Fixes #37)
+* Mistkerl:
+    * don't flag hypenated abbreviated wordgroups as error (Fixes #37)
     * Do not treat image descriptions at the end of a file as missing
+    * make the math operator checker more robust, only matching whole words
 
 0.5
 

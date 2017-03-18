@@ -102,22 +102,28 @@ class SpacingInFormulaShouldBeDoneWithQuad(FormulaMistake):
 
 class UseProperCommandsForMathOperatorsAndFunctions(FormulaMistake):
     r"""\min, \max, ... should be marked up correctly."""
+    OPSANDFUNCS = tuple(re.compile(r'\b%s\b' % op)
+            for op in ('sin','cos', 'max', 'min', 'tan'))
+
     def __init__(self):
         super().__init__()
         self.set_file_types(['md', 'tex'])
-        self.opsandfuncs = ['sin','cos', 'max', 'min']
 
     def worker(self, *args):
+        has_backslash = lambda text, idx: (text[idx - 1] == '\\' if idx > 0
+                else False)
         for (line, pos), formula in args[0].items():
-            for mathop in self.opsandfuncs:
-                if not mathop in formula:
+            for mathop in UseProperCommandsForMathOperatorsAndFunctions.OPSANDFUNCS:
+                match = mathop.search(formula)
+                if not match:
                     continue
-                if not ('\\' + mathop) in formula:
+                if not has_backslash(formula, match.span()[0]):
                     return self.error(("{0} sollte in LaTeX-Formeln "
                         "grundsätzlich als Befehl gesetzt werden, d.h. mittels "
                         "\\{0}. Nur so wird es in der Ausgabe korrekt "
                         "formatiert und ist gleichzeitig gut lesbar.").\
                             format(mathop), lnum=line, pos=pos)
+
 
 class FormulasSpanningAParagraphShouldBeDisplayMath(Mistake):
     """This checker checks whether some formula was set with inline maths on a
