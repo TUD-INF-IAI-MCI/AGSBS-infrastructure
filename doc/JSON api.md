@@ -81,6 +81,23 @@ output anything upon success and use the fields above to report problems.
 
     Example: `{'result': {'new settings': {'creator': 'me, ...}}}`
     
+`fixpnums`
+:   This command will check whether the page numbering increases by one per page
+    and will offer reformatted page number strings, if a problem has been detected.
+    Output is as follows:
+
+    1.  If no problems have been detected, result is an empty list.
+    2.  If a problem has been found:
+        1.  The warning key is present with a dictionary containine the keys
+            `"line"`, `"path"` and `"message"`, as already described above.
+        2.  The result will contain a list of tuples, containing the line number
+            and the new JSON string.
+            -   Roman and arabic numbers are kept, a change between those two
+                formats is detected.
+            -   Only page numbers which changed are listed.
+            -   Example: `[…, (538, "|| - Slide 98 -"), …]`
+            -   As can be seen from the example, the old line can be completely
+                replaced through the new one.
 `imgdsc`
 :   The imgdsc command will output a mapping containing either one or two keys:
 
@@ -92,6 +109,7 @@ output anything upon success and use the fields above to report problems.
         description which is found with the key 'external'. The value of
         'external' must be appended to the file with the outsourced image
         descriptions, at the time of writing that's "bilder.md".
+
 `iswithinlecture` (check, whether certain path is part of a lecture)
 :   The `result` key will contain a JSON object with exactly one key, which is
     "is within a lecture" and the corresponding value true or false.
