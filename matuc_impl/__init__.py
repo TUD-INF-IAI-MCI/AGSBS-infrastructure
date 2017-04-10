@@ -295,7 +295,7 @@ sub-directory configurations or initialization of a new project."""
             self.output_formatter.emit_result({prefix: inst})
 
         if subcmd == 'show':
-            print_configuration("Current settings:")
+            print_configuration("Current settings")
         elif subcmd == 'update' or subcmd == 'init':
             for opt, value in options.__dict__.items():
                 if value is not None:
@@ -548,7 +548,7 @@ sub-directory configurations or initialization of a new project."""
             self.output_formatter.emit_result({ 'pagenumber':
                 pagenumbering.add_page_number_from_str(data, line_number,
                     path=path).format()})
-            
+
 
 
     #pylint: disable=unused-argument
