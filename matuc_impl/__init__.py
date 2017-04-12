@@ -296,7 +296,7 @@ sub-directory configurations or initialization of a new project."""
             self.output_formatter.emit_result({prefix: inst})
 
         if subcmd == 'show':
-            print_configuration("Current settings:")
+            print_configuration("Current settings")
         elif subcmd == 'update' or subcmd == 'init':
             for opt, value in options.__dict__.items():
                 if value is not None:
