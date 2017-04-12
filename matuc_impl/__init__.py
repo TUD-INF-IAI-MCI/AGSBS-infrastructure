@@ -549,7 +549,7 @@ sub-directory configurations or initialization of a new project."""
             self.output_formatter.emit_result({ 'pagenumber':
                 pagenumbering.add_page_number_from_str(data, line_number,
                     path=path).format()})
-            
+
 
     def handle_fixpnums(self, cmd, args):
         """Please see usage info."""
@@ -587,7 +587,7 @@ sub-directory configurations or initialization of a new project."""
         corrected = [] # correct page numbers
         for pnum, expected_num in errorneous:
             pnum.number = expected_num
-            corrected.append((pnum.line_no, pnum.format()))
+            corrected.append({str(pnum.line_no): pnum.format()})
 
         if options.in_place:
             with open(options.file, 'r', encoding='utf-8') as f:
@@ -597,8 +597,7 @@ sub-directory configurations or initialization of a new project."""
             with open(options.file, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(lines))
         else:
-            self.output_formatter.emit_result([{str(ln): string}
-                for ln, string in corrected])
+            self.output_formatter.emit_result(corrected)
             sys.exit(0)
 
 
