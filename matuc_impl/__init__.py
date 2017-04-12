@@ -1,6 +1,8 @@
 """
-This module defines everything required to write a command-line frontend for
-MAGSBS:
+This module contains the actual implementation of the matuc and the matuc_js
+command-line frontend.
+It provides:
+
 
 -   A base output formatter that controls how the text is displayed
     (currently matuc.py implements a text interface, matuc_js a json.
@@ -8,10 +10,8 @@ MAGSBS:
 -   A few methods to parse arguments and to control all the functionality
     offered by the MAGSBS module.
 
-The output is done using scripts called matuc and matuc_js. They share *all* of
-the functionality of this module and just define a text and a JSON interface.
-This is why this module exists in the first place.
-"""
+The actual output is formatted and printed using scripts called matuc and matuc_js. They share *all* of
+the functionality of this module and just define a text and a JSON interface."""
 from abc import ABCMeta, abstractmethod
 import argparse
 import collections

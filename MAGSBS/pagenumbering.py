@@ -47,3 +47,31 @@ def add_page_number_from_str(data, line_number, path=None):
         return datastructures.PageNumber(pagenumbers[-1].identifier,
                 pagenumbers[-1].number+1, pagenumbers[-1].arabic)
 
+def check_page_numbering(pnums):
+    """This funciton checks for monotonic increasing page numbering within a
+    document. Counts from the first page number onwards and will report gaps, by
+    giving the page number object. When roman and arabic numbers are mixed, it
+    works as follows:
+
+    -   errors in the numbering are only reported until a style change (arabic
+        to roman or vice versa)
+    -   the numbering starts from the first number of a style that was detected
+    -   all errors are reported, even if they rsult from a preceeding number of
+        the same style far earlier
+    """
+    if not pnums:
+        return tuple()
+    errorneous = [] # tuple of page number object and expected page number (as number)
+    prev = pnums[0] # previous
+    for cur in pnums[1:]:
+        # if previous page number was errorneous and the style is unchanged:
+        if prev.arabic == cur.arabic: # same style
+            if errorneous and errorneous[-1][0] == prev: # already error found
+                errorneous.append((cur, errorneous[-1][1]+1))
+            elif prev.number != (cur.number - 1):
+                errorneous.append((cur, prev.number + 1))
+        else: # different style, ignore
+            pass
+        prev = cur
+
+    return errorneous

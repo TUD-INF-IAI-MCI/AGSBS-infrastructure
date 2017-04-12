@@ -1,3 +1,5 @@
+NOTE: this license only applies to MAGSBS/roman.py
+
 Python 2.1.1 license (http://www.python.org/2.1.1/license.html)
 
 A. HISTORY OF THE SOFTWARE

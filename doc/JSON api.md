@@ -88,10 +88,12 @@ output anything upon success and use the fields above to report problems.
 
     1.  If no problems have been detected, result is an empty list.
     2.  If a problem has been found:
-        1.  The warning key is present with a dictionary containine the keys
+        1.  The warning key is present with a dictionary containing the keys
             `"line"`, `"path"` and `"message"`, as already described above.
-        2.  The result will contain a list of tuples, containing the line number
-            and the new JSON string.
+        2.  The result will contain a list of tuples, containing a list of page
+            number strings to be updated. Each page number is a tuple of line
+            number to update and the string to insert. The updates are done like
+            this:
             -   Roman and arabic numbers are kept, a change between those two
                 formats is detected.
             -   Only page numbers which changed are listed.
