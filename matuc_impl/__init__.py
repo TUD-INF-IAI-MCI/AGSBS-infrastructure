@@ -37,6 +37,7 @@ Available commands are:0
 addpnum         - generate new page number, relative to its predecessors
 conf            - set, init or update a configuration
 conv            - convert a markdown file using pandoc
+fixpnums        - fix incorrect page numbering of a document
 imgdsc          - generate image description (snippets)
 iswithinlecture - test, whether a certain path is part of a lecture
 new             - create new project structure
@@ -79,7 +80,7 @@ class OutputFormatter:
     Valid inputs for the functions may be strings, lists/tuples and dicts. Each
     will be handled appropriately. If a dict is found with the key verbatim, the
     value of that field will be printed without modification. The rest of this
-    dictionary is ignored. Note: anything exporting to an JSON API must convert
+    dictionary is ignored. Note: anything exporting to a JSON API must convert
     this special case of {'verbatim': 'something'} into 'something'. to be
     compliant with the JSON API specification."""
     __metaclass__ = ABCMeta
@@ -549,6 +550,56 @@ sub-directory configurations or initialization of a new project."""
                 pagenumbering.add_page_number_from_str(data, line_number,
                     path=path).format()})
             
+
+    def handle_fixpnums(self, cmd, args):
+        """Please see usage info."""
+        parser = HelpfulParser(cmd, self.output_formatter, description=("Check the "
+            "page numbers of a document and warn / fix the page numbering, if "
+            "the numbers do not strictly increase by one."))
+        parser.add_argument("-f", dest="file", metavar="FILE",
+                default=None, help="read from specified path instead of reading from standard input")
+        parser.add_argument("-i", dest="in_place", action="store_true",
+            help="if -f is given, replace the page numbering in the "
+                "file in-place")
+
+        options = parser.parse_args(args)
+
+        if options.in_place and not options.file:
+            self.output_formatter.emit_error(("In-place modifications "
+                    "requested, but no file given."))
+            sys.exit(73)
+
+        if options.file and not os.path.exists(options.file):
+            self.output_formatter.emit_error("Given path has to exist.")
+            sys.exit(74)
+        pnums = None
+        if options.file:
+            pnums = MAGSBS.mparser.extract_page_numbers(options.file)
+        else:
+            paragraphs = MAGSBS.mparser.file2paragraphs(sys.stdin.read())
+            pnums = MAGSBS.mparser.extract_page_numbers_from_par(paragraphs)
+
+        errorneous = MAGSBS.pagenumbering.check_page_numbering(pnums)
+        if not errorneous:
+            self.output_formatter.emit_result([])
+            sys.exit(0)
+
+        corrected = [] # correct page numbers
+        for pnum, expected_num in errorneous:
+            pnum.number = expected_num
+            corrected.append((pnum.line_no, pnum.format()))
+
+        if options.in_place:
+            with open(options.file, 'r', encoding='utf-8') as f:
+                lines = f.read().split('\n')
+                for lnum, string in corrected:
+                    lines[lnum - 1] = string
+            with open(options.file, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(lines))
+        else:
+            self.output_formatter.emit_result([{str(ln): string}
+                for ln, string in corrected])
+            sys.exit(0)
 
 
     #pylint: disable=unused-argument
