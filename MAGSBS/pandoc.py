@@ -429,12 +429,16 @@ The parameter `format` can be supplied to override the configured output format.
             document = '{}\n\n{}\n\n{}\n'.format(nav_start, document, nav_end)
         json_ast = self.load_json(document)
         # add MarkDown extensions with Pandoc filters
-        for filter in Pandoc.CONTENT_FILTERS:
-            json_ast = contentfilter.jsonfilter(json_ast, filter,
+        try:
+            for filter in Pandoc.CONTENT_FILTERS:
+                json_ast = contentfilter.jsonfilter(json_ast, filter,
                     conf['format'])
-        converter.convert(json_ast,
+            converter.convert(json_ast,
                 contentfilter.get_title(json_ast),
                 path)
+        except KeyError as e: # API clash(?)
+            raise errors.StructuralError('Incompatible Pandoc API found, ' + \
+                    'JSON malformed.\n' + str(e), path)
 
     def load_json(self, document):
         """Load JSon input from ''inputf`` and return a reference to the loaded
