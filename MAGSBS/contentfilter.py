@@ -96,7 +96,7 @@ def jsonfilter(doc, action, format='html'):
     the list to which the target object belongs.  (So, returning an
     empty list deletes the object.)
     """
-    altered = pandocfilters.walk(doc, action, format, doc[0]['unMeta'])
+    altered = pandocfilters.walk(doc, action, format, doc['blocks'])
     return altered
 
 
@@ -132,7 +132,7 @@ def json_ast_filter(doc, action):
         res = action(key, value, format, meta, modify_ast=False)
         if(res):
             result.append( res )
-    pandocfilters.walk(doc, go, "", doc[0]['unMeta'])
+    pandocfilters.walk(doc, go, "", doc['blocks'])
     return result
 
 
@@ -158,7 +158,7 @@ class Formula:
 
 
 def get_title(json_ast):
-    nodes_to_visit = json_ast[1] # content of document without meta information
+    nodes_to_visit = json_ast['blocks'] # content of document without meta information
     for node in nodes_to_visit:
         if isinstance(node, list):
             nodes_to_visit.extend(node)
