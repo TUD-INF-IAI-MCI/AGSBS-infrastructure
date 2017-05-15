@@ -1,4 +1,4 @@
-0.6 [UNRELEASED]
+0.6
 
 *	add new `addpnum` functionality to matuc to allow for better autogeneration
 	of page numbers from an IDE
