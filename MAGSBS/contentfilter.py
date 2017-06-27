@@ -51,16 +51,23 @@ numbering information."""
     if not (format == 'html' or format == 'html5'):
         return
     if key == 'Para' and value:
-        text = value[0]['c']
-        if isinstance(text, str): # first chunk of paragraph must be str and contain ||
-            if text.startswith('||'):
-                text = pandocfilters.stringify(value) # get whle text of page number
-                pnum = config.PAGENUMBERING_PATTERN.search(text)
-                if pnum:
-                    # strip the first ||
-                    text = text[2:].lstrip().rstrip()
-                    return html('<p><span id="p{0}">{1}</span></p>'.format(
-                            pnum.groups()[1], text))
+        # find first obj with content (line breaks don't have this)
+        text = None
+        for obj in value:
+            if 'c' in obj:
+                text = obj['c']
+                break
+        if text is None:
+            return # no content in Paragraph - ignore
+        # first chunk of paragraph must be str and contain '||'
+        if isinstance(text, str) and text.startswith('||'):
+            text = pandocfilters.stringify(value) # get whle text of page number
+            pnum = config.PAGENUMBERING_PATTERN.search(text)
+            if pnum:
+                # strip the first ||
+                text = text[2:].lstrip().rstrip()
+                return html('<p><span id="p{0}">{1}</span></p>'.format(
+                        pnum.groups()[1], text))
 
 
 def suppress_captions(key, value, format, meta, modify_ast=True):
