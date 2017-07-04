@@ -1,25 +1,27 @@
 0.6.1 - Bug Fix Release
 
-*   fix page number extractor (new Pandoc JSON API)
-*   allow conversion of documents outside a lecture: single documents don't
-	need to be in a lecture, but could be on its own (useful for `matuc conv`).
-	This gave a traceback before.
+* fix page number extractor (new Pandoc JSON API)
+* allow conversion of documents outside a lecture: single documents don't
+  need to be in a lecture, but could be on its own (useful for `matuc conv`).
+  This gave a traceback before.
+* [regression fix]: show correct path in LaTeX error output (showed directory,
+not full file path)
 
 0.6
 
-*	add new `addpnum` functionality to matuc to allow for better autogeneration
-	of page numbers from an IDE
+*    add new `addpnum` functionality to matuc to allow for better autogeneration
+    of page numbers from an IDE
 *   add new fixpnums subcommand, to allow the correction of incorrectly numbered
-	page numbers from a given document
-*	table of contents:
+    page numbers from a given document
+*    table of contents:
     * always use / in TOC links
-	* print number "0" for chapter 0, instead of omitting it
-*	recognize ``` code blocks
-*	properly handle cases of improperly closed maths environments + LaTeX errors
-	within one document
-*	recognize roman numbers as valid page numbers
-	* update mistkerl to understand roman numbers
-*	Mistkerl:
+    * print number "0" for chapter 0, instead of omitting it
+*    recognize ``` code blocks
+*    properly handle cases of improperly closed maths environments + LaTeX errors
+    within one document
+*    recognize roman numbers as valid page numbers
+    * update mistkerl to understand roman numbers
+*    Mistkerl:
     * don't flag hyphenated abbreviated wordgroups as error (Fixes #37)
     * Do not treat image descriptions at the end of a file as missing
     * make the math operator checker more robust, only matching whole words
@@ -29,19 +31,19 @@
 * use GladTeX -R switch to replace non-ascii characters through LaTeX commands
   before conversion
 * performance enhancements
-	* write as few templates as possible (only when configuration for a given
-		path is different from the previous one); that reduces writes on persistant
-		memory)
-	* only convert files when they have been modified, so when the last
-		modification time of the output file is smaller than the last modification
-		time of the input file (unix time stamp)
-	* extract title of document from json ast (and hence drop a custom MarkDown
+    * write as few templates as possible (only when configuration for a given
+        path is different from the previous one); that reduces writes on persistant
+        memory)
+    * only convert files when they have been modified, so when the last
+        modification time of the output file is smaller than the last modification
+        time of the input file (unix time stamp)
+    * extract title of document from json ast (and hence drop a custom MarkDown
     heading parser); is faster as well
 * restructure navbar generation:
   * generate navigation bar (top/bottom of page) on the fly and do not write it
     to the input file
-	* allows determining last modification date of a file (had been overwritten by
-		each navigation bar generation)
+    * allows determining last modification date of a file (had been overwritten by
+        each navigation bar generation)
 * restructure table of contents generation
   * include all files mentioned on
     <https://elvis.inf.tu-dresden.de/wiki/index.php/Tutorenanleitung>
@@ -53,33 +55,33 @@
   to update); that'll hopefully mitigate the issues caused by incompatible
   versions
 * Mistkerl:
-	* add live view in matuc, refreshing the error list every five seconds
-	* drop -s (squeeze blank lines) switch for tty output
-	* figure out when a number or a special itemize sign (like +, - or *) is used
-	  at the beginning of an item in an itemize/enumerate environment and hence
-	  would unintentionally create a sublist
-	* detect image descriptions with 'to do' as unfinished
-	* figure out whether somebody uses multiple `\ ` to denote a space and suggest
-	  `\quad`
-	* add checker to find broken image links (where a character like ] or [ has
-	  been forgotten)
-	* add checker reporting umlauts which don't work with plain LaTeX in maths
-	  environments
-	* add checker requiring usage of \min and \max, \sin, etc. instead of using
-	  the plain text versions in formulas
-	* add checker reporting image descriptions which haven't been described yet
+    * add live view in matuc, refreshing the error list every five seconds
+    * drop -s (squeeze blank lines) switch for tty output
+    * figure out when a number or a special itemize sign (like +, - or *) is used
+      at the beginning of an item in an itemize/enumerate environment and hence
+      would unintentionally create a sublist
+    * detect image descriptions with 'to do' as unfinished
+    * figure out whether somebody uses multiple `\ ` to denote a space and suggest
+      `\quad`
+    * add checker to find broken image links (where a character like ] or [ has
+      been forgotten)
+    * add checker reporting umlauts which don't work with plain LaTeX in maths
+      environments
+    * add checker requiring usage of \min and \max, \sin, etc. instead of using
+      the plain text versions in formulas
+    * add checker reporting image descriptions which haven't been described yet
 
 0.4
 
 * fix a few regressions with unicode handling on Windows, make subprocess
-	handling more robust
+    handling more robust
 * insert correct Semester for new lecture material
 * rework internal exception handling, more concise, helpful and includes paths
 * rework configuration handling, depends on a path instead on the tool setting
-	the correct working directory
-	* rework translation handling as well, path has to be supplied now too figure
-		out where configuration is
-	* fix a untranslated strings
+    the correct working directory
+    * rework translation handling as well, path has to be supplied now too figure
+        out where configuration is
+    * fix a untranslated strings
 * add more Mistkerl checkers
 * correctly insert title into converted documents
 * fix more bugs
@@ -94,15 +96,15 @@
 0.2 (never released)
 
 * configuration option MAGSBS:GladTeX_opts removed, SourceAutor changed to
-	sourceAuthor
-	 * ignore unknown XML tags (in configuration) and emit warning
+    sourceAuthor
+     * ignore unknown XML tags (in configuration) and emit warning
 * more Mistkerl checkers
-	* recognize umlauts in LaTeX documents which have been written as a command
-		instead of a proper UTF-8 character and report them
-	* recognize a small slection of copy-paste umlaut errors when copying text
-		from PDF's to MarkDown documents
-	* remove Mistkerl checker which checked whether headings are paragraphs;
-		Pandoc is now smart enough
+    * recognize umlauts in LaTeX documents which have been written as a command
+        instead of a proper UTF-8 character and report them
+    * recognize a small slection of copy-paste umlaut errors when copying text
+        from PDF's to MarkDown documents
+    * remove Mistkerl checker which checked whether headings are paragraphs;
+        Pandoc is now smart enough
 * ignore bilder.md (images.md) when searching for multiple h1 headings per
   chapter
 * link image  description with correct text

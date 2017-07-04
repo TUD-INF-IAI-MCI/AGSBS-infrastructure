@@ -252,6 +252,7 @@ class HtmlConverter(OutputGenerator):
         against the formula of the Markdown document and report it to the
         user.
         Note: file_path is relative to dirname, so both is required."""
+        file_path = os.path.join(dirname, file_path) # full path is better
         try:
             output = dict(line.split(': ', 1) for line in error.message.split('\n')
                 if ': ' in line)
@@ -262,7 +263,7 @@ class HtmlConverter(OutputGenerator):
             return errors.SubprocessError(error.command, msg, path=dirname)
         if output and 'Number' in output and 'Message' in output:
             number = int(output['Number'])
-            with open(os.path.join(dirname, file_path), 'r', encoding='utf-8') as f:
+            with open(file_path, 'r', encoding='utf-8') as f:
                 paragraphs = mparser.RemoveCodeblocks(mparser.file2paragraphs(
                     f.read().split('\n')))()
                 formulas = mparser.parse_formulas(paragraphs)
@@ -277,15 +278,14 @@ class HtmlConverter(OutputGenerator):
                     "while converting a fomrula. Unfortunately, improperly closed "
                     "maths environments exist, therefore it cannot be determined "
                     "which formula was errorneous. Please re-read the document "
-                    "and fix any unclosed maths environments."),
-                        os.path.join(file_path))
+                    "and fix any unclosed maths environments."), file_path)
 
             # get LaTeX error output
             msg = output['Message'].rstrip().lstrip()
             msg = 'formula: {}\n{}'.format(list(formulas.values())[number-1], msg)
-            e = errors.SubprocessError(error.command, msg, path=dirname)
+            e = errors.SubprocessError(error.command, msg, path=file_path)
             e.line = '{}, {}'.format(*pos)
-            raise e
+            return e
         else:
             return error
 
@@ -499,7 +499,6 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     trans = config.Translate()
     trans.set_language(conf['language'])
     relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
-    print(file_cache._FileCache__main)
     previous, next = file_cache.get_neighbours_for(relative_path)
     make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
         '.' + conf['format']))
