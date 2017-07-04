@@ -254,18 +254,18 @@ class HtmlConverter(OutputGenerator):
         Note: file_path is relative to dirname, so both is required."""
         file_path = os.path.join(dirname, file_path) # full path is better
         try:
-            output = dict(line.split(': ', 1) for line in error.message.split('\n')
+            details = dict(line.split(': ', 1) for line in error.message.split('\n')
                 if ': ' in line)
         except ValueError as e:
             # output was not formatted as expected, report that
             msg = "couldn't parse GladTeX output: %s\noutput: %s" % \
                 (str(e), error.message)
             return errors.SubprocessError(error.command, msg, path=dirname)
-        if output and 'Number' in output and 'Message' in output:
-            number = int(output['Number'])
+        if details and 'Number' in details and 'Message' in details:
+            number = int(details['Number'])
             with open(file_path, 'r', encoding='utf-8') as f:
-                paragraphs = mparser.RemoveCodeblocks(mparser.file2paragraphs(
-                    f.read().split('\n')))()
+                paragraphs = mparser.rm_codeblocks(mparser.file2paragraphs(
+                    f.read().split('\n')))
                 formulas = mparser.parse_formulas(paragraphs)
             try:
                 pos = list(formulas.keys())[number-1]
@@ -281,7 +281,7 @@ class HtmlConverter(OutputGenerator):
                     "and fix any unclosed maths environments."), file_path)
 
             # get LaTeX error output
-            msg = output['Message'].rstrip().lstrip()
+            msg = details['Message'].rstrip().lstrip()
             msg = 'formula: {}\n{}'.format(list(formulas.values())[number-1], msg)
             e = errors.SubprocessError(error.command, msg, path=file_path)
             e.line = '{}, {}'.format(*pos)

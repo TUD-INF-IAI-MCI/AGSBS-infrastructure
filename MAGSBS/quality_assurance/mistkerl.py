@@ -102,7 +102,7 @@ recursively."""
                 file_path = os.path.join(directoryname, file)
                 try:
                     with open(file_path, encoding="utf-8") as f:
-                        paragraphs = mparser.RemoveCodeblocks(
+                        paragraphs = mparser.rm_codeblocks(
                                 mparser.file2paragraphs(f.read(), join_lines=True))()
                 except UnicodeDecodeError:
                     msg = 'Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'

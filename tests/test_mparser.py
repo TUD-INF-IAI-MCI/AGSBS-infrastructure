@@ -235,7 +235,7 @@ flatten = lambda x: list(itertools.chain.from_iterable(x))
 seralize_doc = lambda x: '\n'.join(flatten(x.values()))
 
 def par(string):
-    return mp.RemoveCodeblocks(
+    return mp.rm_codeblocks(
             mp.file2paragraphs(string.split('\n')))()
 
 def format_ln(line, lines):
