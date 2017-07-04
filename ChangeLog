@@ -1,3 +1,10 @@
+0.6.1 - Bug Fix Release
+
+*   fix page number extractor (new Pandoc JSON API)
+*   allow conversion of documents outside a lecture: single documents don't
+	need to be in a lecture, but could be on its own (useful for `matuc conv`).
+	This gave a traceback before.
+
 0.6
 
 *	add new `addpnum` functionality to matuc to allow for better autogeneration

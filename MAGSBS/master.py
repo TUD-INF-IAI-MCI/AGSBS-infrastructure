@@ -75,13 +75,20 @@ files are converted."""
         return trans.get_translation(word)
 
     def run(self):
-        """This function should be used with great care. It shall only be run from
-the root of a lecture. All other attempts will destroy the navigation links and
-result in other undefined behavior.
+        """This function should only be run from the lecture root. For other
+directories (subdirectories or unrelated directories) hopefully lead to a
+meaningful error message, but this is *not* guaranteed.  
 
 This function creates a navigation bar, the table of contents and converts all
 files. It will raise NoLectureConfigurationError when no configuration has been
 found and there are MarkDown files."""
+        try:
+            self._run()
+        except errors.ConfigurationError as e:
+            raise errors.ConfigurationError(("No configuration found. Either "
+                "none exists or this is not a lecture root."), e.path)
+
+    def _run(self):
         orig_cwd = os.getcwd()
         for root in self.get_roots():
             os.chdir(root)

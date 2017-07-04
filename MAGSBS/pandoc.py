@@ -356,11 +356,12 @@ The parameter `format` can be supplied to override the configured output format.
         determined."""
         path = os.path.abspath(some_file)
         if os.path.isfile(path):
-            path = os.path.split(path)[0]
+            path = os.path.dirname(path)
         is_fs_root = lambda path: os.path.dirname(path) == path
         while path and not is_fs_root(path) and not common.is_lecture_root(path):
             path = os.path.split(path)[0]
-        if path:
+        # is `path` aproper path and not FS root
+        if path and common.is_lecture_root(path):
             return path
         else:
             raise errors.StructuralError(("Could not guess the lecture root "
@@ -376,7 +377,15 @@ The parameter `format` can be supplied to override the configured output format.
             cache = files
             files = cache.get_all_files()
         else:
-            fw = filesystem.FileWalker(self.get_lecture_root(files[0]))
+            try:
+                lecture_root = self.get_lecture_root(files[0])
+                fw = filesystem.FileWalker(lecture_root)
+            except errors.StructuralError as e:
+                # a single file doesn't need to be in a lecture
+                if len(files) == 1:
+                    fw = filesystem.FileWalker(os.path.abspath("."))
+                else:
+                    raise e from None
             cache = datastructures.FileCache(fw.walk())
         converter = None # declare in outer scope for finally
         try:
@@ -484,12 +493,13 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     if not os.path.exists(file_path):
         raise errors.StructuralError("File doesn't exist", file_path)
     if not file_cache:
-        raise ValueError("Cache with values may not be null")
+        raise ValueError("Cache with values may not be None")
     if not conf:
         conf = config.confFactory().get_conf_instance(os.path.split(file_path)[0])
     trans = config.Translate()
     trans.set_language(conf['language'])
     relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
+    print(file_cache._FileCache__main)
     previous, next = file_cache.get_neighbours_for(relative_path)
     make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
         '.' + conf['format']))
