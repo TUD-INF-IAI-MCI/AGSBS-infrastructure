@@ -5,26 +5,28 @@
   need to be in a lecture, but could be on its own (useful for `matuc conv`).
   This gave a traceback before.
 * [regression fix]: show correct path in LaTeX error output (showed directory,
-not full file path)
+  not full file path)
+* fix bug with incorrect LaTeX error output: formulas were counted incorrectly,
+  because some of them were treated as code block
 
 0.6
 
-*    add new `addpnum` functionality to matuc to allow for better autogeneration
-    of page numbers from an IDE
-*   add new fixpnums subcommand, to allow the correction of incorrectly numbered
-    page numbers from a given document
-*    table of contents:
-    * always use / in TOC links
-    * print number "0" for chapter 0, instead of omitting it
-*    recognize ``` code blocks
-*    properly handle cases of improperly closed maths environments + LaTeX errors
-    within one document
-*    recognize roman numbers as valid page numbers
-    * update mistkerl to understand roman numbers
-*    Mistkerl:
-    * don't flag hyphenated abbreviated wordgroups as error (Fixes #37)
-    * Do not treat image descriptions at the end of a file as missing
-    * make the math operator checker more robust, only matching whole words
+* add new `addpnum` functionality to matuc to allow for better autogeneration
+  of page numbers from an IDE
+* add new fixpnums subcommand, to allow the correction of incorrectly numbered
+  page numbers from a given document
+* table of contents:
+  * always use / in TOC links
+  * print number "0" for chapter 0, instead of omitting it
+*  recognize ``` code blocks
+*  properly handle cases of improperly closed maths environments + LaTeX errors
+  within one document
+*  recognize roman numbers as valid page numbers
+  * update mistkerl to understand roman numbers
+*  Mistkerl:
+  * don't flag hyphenated abbreviated wordgroups as error (Fixes #37)
+  * Do not treat image descriptions at the end of a file as missing
+  * make the math operator checker more robust, only matching whole words
 
 0.5
 

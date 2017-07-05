@@ -20,7 +20,7 @@ from . import common
 from .errors import ConfigurationError
 from . import roman
 
-VERSION = StrictVersion('0.6.0')
+VERSION = StrictVersion('0.6.1')
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
