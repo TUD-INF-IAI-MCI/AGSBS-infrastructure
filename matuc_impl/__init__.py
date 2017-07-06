@@ -592,8 +592,9 @@ sub-directory configurations or initialization of a new project."""
         if options.in_place:
             with open(options.file, 'r', encoding='utf-8') as f:
                 lines = f.read().split('\n')
-                for lnum, string in corrected:
-                    lines[lnum - 1] = string
+                # destructure list of dicts into list of tuples
+                for lnum, string in (x for d in corrected for x in d.items()):
+                    lines[int(lnum) - 1] = string # inefficient, but easier for output formatter
             with open(options.file, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(lines))
         else:

@@ -1,6 +1,7 @@
 0.6.1 - Bug Fix Release
 
 * fix page number extractor (new Pandoc JSON API)
+* fix `fixpnums` command of matuc: data type error
 * allow conversion of documents outside a lecture: single documents don't
   need to be in a lecture, but could be on its own (useful for `matuc conv`).
   This gave a traceback before.
