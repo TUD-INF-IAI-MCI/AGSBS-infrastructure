@@ -37,10 +37,15 @@ $endif$
   <style type="text/css">
     code {{ white-space: pre; }}
     .underline {{ text-decoration: underline }}
-    .frame {{ border:1px solid #000000; }}
     .annotation {{ border:2px solid #000000; background-color: #FCFCFC; }}
     .annotation:before {{ content: "{annotation}: "; }}
     table, th, td {{ border:1px solid #000000; }}
+    /* frames with their colours */
+    .frame {{ border:1px solid #000000; }}
+    .box {{ border:1px solid #000000; }}
+    .annotation:before {{ content: "{annotation}: "; }}
+    {frames}
+    {boxes}
 $if(highlighting-css)$
 $highlighting-css$
 $endif$
@@ -194,6 +199,7 @@ class HtmlConverter(OutputGenerator):
 
     def get_template(self):
         """Construct template."""
+        start_with_caps = lambda content: content[0].upper() + content[1:]
         data = HTML_template[:]
         meta = self.get_meta_data()
         if 'title' in meta:
@@ -205,10 +211,31 @@ class HtmlConverter(OutputGenerator):
         trans.set_language(super().get_language())
         annotation = trans.get_translation('note of editor')
         if annotation[0].islower(): # capitalize _first_ character
-            annotation = annotation[0].upper() + annotation[1:]
+            annotation = start_with_caps(annotation)
+        frames = ['.frame:before { content: "%s: "; }' % \
+                    trans.get_translation("frame"),
+                '.frame:after { content: "%s"; }' % start_with_caps(trans \
+                    .get_translation("end of frame"))]
+        boxes = ['.box:before { content: "%s: "; }' % \
+                    trans.get_translation("box"),
+                '.box:after { content: "%s"; }' % start_with_caps(trans \
+            .get_translation("end of box"))]
+        colours = {'black': '#000000;', 'blue': '#0000FF', 'brown': '#A52A2A',
+            'grey': '#A9A9A9', 'green': '#006400', 'orange': '#FF8C00',
+            'red': '#FF0000', 'violet': '#8A2BE2', 'yellow': '#FFFF00'}
+        for name, rgb in colours.items():
+            frames.append('.frame.%s { border-color: %s; }' % (name, rgb))
+            frames.append('.frame.%s:before { content: "%s: "; }' % \
+                (name, trans.get_translation('%s frame' % name)))
+            boxes.append('.box.%s { border-color: %s; }' % (name, rgb))
+            boxes.append('.boxes.%s:before { content: "%s: "; }' % \
+                (name, trans.get_translation('%s box' % name)))
 
         try:
-            return data.format(annotation=annotation, **meta)
+            return data.format(annotation=annotation,
+                    frames = '\n    '.join(frames),
+                    boxes = '\n    '.join(boxes),
+                    **meta)
         except KeyError as e:
             raise errors.ConfigurationError(("The key %s is missing in the "
                 "configuration.") % e.args[0], meta['path'])
