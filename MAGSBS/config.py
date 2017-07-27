@@ -332,6 +332,7 @@ class Translate:
             'list of tactile graphics': 'list de la graphiques tactiles',
             'copyright notice': "avis de droit d'auteur",
             'not edited': 'pas édité'
+            # ToDo: french translations
             }
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
                 "page": "Seite", "slide": "Folie",
@@ -349,8 +350,18 @@ class Translate:
             'list of abbreviations': 'Abkürzungsverzeichnis',
             'list of tactile graphics': 'Verzeichnis taktiler Grafiken',
             'copyright notice': 'Hinweise zum Urheberrecht',
-            'not edited': 'nicht Übertragen'
-            }
+            'not edited': 'nicht Übertragen',
+            'black frame': 'schwarzer Rahmen', 'blue frame': 'blauer Rahmen',
+            'brown frame': 'brauner Rahmen', 'grey frame': 'grauer Rahmen',
+            'green frame': 'grüner Rahmen', 'orange frame': 'oranger Rahmen',
+            'red frame': 'roter Rahmen', 'violet frame': 'violetter Rahmen',
+            'yellow frame': 'gelber Rahmen',
+            'black frame': 'schwarz umrahmtes Textfeld', 'blue frame': 'blau umrahmtes Textfeld',
+            'brown frame': 'braun umrahmtes Textfeld', 'grey frame': 'grau umrahmtes Textfeld',
+            'green frame': 'grün umrahmtes Textfeld', 'orange frame': 'orang umrahmtes Textfeld',
+            'red frame': 'rot umrahmtes Textfeld', 'violet frame': 'violett umrahmtes Textfeld',
+            'yellow frame': 'gelb umrahmtes Textfeld'
+        }
         self.lang = 'de'
 
     def set_language(self, lang):
