@@ -331,9 +331,18 @@ class Translate:
             'list of abbreviations': 'abréviations',
             'list of tactile graphics': 'list de la graphiques tactiles',
             'copyright notice': "avis de droit d'auteur",
-            'not edited': 'pas édité'
-            # ToDo: french translations
-            }
+            'not edited': 'pas édité',
+            'end of frame': 'Fin cadre autour du texte',
+            'end of box': 'Fin de la bulle de texte'
+        }
+        for colour, trans in {'black': ('noir', 'noire'),
+                'blue': ('bleu', 'bleue'), 'brown':('marron',)*2,
+                'grey': ('gris','grise'), 'green':('vert','verte'),
+                'orange':('orange',)*2, 'red':('rouge',)*2,
+                'violet':('violett', 'violette'), 'yellow':('jaune',)*2}.items():
+            self.en_fr['%s frame' % colour] = '{}er Rahmen'.format(trans[0])
+            self.en_fr['%s box' % colour] = '{}er Kasten'.format(trans[1])
+
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
                 "page": "Seite", "slide": "Folie",
             'table of contents' : 'inhaltsverzeichnis',
@@ -351,17 +360,16 @@ class Translate:
             'list of tactile graphics': 'Verzeichnis taktiler Grafiken',
             'copyright notice': 'Hinweise zum Urheberrecht',
             'not edited': 'nicht Übertragen',
-            'black frame': 'schwarzer Rahmen', 'blue frame': 'blauer Rahmen',
-            'brown frame': 'brauner Rahmen', 'grey frame': 'grauer Rahmen',
-            'green frame': 'grüner Rahmen', 'orange frame': 'oranger Rahmen',
-            'red frame': 'roter Rahmen', 'violet frame': 'violetter Rahmen',
-            'yellow frame': 'gelber Rahmen',
-            'black frame': 'schwarz umrahmtes Textfeld', 'blue frame': 'blau umrahmtes Textfeld',
-            'brown frame': 'braun umrahmtes Textfeld', 'grey frame': 'grau umrahmtes Textfeld',
-            'green frame': 'grün umrahmtes Textfeld', 'orange frame': 'orang umrahmtes Textfeld',
-            'red frame': 'rot umrahmtes Textfeld', 'violet frame': 'violett umrahmtes Textfeld',
-            'yellow frame': 'gelb umrahmtes Textfeld'
+            'end of frame': 'Rahmenende',
+            'end of box': 'Ende des Kastens', 'title': 'Titel',
         }
+        for colour, trans in {'black': 'schwarz', 'blue': 'blau',
+                'brown':'braun', 'grey': 'grau', 'green':'grün',
+                'orange':'orange', 'red':'rot', 'violet':'violett',
+                'yellow':'gelb'}.items():
+            self.en_de['%s frame' % colour] = '{}er Rahmen'.format(trans)
+            self.en_de['%s box' % colour] = '{}er Kasten'.format(trans)
+
         self.lang = 'de'
 
     def set_language(self, lang):
