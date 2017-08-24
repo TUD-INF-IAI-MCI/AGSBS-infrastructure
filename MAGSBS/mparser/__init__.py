@@ -14,33 +14,11 @@ import re
 
 from .. import config, datastructures, errors, roman
 
+from .headings import extract_headings_from_par, extract_headings
 from .remove_codeblocks import rm_codeblocks
-
-_hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*\w+')
-
 
 # this must be in mparser, because otherwise there will be a cyclic dependency
 # between mparser and filesystem
-def extract_chapter_from_path(path):
-    """extract_chapter_from_path(path) -> return chapter number
-    Examples:
-    >>> extract_chapter_from_path('c:\\k01\\k01.md')
-    1
-    >>> extract_chapter_from_path('/path/k01/k0901.md')
-    9
-    The path is optional, only the file name is required, but as shown above
-    both is fine. If the file name does not follow naming conventions, a
-    StructuralError is raised."""
-    chapter_number = os.path.split(path)[-1].replace('.md', '')
-    while chapter_number and chapter_number[0].isalpha():
-        chapter_number = chapter_number[1:]
-    if (len(chapter_number)%2) != 0 or not chapter_number or \
-            not chapter_number[0].isdigit():
-        raise errors.StructuralError("the file does not follow naming conventions", path)
-    if len(chapter_number) > 2:
-        chapter_number = chapter_number[:2] # only keep first two digits (main chapter number)
-    return int(chapter_number)
-
 def joined_line_iterator(lines):
     """joined_line_iterator(iterable)
     The joined_line_iterator iterates over `iterable` (should emit strings) and
@@ -125,18 +103,6 @@ If join_lines is set, lines ending on \\ will we joined with the next one.
 
 
 
-def extract_headings(path, paragraphs):
-    """Extract headings from given paragraphs with given path. Internally,
-    extract_headings_from_par is called.
-    The difference to extract_headings_from_par is that it'll annotate the
-    chapter number form the given path."""
-    headings = []
-    chapter_number = extract_chapter_from_path(path)
-    for heading in extract_headings_from_par(paragraphs):
-        heading.set_chapter_number(chapter_number)
-        headings.append(heading)
-    return headings
-
 def extract_page_numbers(path, ignore_after_lnum=-1):
     """Extract page numbers from given file.
     Internally, extract_page_numbers_from_par is called.
@@ -148,62 +114,6 @@ def extract_page_numbers(path, ignore_after_lnum=-1):
         paragraphs = file2paragraphs(f.read())
         return extract_page_numbers_from_par(paragraphs,
                 ignore_after_lnum=ignore_after_lnum)
-
-def is_hashed_heading(line):
-    r"""Return whether line is a heading of the form r"#{1,6}\s+\w+"."""
-    return bool(_hashed_heading.search(line))
-
-
-def parse_hashed_headings(text):
-    """For markdown headings starting with #, return level and text as tuple.
-    Example:
-    >>>> parse_hashed_headings("### foo bar")
-    (3, 'foo bar')"""
-    level = 0
-    while text.startswith('#'):
-        level += 1
-        text = text[1:]
-    while text.endswith('#'):
-        text = text[:-1]
-    text = text.lstrip().rstrip()
-    return (level, text)
-
-def extract_headings_from_par(paragraphs, max_headings=-1):
-    """extract_headings_from_par(list_of_paragraphs, max_headings=-1)
-    Return list of heading objects; if max_headings is set to a value > -1, only
-    this number of headings will be parsed.
-    These headings contain only the text, the level and the line number.
-    Please note: certain properties of the Heading objects like chapter_number
-    won't be set. Please use extract_headings instead.
-    """
-    headings = []
-    def add_heading(start_line, level, text):
-        h = datastructures.Heading(text, level)
-        h.set_line_number(start_line)
-        headings.append(h)
-
-    for start_line, paragraph in paragraphs.items():
-        if max_headings > -1 and len(headings) >= max_headings:
-            break
-        if not paragraphs:
-            continue
-        if len(paragraph) >= 2:
-            if is_hashed_heading(paragraph[0]):
-                for lnum, line in enumerate(paragraph):
-                    if is_hashed_heading(line):
-                        add_heading(start_line + lnum,
-                                *parse_hashed_headings(line))
-                    else:
-                        break
-            elif paragraph[1].startswith('==='):
-                add_heading(start_line, 1, paragraph[0])
-            elif paragraph[1].startswith('---') and not ' ' in paragraph[1]:
-                add_heading(start_line, 2, paragraph[0])
-        else: # 1 line
-            if is_hashed_heading(paragraph[0]):
-                add_heading(start_line, *parse_hashed_headings(paragraph[0]))
-    return headings
-
 
 def extract_page_numbers_from_par(paragraphs, ignore_after_lnum=-1,
         regex=config.PAGENUMBERING_PATTERN):

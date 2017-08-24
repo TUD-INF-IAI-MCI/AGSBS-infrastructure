@@ -91,7 +91,7 @@ def decode(input):
 
 
 
-class Heading():
+class Heading:
     """heading(text, level)
 
 This class represents a heading to ease the handling of headings.

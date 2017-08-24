@@ -1,3 +1,8 @@
+0.7 
+
+* implement text boxes and frames for books with this specialised markup (not
+  present in MarkDown)
+
 0.6.1 - Bug Fix Release
 
 * fix page number extractor (new Pandoc JSON API)
