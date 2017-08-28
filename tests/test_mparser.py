@@ -126,6 +126,24 @@ class test_mparser(unittest.TestCase):
         with self.assertRaises(errors.StructuralError):
             mp.headings.extract_chapter_from_path("paper.md")
             mp.headings.extract_chapter_from_path("k11_old.md")
+
+    def test_continued_lines_in_hashed_headings_recognized(self):
+        headings = mp.headings.extract_headings_from_par(par(
+                "### a heading\\\nwhich is too long\n\ncontent\n"))
+        self.assertEqual(len(headings), 1)
+        self.assertEqual(headings[0].get_text(), 'a heading\nwhich is too long')
+
+    def test_continued_lines_in_underlined_headings_work(self):
+        headings = mp.headings.extract_headings_from_par(par(
+                "a heading\\\nwhich is too long\n=====\n\ncontent\n"))
+        self.assertEqual(len(headings), 1)
+        self.assertEqual(headings[0].get_text(), 'a heading\nwhich is too long')
+        headings = mp.headings.extract_headings_from_par(par(
+                "a heading\\\nwhich is too long\\\ntest\n-----\n\ncontent\n"))
+        self.assertEqual(len(headings), 1)
+        self.assertEqual(headings[0].get_text(),
+                'a heading\nwhich is too long\ntest')
+
     ############################################################################
     # tests for compute_position()
 
@@ -234,9 +252,14 @@ class TestParseFormulas(unittest.TestCase):
 flatten = lambda x: list(itertools.chain.from_iterable(x))
 seralize_doc = lambda x: '\n'.join(flatten(x.values()))
 
-def par(string):
+def parcdblk(string):
+    """Get a paragraph dictionary with code block already removed."""
     return mp.rm_codeblocks(
             mp.file2paragraphs(string.split('\n')))
+
+def par(string):
+    """Transform a string (with paragraphs into a paragraph dictionary."""
+    return mp.file2paragraphs(string.split('\n'))
 
 def format_ln(line, lines):
     """Format error message, see usage for explanation."""
@@ -246,18 +269,18 @@ def format_ln(line, lines):
 
 class TestCodeBlockRemoval(unittest.TestCase):
     def test_that_normal_paragraphs_are_untouched(self):
-        data = par('ja\nso\nist\nes\n\n\nok\nhier\npassiert\nnichts')
+        data = parcdblk('ja\nso\nist\nes\n\n\nok\nhier\npassiert\nnichts')
         self.assertTrue(1 in data, format_ln(1, data.keys()))
         self.assertTrue(7 in data, format_ln(7, data.keys()))
 
     def test_that_tilde_code_blocks_at_beginning_and_end_are_removed(self):
-        data = par('~~~~\nsome_code\nok\n~~~~\n\nla\nle\nlu\n\n~~~~\nmore_code\nb\n~~~~\n')
+        data = parcdblk('~~~~\nsome_code\nok\n~~~~\n\nla\nle\nlu\n\n~~~~\nmore_code\nb\n~~~~\n')
         self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
         self.assertTrue(6 in data, format_ln(6, data.keys()))
         self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
 
     def test_tilde_that_code_blocks_in_the_middle_work(self):
-        data = par('heading\n======\n\ndum-\nmy\n\n~~~~\nremoved\n~~~~\n\ntest\ndone\n')
+        data = parcdblk('heading\n======\n\ndum-\nmy\n\n~~~~\nremoved\n~~~~\n\ntest\ndone\n')
         self.assertFalse('removed' in '\n'.join(flatten(data.values())))
         # code block exists and is empty
         self.assertTrue(7 in data, format_ln(7, data.keys()))
@@ -266,13 +289,13 @@ class TestCodeBlockRemoval(unittest.TestCase):
                     + repr(data))
 
     def test_backprime_tilde_code_blocks_at_beginning_and_end_are_removed(self):
-        data = par('```\nsome_code\nok\n```\n\nla\nle\nlu\n\n```\nmore_code\nb\n```\n')
+        data = parcdblk('```\nsome_code\nok\n```\n\nla\nle\nlu\n\n```\nmore_code\nb\n```\n')
         self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
         self.assertTrue(6 in data, format_ln(6, data.keys()))
         self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
 
     def test_backprime_that_code_blocks_in_the_middle_work(self):
-        data = par('heading\n======\n\ndum-\nmy\n\n```\nremoved\n```\n\ntest\ndone\n')
+        data = parcdblk('heading\n======\n\ndum-\nmy\n\n```\nremoved\n```\n\ntest\ndone\n')
         self.assertFalse('removed' in '\n'.join(flatten(data.values())))
         # code block exists and is empty
         self.assertTrue(7 in data, format_ln(7, data.keys()))
@@ -281,7 +304,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
                     + repr(data))
 
     def test_that_backprime_blocks_with_prg_language_are_removed(self):
-        data = par('```rust\nsome_code\nok\n```\n\nla\nle\nlu\n\n```\nmore_code\nb\n```\n')
+        data = parcdblk('```rust\nsome_code\nok\n```\n\nla\nle\nlu\n\n```\nmore_code\nb\n```\n')
         self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
         self.assertTrue(6 in data, format_ln(6, data.keys()))
         self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
@@ -289,13 +312,13 @@ class TestCodeBlockRemoval(unittest.TestCase):
 
 
     def test_that_indentedcode_blocks_at_beginning_and_end_are_removed(self):
-        data = par('\tsome_code\n\tok\n\nla\nle\nlu\n\n\tmore_code\n\tb\n')
+        data = parcdblk('\tsome_code\n\tok\n\nla\nle\nlu\n\n\tmore_code\n\tb\n')
         self.assertFalse('some_code' in '\n'.join(flatten(data.values())))
         self.assertTrue(4 in data, format_ln(6, data.keys()))
         self.assertFalse('more_code' in '\n'.join(flatten(data.values())))
 
-    def test_that_indentedcode_blocks_in_the_middle_work(self):
-        data = par('heading\n======\n\ndum-\nmy\n\n\tremoved\n\ntest\ndone\n')
+    def test_that_indented_code_blocks_in_the_middle_work(self):
+        data = parcdblk('heading\n======\n\ndum-\nmy\n\n\tremoved\n\ntest\ndone\n')
         self.assertFalse('removed' in '\n'.join(flatten(data.values())),
                 "code block should have been removed; document: " + repr(data))
         # code block exists and is empty
@@ -305,19 +328,20 @@ class TestCodeBlockRemoval(unittest.TestCase):
                     + repr(data))
 
     def test_that_indented_block_not_removed_if_itemize_before(self):
-        four_spaces = par('- some\n- list\n- items\n\n    this is part\n    of the last list item\n')
+        four_spaces = parcdblk('- some\n- list\n- items\n\n    this is part\n    of the last list item\n')
         self.assertTrue('this is part' in seralize_doc(four_spaces),
                 "'this is part' was not found in document: " + repr(seralize_doc(four_spaces)))
         self.assertTrue('of the last' in seralize_doc(four_spaces))
-        three_spaces = par('- some\n- list\n- items\n\n   this is part\n   of the last list item\n')
+        three_spaces = parcdblk('- some\n- list\n- items\n\n   this is part\n   of the last list item\n')
         self.assertTrue('this is part' in seralize_doc(four_spaces) and
                 'of the last' in seralize_doc(four_spaces))
 
-        one_tab = par('- some\n- list\n- items\n\n\tthis is part\n\tof the last list item\n')
+        one_tab = parcdblk('- some\n- list\n- items\n\n\tthis is part\n\tof the last list item\n')
         self.assertTrue('this is part' in seralize_doc(one_tab) and
                 'of the last' in seralize_doc(one_tab))
 
     def test_that_even_indented_tilde_blocks_are_removed(self):
-        data = par('-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup')
+        data = parcdblk('-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup')
         self.assertFalse('ok, here' in seralize_doc(data))
         self.assertTrue(7 in data)
+
