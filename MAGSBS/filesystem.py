@@ -1,13 +1,14 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at|gmx |dot| de>
+# (c) 2016-2017 Sebastian Humenda <shumenda |at|gmx |dot| de>
 
 """Everything file system related belongs here."""
 
 import os
 
 from . import config
+from .config import MetaInfo
 from.common import is_valid_file
 from . import errors
 #pylint: disable=redefined-builtin
@@ -160,12 +161,12 @@ Initialize basic configuration as well."""
         os.chdir(self.__path)
         # initialize configuration:
         inst = config.LectureMetaData(config.CONF_FILE_NAME)
-        inst['language'] = self.__lang
+        inst[MetaInfo.Language] = self.__lang
         inst.write()
         # read this configuration back in again using singleton
-        inst = config.confFactory().get_conf_instance(".")
+        inst = config.ConfFactory().get_conf_instance(".")
         trans = config.Translate()
-        trans.set_language(inst['language'])
+        trans.set_language(inst[MetaInfo.Language])
         _ = trans.get_translation
 
         if self.__preface:

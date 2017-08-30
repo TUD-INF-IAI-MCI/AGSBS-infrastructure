@@ -286,7 +286,7 @@ sub-directory configurations or initialization of a new project."""
             inst = MAGSBS.config.LectureMetaData(MAGSBS.config.CONF_FILE_NAME)
             inst.write()
         else:
-            inst = MAGSBS.config.confFactory().get_conf_instance(os.getcwd())
+            inst = MAGSBS.config.ConfFactory().get_conf_instance(os.getcwd())
             try:
                 inst.read()
             except FileNotFoundError:

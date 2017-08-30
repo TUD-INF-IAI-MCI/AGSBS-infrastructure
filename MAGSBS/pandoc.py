@@ -18,6 +18,7 @@ import re
 import subprocess, sys
 import tempfile
 from . import config
+from .config import MetaInfo
 from . import common
 from . import contentfilter
 from . import datastructures
@@ -29,7 +30,7 @@ HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="author" content="{sourceAuthor}" />
+  <meta name="author" content="{SourceAuthor}" />
 $if(date-meta)$
   <meta name="date" content="$date-meta$" />
 $endif$
@@ -60,15 +61,15 @@ $endif$
 $for(header-includes)$
   $header-includes$
 $endfor$
-<!-- agsbs-specific -->
-  <meta name='Einrichtung' content='{institution}' />
-  <meta href='Arbeitsgruppe' content='{workinggroup}' />
-  <meta name='Vorlagedokument' content='{source}' />
-  <meta name='Lehrgebiet' content='{lecturetitle}' />
-  <meta name='Semester der Bearbeitung' content='{semesterofedit}' />
-  <meta name='Bearbeiter' content='{editor}' />
+  <!-- agsbs-specific -->
+  <meta name='Einrichtung' content='{Institution}' />
+  <meta href='Arbeitsgruppe' content='{WorkingGroup}' />
+  <meta name='Vorlagedokument' content='{Source}' />
+  <meta name='Lehrgebiet' content='{LectureTitle}' />
+  <meta name='Semester der Bearbeitung' content='{SemesterOfEdit}' />
+  <meta name='Bearbeiter' content='{Editor}' />
 </head>
-<body lang="{language}">
+<body lang="{Language}">
 $for(include-before)$
 $include-before$
 $endfor$
@@ -343,24 +344,16 @@ The parameter `format` can be supplied to override the configured output format.
 
     def __init__(self, conf=None):
         self.converters = [HtmlConverter]
-        self.__conf = (config.confFactory().get_conf_instance(os.getcwd())
+        self.__conf = (config.ConfFactory().get_conf_instance(os.getcwd())
                 if not conf else conf)
-        self.__meta_data = {
-                'editor' : self.__conf['editor'],
-                'sourceAuthor' : self.__conf['sourceAuthor'],
-                'workinggroup': self.__conf['workinggroup'],
-                'institution': self.__conf['institution'],
-                'source': self.__conf['source'],
-                'lecturetitle': self.__conf['lecturetitle'],
-                'semesterofedit': self.__conf['semesterofedit'],
-                'path': 'None',
-                'language': 'en'}
+        self.__meta_data = {k.name: v  for k, v in self.__conf.items()}
+        self.__meta_data['path'] = None
 
     def get_formatter_for_format(self, format):
         """Get converter object."""
         try:
             return next(filter(lambda converter: converter.format == format,
-                self.converters))(self.__meta_data, self.__conf['language']) # get new instance
+                self.converters))(self.__meta_data, self.__conf[MetaInfo.Language]) # get new instance
         except StopIteration:
             supported_formats = ', '.join(map(lambda c: c.format, self.converters))
             raise NotImplementedError(("The configured format {} is not "
@@ -369,17 +362,8 @@ The parameter `format` can be supplied to override the configured output format.
 
     def __update_metadata(self, conf):
         """Set latest meta data from given configuration."""
-        self.__meta_data = {
-                'editor' : conf['editor'],
-                'sourceAuthor' : conf['sourceAuthor'],
-                'workinggroup': conf['workinggroup'],
-                'institution': conf['institution'],
-                'source': conf['source'],
-                'lecturetitle': conf['lecturetitle'],
-                'semesterofedit': conf['semesterofedit'],
-                'title': None,
-                'language': conf['language'],
-                'path': conf.get_path()}
+        self.__meta_data = {key.name: val  for key, val in conf.items()}
+        self.__meta_data['path'] = conf.get_path()
 
     def get_lecture_root(self, some_file):
         """Return lecture root for a file or raise exception if it cannot be
@@ -419,7 +403,7 @@ The parameter `format` can be supplied to override the configured output format.
             cache = datastructures.FileCache(fw.walk())
         converter = None # declare in outer scope for finally
         try:
-            c = config.confFactory()
+            c = config.ConfFactory()
             # configuration for current directory, directory changes, configuration might change too
             conf = None
             converter = None
@@ -430,7 +414,7 @@ The parameter `format` can be supplied to override the configured output format.
                 if not newconf == conf:
                     conf = newconf
                     self.__update_metadata(conf)
-                    converter = self.get_formatter_for_format(conf['format'])
+                    converter = self.get_formatter_for_format(conf[MetaInfo.Format])
                     converter.set_meta_data(self.__meta_data)
                     converter.setup()
                 self.__convert_document(file_name, cache, converter, conf)
@@ -471,7 +455,7 @@ The parameter `format` can be supplied to override the configured output format.
         try:
             for filter in Pandoc.CONTENT_FILTERS:
                 json_ast = contentfilter.jsonfilter(json_ast, filter,
-                    conf['format'])
+                    conf[MetaInfo.Format])
             converter.convert(json_ast,
                 contentfilter.get_title(json_ast),
                 path)
@@ -525,13 +509,13 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     if not file_cache:
         raise ValueError("Cache with values may not be None")
     if not conf:
-        conf = config.confFactory().get_conf_instance(os.path.split(file_path)[0])
+        conf = config.ConfFactory().get_conf_instance(os.path.split(file_path)[0])
     trans = config.Translate()
-    trans.set_language(conf['language'])
+    trans.set_language(conf[MetaInfo.Language])
     relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
     previous, next = file_cache.get_neighbours_for(relative_path)
     make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
-        '.' + conf['format']))
+        '.' + conf[MetaInfo.Format]))
     if previous:
         previous = '[{}]({})'.format(trans.get_translation('previous').title(),
                 make_path(previous))
@@ -539,14 +523,14 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
         next = '[{}]({})'.format(trans.get_translation('next').title(), make_path(next))
     navbar = []
     page_numbers = [pnum for pnum in page_numbers
-        if (pnum.number % conf['pageNumberingGap']) == 0] # take each pnumgapth element
+        if (pnum.number % conf[MetaInfo.PageNumberingGap]) == 0] # take each pnumgapth element
     if page_numbers:
         navbar.append(trans.get_translation('pages').title() + ': ')
         navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
         navbar[-1] = navbar[-1][:-2] # strip ", " from last chunk
     navbar = ''.join(navbar)
     chapternav = '[{}](../inhalt.{})'.format(trans.get_translation(
-            'table of contents').title(), conf['format'])
+            'table of contents').title(), conf[MetaInfo.Format])
 
     if previous:
         chapternav = previous + '  ' + chapternav

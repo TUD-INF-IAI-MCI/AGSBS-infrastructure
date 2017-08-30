@@ -2,11 +2,12 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2016-2017 Sebastian Humenda <shumenda@gmx.de>
 """For documentation about this module, please refer to its classs master."""
 
 import os
 from . import config
+from .config import MetaInfo
 from . import common
 from . import errors
 from . import filesystem
@@ -69,9 +70,9 @@ files are converted."""
         """"Return a translation for a word for a given path.
         Different paths might have different language configurations. This
         method loads the individual configuraiton."""
-        conf = config.confFactory().get_conf_instance(path)
+        conf = config.ConfFactory().get_conf_instance(path)
         trans = config.Translate()
-        trans.set_language(conf['language'])
+        trans.set_language(conf[MetaInfo.Language])
         return trans.get_translation(word)
 
     def run(self):
@@ -92,8 +93,8 @@ found and there are MarkDown files."""
         orig_cwd = os.getcwd()
         for root in self.get_roots():
             os.chdir(root)
-            conf = config.confFactory().get_conf_instance(root)
-            if conf['generateToc']:
+            conf = config.ConfFactory().get_conf_instance(root)
+            if conf[MetaInfo.GenerateToc]:
                 # create table of contents
                 c = toc.HeadingIndexer(".")
                 c.walk()

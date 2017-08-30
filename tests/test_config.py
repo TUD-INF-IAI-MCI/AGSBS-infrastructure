@@ -6,13 +6,14 @@ import os
 import shutil
 import tempfile
 from MAGSBS import config, common, errors
+from MAGSBS.config import MetaInfo
 
 conf = lambda conf, version=str(config.VERSION): config.LectureMetaData(conf,
         distutils.version.StrictVersion(version))
 
 def write(c):
     """Change an attibute in LectureMetaData to enforce the write."""
-    c['semesterofedit'] = 'fake'
+    c[MetaInfo.SemesterOfEdit] = 'fake'
     c.write()
 
 

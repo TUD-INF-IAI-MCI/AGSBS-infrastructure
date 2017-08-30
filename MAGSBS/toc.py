@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at|gmx |dot| de>
+# (c) 2016-2017 Sebastian Humenda <shumenda |at|gmx |dot| de>
 """This file contains the classes necessary for the automated index
 generation."""
 
@@ -35,8 +35,8 @@ Format of index: dict of lists: every filename is the key, the list of heading
     def walk(self):
         """walk()
 By calling the function, the actual index is build."""
-        conf = config.confFactory().get_conf_instance_safe(self.__dir)
-        if conf['generateToc'] == 0:
+        conf = config.ConfFactory().get_conf_instance_safe(self.__dir)
+        if conf[MetaInfo.GenerateToc] == 0:
             return # don't generate a TOC
         for directory, directories, files in fs.get_markdown_files(self.__dir):
             for file in files:
@@ -81,9 +81,9 @@ By calling the function, the actual index is build."""
                     return headings
 
         #  at this point, no modifications found, construct new headings
-        conf = config.confFactory().get_conf_instance(path)
+        conf = config.ConfFactory().get_conf_instance(path)
         trans = config.Translate()
-        trans.set_language(conf['language'])
+        trans.set_language(conf[MetaInfo.Language])
 
         for heading in headings:
             heading.set_text('{} ({})'.format(heading.get_text(),
@@ -158,12 +158,12 @@ the TOC corrrectly."""
     def __init__(self, index, path):
         self.__index = index
         self.__path = path
-        c = config.confFactory()
+        c = config.ConfFactory()
         self.conf = c.get_conf_instance(path)
-        self.__use_appendix_prefix = self.conf['appendixPrefix']
+        self.__use_appendix_prefix = self.conf[MetaInfo.AppendixPrefix]
         self.__headings = {HeadingType.APPENDIX : [], HeadingType.NORMAL : [],
                 HeadingType.PREFACE: []}
-        if self.conf['generateToc'] == 1:
+        if self.conf[MetaInfo.GenerateToc] == 1:
             self.build_index()
 
     def build_index(self):
@@ -178,7 +178,7 @@ the TOC corrrectly."""
             path, file = os.path.split(path)
             directory_above = os.path.split(path)[-1] # necessary for relative link
             for heading in headings:
-                if heading.get_level() > self.conf['tocDepth']:
+                if heading.get_level() > self.conf[MetaInfo.TocDepth]:
                     continue # skip headings above configured threshold
                 h_type = heading.get_type()
                 if not isinstance(h_type, HeadingType):
@@ -193,13 +193,13 @@ the TOC corrrectly."""
 
     def format(self):
         """Format all headings into a markdown page."""
-        if self.conf['generateToc'] == 0:
+        if self.conf[MetaInfo.GenerateToc] == 0:
             return ''
         l10n = config.Translate()
-        l10n.set_language(self.conf['language'])
+        l10n.set_language(self.conf[MetaInfo.Language])
         _ = l10n.get_translation
         title = _('table of contents').title() + ' - ' + \
-                self.conf['lecturetitle']
+                self.conf[MetaInfo.LectureTitle]
         output = ['%s\n' % title, '='*len(title), '\n\n']
         def add_entry(file_name, toc_entry):
             if os.path.exists(file_name) or os.path.exists(file_name.lower()):
@@ -207,7 +207,7 @@ the TOC corrrectly."""
 
         # if manual title page exists, link to it
         add_entry("titel.md", '[%s](titel.%s\n\n' % (_('title page').title(),
-                self.conf['format']))
+                self.conf[MetaInfo.Format]))
 
         if self.__headings[HeadingType.PREFACE]:
             output += self.format_section(_('preface').title(),
@@ -224,15 +224,15 @@ the TOC corrrectly."""
 
         add_entry('glossar.md',
                 '[{}](glossar.{})\\\n'.format(_('glossary').capitalize(),
-            self.conf['format']))
+            self.conf[MetaInfo.Format]))
         add_entry('index.md', '[{}](index.{})\\\n'.format(_('index').title(),
-            self.conf['format']))
+            self.conf[MetaInfo.Format]))
         add_entry('kurz.md', '[{}](kurz.{})\\\n'.format(
-                _('list of abbreviations').capitalize(), self.conf['format']))
+                _('list of abbreviations').capitalize(), self.conf[MetaInfo.Format]))
         add_entry('taktil.md', '[{}](taktil.{})\\\n'.format(
-                _('list of tactile graphics').capitalize(), self.conf['format']))
+                _('list of tactile graphics').capitalize(), self.conf[MetaInfo.Format]))
         add_entry('copyright.md', '[{}](copyright.{})\\\n'.format(
-                _('copyright notice').capitalize(), self.conf['format']))
+                _('copyright notice').capitalize(), self.conf[MetaInfo.Format]))
 
         if output[-1].endswith('\\\n'): # strip \\ from last line
             output[-1] = output[-1][:-2] + '\n'
@@ -240,7 +240,7 @@ the TOC corrrectly."""
         # include info.md, if it exists
         add_entry("info.md", ('\n\n* * * * *\n\n[{}](info.{})\n').format(
                 _("remarks about the accessible version").capitalize(),
-                self.conf['format']))
+                self.conf[MetaInfo.Format]))
         return ''.join(output) + '\n'
 
     def format_section(self, title, headings):
@@ -266,7 +266,7 @@ the TOC corrrectly."""
         prefix = ''
         if self.__use_appendix_prefix and heading.get_type() == HeadingType.APPENDIX:
             prefix = 'A.'
-        path = path.replace('.md', '.' + self.conf['format'])
+        path = path.replace('.md', '.' + self.conf[MetaInfo.Format])
         # replace \ through / on windows:
         if '\\' in path:
             path = path.replace('\\', '/')

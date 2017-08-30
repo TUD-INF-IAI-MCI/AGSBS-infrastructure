@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2016-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """This (currently unrevised) module contains factory classes for factorizing
 documents or parts of it from data read in other modules. The purpose is the
 auto-generation of certain aspects of the generated material."""
@@ -10,6 +10,7 @@ import os
 import sys
 from . import datastructures
 from . import config
+from .config import MetaInfo
 
 
 #pylint: disable=too-many-instance-attributes
@@ -38,10 +39,10 @@ edited text, i.e. into the chapter, 'external' is meant to be included in the
 file containing outsourced image descriptions.
 """
     def __init__(self, image_path):
-        self.__conf = config.confFactory().get_conf_instance( \
+        self.__conf = config.ConfFactory().get_conf_instance( \
                 os.path.split(image_path)[0])
         l10N = config.Translate()
-        l10N.set_language(self.__conf['language'])
+        l10N.set_language(self.__conf[MetaInfo.Language])
         self.__translate = _ = l10N.get_translation
         self.__image_path = image_path
         # replace \\ through / on windows
@@ -52,7 +53,7 @@ file containing outsourced image descriptions.
         self.__outsource_descriptions = False
         # maximum length of image description before outsourcing it
         self.img_maxlength = 100
-        self.__outsource_path = _('images') + '.' + self.__conf['format']
+        self.__outsource_path = _('images') + '.' + self.__conf[MetaInfo.Format]
 
     def set_description(self, desc):
         """Set alternative image description."""

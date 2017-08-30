@@ -1,4 +1,8 @@
 # vim: set expandtab sts=4 ts=4 sw=4 tw=0 ft=python:
+# This is free software, licensed under the LGPL v3. See the file "COPYING" for
+# details.
+#
+# (c) 2015-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 #pylint: disable=line-too-long,arguments-differ,too-few-public-methods
 """All checkers for MarkDown files belong here."""
 
@@ -6,6 +10,7 @@ import os
 import re
 from .meta import Mistake, MistakeType, OnelinerMistake
 from .. import config, common
+MetaInfo = config.MetaInfo
 
 class PageNumberIsParagraph(Mistake):
     """Check whether all page numbers are on a paragraph on their own."""
@@ -153,8 +158,8 @@ self.threshold."""
         levels = [0,0,0,0,0,0]
         directory = os.path.dirname(next(iter(args[0].keys())))
         directory = (directory if directory else '.')
-        conf = config.confFactory().get_conf_instance_safe(directory)
-        maxdepth = int(conf['tocDepth'])
+        conf = config.ConfFactory().get_conf_instance_safe(directory)
+        maxdepth = int(conf[MetaInfo.TocDepth])
         for headings in args[0].values():
             for heading in headings:
                 if heading.get_level() > maxdepth:
@@ -220,8 +225,8 @@ tocDepth."""
                 nicht erst im Inhaltsverzeichnis erscheinen."""
         last_heading = None
         for heading in args[0]:
-            if heading.get_level() > config.confFactory().\
-                    get_conf_instance_safe(".")['tocDepth']:
+            if heading.get_level() > config.ConfFactory().\
+                    get_conf_instance_safe(".")[MetaInfo.TocDepth]:
                 continue # skip it
             if last_heading == heading.get_text():
                 return self.error(ErrorMessage, heading.get_line_number())
