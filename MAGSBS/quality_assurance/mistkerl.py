@@ -12,9 +12,8 @@
 This sub-module provides implementations for checking common lecture editing
 errors.
 
-In the Mistkerl class, the only one which should be used from outside, there is
-a list of "mistakes". Mistkerl iterates through them and takes the appropriate
-steps to run the mistake checks.
+The Mistkerl class maintains a list of mistakes and iterates over these to spot
+common errors. This is the only class which should be used from outside.
 
 A mistake is a child of the Mistake class. It can set its priority and its type
 (what it wants to see from the document) in its __init__-function. The common
@@ -66,13 +65,15 @@ class Mistkerl():
                 DisplayMathShouldNotBeUsedWithinAParagraph,
                 UseProperCommandsForMathOperatorsAndFunctions,
                 FormulasSpanningAParagraphShouldBeDisplayMath,
-                DetectEmptyImageDescriptions, DetectStrayingDollars]
+                DetectEmptyImageDescriptions, DetectStrayingDollars,
+                OnlyCorrectDirectoriesFound]
         self.__cache_pnums = collections.OrderedDict()
         self.__cached_headings = collections.OrderedDict()
         self.__output = []
 
     def get_issues(self, required_type, fname=None):
-        """Instanciate issue classes and filter for file endings."""
+        """Instanciate issue classes and filter for their configured file
+        extension."""
         extension = (os.path.splitext(fname)[1] if fname else 'md').lstrip('.')
         issues = (i for i in self.__issues
                 if i.mistake_type == required_type)
@@ -82,6 +83,8 @@ class Mistkerl():
     def run(self, path):
         """Take either a file and run checks or do the same for a directory
 recursively."""
+        for issue in self.get_issues(MistakeType.lecture_root):
+            self.__append_error(path, issue.run(path))
         last_dir = None
         directoryname = None
         fw = filesystem.FileWalker(path)
@@ -110,7 +113,7 @@ recursively."""
                     self.__append_error(path, e)
                     continue
                 self.__run_filters_on_file(file_path, paragraphs)
-        # the last directory must be processed, even so there was no directory
+        # the last directory must be processed, even though there was no directory
         # change
         self.run_directory_filters(directoryname)
         # sort output
@@ -157,7 +160,7 @@ recursively."""
             # it's a "proper" chapter and only for those the page number cache is relevant
             if not file_path.endswith("bilder.md"):
                 self.__cache_pnums[file_path] = pnums
-        except errors.FormattingError as e:
+        except errors.FormattingError:
             pass # checkers are able to handle this case and will report
         hdngs = mparser.extract_headings_from_par(paragraphs)
         self.__cached_headings[file_path] = hdngs

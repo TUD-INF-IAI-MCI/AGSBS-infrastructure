@@ -1,7 +1,8 @@
 """Errors which are neither specific to MarkDown nor to LaTeX."""
 
+import os
 from xml.etree import ElementTree as ET
-from .. import config
+from .. import config, common
 from .meta import MistakeType, Mistake, OnelinerMistake
 
 class ConfigurationValuesAreAllSet(Mistake):
@@ -41,8 +42,22 @@ class BrokenUmlautsFromPDFFiles(OnelinerMistake):
     def check(self, num, line):
         for seq in self.garbled:
             if seq in line:
-                super().error("Es wurden inkorrekt dargestellte Umlaute "
+                return super().error("Es wurden inkorrekt dargestellte Umlaute "
                         "gefunden. Dies geschieht oft, wenn Text aus "
-                        "PDF-Dateien kopiert wird. Diese kaputten Umlaute "
-                        "machen den Text allerdings schwer leserlich.", num)
+                        "PDF-Dateien kopiert wird. Das macht den Text "
+                        "allerdings schwer leserlich.", num)
+
+class OnlyCorrectDirectoriesFound(Mistake):
+    mistake_type = MistakeType.lecture_root
+    def worker(self, *args):
+        root = args[0]
+        for file in os.listdir(root):
+            if any(file.startswith(x) for x in ('bilder', 'inhalt', 'titel',
+                    'glossar', 'index', 'kurz' 'taktil', 'copyright',
+                    '.lecture_meta')):
+                continue
+            if not common.is_valid_file(file):
+                return self.error(("Die Datei '%s' ist falsch benannt und folgt "
+                    "nicht den Namenskonventionen. Dies führt zu einer falschen "
+                    "Verwendung der Datei.") % file, path=root)
 

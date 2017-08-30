@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2016-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 # Disabling the checkers below is discouraged, but encouraged for this file;
 # pylint makes mistakes itself
 #pylint: disable=line-too-long,no-init,too-few-public-methods
@@ -29,6 +29,7 @@ configuration   (LectureMetaData    apply checks on the configuration
                  instance)
 formulas        (path, formulas)    apply checks on the ordered list of formulas
                                     of `path`; for the format see mparser.parse_formulas
+lectureroot     Do any check with the given lecture root.
 """
     full_file = 1
     oneliner = 2
@@ -38,6 +39,7 @@ formulas        (path, formulas)    apply checks on the ordered list of formulas
     pagenumbers_dir = 6
     configuration = 7
     formulas = 8
+    lecture_root = 9
 
 class Mistake:
     """This class implements the actual mistake checker.
