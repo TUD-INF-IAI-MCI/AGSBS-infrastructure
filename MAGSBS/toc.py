@@ -10,6 +10,7 @@ import os
 import re
 
 from . import config, errors, mparser, filesystem as fs, datastructures
+MetaInfo = config.MetaInfo
 
 
 # alias datastructures.Heading.Type

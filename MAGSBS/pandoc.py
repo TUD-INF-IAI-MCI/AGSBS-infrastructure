@@ -17,6 +17,7 @@ import os
 import re
 import subprocess, sys
 import tempfile
+import pandocfilters
 from . import config
 from .config import MetaInfo
 from . import common
@@ -453,15 +454,17 @@ The parameter `format` can be supplied to override the configured output format.
         json_ast = self.load_json(document)
         # add MarkDown extensions with Pandoc filters
         try:
+            filter = None
             for filter in Pandoc.CONTENT_FILTERS:
-                json_ast = contentfilter.jsonfilter(json_ast, filter,
-                    conf[MetaInfo.Format])
+                json_ast = pandocfilters.walk(json_ast, filter,
+                        conf[MetaInfo.Format], [])
             converter.convert(json_ast,
                 contentfilter.get_title(json_ast),
                 path)
         except KeyError as e: # API clash(?)
-            raise errors.StructuralError('Incompatible Pandoc API found, ' + \
-                    'JSON malformed.\n' + str(e), path)
+            raise errors.StructuralError(("Incompatible Pandoc API found, while "
+                "applying filter %s (ABI clash?).\nKeyError: %s") % \
+                        (filter.__name__, str(e)), path)
 
     def load_json(self, document):
         """Load JSon input from ''inputf`` and return a reference to the loaded

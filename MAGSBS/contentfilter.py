@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at|gmx |dot| de>
+# (c) 2016-2017 Sebastian Humenda <shumenda |at|gmx |dot| de>
 #pylint: disable=unused-argument
 """
 This module provides some extensions to the python-pandoc API as well as a few
@@ -61,7 +61,7 @@ numbering information."""
             return # no content in Paragraph - ignore
         # first chunk of paragraph must be str and contain '||'
         if isinstance(text, str) and text.startswith('||'):
-            text = pandocfilters.stringify(value) # get whle text of page number
+            text = pandocfilters.stringify(value) # get whole text of page number
             pnum = config.PAGENUMBERING_PATTERN.search(text)
             if pnum:
                 # strip the first ||
@@ -85,26 +85,6 @@ def heading_extractor(key, value, format, meta, modify_ast=False):
     if(key == 'Header'):
         # value[0] is the heading level
         return (value[0], pandocfilters.stringify( value ))
-
-
-def jsonfilter(doc, action, format='html'):
-    """Run a filter on the given json (parameter doc) with the specified action
-    (parameter action). Return the altered structure (effectively a copy).
-    The action argument is effectively a method:  The argument is a function
-    action(key, value, format, meta), where key is the type of the pandoc object
-    (e.g. 'Str', 'Para'),
-    value is the contents of the object (e.g. a string for 'Str',
-    a list of inline elements for 'Para'), format is the target
-    output format (which will be taken for the first command line
-    argument if present), and meta is the document's metadata.
-    If the function returns None, the object to which it applies
-    will remain unchanged.  If it returns an object, the object will
-    be replaced.  If it returns a list, the list will be spliced in to
-    the list to which the target object belongs.  (So, returning an
-    empty list deletes the object.)
-    """
-    altered = pandocfilters.walk(doc, action, format, doc['blocks'])
-    return altered
 
 
 def file2json_ast(file_name):
