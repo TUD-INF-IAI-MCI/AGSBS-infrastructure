@@ -313,6 +313,7 @@ sub-directory configurations or initialization of a new project."""
         parser = HelpfulParser(cmd, self.output_formatter, "Convert a file from MarkDown "
                     "to HTML.")
         parser.add_argument("file", help="input file or directory")
+        parser.add_argument("profile", help="profile for conversion, supported values are blind and visually")
         args = parser.parse_args(args)
         if not os.path.exists(args.file):
             self.output_formatter.emit_error('file not found: ' + args.file)
@@ -322,8 +323,9 @@ sub-directory configurations or initialization of a new project."""
             sys.exit(98)
 
         with ErrorHandler(self.output_formatter):
-            p = MAGSBS.pandoc.Pandoc()
-            p.convert_files((args.file,))
+            p = MAGSBS.pandoc.Pandoc()            
+            p.set_convert_profile(args.profile)
+            p.convert_files((args.file,), args.profile)
 
 
     def handle_imgdsc(self, cmd, args):
@@ -501,8 +503,8 @@ sub-directory configurations or initialization of a new project."""
             self.output_formatter.emit_error("%s: is not a directory" % args[0])
             sys.exit(123)
         else:
-            with ErrorHandler(self.output_formatter):
-                m = MAGSBS.master.Master(args[0])
+            with ErrorHandler(self.output_formatter):                
+                m = MAGSBS.master.Master(args[0], args[1])
                 m.run()
 
     def handle_addpnum(self, cmd, args):

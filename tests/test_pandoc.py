@@ -69,7 +69,7 @@ class test_HTMLConverter(unittest.TestCase):
         json_document = json.loads('{"blocks":[{"t":"Header","c":[1,["it-works",[],[]],[{"t":"Str","c":"It"},{"t":"Space"},{"t":"Str","c":"works!"}]]},{"t":"Para","c":[{"t":"Str","c":"blub"}]}],"pandoc-api-version":[1,17,0,4],"meta":{}}')
 
         h = get_html_converter()
-        h.convert(json_document, 'It works!', 'foo.md')
+        h.convert(json_document, 'It works!', 'foo.md', 'blind')
         with open('foo.html') as f:
             data = f.read()
         self.assertTrue('<title>It works!</title>' in data)
@@ -85,7 +85,7 @@ class test_HTMLConverter(unittest.TestCase):
         # example json document; title is "It works!"
         json_document = json.loads('{"blocks":[{"t":"Header","c":[1,["it-works",[],[]],[{"t":"Str","c":"It"},{"t":"Space"},{"t":"Str","c":"works!"}]]},{"t":"Para","c":[{"t":"Str","c":"blub"}]}],"pandoc-api-version":[1,17,0,4],"meta":{}}')
         h = get_html_converter(meta)
-        h.convert(json_document, 'It works!', 'foo.md')
+        h.convert(json_document, 'It works!', 'foo.md', 'blind')
         with open('foo.html') as f:
             data = f.read()
         bodypos = data.find('<body')

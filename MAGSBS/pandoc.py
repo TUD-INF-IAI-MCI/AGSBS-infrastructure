@@ -20,6 +20,7 @@ import tempfile
 import pandocfilters
 from . import config
 from .config import MetaInfo
+from .config import ConvertProfile
 from . import common
 from . import contentfilter
 from . import datastructures
@@ -162,17 +163,17 @@ gen.cleanup()."""
 
     def get_meta_data(self):
         return self.__meta
-
-
+        
     def setup(self):
         """Set up converter."""
         pass
 
-    def convert(self, json_str, title, base_fn):
+    def convert(self, json_str, title, base_fn, profile):
         """The actual conversion process.
         json_str: json representation of the documented, encoded as string
         title: title of document
-        path: path to file"""
+        path: path to file
+        profile: profile for conversion"""        
         pass
 
     def cleanup(self):
@@ -184,7 +185,8 @@ gen.cleanup()."""
         is necessary."""
         raise NotImplementedError()
 
-
+    def set_convert_profile(self, profile):
+        self.__convert_profile = profile
 
 class HtmlConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
@@ -250,7 +252,7 @@ class HtmlConverter(OutputGenerator):
         super().set_meta_data(meta)
         self.setup()
 
-    def convert(self, json_ast, title, path):
+    def convert(self, json_ast, title, path, profile):
         """See super class documentation."""
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + '.' + self.get_format()
@@ -260,22 +262,23 @@ class HtmlConverter(OutputGenerator):
             pandoc_args += ['-V', 'pagetitle:' + title, '-V', 'title:' + title]
         # check whether "Math" occurs and therefore if GladTeX needs to be run
         use_gladtex = True in contentfilter.json_ast_filter(json_ast,
-                contentfilter.has_math)
-        if use_gladtex:
+                contentfilter.has_math)        
+        if use_gladtex and profile is ConvertProfile.Blind:        
             outputf = os.path.splitext(filename)[0] + '.htex'
             pandoc_args.append('--gladtex')
+        if profile is ConvertProfile.VisuallyImpairedDefault:
+            pandoc_args.append('--mathjax')        
         execute(['pandoc'] + pandoc_args + ['-t', super().get_format(), '-f','json',
             '+RTS', '-K25000000', '-RTS', # increase stack size
             '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
-        if use_gladtex:
+        if use_gladtex and profile is ConvertProfile.Blind:
             try:
                 execute(["gladtex", "-R", "-n", "-m", "-a", "-d", "bilder",
                     outputf], cwd=dirname)
             except errors.SubprocessError as e:
                 raise self.__handle_gladtex_error(e, filename, dirname)
             else: # remove GladTeX .htex file
-                remove_temp(os.path.join(dirname, outputf))
-
+                remove_temp(os.path.join(dirname, outputf))                
     def cleanup(self):
         remove_temp(self.template_path)
 
@@ -348,7 +351,7 @@ The parameter `format` can be supplied to override the configured output format.
         self.__conf = (config.ConfFactory().get_conf_instance(os.getcwd())
                 if not conf else conf)
         self.__meta_data = {k.name: v  for k, v in self.__conf.items()}
-        self.__meta_data['path'] = None
+        self.__meta_data['path'] = None        
 
     def get_formatter_for_format(self, format):
         """Get converter object."""
@@ -382,7 +385,7 @@ The parameter `format` can be supplied to override the configured output format.
             raise errors.StructuralError(("Could not guess the lecture root "
                 "for this file"), path)
 
-    def convert_files(self, files):
+    def convert_files(self, files, profile):
         """Convert a list of files. They should share all the meta data, except
         for the title. All files must be part of one lecture.
         `files` can be either a cache object or a list of files to convert."""
@@ -418,7 +421,7 @@ The parameter `format` can be supplied to override the configured output format.
                     converter = self.get_formatter_for_format(conf[MetaInfo.Format])
                     converter.set_meta_data(self.__meta_data)
                     converter.setup()
-                self.__convert_document(file_name, cache, converter, conf)
+                self.__convert_document(file_name, cache, converter, conf, profile)
         except errors.MAGSBS_error as e:
             # set path for error
             if not e.path:
@@ -428,14 +431,14 @@ The parameter `format` can be supplied to override the configured output format.
             if converter:
                 converter.cleanup()
 
-    def __convert_document(self, path, file_cache, converter, conf):
+    def __convert_document(self, path, file_cache, converter, conf, profile):
         """Convert a document by a given path. It takes a converter which takes
         actual care of the underlying format. The filecache caches the list of
         files in the lecture. The list of files within a lecture is required to
         build navigation links.
         This function also inserts a page navigation bar to navigate between
         chapters and the table of contents."""
-        # if output file name exists and is newer than the original, it doesn need to be converted again
+        # if output file name exists and is newer than the original, it doesn need to be converted again          
         if not converter.needs_update(path):
             return
         with open(path, 'r', encoding='utf-8') as f:
@@ -457,10 +460,10 @@ The parameter `format` can be supplied to override the configured output format.
             filter = None
             for filter in Pandoc.CONTENT_FILTERS:
                 json_ast = pandocfilters.walk(json_ast, filter,
-                        conf[MetaInfo.Format], [])
+                        conf[MetaInfo.Format], [])            
             converter.convert(json_ast,
                 contentfilter.get_title(json_ast),
-                path)
+                path, self.get_convert_profile())
         except KeyError as e: # API clash(?)
             raise errors.StructuralError(("Incompatible Pandoc API found, while "
                 "applying filter %s (ABI clash?).\nKeyError: %s") % \
@@ -471,6 +474,18 @@ The parameter `format` can be supplied to override the configured output format.
         json document tree."""
         return contentfilter.text2json_ast(document)
 
+    def set_convert_profile(self, profile):
+        """Set profile for conversion"""
+        try:            
+            self.__convert_profile = config.ConvertProfile(profile)            
+        except ValueError as e:
+            # set path for error            
+            raise errors.ProfileError(str(e) + "\n only blind and visually are supported profiles")
+    
+    def get_convert_profile(self):
+        """Return profile for conversion"""               
+        return self.__convert_profile
+        
 # ToDo: marked for REMOVAL
 def remove_nav(page):
     """remove_nav(page)

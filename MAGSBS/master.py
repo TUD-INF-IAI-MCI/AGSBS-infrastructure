@@ -7,7 +7,7 @@
 
 import os
 from . import config
-from .config import MetaInfo
+from .config import MetaInfo, ConvertProfile
 from . import common
 from . import errors
 from . import filesystem
@@ -28,7 +28,7 @@ file so that we actually have multiple roots (a forest). This is necessary for
 lectures containing e.g. lecture and exercise material.  For each root the
 navigation bar and the table of contents is generated; afterwards all MarkDown
 files are converted."""
-    def __init__(self, path):
+    def __init__(self, path, profile):
         if os.path.exists(path):
             if os.path.isfile(path):
                 raise OSError("Operation can only be applied to directories.")
@@ -36,6 +36,7 @@ files are converted."""
                 raise errors.StructuralError(("The master command can only be called "
                     "on a whole lecture, not on particular chapters."), path)
         self._roots = self.__findroot(path)
+        self._profile = profile
 
     def get_roots(self):
         return self._roots
@@ -108,6 +109,7 @@ found and there are MarkDown files."""
             files_to_convert = [os.path.join(dir, f)
                     for dir, _, flist in filesystem.get_markdown_files(".", True)
                     for f in flist]
-            conv.convert_files(files_to_convert)
+            conv.set_convert_profile(self._profile)
+            conv.convert_files(files_to_convert, self._profile)
             os.chdir(orig_cwd)
 

@@ -246,6 +246,13 @@ instead.
         has_elements = set(self.items()) ^ set(other.items())
         return not has_elements
 
+class ConvertProfile(enum.Enum):
+    """
+    Defines the enums for the conversion depending on the the impairment
+    """
+    Blind = 'blind'
+    VisuallyImpairedDefault = 'visually'
+    
 
 @common.Singleton
 class ConfFactory:
