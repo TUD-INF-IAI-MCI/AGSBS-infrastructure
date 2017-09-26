@@ -65,15 +65,7 @@ class ConfigurationError(MAGSBS_error):
             prefix += 'from'
         return '{} {}: {}'.format(prefix, self.path, self.message)
 
-class ProfileError(MAGSBS_error):
-    """ProfileError(msg)
-    Profile errors like wrong written or not supported profiles """
-    def __init__(self, msg):
-        self.message = msg
-        super().__init__(msg)
-    def __str__(self):           
-        return self.message
-    
+   
 class StructuralError(MAGSBS_error):
     """StructuralError(msg, path)
     Structural errors like wrong file name endings, wrong directory structures,

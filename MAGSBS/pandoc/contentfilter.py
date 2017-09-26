@@ -16,8 +16,8 @@ import json
 import subprocess
 import sys
 import pandocfilters
-from . import config
-from.errors import SubprocessError
+from .. import config
+from ..errors import SubprocessError
 
 
 def html(x):

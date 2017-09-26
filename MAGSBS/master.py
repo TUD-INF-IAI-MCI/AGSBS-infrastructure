@@ -7,7 +7,7 @@
 
 import os
 from . import config
-from .config import MetaInfo, ConvertProfile
+from .config import MetaInfo
 from . import common
 from . import errors
 from . import filesystem
@@ -79,7 +79,7 @@ files are converted."""
     def run(self):
         """This function should only be run from the lecture root. For other
 directories (subdirectories or unrelated directories) hopefully lead to a
-meaningful error message, but this is *not* guaranteed.  
+meaningful error message, but this is *not* guaranteed.
 
 This function creates a navigation bar, the table of contents and converts all
 files. It will raise NoLectureConfigurationError when no configuration has been
@@ -105,11 +105,11 @@ found and there are MarkDown files."""
                     with open("inhalt.md", 'w', encoding="utf-8") as file:
                         file.write(md_creator.format())
 
-            conv = pandoc.Pandoc()
+            conv = pandoc.converter.Pandoc()
             files_to_convert = [os.path.join(dir, f)
                     for dir, _, flist in filesystem.get_markdown_files(".", True)
                     for f in flist]
-            conv.set_convert_profile(self._profile)
-            conv.convert_files(files_to_convert, self._profile)
+            conv.set_conversion_profile(self._profile)
+            conv.convert_files(files_to_convert)
             os.chdir(orig_cwd)
 
