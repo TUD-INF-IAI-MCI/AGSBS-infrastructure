@@ -107,7 +107,8 @@ def extract_headings_from_par(paragraphs, max_headings=-1):
                     paragraph[potential_underline_at].endswith('\\'):
                 text += paragraph[potential_underline_at].rstrip('\\') + '\n'
                 potential_underline_at += 1
-        text += paragraph[potential_underline_at] # get last line without backslash
+        if potential_underline_at < len(paragraph):
+            text += paragraph[potential_underline_at] # get last line without backslash
         potential_underline_at += 1 # ended on last line of text, need to be at underline
         if potential_underline_at >= len(paragraph):
             continue # no underline
