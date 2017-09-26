@@ -107,7 +107,7 @@ The parameter `format` can be supplied to override the configured output format.
         """Convert a list of files. They should share all the meta data, except
         for the title. All files must be part of one lecture.
         `files` can be either a cache object or a list of files to convert."""
-        files, cache = self.__get_cache(files)
+        cache, files = self.__get_cache(files)
         converter = None # declare in outer scope for finally
         try:
             c = config.ConfFactory()
@@ -124,6 +124,7 @@ The parameter `format` can be supplied to override the configured output format.
                     converter = self.get_formatter_for_format(conf[MetaInfo.Format])
                     converter.set_meta_data(self.__meta_data)
                     converter.setup()
+                    converter.set_profile(self.__conv_profile)
                 self.__convert_document(file_name, cache, converter, conf)
         except errors.MAGSBS_error as e:
             # set path for error
@@ -164,8 +165,7 @@ The parameter `format` can be supplied to override the configured output format.
                 json_ast = pandocfilters.walk(json_ast, filter,
                         conf[MetaInfo.Format], [])
             converter.convert(json_ast,
-                contentfilter.get_title(json_ast),
-                path, self.get_convert_profile())
+                contentfilter.get_title(json_ast), path)
         except KeyError as e: # API clash(?)
             raise errors.StructuralError(("Incompatible Pandoc API found, while "
                 "applying filter %s (ABI clash?).\nKeyError: %s") % \

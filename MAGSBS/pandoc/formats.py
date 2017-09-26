@@ -76,8 +76,16 @@ $endfor$
 
 class ConversionProfile(enum.Enum):
     """Defines the enums for the conversion depending on the the impairment."""
-    Blind = 0
-    VisuallyImpairedDefault = 'visually'
+    Blind = 'blind'
+    VisuallyImpairedDefault = 'vid'
+
+    @staticmethod
+    def from_string(string):
+        for profile in ConversionProfile:
+            if profile.value == string:
+                return profile
+        known = ', '.join(x.value for x in ConversionProfile)
+        raise ValueError("Unknown profile, known profiles: " + known)
 
 class OutputGenerator():
     """Base class for document output generators. The actual conversion doesn't
