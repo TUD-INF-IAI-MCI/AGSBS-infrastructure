@@ -50,7 +50,7 @@ version         - output program version
 
 def getTerminalSize():
     """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""
-    #pylint: disable=bare-except
+    #pylint: disable=bare-except,multiple-imports
     env = os.environ
     def ioctl_GWINSZ(fd):
         try:
@@ -312,7 +312,10 @@ sub-directory configurations or initialization of a new project."""
         """Convert files."""
         parser = HelpfulParser(cmd, self.output_formatter, "Convert a file from MarkDown "
                     "to HTML.")
-        parser.add_argument("file", help="input file or directory")
+        parser.add_argument("-p", dest="profile",
+                help=('profile for conversion; valid profiles are blind or '
+                    'vid (default profile for visually impaired), default is blind'))
+        parser.add_argument("file", help="path to input file")
         args = parser.parse_args(args)
         if not os.path.exists(args.file):
             self.output_formatter.emit_error('file not found: ' + args.file)
@@ -322,7 +325,9 @@ sub-directory configurations or initialization of a new project."""
             sys.exit(98)
 
         with ErrorHandler(self.output_formatter):
-            p = MAGSBS.pandoc.Pandoc()
+            p = MAGSBS.pandoc.converter.Pandoc()            
+            if args.profile:
+                p.set_conversion_profile(MAGSBS.pandoc.formats.ConversionProfile.from_string(args.profile))
             p.convert_files((args.file,))
 
 
@@ -482,28 +487,31 @@ sub-directory configurations or initialization of a new project."""
 
     def handle_master(self, cmd, args):
         #pylint: disable=unused-argument
-        # help requested / invalid command line:
-        if not args or '-h' in args or '--help' in args:
-            self.output_formatter.emit_usage(("{} master <lecture directory>\n"
-                "The master command will perform all actions available to "
-                "automate lecture conversion:\n"
+        usage = ("Perform all actions to automate lecture conversion\n"
                 "-    generate a table of contents\n"
                 "-    convert custom MarkDown extensions\n"
                 "-    apply custom layout definition\n"
                 "-    and do that for all MarkDown files within the specified "
-                "directory").format(PROCNAME))
-            sys.exit(0)
-        if not os.path.exists(args[0]):
-            self.output_formatter.emit_error("No such file or directory: " \
-                    + args[0])
-            sys.exit(124)
-        elif not os.path.isdir(args[0]):
-            self.output_formatter.emit_error("%s: is not a directory" % args[0])
-            sys.exit(123)
-        else:
-            with ErrorHandler(self.output_formatter):
-                m = MAGSBS.master.Master(args[0])
-                m.run()
+                "directory")
+        parser = HelpfulParser(cmd, self.output_formatter, usage)
+        parser.add_argument("-p", dest="profile",
+                help=('profile for conversion; valid  profiles are blind or '
+                    'vid (default profile for visually impaired), default is blind'))
+        parser.add_argument("directory", help="input file or directory")
+        args = parser.parse_args(args)
+        if not os.path.exists(args.directory):
+            self.output_formatter.emit_error('directory not found: ' + args.file)
+            sys.exit(127)
+        if not os.path.isdir(args.directory):
+            self.output_formatter.emit_error('directory required, file found: '\
+                    + args.directory)
+            sys.exit(98)
+        with ErrorHandler(self.output_formatter):                
+            from MAGSBS.pandoc.formats import ConversionProfile
+            m = MAGSBS.master.Master(args.directory,
+                    (ConversionProfile.Blind if not args.profile
+                        else ConversionProfile.from_string(args.profile)))
+            m.run()
 
     def handle_addpnum(self, cmd, args):
         """Return a new page number (roman and arabic supported).

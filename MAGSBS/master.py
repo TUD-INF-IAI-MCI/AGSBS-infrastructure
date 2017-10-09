@@ -28,7 +28,7 @@ file so that we actually have multiple roots (a forest). This is necessary for
 lectures containing e.g. lecture and exercise material.  For each root the
 navigation bar and the table of contents is generated; afterwards all MarkDown
 files are converted."""
-    def __init__(self, path):
+    def __init__(self, path, profile):
         if os.path.exists(path):
             if os.path.isfile(path):
                 raise OSError("Operation can only be applied to directories.")
@@ -36,6 +36,7 @@ files are converted."""
                 raise errors.StructuralError(("The master command can only be called "
                     "on a whole lecture, not on particular chapters."), path)
         self._roots = self.__findroot(path)
+        self._profile = profile
 
     def get_roots(self):
         return self._roots
@@ -78,7 +79,7 @@ files are converted."""
     def run(self):
         """This function should only be run from the lecture root. For other
 directories (subdirectories or unrelated directories) hopefully lead to a
-meaningful error message, but this is *not* guaranteed.  
+meaningful error message, but this is *not* guaranteed.
 
 This function creates a navigation bar, the table of contents and converts all
 files. It will raise NoLectureConfigurationError when no configuration has been
@@ -104,10 +105,11 @@ found and there are MarkDown files."""
                     with open("inhalt.md", 'w', encoding="utf-8") as file:
                         file.write(md_creator.format())
 
-            conv = pandoc.Pandoc()
+            conv = pandoc.converter.Pandoc()
             files_to_convert = [os.path.join(dir, f)
                     for dir, _, flist in filesystem.get_markdown_files(".", True)
                     for f in flist]
+            conv.set_conversion_profile(self._profile)
             conv.convert_files(files_to_convert)
             os.chdir(orig_cwd)
 

@@ -5,6 +5,7 @@ from MAGSBS.config import MetaInfo
 import MAGSBS.datastructures as datastructures
 import MAGSBS.errors as errors
 import MAGSBS.pandoc as pandoc
+from MAGSBS.pandoc.formats import ConversionProfile
 
 # these are the already normalized keys of the MetaInfo enum
 META_DATA = {'Editor': 'unique1',
@@ -18,7 +19,7 @@ META_DATA = {'Editor': 'unique1',
         'path': 'None'}
 
 def get_html_converter(meta_data=META_DATA, template=None):
-    h = pandoc.HtmlConverter(meta_data, language='de')
+    h = pandoc.formats.HtmlConverter(meta_data, language='de')
     if template:
         h.template_copy = template
     h.setup()
@@ -45,10 +46,10 @@ class test_HTMLConverter(unittest.TestCase):
 
     def test_that_unsupported_formats_are_detected(self):
         with self.assertRaises(NotImplementedError):
-            pandoc.Pandoc().get_formatter_for_format('mp4')
+            pandoc.converter.Pandoc().get_formatter_for_format('mp4')
 
     def test_that_all_meta_data_is_inserted_into_head(self):
-        h = pandoc.Pandoc().get_formatter_for_format('html')
+        h = pandoc.converter.Pandoc().get_formatter_for_format('html')
         self.call_cleanup_on_me = h
         h.set_meta_data(META_DATA)
         data = h.get_template()
@@ -126,7 +127,7 @@ class TestNavbarGeneration(unittest.TestCase):
 
     def gen_nav(self, path, cache=None, pnums=None, conf=None):
         pnums = (pnums if pnums else self.pagenumbers)
-        return pandoc.generate_page_navigation(path,
+        return pandoc.converter.generate_page_navigation(path,
                 (cache if cache else self.cache),
                 pnums,
                 conf=conf)
@@ -151,7 +152,7 @@ class TestNavbarGeneration(unittest.TestCase):
         conf = {MetaInfo.Language : 'de', MetaInfo.PageNumberingGap: 5,
         MetaInfo.Format: 'html'}
         path = 'k01/k01.md' # that has been initilized in the setup method
-        start, end = pandoc.generate_page_navigation(path, self.cache, pnums, conf=conf)
+        start, end = pandoc.converter.generate_page_navigation(path, self.cache, pnums, conf=conf)
         self.assertTrue('[V]' in start+end,
             "Expected page number V in output, but couldn't be found: " + repr(start))
 

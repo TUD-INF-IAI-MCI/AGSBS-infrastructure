@@ -65,7 +65,7 @@ class ConfigurationError(MAGSBS_error):
             prefix += 'from'
         return '{} {}: {}'.format(prefix, self.path, self.message)
 
-
+   
 class StructuralError(MAGSBS_error):
     """StructuralError(msg, path)
     Structural errors like wrong file name endings, wrong directory structures,

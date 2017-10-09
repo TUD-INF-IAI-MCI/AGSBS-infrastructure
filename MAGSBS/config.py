@@ -245,7 +245,7 @@ instead.
         # equals if there are not elements
         has_elements = set(self.items()) ^ set(other.items())
         return not has_elements
-
+   
 
 @common.Singleton
 class ConfFactory:
