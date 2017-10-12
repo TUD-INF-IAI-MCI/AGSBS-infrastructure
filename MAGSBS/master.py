@@ -94,7 +94,7 @@ found and there are MarkDown files."""
         orig_cwd = os.getcwd()
         for root in self.get_roots():
             os.chdir(root)
-            conf = config.ConfFactory().get_conf_instance(root)
+            conf = config.ConfFactory().get_conf_instance(".")
             if conf[MetaInfo.GenerateToc]:
                 # create table of contents
                 c = toc.HeadingIndexer(".")

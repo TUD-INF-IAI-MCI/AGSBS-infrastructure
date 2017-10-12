@@ -239,39 +239,39 @@ determine the project root and read the configuration for there if present
 values), but it does that for the current directory. This is handy for
 sub-directory configurations or initialization of a new project."""
         parser = HelpfulParser(cmd, self.output_formatter, description)
-        parser.add_argument("-a", dest="appendixPrefix",
+        parser.add_argument("-a", dest="AppendixPrefix",
                   help='use "A" as prefix to appendix chapter numbering and omit the additional header "appendix" (or its localized version)',
                   action="store_true", default=False)
-        parser.add_argument("-A", dest="sourceAuthor",
+        parser.add_argument("-A", dest="SourceAuthor",
                   help="set author of source document", default=None)
-        parser.add_argument("-f", dest="format",
+        parser.add_argument("-f", dest="Format",
                   help="select output format",
                   metavar="FMT", default=None)
-        parser.add_argument("-e", dest="editor",
+        parser.add_argument("-e", dest="Editor",
                   help="set editor",
                   metavar="NAME", default=None)
-        parser.add_argument("-i", dest="institution",
+        parser.add_argument("-i", dest="Institution",
                   help="set institution (default TU Dresden)",
                   metavar="NAME", default=None)
-        parser.add_argument("-l", dest="lecturetitle",
+        parser.add_argument("-l", dest="LectureTitle",
                   help="set lecture title (else try to use h1 heading, if present)",
                   metavar="TITLE", default=None)
-        parser.add_argument("-L", dest='language',
+        parser.add_argument("-L", dest='Language',
                   help="set language (default de)", metavar="LANG",
                   default='de')
-        parser.add_argument("-p", "--pnum-gap", dest="pageNumberingGap",
+        parser.add_argument("-p", "--pnum-gap", dest="PageNumberingGap",
                   help="gap in numbering between page links.",
                   metavar="NUM", default=None)
-        parser.add_argument("-s", dest="source",
+        parser.add_argument("-s", dest="Source",
                   help="set source document information",
                   metavar="SRC", default=None)
-        parser.add_argument("-S", dest="semesterofedit",
+        parser.add_argument("-S", dest="SemesterOfEdit",
                   help="set semester of edit (will be guessed else)",
                   metavar="SEMYEAR", default=None)
-        parser.add_argument("--toc-depth", dest="tocDepth",
+        parser.add_argument("--toc-depth", dest="TocDepth",
                   help="to which depth headings should be included in the table of contents",
                   metavar="NUM", default=None)
-        parser.add_argument("-w", dest="workinggroup",
+        parser.add_argument("-w", dest="WorkingGroup",
                   help="set working group",
                   metavar="GROUP", default=None)
 
@@ -292,16 +292,15 @@ sub-directory configurations or initialization of a new project."""
             except FileNotFoundError:
                 pass
 
-        def print_configuration(prefix):
-            self.output_formatter.emit_result({prefix: inst})
-
         if subcmd == 'show':
-            print_configuration("Current settings")
+            self.output_formatter.emit_result({"Current settings":
+                    {key.name: value for key, value in inst.items()}})
         elif subcmd == 'update' or subcmd == 'init':
             for opt, value in options.__dict__.items():
                 if value is not None:
-                    inst[opt] = value
-            print_configuration("New settings")
+                    inst[MAGSBS.config.MetaInfo[opt]] = value
+            self.output_formatter.emit_result({"New settings":
+                    {key.name: value for key, value in inst.items()}})
             inst.write()
         else:
             parser.print_help()
