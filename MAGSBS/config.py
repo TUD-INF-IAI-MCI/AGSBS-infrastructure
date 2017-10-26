@@ -245,7 +245,7 @@ instead.
         # equals if there are not elements
         has_elements = set(self.items()) ^ set(other.items())
         return not has_elements
-   
+
 
 @common.Singleton
 class ConfFactory:
@@ -343,8 +343,10 @@ class Translate:
                 'grey': ('gris','grise'), 'green':('vert','verte'),
                 'orange':('orange',)*2, 'red':('rouge',)*2,
                 'violet':('violett', 'violette'), 'yellow':('jaune',)*2}.items():
-            self.en_fr['%s frame' % colour] = '{}er Rahmen'.format(trans[0])
-            self.en_fr['%s box' % colour] = '{}er Kasten'.format(trans[1])
+            masc, fem = trans
+            self.en_fr['%s frame' % colour] = 'Cadre {} autour du texte'\
+                    .format(masc)
+            self.en_fr['%s box' % colour] = 'Bulle {} de texte'.format(fem)
 
         self.en_de = {'preface':'vorwort', 'appendix':'anhang',
                 "page": "Seite", "slide": "Folie",
@@ -365,13 +367,13 @@ class Translate:
             'not edited': 'nicht Übertragen',
             'end of frame': 'Rahmenende',
             'end of box': 'Ende des Kastens', 'title': 'Titel',
-        }
-        for colour, trans in {'black': 'schwarz', 'blue': 'blau',
-                'brown':'braun', 'grey': 'grau', 'green':'grün',
-                'orange':'orange', 'red':'rot', 'violet':'violett',
-                'yellow':'gelb'}.items():
-            self.en_de['%s frame' % colour] = '{}er Rahmen'.format(trans)
-            self.en_de['%s box' % colour] = '{}er Kasten'.format(trans)
+        } # insert colours
+        for colour, trans in {'black': 'schwarzer', 'blue': 'blauer',
+                'brown':'brauner', 'grey': 'grauer', 'green':'grüner',
+                'orange':'oranger', 'red':'roter', 'violet':'violetter',
+                'yellow':'gelber'}.items():
+            self.en_de['%s frame' % colour] = '{} Rahmen'.format(trans)
+            self.en_de['%s box' % colour] = '{} Kasten'.format(trans)
 
         self.lang = 'de'
 
