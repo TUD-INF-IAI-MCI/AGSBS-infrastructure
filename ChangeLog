@@ -4,6 +4,7 @@
   present in MarkDown)
 * recognize headings with a "\" as line continuation character (Fixes #40)
 * check for correct lecture root structure
+* various other bug fixes
 
 0.6.1 - Bug Fix Release
 
