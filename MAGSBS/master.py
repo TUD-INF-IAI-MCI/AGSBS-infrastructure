@@ -52,7 +52,7 @@ files are converted."""
                 roots.append(directory)
                 go_deeper = False
             else:
-                if(go_deeper):
+                if go_deeper:
                     dirs += [os.path.join(directory, e) \
                             for e in os.listdir(directory) \
                             if os.path.isdir(os.path.join(directory, e))]
@@ -62,7 +62,7 @@ files are converted."""
                 if f.endswith(".md"):
                     found_md = True
                     break
-        if(roots == [] and found_md):
+        if roots == [] and found_md:
             # this is markdown stuff without configuration!
             raise NoLectureConfigurationError("No configuration in a directory of the path \"%s\" or its subdirectories found. As soon as there are MarkDown files present, a configuration has to exist." % path)
         return roots
@@ -87,7 +87,7 @@ found and there are MarkDown files."""
         try:
             self._run()
         except errors.ConfigurationError as e:
-            raise errors.ConfigurationError(("No configuration found. Either "
+            raise errors.NoLectureConfigurationError(("No configuration found. Either "
                 "none exists or this is not a lecture root."), e.path)
 
     def _run(self):
