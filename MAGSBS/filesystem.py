@@ -84,10 +84,11 @@ Files picked up: ending on configured file endings."""
 
 
 def get_markdown_files(dir, all_markdown_files=False):
-    """os.walk(dir) -compatible function for getting all markdown files.
-In fact it uses the FileWalker class and acts as a short hand.
-The all_markdown_files option specifies, whether only the files adhering to the
-structure or all files shall be listed ending on .md."""
+    """This function returns output similar to os.walk(), but restricting files
+    to the file extension .md.
+Internally it uses the FileWalker class.
+If all_markdown_files is set, files not compliant with the directory structure
+definitions are listed, too."""
     fw = FileWalker(dir)
     fw.set_ignore_non_chapter_prefixed(not all_markdown_files)
     fw.set_endings([".md"])
