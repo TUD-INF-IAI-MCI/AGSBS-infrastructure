@@ -345,3 +345,17 @@ class TestCodeBlockRemoval(unittest.TestCase):
         self.assertFalse('ok, here' in seralize_doc(data))
         self.assertTrue(7 in data)
 
+    def test_multi_paragraph_code_works(self):
+        data = parcdblk('dummy\n\n~~~~\n1\n2\n3\n\n4\n5\n6\n~~~~\n\nflup\n')
+        self.assertEqual(data[1], ['dummy'])
+        self.assertTrue(3 in data)
+        self.assertTrue(8 in data)
+        self.assertTrue(all(l == '' for l in data[8]))
+
+    def test_inine_in_a_paragraph_on_its_own_works(self):
+        data = parcdblk('test\n\n`<IP>:<port>`\n\nend\n')
+        for start in (1, 3, 5):
+            self.assertTrue(start in data,
+                "Expected {} in data, but not found.  Got: ".format(start, data))
+        self.assertEqual(data[3][0].strip(), '')
+
