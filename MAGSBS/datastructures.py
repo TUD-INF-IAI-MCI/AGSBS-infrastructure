@@ -12,30 +12,7 @@ from . import errors
 from . import common
 from . import roman
 
-def path2chapter(path):
-    """Convert a file name similar to as k010508.md, anh__.md or v__ to a tuple
-of the corresponding chapter numbers.
-Important: this function throws OsErrors which must be caught by the plugin /
-frontend used; the supplied message can be displayed to the user."""
-    file_name = os.path.split(path)[-1]
-    if file_name.endswith('.md'): file_name = file_name[:-3]
-    else:
-        raise errors.StructuralError('unsupported file ending {}, md expected'.\
-                format(file_name[file_name.rfind('.')+1:]), path)
-
-    found = False
-    for prefix in common.VALID_FILE_BGN:
-        if file_name.startswith(prefix):
-            file_name = file_name[len(prefix):]
-            found = True
-    if not found:
-        raise errors.StructuralError("file has invalid format, expected a known " +
-                "prefix and a two-digit number in the file name", path)
-    try:
-        return int(file_name)
-    except ValueError:
-        raise errors.StructuralError(('unable to extract chapter number from file '
-                         'name, invalid part of name is ' + file_name), path)
+CHAPTERNUM = re.compile(r'^[a-z|A-Z]+(\d\d).*\.md')
 
 def gen_id(text):
     """gen_id(text) -> an text for generating links.
@@ -153,11 +130,25 @@ For specifying the type of a heading, Heading.Type is used, which is an enum.
     def get_line_number(self):
         return self.__line_number
 
+def extract_chapter_number(path):
+    """extract_chapter_number(path) -> return chapter number
+    Examples:
+    >>> extract_chapter_number('c:\\k01\\k01.md')
+    1
+    >>> extract_chapter_number('/path/k01/k0901.md')
+    9
+    The path is optional, only the file name is required, but as shown above
+    both is fine. If the file name does not follow naming conventions, a
+    StructuralError is raised."""
+    match = re.search(r'^(?:[a-z|A-Z]+)(\d+)\.md$', os.path.basename(path))
+    if not match or len(match.groups()[0]) < 2:
+        raise errors.StructuralError("the file does not follow naming conventions", path)
+    return int(match.groups()[0][:2])
+
 
 class FileHeading(Heading):
     """Heading which extracts chapter number and heading type from given file
     name. File name may not be a path but only the file name"""
-    CHAPTERNUM = re.compile(r'^[a-z|A-Z]+(\d\d).*\.md')
     def __init__(self, text, level, file_name):
         super().__init__(text, level)
         self.__file_name = file_name
@@ -177,12 +168,7 @@ class FileHeading(Heading):
             raise ValueError("Couldn't extract heading type from '{}'". \
                     format(file_name))
 
-        # strip all letters before chapter number
-        match = FileHeading.CHAPTERNUM.search(file_name)
-        if not match:
-            raise ValueError('Could not extract chapter number from "%s".' %
-                file_name)
-        self.set_chapter_number(int(match.groups()[0]))
+        self.set_chapter_number(extract_chapter_number(file_name))
 
 class FileCache:
     """FileCache(files)

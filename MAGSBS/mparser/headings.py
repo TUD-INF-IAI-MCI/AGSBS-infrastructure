@@ -10,26 +10,6 @@ from .. import datastructures, errors
 
 _hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*\w+')
 
-def extract_chapter_from_path(path):
-    """extract_chapter_from_path(path) -> return chapter number
-    Examples:
-    >>> extract_chapter_from_path('c:\\k01\\k01.md')
-    1
-    >>> extract_chapter_from_path('/path/k01/k0901.md')
-    9
-    The path is optional, only the file name is required, but as shown above
-    both is fine. If the file name does not follow naming conventions, a
-    StructuralError is raised."""
-    chapter_number = os.path.split(path)[-1].replace('.md', '')
-    while chapter_number and chapter_number[0].isalpha():
-        chapter_number = chapter_number[1:]
-    if (len(chapter_number)%2) != 0 or not chapter_number or \
-            not chapter_number[0].isdigit():
-        raise errors.StructuralError("the file does not follow naming conventions", path)
-    if len(chapter_number) > 2:
-        chapter_number = chapter_number[:2] # only keep first two digits (main chapter number)
-    return int(chapter_number)
-
 
 
 
@@ -126,7 +106,7 @@ def extract_headings(path, paragraphs):
     The difference to extract_headings_from_par is that it'll annotate the
     chapter number form the given path."""
     headings = []
-    chapter_number = extract_chapter_from_path(path)
+    chapter_number = datastructures.extract_chapter_number(path)
     for heading in extract_headings_from_par(paragraphs):
         heading.set_chapter_number(chapter_number)
         headings.append(heading)

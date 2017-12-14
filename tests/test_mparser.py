@@ -103,30 +103,6 @@ class test_mparser(unittest.TestCase):
 
     ##############################################################
     # get_chapter_number_from_path
-    def test_that_number_is_extracted_from_normal_file_name(self):
-        self.assertEqual(2, mp.headings.extract_chapter_from_path("k02.md"))
-
-    def test_that_number_is_extracted_from_relative_paths_and_absolute_paths(self):
-        self.assertEqual(mp.headings.extract_chapter_from_path(os.path.join("k04",
-            "k04.md")), 4)
-        self.assertEqual(mp.headings.extract_chapter_from_path(os.path.join("c:", "k09",
-        "k09.md")), 9)
-        self.assertEqual(mp.headings.extract_chapter_from_path("k08/k08.md"), 8)
-
-    def test_that_subchapter_files_work(self):
-        self.assertEqual(mp.headings.extract_chapter_from_path('k0501.md'), 5)
-        self.assertEqual(mp.headings.extract_chapter_from_path('k060201.md'), 6)
-
-    def test_that_non_two_digit_numbers_raise_structural_error(self):
-        with self.assertRaises(errors.StructuralError):
-            mp.headings.extract_chapter_from_path("k9.md")
-            mp.headings.extract_chapter_from_path("k029.md")
-
-    def test_that_totally_wrong_file_names_raise_exception(self):
-        with self.assertRaises(errors.StructuralError):
-            mp.headings.extract_chapter_from_path("paper.md")
-            mp.headings.extract_chapter_from_path("k11_old.md")
-
     def test_continued_lines_in_hashed_headings_recognized(self):
         headings = mp.headings.extract_headings_from_par(par(
                 "### a heading\\\nwhich is too long\n\ncontent\n"))

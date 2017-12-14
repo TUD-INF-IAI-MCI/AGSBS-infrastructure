@@ -219,6 +219,12 @@ class HtmlConverter(OutputGenerator):
         # set title
         if title: # if not None
             pandoc_args += ['-V', 'pagetitle:' + title, '-V', 'title:' + title]
+        # instruct pandoc to enumerate headings
+        try:
+            pandoc_args += ['--number-sections', '--number-offset',
+                str(datastructures.extract_chapter_number(path) - 1)]
+        except errors.StructuralError:
+            pass # no enumeration of headings if not chapter
         # check whether "Math" occurs and therefore if GladTeX needs to be run
         use_gladtex = True in contentfilter.json_ast_filter(json_ast,
                 contentfilter.has_math)

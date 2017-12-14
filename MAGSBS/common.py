@@ -3,7 +3,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2016-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 import atexit
 import itertools
 import os

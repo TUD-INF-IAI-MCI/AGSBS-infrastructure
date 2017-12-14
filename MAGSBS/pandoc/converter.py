@@ -118,7 +118,7 @@ The parameter `format` can be supplied to override the configured output format.
                 # get correct configuration for each file
                 newconf = c.get_conf_instance(os.path.dirname(file_name))
                 # get new converter (and template) if config changes
-                if not newconf == conf:
+                if not newconf is conf:
                     conf = newconf
                     self.__update_metadata(conf)
                     converter = self.get_formatter_for_format(conf[MetaInfo.Format])

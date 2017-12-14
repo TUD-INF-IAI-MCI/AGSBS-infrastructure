@@ -3,6 +3,7 @@ import unittest, sys
 sys.path.insert(0, '.') # just in case
 import MAGSBS.datastructures as datastructures
 import MAGSBS.errors as errors
+import os
 
 class test_gen_id(unittest.TestCase):
     def test_that_spaces_are_replaced_by_hyphens(self):
@@ -105,3 +106,29 @@ class TestFileCache(unittest.TestCase):
         with self.assertRaises(errors.StructuralError):
             #pylint: disable=pointless-statement
             f.get_neighbours_for("fooo.md")
+
+    def test_that_number_is_extracted_from_normal_file_name(self):
+        self.assertEqual(2, datastructures.extract_chapter_number("k02.md"))
+
+    def test_that_number_is_extracted_from_relative_paths_and_absolute_paths(self):
+        self.assertEqual(datastructures.extract_chapter_number(os.path.join("k04",
+            "k04.md")), 4)
+        self.assertEqual(datastructures.extract_chapter_number(os.path.join("c:", "k09",
+        "k09.md")), 9)
+        self.assertEqual(datastructures.extract_chapter_number("k08/k08.md"), 8)
+
+    def test_that_subchapter_files_work(self):
+        self.assertEqual(datastructures.extract_chapter_number('k0501.md'), 5)
+        self.assertEqual(datastructures.extract_chapter_number('k060201.md'), 6)
+
+    def test_that_non_two_digit_numbers_raise_structural_error(self):
+        with self.assertRaises(errors.StructuralError):
+            datastructures.extract_chapter_number("k9.md")
+            datastructures.extract_chapter_number("k029.md")
+
+    def test_that_totally_wrong_file_names_raise_exception(self):
+        with self.assertRaises(errors.StructuralError):
+            datastructures.extract_chapter_number("paper.md")
+            datastructures.extract_chapter_number("k11_old.md")
+
+
