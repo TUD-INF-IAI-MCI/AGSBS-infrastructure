@@ -431,7 +431,7 @@ sub-directory configurations or initialization of a new project."""
         parser.add_argument("-s", dest="squeeze_output", action="store_true",
                 help="use less blank lines")
         parser.add_argument("-l", dest="live_view", action="store_true",
-                help=" less blank lines")
+                help="open a console-only life view, refreshing the list of errors every few seconds")
         parser.add_argument("input", nargs="?",
                 help="specify file or directory to be checked")
         options = parser.parse_args(args)

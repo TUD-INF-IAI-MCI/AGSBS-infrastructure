@@ -122,7 +122,7 @@ class UseProperCommandsForMathOperatorsAndFunctions(FormulaMistake):
                         "grundsätzlich als Befehl gesetzt werden, d.h. mittels "
                         "\\{0}. Nur so wird es in der Ausgabe korrekt "
                         "formatiert und ist gleichzeitig gut lesbar.").\
-                            format(mathop), lnum=line, pos=pos)
+                            format(mathop.pattern.replace('\\b', '')), lnum=line, pos=pos)
 
 
 class FormulasSpanningAParagraphShouldBeDisplayMath(Mistake):

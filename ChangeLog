@@ -1,3 +1,9 @@
+0.7.1
+
+* recognise headings with non-letter characters as first character
+* Mistkerl:
+	* show correct formula sign for min/max mistkerl checker
+
 0.7 
 
 * implement text boxes and frames for books with this specialised markup (not

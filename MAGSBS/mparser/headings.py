@@ -1,14 +1,14 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2017-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 
 import os
 import re
 
 from .. import datastructures, errors
 
-_hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*\w+')
+_hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*.*?\w+')
 
 
 
