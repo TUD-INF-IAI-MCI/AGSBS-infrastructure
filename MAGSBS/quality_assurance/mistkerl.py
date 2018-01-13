@@ -83,6 +83,10 @@ class Mistkerl():
     def run(self, path):
         """Take either a file and run checks or do the same for a directory
 recursively."""
+        if os.path.isfile(path):
+            path = os.path.dirname(path)
+            if not path:
+                path = os.path.dirname(os.path.abspath(path))
         for issue in self.get_issues(MistakeType.lecture_root):
             self.__append_error(path, issue.run(path))
         last_dir = None

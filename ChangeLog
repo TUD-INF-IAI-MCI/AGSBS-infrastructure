@@ -3,6 +3,7 @@
 * recognise headings with non-letter characters as first character
 * Mistkerl:
 	* show correct formula sign for min/max mistkerl checker
+	* accept a file name as input, too
 
 0.7 
 
