@@ -562,7 +562,8 @@ sub-directory configurations or initialization of a new project."""
         """Please see usage info."""
         parser = HelpfulParser(cmd, self.output_formatter, description=("Check the "
             "page numbers of a document and warn / fix the page numbering, if "
-            "the numbers do not strictly increase by one."))
+            "the numbers do not strictly increase by one.\n"
+            "This command reads from stdin by default, see -f."))
         parser.add_argument("-f", dest="file", metavar="FILE",
                 default=None, help="read from specified path instead of reading from standard input")
         parser.add_argument("-i", dest="in_place", action="store_true",
