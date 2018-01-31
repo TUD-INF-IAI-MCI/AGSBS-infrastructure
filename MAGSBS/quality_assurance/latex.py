@@ -29,14 +29,14 @@ class CasesSqueezedOnOneLine(FormulaMistake):
 class LaTeXMatricesShouldBeConstructeedUsingPmatrix(FormulaMistake):
     """There are various ways to make matrices hard to read. Spot and report
     them."""
+    PATTERN = re.compile(r".*(\\left|\\big|\\Big)\(.*?begin{(array|matrix)")
     def __init__(self):
         super().__init__()
         self.set_file_types(["md","tex"])
-        self.pattern = re.compile(r".*(\left|\big|\Big)\(.*?begin{(array|matrix)")
 
     def worker(self, *args):
         for (line, pos), formula in args[0].items():
-            if self.pattern.search(formula):
+            if self.PATTERN.search(formula):
                 return self.error(("Matrizen sollten, damit sie einfach lesbar "
                     "sind, nicht mit \\left\\(..., sondern einfach mit "
                     "\\begin{pmatrix}...  erzeugt werden. Dabei werden auch "
