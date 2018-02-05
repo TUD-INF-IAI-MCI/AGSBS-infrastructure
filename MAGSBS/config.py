@@ -395,3 +395,6 @@ class Translate:
         except KeyError:
             return origin
 
+    def get_translation_and_upper_first(self, origin):
+        s = self.get_translation(origin)
+        return s[:1].upper() + s[1:] if s else ''
