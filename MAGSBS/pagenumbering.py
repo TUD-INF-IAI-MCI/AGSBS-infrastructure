@@ -20,7 +20,7 @@ def add_page_number(path, line_number):
     arabic (depending on its predecessors).
     It does not actually insert the new page number, but returns it, so that it can be inserted."""
     with open(path, 'r', encoding='utf-8') as f:
-        return add_page_number_from_str(f.read(), line_number)
+        return add_page_number_from_str(f.read(), line_number, path)
 
 def add_page_number_from_str(data, line_number, path=None):
     """This function parses all page numbers from the given string and adds a new
