@@ -5,7 +5,7 @@
 #               Jens Voegler <jens-v |at| gmx |dot| de>
 
 """
-This file generates and enumerates page numbers, depending on theirpredecessors.
+This file generates and enumerates page numbers, depending on their predecessors.
 """
 
 import os
@@ -29,7 +29,7 @@ def add_page_number_from_str(data, line_number, path=None):
     arabic (depending on its predecessors).
     It does not actually insert the new page number, but returns it, so that it can be inserted.
     Passing a path to the file (or its parent directory) being processed is not
-    mandatory, but strongly adviced. It is used to load the lecture
+    mandatory, but strongly advised. It is used to load the lecture
     configuration for localisation."""
     paragraphs = mparser.file2paragraphs(data)
     pagenumbers = mparser.extract_page_numbers_from_par(paragraphs,
@@ -49,7 +49,7 @@ def add_page_number_from_str(data, line_number, path=None):
                 pagenumbers[-1].number+1, pagenumbers[-1].arabic)
 
 def check_page_numbering(pnums):
-    """This funciton checks for monotonic increasing page numbering within a
+    """This function checks for monotonic increasing page numbering within a
     document. Counts from the first page number onwards and will report gaps, by
     giving the page number object. When roman and arabic numbers are mixed, it
     works as follows:
@@ -57,7 +57,7 @@ def check_page_numbering(pnums):
     -   errors in the numbering are only reported until a style change (arabic
         to roman or vice versa)
     -   the numbering starts from the first number of a style that was detected
-    -   all errors are reported, even if they rsult from a preceeding number of
+    -   all errors are reported, even if they result from a preceding number of
         the same style far earlier
     """
     if not pnums:
