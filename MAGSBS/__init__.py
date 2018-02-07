@@ -11,6 +11,9 @@ from . import quality_assurance
 from . import pandoc
 from . import toc
 
+import gettext
+import os
+
 lang = "cs"
 try:
     # set language
@@ -18,11 +21,11 @@ try:
 except Exception:
     lang = "en"
 
-for file in ["config", "./quality_assurance/markdown"]:
+for file in ["./quality_assurance/markdown"]:
     gettext_lang = gettext.translation(file, localedir=os.path.dirname(os.path.realpath(__file__)) + "/locale", languages=[lang])
     gettext_lang.install()
 
-    
+
 
 __all__ = ["pandoc", "quality_assurance", "filesystem", "mparser",
         "errors", "datastructures", "contentfilter", "config", "master",
