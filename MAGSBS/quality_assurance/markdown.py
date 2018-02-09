@@ -11,6 +11,15 @@ from .meta import Mistake, MistakeType, OnelinerMistake
 from .. import config, common
 MetaInfo = config.MetaInfo
 
+# importing language versions
+import gettext
+try:
+    trans = gettext.translation("markdown", localedir=os.path.dirname(os.path.realpath(__file__)) + "/locale", languages=[config.LANG])
+    trans.install()
+except IOError:
+    _ = lambda s: s
+
+
 class PageNumberIsParagraph(Mistake):
     """Check whether all page numbers are on a paragraph on their own."""
     def __init__(self):

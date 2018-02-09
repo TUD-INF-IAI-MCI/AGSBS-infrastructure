@@ -41,6 +41,8 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         ''' % ('|'.join(PAGENUMBERINGTOKENS), roman_number_regex),
         re.VERBOSE)
 
+LANG = "en"
+
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on
     the German university system."""
