@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-02-07 11:44+0100\n"
-"PO-Revision-Date: 2018-02-07 12:39+0100\n"
+"PO-Revision-Date: 2018-02-09 15:41+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
 "Language: cs\n"
@@ -54,7 +54,7 @@ msgstr "Pravdìpodobnì v tomto okamžiku bylo zaznamenáno èíslo stránky, ve kterém
 
 #: markdown.py:213
 msgid "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und erschweren die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, dass nur die Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle Überschriften, mitsamt der Überschriften die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen."
-msgstr "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und erschweren die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, dass nur die Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle Überschriften, mitsamt der Überschriften die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen."
+msgstr "Názvy stejného jména zpùsobují, že obsahy jsou obtížné èíst a zpùsobit obtížnou navigaci. To se èasto dìje s filmovými soubory. Nejlepší zpùsob, jak nastavit TocDepth tak, aby byl zaznamenán pouze nadpis sady snímkù (èasto úroveò 1) a všechny nadpisy spolu s nadpisy jsou dvakrát, ani se neobjevují v obsahu."
 
 #: markdown.py:243
 msgid "Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: \"|| - Seite xyz -\""
