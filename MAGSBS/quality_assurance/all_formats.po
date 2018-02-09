@@ -1,0 +1,29 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# xplhak <xplhak@fi.muni.cz>, 2018.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2018-02-09 14:02+0100\n"
+"PO-Revision-Date: 2018-02-09 14:55+0200\n"
+"Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
+"Language-Team: TUD\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=cp1250\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Virtaal 0.7.1\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: all_formats.py:31
+msgid "Fehler in der Konfiguration: Der Wert {} ist nicht gesetzt, wodurch die Kopfdaten in den HTML-Dateien nicht erzeugt werden können."
+msgstr ""
+
+#: all_formats.py:54
+msgid "Es wurden inkorrekt dargestellte Umlaute gefunden. Dies geschieht oft, wenn Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings schwer leserlich."
+msgstr ""
+
+#: all_formats.py:69
+msgid "Die Datei \"{}\" ist falsch benannt und folgt nicht den Namenskonventionen. Dies führt zu einer falschen Verwendung der Datei."
+msgstr ""

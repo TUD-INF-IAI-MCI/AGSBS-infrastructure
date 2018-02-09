@@ -1,0 +1,29 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# xplhak <xplhak@fi.muni.cz>, 2018.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-02-09 14:02+0100\n"
+"PO-Revision-Date: 2018-02-09 14:56+0100\n"
+"Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
+"Language-Team: TUD\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=cp1250\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 2.0.6\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: all_formats.py:31
+msgid "Fehler in der Konfiguration: Der Wert {} ist nicht gesetzt, wodurch die Kopfdaten in den HTML-Dateien nicht erzeugt werden können."
+msgstr "Error in configuration: The value {} is not set, which means that the header data in the HTML files can not be generated."
+
+#: all_formats.py:54
+msgid "Es wurden inkorrekt dargestellte Umlaute gefunden. Dies geschieht oft, wenn Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings schwer leserlich."
+msgstr "Incorrectly displayed umlauts were found. This often happens when text is copied from PDF files. That makes the text, however, difficult to read."
+
+#: all_formats.py:69
+msgid "Die Datei \"{}\" ist falsch benannt und folgt nicht den Namenskonventionen. Dies führt zu einer falschen Verwendung der Datei."
+msgstr "The file \"{}\" is named incorrectly and does not follow the naming conventions. This leads to a wrong use of the file."

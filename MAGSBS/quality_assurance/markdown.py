@@ -7,16 +7,17 @@
 
 import os
 import re
+import gettext
 from .meta import Mistake, MistakeType, OnelinerMistake
 from .. import config, common
 MetaInfo = config.MetaInfo
 
 # importing language versions
-import gettext
 try:
-    trans = gettext.translation("markdown", localedir=os.path.dirname(os.path.realpath(__file__)) + "/locale", languages=[config.LANG])
-    trans.install()
+    trans = gettext.translation("markdown", localedir=config.CONFIG_DIR + "/quality_assurance/locale", languages=[config.LANG])
+    _ = trans.gettext
 except IOError:
+    # in case language file is not found
     _ = lambda s: s
 
 
