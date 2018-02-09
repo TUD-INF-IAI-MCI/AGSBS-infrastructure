@@ -26,7 +26,7 @@ class ConfigurationValuesAreAllSet(Mistake):
 
 class BrokenUmlautsFromPDFFiles(OnelinerMistake):
     """When copying texts over from PDF's, the umlauts often are unreadable.
-    This is because they are at times not saved as an actual umlaut, but rahter
+    This is because they are at times not saved as an actual umlaut, but rather
     as their respective Latin vowel with a special formatting directive to lift
     an accent or whatever above it. Flag those umlauts, if the editor didn't
     convert them yet to proper umlauts."""
