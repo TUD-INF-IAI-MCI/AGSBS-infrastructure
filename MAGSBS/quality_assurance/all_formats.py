@@ -8,7 +8,7 @@ from .meta import MistakeType, Mistake, OnelinerMistake
 
 # importing language versions
 try:
-    trans = gettext.translation("all_formats", localedir=config.CONFIG_DIR + "/quality_assurance/locale", languages=["cs"])
+    trans = gettext.translation("all_formats", localedir=config.CONFIG_DIR + "/quality_assurance/locale", languages=[config.LANG])
     _ = trans.gettext
 except IOError:
     # in case language file is not found
