@@ -1,0 +1,33 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2018-02-09 15:32+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=cp1250\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: mistkerl.py:125
+msgid "Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor."
+msgstr ""
+
+#: mistkerl.py:140
+msgid "Errors may only be of type ErrorMessage, got '{}'"
+msgstr ""
+
+#: mistkerl.py:213
+msgid "Die Konfiguration konnte nicht gelesen werden: {}"
+msgstr ""
+
+#: mistkerl.py:223
+msgid "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."
+msgstr ""
+
