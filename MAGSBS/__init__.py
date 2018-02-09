@@ -11,8 +11,12 @@ from . import quality_assurance
 from . import pandoc
 from . import toc
 
-import gettext
+# importing localization
 import os
+import gettext
+# TODO: load lang if it this already exist, english otherwise
+# TODO: implement for english
+# TODO: do this for all files
 
 lang = "cs"
 try:
@@ -22,8 +26,8 @@ except Exception:
     lang = "en"
 
 for file in ["./quality_assurance/markdown"]:
-    gettext_lang = gettext.translation(file, localedir=os.path.dirname(os.path.realpath(__file__)) + "/locale", languages=[lang])
-    gettext_lang.install()
+    trans = gettext.translation(file, localedir=os.path.dirname(os.path.realpath(__file__)) + "/locale", languages=[lang])
+    trans.install()
 
 
 
