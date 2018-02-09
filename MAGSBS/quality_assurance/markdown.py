@@ -1,4 +1,3 @@
-# vim: set expandtab sts=4 ts=4 sw=4 tw=0 ft=python:
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
@@ -17,7 +16,7 @@ class PageNumberIsParagraph(Mistake):
     def __init__(self):
         super().__init__()
         self._error_text = _("Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile haben, "
-                            "das heißt sie muss in einem eigenen Absatz stehen.")
+            "das heißt sie muss in einem eigenen Absatz stehen.")
         self.pattern = re.compile(r'^\|\|\s*' + config.PAGENUMBERING_PATTERN.pattern)
 
     def error(self, lnum):
@@ -46,8 +45,8 @@ class LevelOneHeading(Mistake):
                 if heading.get_level() == 1:
                     if found_h1:
                         return self.error(_("In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Dies ist nicht erlaubt. "
-                                "Beispielsweise hat jeder Foliensatz nur eine Hauptüberschrift und auch ein Kapitel wird nur mit einer "
-                                "Überschrift bezeichnet."))
+                            "Beispielsweise hat jeder Foliensatz nur eine Hauptüberschrift und auch ein Kapitel wird nur mit einer "
+                            "Überschrift bezeichnet."))
                     else:
                         found_h1 = True
 
@@ -86,7 +85,7 @@ class ItemizeIsParagraph(Mistake):
                     # itemize encountered and first line was no itemize line?
                     if item_encountered:
                         err_message = _("Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss davor "
-                                       "und danach eine Leerzeile sein.")
+                            "und danach eine Leerzeile sein.")
                         return self.error(err_message, start_line+lnum)
                     else:
                         item_encountered = True
@@ -105,7 +104,7 @@ indexing of page numbers."""
         for pnum in args[0]:
             if not pnum.identifier in self.page_identifiers:
                 err_message = _("Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um einen Tippfehler. Die "
-                              "Seitenzahl wird ignoriert.").format(pnum.identifier)
+                    "Seitenzahl wird ignoriert.").format(pnum.identifier)
                 return self.error(err_message, pnum.line_no)
 
 
@@ -125,7 +124,7 @@ class UniformPagestrings(Mistake):
         else:
             second_piece = _("in der Datei \"{}\" dann aber \"{}\"").format(later_fn, later_pnum.identifier)
         return self.error(_("In der Datei \"{}\"  wurde zuerst \"{}\" verwendet, {}. "
-                          "Dies sollte einheitlich sein.").format(first_fn, first_pnum.identifier, second_piece), later_pnum.line_no)
+            "Dies sollte einheitlich sein.").format(first_fn, first_pnum.identifier, second_piece), later_pnum.line_no)
 
     def worker(self, *args):
         first = () # (fn, first page number)
@@ -169,9 +168,9 @@ self.threshold."""
 
     def __error(self, heading_level):
         return super().error(_("Es existieren mehr als {} Überschriften der Ebene {}. Das macht das Inhaltsverzeichnis sehr "
-                             "unübersichtlich. Man kann entweder in der Konfiguration tocDepth kleiner setzen, um Überschriften "
-                             "dieser Ebene nicht ins Inhaltsverzeichnis aufzunehmen (für Foliensätze z.B. tocDepth 1) oder die "
-                             "Anzahl an Überschriften minimieren, sofern möglich.").format(self.threshold, heading_level), lnum=None)
+            "unübersichtlich. Man kann entweder in der Konfiguration tocDepth kleiner setzen, um Überschriften "
+            "dieser Ebene nicht ins Inhaltsverzeichnis aufzunehmen (für Foliensätze z.B. tocDepth 1) oder die "
+            "Anzahl an Überschriften minimieren, sofern möglich.").format(self.threshold, heading_level), lnum=None)
 
 
 class ForgottenNumberInPageNumber(Mistake):
@@ -203,24 +202,24 @@ class ForgottenNumberInPageNumber(Mistake):
             # no match or not one of the groups contains something, it's broken
             if match and not any(match.groups()):
                 return self.error(_("Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach "
-                                  "dem Wort die anschließende Nummer vergessen wurde."), start)
+                    "dem Wort die anschließende Nummer vergessen wurde."), start)
 
 class HeadingOccursMultipleTimes(Mistake):
     """Parse headings; report doubled headings; ignore headings below
 tocDepth."""
     mistake_type = MistakeType.headings
     def worker(self, *args):
-        ErrorMessage = _("Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und erschweren "
-                        "die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, "
-                       "dass nur die Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle Überschriften, "
-                       "mitsamt der Überschriften die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen.")
+        error_message = _("Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und erschweren "
+            "die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, "
+            "dass nur die Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle Überschriften, "
+            "mitsamt der Überschriften die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen.")
         last_heading = None
         for heading in args[0]:
             if heading.get_level() > config.ConfFactory().\
                     get_conf_instance_safe(".")[MetaInfo.TocDepth]:
                 continue # skip it
             if last_heading == heading.get_text():
-                return self.error(ErrorMessage, heading.get_line_number())
+                return self.error(error_message, heading.get_line_number())
             last_heading = heading.get_text()
 
 class PageNumbersWithoutDashes(Mistake):
@@ -241,7 +240,7 @@ class PageNumbersWithoutDashes(Mistake):
                 # if all spaces and |'s are stripped, last character and first char must be dashes
                 if not first_ln.startswith('-') or not first_ln.endswith('-'):
                     return self.error(_("Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: "
-                                      "\"|| - Seite xyz -\""), num)
+                "\"|| - Seite xyz -\""), num)
 
 class DoNotEmbedHtml(OnelinerMistake):
     """Do not use HTML. Especially, don't use <br/>."""
@@ -274,8 +273,8 @@ class EmbeddedHTMLComperators(OnelinerMistake):
         matched = self.pattern.search(line.lower())
         if matched:
             return self.error(_("Relationsoperatoren sollten möglichst nicht mittels HTML, "
-                    "sondern besser mittels \\< und \\> erzeugt werden."),
-                    lnum=num, pos=matched.span()[1])
+                "sondern besser mittels \\< und \\> erzeugt werden."),
+                lnum=num, pos=matched.span()[1])
 
 class HeadingsUseEitherUnderliningOrHashes(Mistake):
     mistake_type = MistakeType.headings
@@ -283,8 +282,8 @@ class HeadingsUseEitherUnderliningOrHashes(Mistake):
         for heading in args[0]:
             if heading.get_text().startswith('#'):
                 return self.error(_("Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. "
-                                  "Am Besten ist es, die da sie sonst als Text angezeigt werden."),
-                                  lnum=heading.get_line_number())
+                    "Am Besten ist es, die da sie sonst als Text angezeigt werden."),
+                    lnum=heading.get_line_number())
 
 class ParagraphMayNotEndOnBackslash(Mistake):
     r"""If a paragraph ends on a backslash, the next line will be treated as
@@ -435,9 +434,9 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
                     if next_line and next_line[0].isalpha() and not \
                             (next_line.startswith('und') or next_line.startswith('and')):
                         return self.error(_("Es wurde ein Trennstrich gefunden, "
-                                "der wahrscheinlich aus einem Text mit "
-                                "Blocksatz kopiert wurde. Dies wird in der "
-                                "Ausgabe falsch formatiert werden."), start_line + lnum)
+                            "der wahrscheinlich aus einem Text mit "
+                            "Blocksatz kopiert wurde. Dies wird in der "
+                            "Ausgabe falsch formatiert werden."), start_line + lnum)
 
 
 class DetectEmptyImageDescriptions(Mistake):
@@ -477,4 +476,4 @@ class DetectEmptyImageDescriptions(Mistake):
                     break
             if not image_description_found:
                 return self.error(_("Es wurde keine Bildbeschreibung eingefügt."),
-                        lnum=start_line, path=path)
+                    lnum=start_line, path=path)
