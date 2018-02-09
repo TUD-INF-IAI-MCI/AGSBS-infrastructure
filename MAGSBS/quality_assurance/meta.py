@@ -8,8 +8,19 @@
 """This file contains all helper functions and classes to represent a
 mistake."""
 
-from abc import ABCMeta, abstractmethod
+import gettext
 import enum
+from abc import ABCMeta, abstractmethod
+from .. import config
+
+# importing language versions
+try:
+    trans = gettext.translation("meta", localedir=config.CONFIG_DIR + "/quality_assurance/locale", languages=[config.LANG])
+    _ = trans.gettext
+except IOError:
+    # in case language file is not found
+    _ = lambda s: s
+
 
 class MistakeType(enum.Enum):
     """The mistake type determines the arguments and the environment in which to
@@ -57,7 +68,7 @@ should set the relevant properties in the constructor."""
     def set_file_types(self, types):
         # is it list-alike
         if not (hasattr(types, '__iter__') or hasattr(types, '__getitem__')):
-            raise TypeError("List or tuple expected.")
+            raise TypeError(_("List or tuple expected."))
         self.__file_types = types
 
     def get_file_types(self):
@@ -108,7 +119,7 @@ It'll save typing."""
 
     def worker(self, *args):
         if len(args) != 2:
-            raise ValueError("For a mistake checker of type oneliner, exactly two arguments are required.")
+            raise ValueError(_("For a mistake checker of type oneliner, exactly two arguments are required."))
         return self.check(args[0], args[1])
 
 
