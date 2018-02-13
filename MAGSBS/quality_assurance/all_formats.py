@@ -19,14 +19,14 @@ class ConfigurationValuesAreAllSet(Mistake):
             return node.tag[node.tag.find('}') + 1 :]
         for node in root.getchildren():
             if not node.text or 'unknown' in node.text.lower():
-                return self.error(('Fehler in der Konfiguration: Der Wert %s ist '
-                    'nicht gesetzt, wodurch die Kopfdaten in den HTML-Dateien '
-                    'nicht erzeugt werden können.') % get_tag(node),
+                return self.error("Fehler in der Konfiguration: Der Wert {} ist "
+                    "nicht gesetzt, wodurch die Kopfdaten in den HTML-Dateien "
+                    "nicht erzeugt werden können.".format(get_tag(node)),
                     config.get_lnum_of_tag(args[0], node.tag), args[0])
 
 class BrokenUmlautsFromPDFFiles(OnelinerMistake):
     """When copying texts over from PDF's, the umlauts often are unreadable.
-    This is because they are at times not saved as an actual umlaut, but rahter
+    This is because they are at times not saved as an actual umlaut, but rather
     as their respective Latin vowel with a special formatting directive to lift
     an accent or whatever above it. Flag those umlauts, if the editor didn't
     convert them yet to proper umlauts."""
@@ -57,7 +57,7 @@ class OnlyCorrectDirectoriesFound(Mistake):
                     '.lecture_meta')):
                 continue
             if not common.is_valid_file(file):
-                return self.error(("Die Datei '%s' ist falsch benannt und folgt "
+                return self.error("Die Datei \"{}\" ist falsch benannt und folgt "
                     "nicht den Namenskonventionen. Dies führt zu einer falschen "
-                    "Verwendung der Datei.") % file, path=root)
+                    "Verwendung der Datei.".format(file), path=root)
 

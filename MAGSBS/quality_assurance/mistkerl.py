@@ -82,19 +82,22 @@ class Mistkerl():
 
     def run(self, path):
         """Take either a file and run checks or do the same for a directory
-recursively."""
+        recursively."""
+        file_tree = [(None, [], [])] # empty os.walk()-alike data structure
         if os.path.isfile(path):
-            path = os.path.dirname(path)
-            if not path:
-                path = os.path.dirname(os.path.abspath(path))
-        for issue in self.get_issues(MistakeType.lecture_root):
-            self.__append_error(path, issue.run(path))
+            file_tree = [[os.path.dirname(path), [], [path]]]
+            if not file_tree[0][0]: # no directory part extracted
+                file_tree[0][0] = os.path.dirname(os.path.abspath(path))
+        else:
+            for issue in self.get_issues(MistakeType.lecture_root):
+                self.__append_error(path, issue.run(path))
+            fw = filesystem.FileWalker(path)
+            fw.set_ignore_non_chapter_prefixed(False)
+            fw.set_endings(["md","tex"])
+            file_tree = fw.walk()
         last_dir = None
         directoryname = None
-        fw = filesystem.FileWalker(path)
-        fw.set_ignore_non_chapter_prefixed(False)
-        fw.set_endings(["md","tex"])
-        for directoryname, dir_list, file_list in fw.walk():
+        for directoryname, dir_list, file_list in file_tree:
             if last_dir is not directoryname:
                 self.run_directory_filters(last_dir)
                 last_dir = directoryname
@@ -112,7 +115,7 @@ recursively."""
                         paragraphs = mparser.rm_codeblocks(
                                 mparser.file2paragraphs(f.read(), join_lines=True))
                 except UnicodeDecodeError:
-                    msg = 'Datei ist nicht in UTF-8 kodiert, bitte waehle "UTF-8" als Zeichensatz im Editor.'
+                    msg = "Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor."
                     e = ErrorMessage(msg, 1, file_path)
                     self.__append_error(path, e)
                     continue
@@ -127,8 +130,7 @@ recursively."""
         """Add an error to the internal output dict."""
         if not err: return
         if not isinstance(err, ErrorMessage):
-            raise TypeError("Errors may only be of type ErrorMessage, got '%s'"
-                    % str(err))
+            raise TypeError("Errors may only be of type ErrorMessage, got '{}'".format(str(err)))
         if not err.path:
             err.path = path
         if os.path.dirname(err.path) == '.':
@@ -201,8 +203,8 @@ recursively."""
                 self.__append_error(path, issue.run(path))
             except ET.ParseError as e:
                 pos = e.position
-                mistake = ErrorMessage(("Die Konfiguration konnte nicht gelesen"
-                        " werden: ") + e.args[0], pos[0], path)
+                mistake = ErrorMessage("Die Konfiguration konnte nicht gelesen"
+                    " werden: {}".format(e.args[0]), pos[0], path)
                 mistake.pos_on_line = pos[1]
                 self.__append_error(path, mistake)
 
