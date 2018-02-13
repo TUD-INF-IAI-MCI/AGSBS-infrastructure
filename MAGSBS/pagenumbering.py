@@ -43,7 +43,7 @@ def add_page_number_from_str(data, line_number, path=None):
             conf = config.LectureMetaData(path)
         translator = config.Translate()
         translator.set_language(conf[MetaInfo.Language])
-        return datastructures.PageNumber(translator.get_translation_and_upper_first("page"), 1)
+        return datastructures.PageNumber(translator.get_translation("page"), 1)
     else:
         return datastructures.PageNumber(pagenumbers[-1].identifier,
                 pagenumbers[-1].number+1, pagenumbers[-1].arabic)
