@@ -265,7 +265,7 @@ configuration and then, if present, the corresponding subdirectory configuration
         path.
         If no configuration is found the method searches in the directories
         above, as long as it can determine whether it's still in the lecture.
-        If no configuration is found, the default configuation object is
+        If no configuration is found, the default configuration object is
         returned."""
         if path is None:
             raise ValueError("Path expected")
@@ -395,3 +395,6 @@ class Translate:
         except KeyError:
             return origin
 
+    def get_translation_and_upper_first(self, origin):
+        s = self.get_translation(origin)
+        return s[:1].upper() + s[1:] if s else ''

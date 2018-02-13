@@ -19,9 +19,9 @@ class CasesSqueezedOnOneLine(FormulaMistake):
             if '\n' in formula:
                 continue
             if r'\begin{cases}' in formula and r'\end{cases}' in formula:
-                return self.error(("Die LaTeX-Umgebung zur Fallunterscheidung "
+                return self.error("Die LaTeX-Umgebung zur Fallunterscheidung "
                     "(cases) sollte Zeilenumbrüche an den passenden Stellen "
-                    "enthalten, um die Lesbarkeit zu gewährleisten."),
+                    "enthalten, um die Lesbarkeit zu gewährleisten.",
                     lnum=pos[0], pos=pos[1])
 
 
@@ -37,10 +37,10 @@ class LaTeXMatricesShouldBeConstructeedUsingPmatrix(FormulaMistake):
     def worker(self, *args):
         for (line, pos), formula in args[0].items():
             if self.PATTERN.search(formula):
-                return self.error(("Matrizen sollten, damit sie einfach lesbar "
+                return self.error("Matrizen sollten, damit sie einfach lesbar "
                     "sind, nicht mit \\left\\(..., sondern einfach mit "
                     "\\begin{pmatrix}...  erzeugt werden. Dabei werden auch "
-                    "Klammern automatisch gesetzt und es ist kürzer."),
+                    "Klammern automatisch gesetzt und es ist kürzer.",
                     lnum=line, pos=pos)
 
 class LaTeXMatricesShouldHaveLineBreaks(FormulaMistake):
@@ -52,8 +52,8 @@ class LaTeXMatricesShouldHaveLineBreaks(FormulaMistake):
     def worker(self, *args):
         for (line, pos), formula in args[0].items():
             if self.pattern.search(formula):
-                return self.error(("Jede Zeile einer Matrix oder Tabelle sollte"
-                    " zur besseren Lesbarkeit auf eine eigene Zeile gesetzt werden."),
+                return self.error("Jede Zeile einer Matrix oder Tabelle sollte"
+                    " zur besseren Lesbarkeit auf eine eigene Zeile gesetzt werden.",
                     lnum=line, pos=pos)
 
 
@@ -88,8 +88,11 @@ class DisplayMathShouldNotBeUsedWithinAParagraph(OnelinerMistake):
         if line:
             matched = self._pattern.search(line)
             if matched:
-                return self.error("Formeln in einem Absatz (umgeben von Text), müssen mit einfachen $-Zeichen gesetzt werden, da sich die Formeln sonst in der Ausgabe nicht in den Text integrieren. $$ (display math) sollte für einzeln stehende Formeln verwendet werden.",
-                    num, pos=matched.span()[1])
+                return self.error("Formeln in einem Absatz (umgeben von Text), "
+                    "müssen mit einfachen $-Zeichen gesetzt werden, da sich die "
+                    "Formeln sonst in der Ausgabe nicht in den Text integrieren. "
+                    "$$ (display math) sollte für einzeln stehende Formeln "
+                    "verwendet werden.", num, pos=matched.span()[1])
 
 class SpacingInFormulaShouldBeDoneWithQuad(FormulaMistake):
     r"""Some people tend to use `\ \ \ \ ...` to format a bigger space within an equation. This is hard to read
@@ -97,7 +100,8 @@ class SpacingInFormulaShouldBeDoneWithQuad(FormulaMistake):
     def worker(self, *args):
         for (line, pos), formula in args[0].items():
             if r'\ \ \ \ ' in formula:
-                return self.error(r"Leerräume in Formeln sollten mit \quad oder \qquad gekennzeichnet werden, da sie sonst mit Sprachausgabe schwer lesbar sind.",
+                return self.error("Leerräume in Formeln sollten mit \\quad oder \\qquad "
+                    "gekennzeichnet werden, da sie sonst mit Sprachausgabe schwer lesbar sind.",
                     lnum=line, pos=pos)
 
 class UseProperCommandsForMathOperatorsAndFunctions(FormulaMistake):
@@ -118,11 +122,10 @@ class UseProperCommandsForMathOperatorsAndFunctions(FormulaMistake):
                 if not match:
                     continue
                 if not has_backslash(formula, match.span()[0]):
-                    return self.error(("{0} sollte in LaTeX-Formeln "
-                        "grundsätzlich als Befehl gesetzt werden, d.h. mittels "
-                        "\\{0}. Nur so wird es in der Ausgabe korrekt "
-                        "formatiert und ist gleichzeitig gut lesbar.").\
-                            format(mathop.pattern.replace('\\b', '')), lnum=line, pos=pos)
+                    return self.error("{0} sollte in LaTeX-Formeln grundsätzlich als "
+                        "Befehl gesetzt werden, d.h. mittels \\{0}. Nur so wird es in "
+                        "der Ausgabe korrekt formatiert und ist gleichzeitig gut "
+                        "lesbar.".format(mathop.pattern.replace('\\b', '')), lnum=line, pos=pos)
 
 
 class FormulasSpanningAParagraphShouldBeDisplayMath(Mistake):
@@ -141,8 +144,8 @@ class FormulasSpanningAParagraphShouldBeDisplayMath(Mistake):
                 # count dollars to be sure that it's just one math env
                 if sum(l.count('$') for l in para) < 3:
                     return self.error(("Eine Formel, die einzeln in einem Absatz "
-                    "steht, wurde als eingebettete Formel mit einfachen $ gesetzt. "
-                    "Stattdessen sollten doppelte Dollarzeichen verwendet werden,"
-                    " da dies verhindert, dass LaTeX die Formel auf Zeilenhöhe "
-                    "staucht."), lnum=start_line)
+                        "steht, wurde als eingebettete Formel mit einfachen $ gesetzt. "
+                        "Stattdessen sollten doppelte Dollarzeichen verwendet werden,"
+                        " da dies verhindert, dass LaTeX die Formel auf Zeilenhöhe "
+                        "staucht."), lnum=start_line)
 

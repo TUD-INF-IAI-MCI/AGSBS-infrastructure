@@ -32,7 +32,7 @@ main_usage = """%s <command> <options>
 <command> determines which action to take. The syntax might vary between
 commands. Use %s <command> -h for help.
 
-Available commands are:0
+Available commands are:
 
 addpnum         - generate new page number, relative to its predecessors
 conf            - set, init or update a configuration
