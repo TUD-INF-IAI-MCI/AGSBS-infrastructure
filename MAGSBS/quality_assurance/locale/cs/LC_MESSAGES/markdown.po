@@ -1,0 +1,115 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# xplhak <xplhak@fi.muni.cz>, 2018.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-02-07 11:44+0100\n"
+"PO-Revision-Date: 2018-02-14 13:13+0100\n"
+"Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
+"Language-Team: TUD\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=cp1250\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Poedit 2.0.6\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: markdown.py:19
+msgid "Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile haben, das heißt sie muss in einem eigenen Absatz stehen."
+msgstr "Nad (èi pod) èíslem každé stránky musí být prázdný øádek, tj. musí být v samostatném odstavci."
+
+#: markdown.py:48
+msgid "In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Dies ist nicht erlaubt. Beispielsweise hat jeder Foliensatz nur eine Hauptüberschrift und auch ein Kapitel wird nur mit einer Überschrift bezeichnet."
+msgstr "V tomto adresáøi je více než jeden nadpis úrovnì 1, což není povoleno. Napøíklad každá sada slajdù mùže mít pouze jeden hlavní nadpis úrovnì 1 a slajd je oznaèena pouze nadpisem úrovnì 2."
+
+#: markdown.py:88
+msgid "Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss davor und danach eine Leerzeile sein."
+msgstr "Výèet musí být uveden v samostatném odstavci, tj. prázdný øádek musí být pøed i za výètem."
+
+#: markdown.py:107
+#, fuzzy
+msgid "Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um einen Tippfehler. Die Seitenzahl wird ignoriert."
+msgstr "Èíslo stránky \"{}\" není rozpoznáno a je ignorováno. Jedná se pravdìpodobnì o pøeklep."
+
+#: markdown.py:124
+#, fuzzy
+msgid "später dann aber \"{}\""
+msgstr "následnì ale \"{}\""
+
+#: markdown.py:126
+#, fuzzy
+msgid "in der Datei \"{}\" dann aber \"{}\""
+msgstr "v souboru \"{}\", ale nálsednì \"{}\""
+
+#: markdown.py:127
+#, fuzzy
+msgid "In der Datei \"{}\"  wurde zuerst \"{}\" verwendet, {}. Dies sollte einheitlich sein."
+msgstr "V souboru \"{}\" byl používán nejprve \"{}\", {}. To by ale mìlo být konzistentní."
+
+#: markdown.py:171
+msgid "Es existieren mehr als {} Überschriften der Ebene {}. Das macht das Inhaltsverzeichnis sehr unübersichtlich. Man kann entweder in der Konfiguration tocDepth kleiner setzen, um Überschriften dieser Ebene nicht ins Inhaltsverzeichnis aufzunehmen (für Foliensätze z.B. tocDepth 1) oder die Anzahl an Überschriften minimieren, sofern möglich."
+msgstr "Existuje více než {} záhlaví úrovnì {}. Obsah je proto velmi matoucí. Mùžete buï zmenšit tocDepth v konfiguraci tak, aby nadpisy této úrovnì nebyly do obsahu zahrnuty (napøíklad pro slajdy nastavit tocDepth 1), nebo, pokud je to možné, snižte poèet nadpisù této úrovnì."
+
+#: markdown.py:205
+msgid "Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach dem Wort die anschließende Nummer vergessen wurde."
+msgstr "Pravdìpodobnì bylo uvedeno oznaèení stránky, ve kterém nebylo uvedeno èíslo."
+
+#: markdown.py:213
+msgid "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und erschweren die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, dass nur die Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle Überschriften, mitsamt der Überschriften die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen."
+msgstr "Stejné nadpisy zpùsobují, že obsah je obtížné èíst, což ztìžuje to i navigaci. Toto se èasto stává u slajdù. Nejlepším zpùsobem, je nastavit TocDepth tak, aby byl použit pouze nadpis sady snímkù (èasto úroveò 1) a v obsahu se neobleví opakující se nadpisy."
+
+#: markdown.py:243
+msgid "Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: \"|| - Seite xyz -\""
+msgstr "V oznaèení stránky chybí \"-\". Výchozí hodnota: \"|| - stránka xyz -\""
+
+#: markdown.py:258
+msgid "Es sollte kein Umbruch mittels HTML-Tags erzeugt werden. Platziert man einen \\ als einziges Zeichen auf eine Zeile und lässt davor und danach eine Zeile frei, hat dies denselben Effekt."
+msgstr "Pro zalamování by nemìlo být použito znaèek HTML. Stejného efektu docílíte, pokud umístíte na øádek jako jediný znak \\ (a zároveò ponecháte øádky pøed a po prázdné)."
+
+#: markdown.py:263
+msgid "Es dürfen, bis auf div und span keine HTML-tags in das Markdown-Dokument eingebettet werden."
+msgstr "Není povoleno vkládat HTML tagy do Markdown dokumentu (s výjimkou div a span)."
+
+#: markdown.py:276
+msgid "Relationsoperatoren sollten möglichst nicht mittels HTML, sondern besser mittels \\< und \\> erzeugt werden."
+msgstr "Relaèní operátoøi by s výhodou nemìli být generováni pomocí HTML, ale lépe pomocí \\< a \\>."
+
+#: markdown.py:285
+#, fuzzy
+msgid "Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. Am Besten ist es, die da sie sonst als Text angezeigt werden."
+msgstr "Nadpis byl souèasnì podtržen i oznaèen. Nejlepší je, aby se zobrazoval jako text."
+
+#: markdown.py:304
+#, fuzzy
+msgid "Wenn ein Absatz mit einem \\ umgebrochen wird, so wird die nächste (leere) Zeile dem vorigen Absatz zugeordnet. Der Absatz geht verloren und in der Folge wird das folgende Element falsch formatiert."
+msgstr "Pokud je odstavec zabalen s \\, další (prázdný) øádek je pøiøazen pøedchozímu odstavci. Tento odstavec je ztracen a následnì je nesprávnì formátován následující prvek."
+
+#: markdown.py:325
+msgid "Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile entdeckt. Entweder eine Formel wurde nicht geschlossen, oder es wurde versucht, eine eingebettete Formel über mehrere Zeilen zu strecken. Im ersteren Fall muss ein weiteres Dollar eingefügt werden, im zweiten Fall sollte die Formel mit doppelten Dollarzeichen umrahmt werden."
+msgstr "Na øádku byl zjištìn lichý poèet znakù dolar. Nebyl buï uzavøen vzorec nebo došlo k pokusu o rozdìlení vloženého vzorce na nìkolik øádkù. V prvním pøípadì musí být do vzorce vložen další znak dolar, ve druhém pøípadì by mìly být pro vzorec použity dva dolarové znaky za sebou."
+
+#: markdown.py:368
+msgid "In Aufzählungen und Nummerierungen darf direkt nach dem Aufzählungszeichen nicht ein weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, da dies sonst als Unterliste erkannt wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt verhindert dies."
+msgstr "Pøi oznaèení vyètu a èíslování by nemìla být pomlèka následována další pomlèkou nebo èíslováním, jinak bude rozpoznáno jako dílèí seznam. Znak \\ pøed pomlèkou (nebo pøed teèkou u èíslování) tomuto zabrání."
+
+#: markdown.py:387
+#, fuzzy
+msgid "Die Bildbeschreibung ist wahrscheinlich nicht vollständig, da ein Marker wie \"to do\" gefunden wurde."
+msgstr "Popis obrázku pravdìpodobnì není úplný, protože byla nalezena znaèka \"to do\"."
+
+#: markdown.py:407
+#, fuzzy
+msgid "Ein Bild wurde mit fehlerhafter Syntax eingebunden, wodurch das Bild vom Konverter ignoriert wird."
+msgstr "Obrázek nebyl vložen pomocí správné syntaxe a ignoroval svùj obraz."
+
+#: markdown.py:437
+#, fuzzy
+msgid "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert werden."
+msgstr "Byla nalezena pomlèka, která byla pravdìpodobnì zkopírována z textu s odùvodnìním. To bude nesprávnì formátováno na výstupu."
+
+#: markdown.py:479
+#, fuzzy
+msgid "Es wurde keine Bildbeschreibung eingefügt."
+msgstr "Nebyl vložen popis obrázku."

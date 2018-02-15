@@ -26,6 +26,7 @@ For the documentation of the mistake types, see the appropriate class."""
 
 import os
 import collections
+import gettext
 from xml.etree import ElementTree as ET
 from .. import config
 from .. import errors
@@ -37,6 +38,15 @@ from .all_formats import *
 from .latex import *
 from .markdown import *
 from .meta import *
+
+# importing language versions
+try:
+    trans = gettext.translation("mistkerl", localedir=config.CONFIG_DIR + "/quality_assurance/locale", languages=[config.LANG])
+    _ = trans.gettext
+except IOError:
+    # in case language file is not found
+    _ = lambda s: s
+
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
@@ -112,7 +122,7 @@ recursively."""
                         paragraphs = mparser.rm_codeblocks(
                                 mparser.file2paragraphs(f.read(), join_lines=True))
                 except UnicodeDecodeError:
-                    msg = "Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor."
+                    msg = _("Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor.")
                     e = ErrorMessage(msg, 1, file_path)
                     self.__append_error(path, e)
                     continue
@@ -127,7 +137,7 @@ recursively."""
         """Add an error to the internal output dict."""
         if not err: return
         if not isinstance(err, ErrorMessage):
-            raise TypeError("Errors may only be of type ErrorMessage, got '{}'".format(str(err)))
+            raise TypeError(_("Errors may only be of type ErrorMessage, got '{}'").format(str(err)))
         if not err.path:
             err.path = path
         if os.path.dirname(err.path) == '.':
@@ -200,8 +210,8 @@ recursively."""
                 self.__append_error(path, issue.run(path))
             except ET.ParseError as e:
                 pos = e.position
-                mistake = ErrorMessage("Die Konfiguration konnte nicht gelesen"
-                    " werden: {}".format(e.args[0]), pos[0], path)
+                mistake = ErrorMessage(_("Die Konfiguration konnte nicht gelesen"
+                    " werden: {}").format(e.args[0]), pos[0], path)
                 mistake.pos_on_line = pos[1]
                 self.__append_error(path, mistake)
 
@@ -210,7 +220,7 @@ recursively."""
             return # ignore empty files
         last_par = next(reversed(paragraphs))
         if last_par > 2500:
-            msg = ("Die Datei ist zu lang. Um die Navigation zu erleichtern und "
+            msg = _("Die Datei ist zu lang. Um die Navigation zu erleichtern und "
                 "die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel"
                 " mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem "
                 "Schema kxxyy.md oder kleiner aufgeteilt werden.")

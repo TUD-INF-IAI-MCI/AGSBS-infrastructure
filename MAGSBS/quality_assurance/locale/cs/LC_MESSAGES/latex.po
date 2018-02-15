@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# xplhak <xplhak@fi.muni.cz>, 2018.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2018-02-09 15:02+0100\n"
+"PO-Revision-Date: 2018-02-14 16:06+0100\n"
+"Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
+"Language-Team: TUD\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=cp1250\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Poedit 2.0.6\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: latex.py:31
+msgid "Die LaTeX-Umgebung zur Fallunterscheidung (cases) sollte Zeilenumbrüche an den passenden Stellen enthalten, um die Lesbarkeit zu gewährleisten."
+msgstr "Pro lepší èitelnost textu sázeného pomocí LaTeXu prosím použijte zalamování øádkù (na vhodných místech)."
+
+#: latex.py:49
+msgid "Matrizen sollten, damit sie einfach lesbar sind, nicht mit \\left\\(..., sondern einfach mit \\begin{pmatrix}...  erzeugt werden. Dabei werden auch Klammern automatisch gesetzt und es ist kürzer."
+msgstr "Pro lepší èitelnost nevytváøejte matice pomocí \\left\\(...), ale jednoduše pomocí \\begin{pmatrix}... Závorky se poté nastavují automaticky a jsou kratší."
+
+#: latex.py:64
+#, fuzzy
+msgid "Jede Zeile einer Matrix oder Tabelle sollte zur besseren Lesbarkeit auf eine eigene Zeile gesetzt werden."
+msgstr "Každý øádek matice nebo tabulky by mìl být umístìn na samostatném øádku pro èitelnost."
+
+#: latex.py:82
+msgid "Anstatt einen Umlaut zu schreiben, wurde eine LaTeX-Kontrollsequenz verwendet. Das ist schwer leserlich und kann außerdem einfach durch setzen des Zeichensatzes umgangen werden."
+msgstr "Namísto zápisu písmene s pøehláskou byla použita kontrolní sekvence LaTeXu. Tuto formu zápisu písmen s pøehláskou je obtížné èíst a lze ji snadno nahradit využitím vhodné znakové sady."
+
+#: latex.py:100
+msgid "Formeln in einem Absatz (umgeben von Text), müssen mit einfachen $-Zeichen gesetzt werden, da sich die Formeln sonst in der Ausgabe nicht in den Text integrieren. $$ (display math) sollte für einzeln stehende Formeln verwendet werden."
+msgstr "Vzorce uvedené pøímo v odstavci (obklopené textem) musí být vloženy pomocí jednoduchých znakù $, jinak se vzorce nevloží do výstupního textu. $$ (matematické zobrazení) by mìlo být použito pro samostatné vzorce."
+
+#: latex.py:112
+msgid "Leerräume in Formeln sollten mit \\quad oder \\qquad gekennzeichnet werden, da sie sonst mit Sprachausgabe schwer lesbar sind."
+msgstr "Mezery ve vzorcích by mìly být vysázeny pomocí \\quad èi \\qquad, jiná sazba zpùsobuje problémy pøi ètení odèítaèem obrazovky."
+
+#: latex.py:134
+msgid "{0} sollte in LaTeX-Formeln grundsätzlich als Befehl gesetzt werden, d.h. mittels \\{0}. Nur so wird es in der Ausgabe korrekt formatiert und ist gleichzeitig gut lesbar."
+msgstr "Funkce {0} by mìla být vždy nastavena jako pøíkaz ve vzorcích v LaTeXu, tj. pomocí \\{0}. V opaèném pøípadì nebude na výstupu správnì naformátován a tedy ani èitelný."
+
+#: latex.py:155
+msgid "Eine Formel, die einzeln in einem Absatz steht, wurde als eingebettete Formel mit einfachen $ gesetzt. Stattdessen sollten doppelte Dollarzeichen verwendet werden, da dies verhindert, dass LaTeX die Formel auf Zeilenhöhe staucht."
+msgstr "Pro vzorec, který je vložen jako samostatný odstavec, by nemìla být použita syntaxe s jednoduchým znakem $. Namísto toho by mìly být použity dva dolarové znaky, což zabrání LaTeXu, aby pøerušil vzorec ve výšce øádku."

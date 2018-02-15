@@ -1,9 +1,18 @@
 """Errors which are neither specific to MarkDown nor to LaTeX."""
 
 import os
+import gettext
 from xml.etree import ElementTree as ET
 from .. import config, common
 from .meta import MistakeType, Mistake, OnelinerMistake
+
+# importing language versions
+try:
+    trans = gettext.translation("all_formats", localedir=config.CONFIG_DIR + "/quality_assurance/locale", languages=[config.LANG])
+    _ = trans.gettext
+except IOError:
+    # in case language file is not found
+    _ = lambda s: s
 
 class ConfigurationValuesAreAllSet(Mistake):
     """Check whether all configuration options have been set."""
@@ -19,9 +28,9 @@ class ConfigurationValuesAreAllSet(Mistake):
             return node.tag[node.tag.find('}') + 1 :]
         for node in root.getchildren():
             if not node.text or 'unknown' in node.text.lower():
-                return self.error("Fehler in der Konfiguration: Der Wert {} ist "
+                return self.error(_("Fehler in der Konfiguration: Der Wert {} ist "
                     "nicht gesetzt, wodurch die Kopfdaten in den HTML-Dateien "
-                    "nicht erzeugt werden können.".format(get_tag(node)),
+                    "nicht erzeugt werden können.").format(get_tag(node)),
                     config.get_lnum_of_tag(args[0], node.tag), args[0])
 
 class BrokenUmlautsFromPDFFiles(OnelinerMistake):
@@ -42,10 +51,10 @@ class BrokenUmlautsFromPDFFiles(OnelinerMistake):
     def check(self, num, line):
         for seq in self.garbled:
             if seq in line:
-                return super().error("Es wurden inkorrekt dargestellte Umlaute "
+                return super().error(_("Es wurden inkorrekt dargestellte Umlaute "
                         "gefunden. Dies geschieht oft, wenn Text aus "
                         "PDF-Dateien kopiert wird. Das macht den Text "
-                        "allerdings schwer leserlich.", num)
+                        "allerdings schwer leserlich."), num)
 
 class OnlyCorrectDirectoriesFound(Mistake):
     mistake_type = MistakeType.lecture_root
@@ -57,7 +66,6 @@ class OnlyCorrectDirectoriesFound(Mistake):
                     '.lecture_meta')):
                 continue
             if not common.is_valid_file(file):
-                return self.error("Die Datei \"{}\" ist falsch benannt und folgt "
+                return self.error(_("Die Datei \"{}\" ist falsch benannt und folgt "
                     "nicht den Namenskonventionen. Dies führt zu einer falschen "
-                    "Verwendung der Datei.".format(file), path=root)
-
+                    "Verwendung der Datei.").format(file), path=root)

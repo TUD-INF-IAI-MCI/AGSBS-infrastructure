@@ -41,6 +41,9 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         ''' % ('|'.join(PAGENUMBERINGTOKENS), roman_number_regex),
         re.VERBOSE)
 
+LANG = "cs"
+CONFIG_DIR = os.path.dirname(os.path.realpath(__file__))
+
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on
     the German university system."""
