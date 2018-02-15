@@ -1,4 +1,3 @@
-# vim: set expandtab sts=4 ts=4 sw=4 tw=0 ft=python:
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
@@ -10,13 +9,14 @@ import os
 import re
 from .meta import Mistake, MistakeType, OnelinerMistake
 from .. import config, common
+from ..config import _
 MetaInfo = config.MetaInfo
 
 class PageNumberIsParagraph(Mistake):
     """Check whether all page numbers are on a paragraph on their own."""
     def __init__(self):
         super().__init__()
-        self._error_text = ("Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile haben, "
+        self._error_text = _("Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile haben, "
             "das heißt sie muss in einem eigenen Absatz stehen.")
         self.pattern = re.compile(r'^\|\|\s*' + config.PAGENUMBERING_PATTERN.pattern)
 
@@ -45,9 +45,9 @@ class LevelOneHeading(Mistake):
             for heading in headings:
                 if heading.get_level() == 1:
                     if found_h1:
-                        return self.error("In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Dies ist nicht erlaubt. "
+                        return self.error(_("In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Dies ist nicht erlaubt. "
                             "Beispielsweise hat jeder Foliensatz nur eine Hauptüberschrift und auch ein Kapitel wird nur mit einer "
-                            "Überschrift bezeichnet.")
+                            "Überschrift bezeichnet."))
                     else:
                         found_h1 = True
 
@@ -85,7 +85,7 @@ class ItemizeIsParagraph(Mistake):
                 elif is_item(line):
                     # itemize encountered and first line was no itemize line?
                     if item_encountered:
-                        err_message = ("Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss davor "
+                        err_message = _("Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss davor "
                             "und danach eine Leerzeile sein.")
                         return self.error(err_message, start_line+lnum)
                     else:
@@ -104,7 +104,7 @@ indexing of page numbers."""
     def worker(self, *args):
         for pnum in args[0]:
             if not pnum.identifier in self.page_identifiers:
-                err_message = ("Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um einen Tippfehler. Die "
+                err_message = _("Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um einen Tippfehler. Die "
                     "Seitenzahl wird ignoriert.").format(pnum.identifier)
                 return self.error(err_message, pnum.line_no)
 
@@ -121,11 +121,11 @@ class UniformPagestrings(Mistake):
         second_piece = ''
         # add glue to make messages more readable
         if first_fn == later_fn:
-            second_piece = "später dann aber \"{}\"".format(later_pnum.identifier)
+            second_piece = _("später dann aber \"{}\"").format(later_pnum.identifier)
         else:
-            second_piece = "in der Datei \"{}\" dann aber \"{}\"".format(later_fn, later_pnum.identifier)
-        return self.error("In der Datei \"{}\"  wurde zuerst \"{}\" verwendet, {}. "
-            "Dies sollte einheitlich sein.".format(first_fn, first_pnum.identifier, second_piece), later_pnum.line_no)
+            second_piece = _("in der Datei \"{}\" dann aber \"{}\"").format(later_fn, later_pnum.identifier)
+        return self.error(_("In der Datei \"{}\"  wurde zuerst \"{}\" verwendet, {}. "
+            "Dies sollte einheitlich sein.").format(first_fn, first_pnum.identifier, second_piece), later_pnum.line_no)
 
     def worker(self, *args):
         first = () # (fn, first page number)
@@ -168,10 +168,10 @@ self.threshold."""
                     return self.__error(heading.get_level())
 
     def __error(self, heading_level):
-        return super().error("Es existieren mehr als {} Überschriften der Ebene {}. Das macht das Inhaltsverzeichnis sehr "
+        return super().error(_("Es existieren mehr als {} Überschriften der Ebene {}. Das macht das Inhaltsverzeichnis sehr "
             "unübersichtlich. Man kann entweder in der Konfiguration tocDepth kleiner setzen, um Überschriften "
             "dieser Ebene nicht ins Inhaltsverzeichnis aufzunehmen (für Foliensätze z.B. tocDepth 1) oder die "
-            "Anzahl an Überschriften minimieren, sofern möglich.".format(self.threshold, heading_level), lnum=None)
+            "Anzahl an Überschriften minimieren, sofern möglich.").format(self.threshold, heading_level), lnum=None)
 
 
 class ForgottenNumberInPageNumber(Mistake):
@@ -202,15 +202,15 @@ class ForgottenNumberInPageNumber(Mistake):
             match = ForgottenNumberInPageNumber.HAS_ARABIC_OR_ROMAN.search(line)
             # no match or not one of the groups contains something, it's broken
             if match and not any(match.groups()):
-                return self.error("Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach "
-                    "dem Wort die anschließende Nummer vergessen wurde.", start)
+                return self.error(_("Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach "
+                    "dem Wort die anschließende Nummer vergessen wurde."), start)
 
 class HeadingOccursMultipleTimes(Mistake):
     """Parse headings; report doubled headings; ignore headings below
 tocDepth."""
     mistake_type = MistakeType.headings
     def worker(self, *args):
-        error_message = ("Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und erschweren "
+        error_message = _("Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und erschweren "
             "die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten man setzt das TocDepth so, "
             "dass nur die Überschrift des Foliensatzes (oft Ebene 1) aufgenommen wird und alle Überschriften, "
             "mitsamt der Überschriften die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen.")
@@ -240,8 +240,8 @@ class PageNumbersWithoutDashes(Mistake):
                 first_ln = first_ln[2:].lstrip()
                 # if all spaces and |'s are stripped, last character and first char must be dashes
                 if not first_ln.startswith('-') or not first_ln.endswith('-'):
-                    return self.error("Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: "
-                                      "\"|| - Seite xyz -\"", num)
+                    return self.error(_("Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: "
+                "\"|| - Seite xyz -\""), num)
 
 class DoNotEmbedHtml(OnelinerMistake):
     """Do not use HTML. Especially, don't use <br/>."""
@@ -255,13 +255,13 @@ class DoNotEmbedHtml(OnelinerMistake):
         if tag and tag not in ['div', 'span']:
             pos_on_line = match.span()[1]
             if tag.lower() == 'br':
-                return self.error("Es sollte kein Umbruch mittels HTML-Tags "
+                return self.error(_("Es sollte kein Umbruch mittels HTML-Tags "
                     "erzeugt werden. Platziert man einen \\ als einziges Zeichen "
                     "auf eine Zeile und lässt davor und danach eine Zeile frei, "
-                    "hat dies denselben Effekt.", lnum=num, pos=pos_on_line)
+                    "hat dies denselben Effekt."), lnum=num, pos=pos_on_line)
             else:
-                return self.error("Es dürfen, bis auf div und span keine HTML-"
-                    "tags in das Markdown-Dokument eingebettet werden.",
+                return self.error(_("Es dürfen, bis auf div und span keine HTML-"
+                    "tags in das Markdown-Dokument eingebettet werden."),
                     lnum=num, pos=pos_on_line)
 
 class EmbeddedHTMLComperators(OnelinerMistake):
@@ -273,8 +273,8 @@ class EmbeddedHTMLComperators(OnelinerMistake):
     def check(self, num, line):
         matched = self.pattern.search(line.lower())
         if matched:
-            return self.error("Relationsoperatoren sollten möglichst nicht mittels HTML, "
-                "sondern besser mittels \\< und \\> erzeugt werden.",
+            return self.error(_("Relationsoperatoren sollten möglichst nicht mittels HTML, "
+                "sondern besser mittels \\< und \\> erzeugt werden."),
                 lnum=num, pos=matched.span()[1])
 
 class HeadingsUseEitherUnderliningOrHashes(Mistake):
@@ -282,8 +282,8 @@ class HeadingsUseEitherUnderliningOrHashes(Mistake):
     def worker(self, *args):
         for heading in args[0]:
             if heading.get_text().startswith('#'):
-                return self.error("Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. "
-                    "Am Besten ist es, die da sie sonst als Text angezeigt werden.",
+                return self.error(_("Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. "
+                    "Am Besten ist es, die da sie sonst als Text angezeigt werden."),
                     lnum=heading.get_line_number())
 
 class ParagraphMayNotEndOnBackslash(Mistake):
@@ -301,10 +301,10 @@ class ParagraphMayNotEndOnBackslash(Mistake):
     def worker(self, *args):
         for start_line, paragraph in args[0].items():
             if paragraph and paragraph[-1].endswith('\\'):
-                return self.error("Wenn ein Absatz mit einem \\ umgebrochen "
+                return self.error(_("Wenn ein Absatz mit einem \\ umgebrochen "
                     "wird, so wird die nächste (leere) Zeile dem vorigen "
                     "Absatz zugeordnet. Der Absatz geht verloren und in der "
-                    "Folge wird das folgende Element falsch formatiert.",
+                    "Folge wird das folgende Element falsch formatiert."),
                     lnum=start_line + len(paragraph))
 
 class DetectStrayingDollars(OnelinerMistake):
@@ -322,11 +322,11 @@ class DetectStrayingDollars(OnelinerMistake):
                 return
 
         if numDollars % 2: # odd number of dollars
-            return self.error("Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile "
+            return self.error(_("Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile "
                 "entdeckt. Entweder eine Formel wurde nicht geschlossen, oder es wurde "
                 "versucht, eine eingebettete Formel über mehrere Zeilen zu strecken. "
                 "Im ersteren Fall muss ein weiteres Dollar eingefügt werden, im zweiten "
-                "Fall sollte die Formel mit doppelten Dollarzeichen umrahmt werden.", lnum)
+                "Fall sollte die Formel mit doppelten Dollarzeichen umrahmt werden."), lnum)
 
 
 class TextInItemizeShouldntStartWithItemizeCharacter(Mistake):
@@ -365,9 +365,9 @@ This will lead to Pandoc identifying these as sublists.
                         if enumeration_signs >= 2: # it's a proper enumeration
                             break # an error case was encountered
             if errorneous_line:
-                return self.error("In Aufzählungen und Nummerierungen darf "
+                return self.error(_("In Aufzählungen und Nummerierungen darf "
                     "direkt nach dem Aufzählungszeichen nicht ein weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, "
-                    "da dies sonst als Unterliste erkannt wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt verhindert dies.",
+                    "da dies sonst als Unterliste erkannt wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt verhindert dies."),
                     lnum=errorneous_line-1)
 
 
@@ -384,8 +384,8 @@ class ToDosInImageDescriptionsAreBad(OnelinerMistake):
 
     def check(self, lnum, line):
         if self._todo_pattern.search(line):
-            return self.error("Die Bildbeschreibung ist wahrscheinlich nicht vollständig, "
-                    "da ein Marker wie \"to do\" gefunden wurde.", lnum=lnum)
+            return self.error(_("Die Bildbeschreibung ist wahrscheinlich nicht vollständig, "
+                    "da ein Marker wie \"to do\" gefunden wurde."), lnum=lnum)
 
 
 class BrokenImageLinksAreDetected(OnelinerMistake):
@@ -404,9 +404,9 @@ class BrokenImageLinksAreDetected(OnelinerMistake):
             # check whether ! [ ] ( ) are all in the line, if so, it's a false positive
             for punct in ['(', ')', '[', ']', '!']:
                 if not punct in line:
-                    return self.error("Ein Bild wurde mit fehlerhafter Syntax "
+                    return self.error(_("Ein Bild wurde mit fehlerhafter Syntax "
                         "eingebunden, wodurch das Bild vom Konverter ignoriert "
-                        "wird.", num)
+                        "wird."), num)
 
 class HyphensFromJustifiedTextWereRemoved(Mistake):
     """When copy-pasting text from i.e. PDFs, it is easy to forget to remove
@@ -434,10 +434,10 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
                     # it was justified text, if next line starts with a word
                     if next_line and next_line[0].isalpha() and not \
                             (next_line.startswith('und') or next_line.startswith('and')):
-                        return self.error("Es wurde ein Trennstrich gefunden, "
+                        return self.error(_("Es wurde ein Trennstrich gefunden, "
                             "der wahrscheinlich aus einem Text mit "
                             "Blocksatz kopiert wurde. Dies wird in der "
-                            "Ausgabe falsch formatiert werden.", start_line + lnum)
+                            "Ausgabe falsch formatiert werden."), start_line + lnum)
 
 
 class DetectEmptyImageDescriptions(Mistake):
@@ -476,5 +476,5 @@ class DetectEmptyImageDescriptions(Mistake):
                     image_description_found = True
                     break
             if not image_description_found:
-                return self.error("Es wurde keine Bildbeschreibung eingefügt.",
+                return self.error(_("Es wurde keine Bildbeschreibung eingefügt."),
                     lnum=start_line, path=path)

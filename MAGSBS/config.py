@@ -15,11 +15,14 @@ from distutils.version import StrictVersion
 import os
 import re
 import sys
+import gettext
+import locale
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from . import common
 from .errors import ConfigurationError
 from . import roman
+from os.path import dirname
 
 VERSION = StrictVersion('0.7.0')
 
@@ -40,6 +43,39 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         (\d+|%s)\s*- # arabic or roman numbers
         ''' % ('|'.join(PAGENUMBERINGTOKENS), roman_number_regex),
         re.VERBOSE)
+
+
+# importing language versions
+# TODO: this could be a function that is called during initialization
+LANG = locale.getdefaultlocale()[0][:2] # detects the language of the system
+CONFIG_DIR = dirname(dirname(os.path.realpath(__file__))) + "/locale" # get the main directory of the system
+
+# generate mo files (somewhere in the user's space)
+# TODO: generation of mo files
+"""
+Code from: https://stackoverflow.com/questions/34070103/how-to-compile-po-gettext-translations-in-setup-py-python-script
+PO_FILES = 'translations/locale/*/LC_MESSAGES/app_name.po'
+
+def create_mo_files():
+    mo_files = []
+    prefix = 'app_name'
+
+    for po_path in glob.glob(str(pathlib.Path(prefix) / PO_FILES)):
+        mo = pathlib.Path(po_path.replace('.po', '.mo'))
+
+        subprocess.run(['msgfmt', '-o', str(mo), po_path], check=True)
+        mo_files.append(str(mo.relative_to(prefix)))
+"""
+
+# load the mo file
+# TODO load generated mo files instead of pre-generated one
+try:
+    trans = gettext.translation("messages", localedir=CONFIG_DIR , languages=[LANG])
+    _ = trans.gettext
+except IOError:
+    # in case language file is not found
+    _ = lambda s: s
+
 
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on
