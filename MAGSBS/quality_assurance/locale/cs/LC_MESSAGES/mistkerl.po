@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-02-09 15:32+0100\n"
-"PO-Revision-Date: 2018-02-09 15:37+0100\n"
+"PO-Revision-Date: 2018-02-15 12:24+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
 "Language: cs\n"
@@ -18,16 +18,16 @@ msgstr ""
 
 #: mistkerl.py:125
 msgid "Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor."
-msgstr "Soubor není zakódován v UTF-8, vyberte jako editor znakù \"UTF-8\"."
+msgstr "Soubor není zakódován pomocí UTF-8. Prosím zvolte v editoru kódování znakù \"UTF-8\"."
 
 #: mistkerl.py:140
 msgid "Errors may only be of type ErrorMessage, got '{}'"
-msgstr "Chyby mohou být pouze typu ErrorMessage, dostali '{}'"
+msgstr "Chyby mohou být pouze typu ErrorMessage, byl vrácen typ '{}'"
 
 #: mistkerl.py:213
 msgid "Die Konfiguration konnte nicht gelesen werden: {}"
-msgstr "Konfiguraci nelze èíst: {}"
+msgstr "Nebylo možné naèíst soubor s konfigurací: {}"
 
 #: mistkerl.py:223
 msgid "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt werden."
-msgstr "Soubor je pøíliš dlouhý. Pro usnadnìní navigace a zajištìní snadné èitelnosti by mìly být dlouhé kapitoly s více než 2500 øádky rozdìleny do nìkolika dílèích souborù schématu kxxyy.md nebo menší."
+msgstr "Soubor je pøíliš dlouhý. Pro usnadnìní navigace a zajištìní snadné èitelnosti by mìly být dlouhé kapitoly (s více než 2500 øádky)rozdìleny do nìkolika dílèích souborù podle schématu kxxyy.md."
