@@ -45,35 +45,48 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         re.VERBOSE)
 
 
-# importing language versions
-# TODO: this could be a function that is called during initialization
-LANG = locale.getdefaultlocale()[0][:2] # detects the language of the system
-CONFIG_DIR = dirname(dirname(os.path.realpath(__file__))) + "/locale" # get the main directory of the system
+# Importing language versions
 
-# generate mo files (somewhere in the user's space)
-# TODO: generation of mo files
-"""
-Code from: https://stackoverflow.com/questions/34070103/how-to-compile-po-gettext-translations-in-setup-py-python-script
-PO_FILES = 'translations/locale/*/LC_MESSAGES/app_name.po'
+# TODO: this (and loading .mo files) should be a function that is called
+# during initialization
+LANG = locale.getdefaultlocale()[0][:2] # default language of the system
+# get locale subdirectory of the matuc main directory
+CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))), "locale")
+
+# TODO: generation of mo files during setup - they should be entered to the
+# space, where matuc is installed. It should create the structure
+# locale/cs/LC_MESSAGE/messages.mo during the matuc installation -
+# it should be implemented somewhere in the setup.py
+
+# This function generates .mo files from .po files for every language
+# It uses msgfmt script from gettext library.
+# Please note, that this should be called here for testing purposes only,
+# because .mo files are not installed in the current version of the matuc
+import subprocess
 
 def create_mo_files():
-    mo_files = []
-    prefix = 'app_name'
+    localedir = CONFIG_DIR
+    # get all languages
+    languages = next(os.walk(localedir))[1]
+    for lang in languages:
+        # set directories
+        file_dir = os.path.join(CONFIG_DIR, lang, "LC_MESSAGES")
+        lib_dir = os.path.join(dirname(sys.executable), "Tools", "i18n", "msgfmt.py")
+        # create and call the msgfmt
+        # TODO: test this on POSIX operating system
+        msgfmt_cmd = r'python {} -o "{}" "{}"'.format(lib_dir, os.path.join(
+            file_dir, "messages.mo"), os.path.join(file_dir, "messages.po"))
+        subprocess.call(msgfmt_cmd, shell=True)
 
-    for po_path in glob.glob(str(pathlib.Path(prefix) / PO_FILES)):
-        mo = pathlib.Path(po_path.replace('.po', '.mo'))
+create_mo_files() # should be removed after the .mo files are correctly
+                  # installed into users space
 
-        subprocess.run(['msgfmt', '-o', str(mo), po_path], check=True)
-        mo_files.append(str(mo.relative_to(prefix)))
-"""
-
-# load the mo file
-# TODO load generated mo files instead of pre-generated one
+# load .mo files
 try:
-    trans = gettext.translation("messages", localedir=CONFIG_DIR , languages=[LANG])
+    trans = gettext.translation("messages", localedir=CONFIG_DIR, languages=[LANG])
     _ = trans.gettext
 except IOError:
-    # in case language file is not found
+    # if the file with traslations is not found, original strings are user
     _ = lambda s: s
 
 
