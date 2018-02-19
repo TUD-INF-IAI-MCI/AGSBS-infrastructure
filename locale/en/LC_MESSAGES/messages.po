@@ -37,8 +37,8 @@ msgid "In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Die
 msgstr "There is more than one Level 1 heading in this directory. This is not allowed. For example, each set of slides has only one main heading and also a chapter is labeled with a headline only."
 
 #: markdown.py:88
-msgid "Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss davor und danach eine Leerzeile sein."
-msgstr "An enumeration must be in a separate paragraph, d. H. it must be before and after a blank line."
+msgid "Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss zumindest davor eine Leerzeile existieren."
+msgstr "An enumeration must be in a separate paragraph, d. H. it must be before a blank line."
 
 #: markdown.py:107
 msgid "Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um einen Tippfehler. Die Seitenzahl wird ignoriert."

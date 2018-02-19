@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-02-09 14:02+0100\n"
-"PO-Revision-Date: 2018-02-15 16:57+0100\n"
+"PO-Revision-Date: 2018-02-19 09:19+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
 "Language: cs\n"
@@ -69,8 +69,8 @@ msgid "In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Die
 msgstr "V tomto adresáři je více než jeden nadpis úrovně 1, což není povoleno. Například každá sada slajdů může mít pouze jeden hlavní nadpis úrovně 1 a slajd je označena pouze nadpisem úrovně 2."
 
 #: markdown.py:88
-msgid "Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss davor und danach eine Leerzeile sein."
-msgstr "Výčet musí být uveden v samostatném odstavci, tj. prázdný řádek musí být před i za výčtem."
+msgid "Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss zumindest davor eine Leerzeile existieren."
+msgstr "Výčet musí být uveden v samostatném odstavci, tj. před výčtem musí být alespoň jeden prázdný řádek."
 
 #: markdown.py:107
 msgid "Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um einen Tippfehler. Die Seitenzahl wird ignoriert."
