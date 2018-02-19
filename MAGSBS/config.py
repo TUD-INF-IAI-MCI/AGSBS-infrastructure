@@ -6,7 +6,7 @@ MAGSBS-specific extensions.
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 #pylint: disable=line-too-long,too-few-public-methods
 
 import enum
@@ -17,12 +17,13 @@ import re
 import sys
 import gettext
 import locale
+from os.path import dirname
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+
 from . import common
 from .errors import ConfigurationError
 from . import roman
-from os.path import dirname
 
 VERSION = StrictVersion('0.7.0')
 
@@ -45,19 +46,21 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         re.VERBOSE)
 
 
-# Importing language versions
-LANG = locale.getdefaultlocale()[0][:2]  # default system's language
-# get locale subdirectory of the matuc main directory
-CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
+def setup_i18n():
+    lang = locale.getdefaultlocale()[0][:2]  # default system's language # ToDo:
+            # examples suggest that this can be left to gettext for automated detection
+    trans = gettext.NullTranslations() # fallback
+    if lang: # use systems locale
+        # ToDo: hard-coded locale directory path
+        CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
                           "locale")
-
-try:
-    trans = gettext.translation("messages", localedir=CONFIG_DIR,
-                                languages=[LANG])
-    _ = trans.gettext  # load .mo files
-except IOError:
-    # if the file with translation is not found, original strings are used
-    def _(s): return s
+        try:
+            # Todo: do not hard-code path
+            trans = gettext.translation("messages", localedir=CONFIG_DIR,
+                                languages=[lang])
+        except IOError:
+            pass
+    trans.install()
 
 
 def get_semester():
@@ -417,3 +420,5 @@ class Translate:
     def get_translation_and_upper_first(self, origin):
         s = self.get_translation(origin)
         return s[:1].upper() + s[1:] if s else ''
+
+setup_i18n()

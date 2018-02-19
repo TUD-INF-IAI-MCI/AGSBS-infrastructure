@@ -4,7 +4,6 @@ import os
 from xml.etree import ElementTree as ET
 from .. import config, common
 from .meta import MistakeType, Mistake, OnelinerMistake
-from ..config import _
 
 class ConfigurationValuesAreAllSet(Mistake):
     """Check whether all configuration options have been set."""

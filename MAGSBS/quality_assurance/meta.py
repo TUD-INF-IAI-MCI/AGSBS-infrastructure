@@ -10,7 +10,6 @@ mistake."""
 
 from abc import ABCMeta, abstractmethod
 import enum
-from ..config import _
 
 class MistakeType(enum.Enum):
     """The mistake type determines the arguments and the environment in which to

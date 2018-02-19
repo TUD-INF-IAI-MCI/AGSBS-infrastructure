@@ -32,7 +32,6 @@ from .. import errors
 from .. import filesystem as filesystem
 from .. import mparser
 from .. import roman
-from ..config import _
 
 from .all_formats import *
 from .latex import *
