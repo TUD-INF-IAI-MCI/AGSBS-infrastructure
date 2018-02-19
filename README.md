@@ -78,3 +78,15 @@ this:
     python setup.py install
 
 You can run `matuc` straight away.
+
+Localization
+------------
+
+For correct running of different language versions, it is now necessary to
+manually generate .mo files and create appropriate structure given by
+[gettext](https://docs.python.org/3/library/gettext.html), i.e.
+localedir/language/LC_MESSAGES/domain.mo for each language (encoded using
+two-letter codes given by [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)).
+
+For generation, you can use the e.g. the [msgfmt script]
+(http://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/msgfmt.html)
