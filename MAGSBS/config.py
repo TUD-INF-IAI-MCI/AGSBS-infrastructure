@@ -46,52 +46,18 @@ PAGENUMBERING_PATTERN = re.compile(r'''
 
 
 # Importing language versions
-
-# TODO: this (and loading .mo files) should be a function that is called
-# during initialization
-LANG = locale.getdefaultlocale()[0][:2] # default language of the system
+LANG = locale.getdefaultlocale()[0][:2]  # default system's language
 # get locale subdirectory of the matuc main directory
-CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))), "po")
+CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
+                          "locale")
 
-# TODO: generation of mo files during setup - they should be entered to the
-# space, where matuc is installed. It should create the structure
-# locale/cs/LC_MESSAGE/messages.mo during the matuc installation -
-# it should be implemented somewhere in the setup.py
-
-# This function generates .mo files from .po files for every language
-# It uses msgfmt script from gettext library.
-# Please note, that this should be called here for testing purposes only,
-# because .mo files are not installed in the current version of the matuc
-import subprocess
-
-def create_mo_files():
-    localedir = CONFIG_DIR
-    # get all languages
-    languages = next(os.walk(localedir))[1]
-    for lang in languages:
-        # set directories
-        file_dir = os.path.join(CONFIG_DIR, lang, "LC_MESSAGES")
-        lib_dir = os.path.join(dirname(sys.executable), "Tools", "i18n", "msgfmt.py")
-        # create and call the msgfmt
-        # TODO: test this on POSIX operating system
-        arguments = '-o "{}" "{}"'.format(os.path.join(file_dir, "messages.mo"),
-            os.path.join(file_dir, "messages.po"))
-        if os.name == "nt":
-            msgfmt_cmd = "python {} {}".format(lib_dir, arguments)
-        if os.name == "posix":
-            msgfmt_cmd = "msgfmt {}".format(arguments)
-        subprocess.call(msgfmt_cmd, shell=True)
-
-# create_mo_files() # should be removed after the .mo files are correctly
-                  # installed into users space
-
-# load .mo files
 try:
-    trans = gettext.translation("messages", localedir=CONFIG_DIR, languages=[LANG])
-    _ = trans.gettext
+    trans = gettext.translation("messages", localedir=CONFIG_DIR,
+                                languages=[LANG])
+    _ = trans.gettext  # load .mo files
 except IOError:
-    # if the file with traslations is not found, original strings are user
-    _ = lambda s: s
+    # if the file with translation is not found, original strings are used
+    def _(s): return s
 
 
 def get_semester():
