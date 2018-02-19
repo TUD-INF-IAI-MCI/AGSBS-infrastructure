@@ -53,6 +53,8 @@ LANG = locale.getdefaultlocale()[0][:2] # default language of the system
 # get locale subdirectory of the matuc main directory
 CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))), "locale")
 
+print("test XXX")
+
 # TODO: generation of mo files during setup - they should be entered to the
 # space, where matuc is installed. It should create the structure
 # locale/cs/LC_MESSAGE/messages.mo during the matuc installation -
@@ -74,8 +76,12 @@ def create_mo_files():
         lib_dir = os.path.join(dirname(sys.executable), "Tools", "i18n", "msgfmt.py")
         # create and call the msgfmt
         # TODO: test this on POSIX operating system
-        msgfmt_cmd = r'python {} -o "{}" "{}"'.format(lib_dir, os.path.join(
-            file_dir, "messages.mo"), os.path.join(file_dir, "messages.po"))
+        arguments = '-o "{}" "{}"'.format(os.path.join(file_dir, "messages.mo"),
+            os.path.join(file_dir, "messages.po"))
+        if os.name == "nt":
+            msgfmt_cmd = "python {} {}".format(lib_dir, arguments)
+        if os.name == "posix":
+            msgfmt_cmd = "msgfmt {}".format(arguments)
         subprocess.call(msgfmt_cmd, shell=True)
 
 create_mo_files() # should be removed after the .mo files are correctly
