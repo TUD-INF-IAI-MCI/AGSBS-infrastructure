@@ -51,9 +51,7 @@ PAGENUMBERING_PATTERN = re.compile(r'''
 # during initialization
 LANG = locale.getdefaultlocale()[0][:2] # default language of the system
 # get locale subdirectory of the matuc main directory
-CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))), "locale")
-
-print("test XXX")
+CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))), "po")
 
 # TODO: generation of mo files during setup - they should be entered to the
 # space, where matuc is installed. It should create the structure
@@ -84,7 +82,7 @@ def create_mo_files():
             msgfmt_cmd = "msgfmt {}".format(arguments)
         subprocess.call(msgfmt_cmd, shell=True)
 
-create_mo_files() # should be removed after the .mo files are correctly
+# create_mo_files() # should be removed after the .mo files are correctly
                   # installed into users space
 
 # load .mo files
