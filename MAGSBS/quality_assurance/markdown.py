@@ -85,8 +85,8 @@ class ItemizeIsParagraph(Mistake):
                 elif is_item(line):
                     # itemize encountered and first line was no itemize line?
                     if item_encountered:
-                        err_message = _("Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss davor "
-                            "und danach eine Leerzeile sein.")
+                        err_message = _("Eine Aufzählung muss in einem eigenen "
+                                "Absatz stehen, d. h. es muss zumindest davor eine Leerzeile existieren.")
                         return self.error(err_message, start_line+lnum)
                     else:
                         item_encountered = True

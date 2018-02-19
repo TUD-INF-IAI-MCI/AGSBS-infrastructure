@@ -15,8 +15,6 @@ from . import pandoc
 from . import toc
 
 
-class NoLectureConfigurationError(errors.MAGSBS_error):
-    pass
 
 class Master():
     """m =Master(path)
@@ -64,7 +62,8 @@ files are converted."""
                     break
         if roots == [] and found_md:
             # this is markdown stuff without configuration!
-            raise NoLectureConfigurationError("No configuration in a directory of the path \"%s\" or its subdirectories found. As soon as there are MarkDown files present, a configuration has to exist." % path)
+            raise errors.ConfigurationError(("no configuration found, but it "
+                "is required"), path)
         return roots
 
     def get_translation(self, word, path):
@@ -78,17 +77,18 @@ files are converted."""
 
     def run(self):
         """This function should only be run from the lecture root. For other
-directories (subdirectories or unrelated directories) hopefully lead to a
-meaningful error message, but this is *not* guaranteed.
+        directories (subdirectories or unrelated directories) hopefully lead to
+        a meaningful error message, but this is *not* guaranteed.
 
-This function creates a navigation bar, the table of contents and converts all
-files. It will raise NoLectureConfigurationError when no configuration has been
-found and there are MarkDown files."""
+        This function creates a navigation bar, the table of contents and
+        converts all files. It will raise ConfigurationError when no
+        configuration has been found and there are MarkDown files."""
         try:
             self._run()
         except errors.ConfigurationError as e:
-            raise errors.NoLectureConfigurationError(("No configuration found. Either "
-                "none exists or this is not a lecture root."), e.path)
+            if not e.path:
+                e.path = path
+            raise
 
     def _run(self):
         orig_cwd = os.getcwd()

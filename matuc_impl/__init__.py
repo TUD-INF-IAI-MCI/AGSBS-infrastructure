@@ -324,7 +324,7 @@ sub-directory configurations or initialization of a new project."""
             sys.exit(98)
 
         with ErrorHandler(self.output_formatter):
-            p = MAGSBS.pandoc.converter.Pandoc()            
+            p = MAGSBS.pandoc.converter.Pandoc()
             if args.profile:
                 p.set_conversion_profile(MAGSBS.pandoc.formats.ConversionProfile.from_string(args.profile))
             p.convert_files((args.file,))
@@ -505,7 +505,7 @@ sub-directory configurations or initialization of a new project."""
             self.output_formatter.emit_error('directory required, file found: '\
                     + args.directory)
             sys.exit(98)
-        with ErrorHandler(self.output_formatter):                
+        with ErrorHandler(self.output_formatter):
             from MAGSBS.pandoc.formats import ConversionProfile
             m = MAGSBS.master.Master(args.directory,
                     (ConversionProfile.Blind if not args.profile
@@ -517,15 +517,21 @@ sub-directory configurations or initialization of a new project."""
         The new page number is generated using it's predecessors. It both
         respects the numbering from the predecessor, as also the format (roman
         or arabic)."""
-        parser = HelpfulParser(cmd, self.output_formatter, description=("Add a "
-            "new page number at the specified line. The given document is parsed"
-            " and the page number is created using its predecessors. Even though"
-            " this is basically just incrementing the number, it takes into "
-            "account the language of the document for labelling the page numbers,"
-            " whether it's a roman or an arabic number and whether there were "
-            "page numbers in the first place."))
+        parser = HelpfulParser(cmd, self.output_formatter, description=(
+                "Generate a page number for a given context. A context "
+                "consists of a line and a file. The enumeration will "
+                "happen automatically (including distinction between roman and "
+                "arabic), as well as the detection of the language of the "
+                "lecture. This command will not insert the newly created "
+                "page number by default, but print it to stdout. This is meant "
+                "to be used by applications embedding Matuc's logic."))
         parser.add_argument("-f", dest="read_from_file", action="store_true",
                 default=False, help="read from specified path instead of reading from standard input")
+        parser.add_argument("-F", dest="rw_from_file", action="store_true",
+                default=False, help=("read from specified path instead of "
+                    "reading from standard input and write result back to file; "
+                    "this could lead to race conditions on concurrent "
+                    "modifications"))
         parser.add_argument('path', nargs=1,
                 help=("Path to load configuration from. This can be either a "
                 "file or a directory. If -f is given, the path is used as "
@@ -544,13 +550,23 @@ sub-directory configurations or initialization of a new project."""
         except ValueError:
             self.output_formatter.emit_error("Argument 2 is not a number.")
             return 5
-        if options.read_from_file:
+        # try to read from stdin or from file if -f or -F; write to stdout or to
+        # file if -F given
+        if options.read_from_file or options.rw_from_file:
             if not os.path.isfile(path):
                 self.output_formatter.emit_error("Given path is not a file, "
                         "but reading from it with -f has been requested.")
                 sys.exit(99)
-            self.output_formatter.emit_result({ 'pagenumber':
-                pagenumbering.add_page_number(path, line_number).format()})
+            text = pagenumbering.add_page_number(path, line_number).format()
+
+            if options.read_from_file: # print to stdout
+                self.output_formatter.emit_result({ 'pagenumber': text })
+            else: # read and write into given path
+                with open(path, encoding='utf-8') as f:
+                    lines = f.read().split('\n')
+                lines = insert_line(lines, line_number, text)
+                with open(path, 'w', encoding='utf-8') as f:
+                    f.write('\n'.join(lines))
         else:
             data = sys.stdin.read()
             self.output_formatter.emit_result({ 'pagenumber':
@@ -613,3 +629,30 @@ sub-directory configurations or initialization of a new project."""
     #pylint: disable=unused-argument
     def handle_version(self, dont, care):
         self.output_formatter.emit_result({'version': str(MAGSBS.config.VERSION)})
+
+def insert_line(lines, line_number, line):
+    """This function allows the insertion of a line into a list of lines. It
+    will take care that the line is inserted as a last element, if the index is
+    great than the length of the list. If the line exists, it will take care of
+    inserting empty lines('') so that the line is a paragraph on its own."""
+    # this function has been outsourced to make handle_addpnum more readable
+    if line_number < 1:
+        raise ValueError("line numbers count from one")
+    # careful: line_number counts from 1
+    if line_number >= len(lines): # end of document
+        if lines and lines[-1].strip(): # no newline at end
+            lines.append('')
+        lines.append(line)
+    elif line_number == 1:
+        lines.insert(0, line)
+        if len(lines) > 1 and lines[1].strip():
+            lines.insert(1, '')
+    else:
+        if not lines[line_number-2] == '':
+            lines = lines[:line_number-1] + [''] + lines[line_number-1:]
+        lines = lines[:line_number] + [line] + lines[line_number:]
+        print(lines[line_number])
+        if lines[line_number+1].strip(): # no newline at end
+            lines = lines[:line_number+1] + [''] + lines[line_number+1:]
+    return lines
+

@@ -83,19 +83,22 @@ class Mistkerl():
 
     def run(self, path):
         """Take either a file and run checks or do the same for a directory
-recursively."""
+        recursively."""
+        file_tree = [(None, [], [])] # empty os.walk()-alike data structure
         if os.path.isfile(path):
-            path = os.path.dirname(path)
-            if not path:
-                path = os.path.dirname(os.path.abspath(path))
-        for issue in self.get_issues(MistakeType.lecture_root):
-            self.__append_error(path, issue.run(path))
+            file_tree = [[os.path.dirname(path), [], [path]]]
+            if not file_tree[0][0]: # no directory part extracted
+                file_tree[0][0] = os.path.dirname(os.path.abspath(path))
+        else:
+            for issue in self.get_issues(MistakeType.lecture_root):
+                self.__append_error(path, issue.run(path))
+            fw = filesystem.FileWalker(path)
+            fw.set_ignore_non_chapter_prefixed(False)
+            fw.set_endings(["md","tex"])
+            file_tree = fw.walk()
         last_dir = None
         directoryname = None
-        fw = filesystem.FileWalker(path)
-        fw.set_ignore_non_chapter_prefixed(False)
-        fw.set_endings(["md","tex"])
-        for directoryname, dir_list, file_list in fw.walk():
+        for directoryname, dir_list, file_list in file_tree:
             if last_dir is not directoryname:
                 self.run_directory_filters(last_dir)
                 last_dir = directoryname
