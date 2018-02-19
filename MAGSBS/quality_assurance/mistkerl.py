@@ -32,6 +32,7 @@ from .. import errors
 from .. import filesystem as filesystem
 from .. import mparser
 from .. import roman
+from ..config import _
 
 from .all_formats import *
 from .latex import *
@@ -115,7 +116,7 @@ class Mistkerl():
                         paragraphs = mparser.rm_codeblocks(
                                 mparser.file2paragraphs(f.read(), join_lines=True))
                 except UnicodeDecodeError:
-                    msg = "Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor."
+                    msg = _("Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor.")
                     e = ErrorMessage(msg, 1, file_path)
                     self.__append_error(path, e)
                     continue
@@ -130,7 +131,7 @@ class Mistkerl():
         """Add an error to the internal output dict."""
         if not err: return
         if not isinstance(err, ErrorMessage):
-            raise TypeError("Errors may only be of type ErrorMessage, got '{}'".format(str(err)))
+            raise TypeError(_("Errors may only be of type ErrorMessage, got '{}'").format(str(err)))
         if not err.path:
             err.path = path
         if os.path.dirname(err.path) == '.':
@@ -203,8 +204,8 @@ class Mistkerl():
                 self.__append_error(path, issue.run(path))
             except ET.ParseError as e:
                 pos = e.position
-                mistake = ErrorMessage("Die Konfiguration konnte nicht gelesen"
-                    " werden: {}".format(e.args[0]), pos[0], path)
+                mistake = ErrorMessage(_("Die Konfiguration konnte nicht gelesen"
+                    " werden: {}").format(e.args[0]), pos[0], path)
                 mistake.pos_on_line = pos[1]
                 self.__append_error(path, mistake)
 
@@ -213,7 +214,7 @@ class Mistkerl():
             return # ignore empty files
         last_par = next(reversed(paragraphs))
         if last_par > 2500:
-            msg = ("Die Datei ist zu lang. Um die Navigation zu erleichtern und "
+            msg = _("Die Datei ist zu lang. Um die Navigation zu erleichtern und "
                 "die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel"
                 " mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem "
                 "Schema kxxyy.md oder kleiner aufgeteilt werden.")

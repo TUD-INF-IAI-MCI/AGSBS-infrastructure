@@ -15,11 +15,14 @@ from distutils.version import StrictVersion
 import os
 import re
 import sys
+import gettext
+import locale
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from . import common
 from .errors import ConfigurationError
 from . import roman
+from os.path import dirname
 
 VERSION = StrictVersion('0.7.0')
 
@@ -40,6 +43,22 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         (\d+|%s)\s*- # arabic or roman numbers
         ''' % ('|'.join(PAGENUMBERINGTOKENS), roman_number_regex),
         re.VERBOSE)
+
+
+# Importing language versions
+LANG = locale.getdefaultlocale()[0][:2]  # default system's language
+# get locale subdirectory of the matuc main directory
+CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
+                          "locale")
+
+try:
+    trans = gettext.translation("messages", localedir=CONFIG_DIR,
+                                languages=[LANG])
+    _ = trans.gettext  # load .mo files
+except IOError:
+    # if the file with translation is not found, original strings are used
+    def _(s): return s
+
 
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on
