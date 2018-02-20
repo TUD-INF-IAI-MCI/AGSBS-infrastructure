@@ -44,6 +44,22 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         ''' % ('|'.join(PAGENUMBERINGTOKENS), roman_number_regex),
         re.VERBOSE)
 
+
+# Importing language versions
+LANG = locale.getdefaultlocale()[0][:2]  # default system's language
+# get locale subdirectory of the matuc main directory
+CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
+                          "locale")
+
+try:
+    trans = gettext.translation("messages", localedir=CONFIG_DIR,
+                                languages=[LANG])
+    _ = trans.gettext  # load .mo files
+except IOError:
+    # if the file with translation is not found, original strings are used
+    def _(s): return s
+
+
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on
     the German university system."""
