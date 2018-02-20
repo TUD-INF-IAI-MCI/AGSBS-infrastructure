@@ -439,6 +439,3 @@ class Translate:
             # if the .mo file is not found, original strings are used
             def _(s): return s
             return _
-
-# initialize the translations
-# _ = Translate().setup_i18n()
