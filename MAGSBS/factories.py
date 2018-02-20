@@ -91,7 +91,7 @@ file containing outsourced image descriptions.
         _ = self.__translate
         if not self.__title:
             # generate one from path
-            self.__title = _('image description of image').capitalize() + " " + \
+            self.__title = _('description of image').capitalize() + " " + \
                     os.path.split(self.__image_path)[1]
             return self.__title
         else:

@@ -6,7 +6,7 @@ MAGSBS-specific extensions.
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 #pylint: disable=line-too-long,too-few-public-methods
 
 import enum
@@ -17,12 +17,13 @@ import re
 import sys
 import gettext
 import locale
+from os.path import dirname
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+
 from . import common
 from .errors import ConfigurationError
 from . import roman
-from os.path import dirname
 
 VERSION = StrictVersion('0.7.0')
 
@@ -45,19 +46,28 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         re.VERBOSE)
 
 
-# Importing language versions
-LANG = locale.getdefaultlocale()[0][:2]  # default system's language
-# get locale subdirectory of the matuc main directory
-CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
-                          "locale")
+def setup_i18n():
+    """Set up internationalisation support in MAGSBS/matuc."""
+    # ignore country suffix for now, we are lucky if we find localisation for
+    # German or Spanish and we do not care too much about the rather small
+    # differences between these, for *now*
+    lang = None
+    # ToDo: use a more clever algorithm for autodiscovery + manual creation for
+    # development usage
+    CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
+            "locale")
 
-try:
-    trans = gettext.translation("messages", localedir=CONFIG_DIR,
-                                languages=[LANG])
-    _ = trans.gettext  # load .mo files
-except IOError:
-    # if the file with translation is not found, original strings are used
-    def _(s): return s
+    trans = gettext.translation("matuc", localedir=CONFIG_DIR, fallback=True)
+    if locale.getdefaultlocale()[0] and len(locale.getdefaultlocale()[0]) > 2:
+        try:
+            trans = gettext.translation("matuc", localedir=CONFIG_DIR,
+                languages=[locale.getdefaultlocale()[0][:2]])
+        except FileNotFoundError:
+            from .common import WarningRegistry
+            WarningRegistry().register_warning(("No localisation information "
+                    "found, falling back to English"))
+            # ^: trans is already initialised
+    trans.install()
 
 
 def get_semester():
@@ -343,7 +353,7 @@ class Translate:
             'preface':'introduction',   'appendix':'appendice',
             'table of contents':'table des matières',
             'chapters':'chapitres',
-            'image description of image':"description à l'image",
+            'description of image':"description à l'image",
             'pages':'pages',
             'external image description' : "description de l'image externe",
             'next':'suivant',  'previous':'précédent',
@@ -374,7 +384,7 @@ class Translate:
                 "page": "Seite", "slide": "Folie",
             'table of contents' : 'inhaltsverzeichnis',
             'chapters':'kapitel',
-            'image description of image':'bildbeschreibung von Bild',
+            'description of image':'Beschreibung von Bild',
             'pages':'Seiten',
             'external image description':'Bildbeschreibung ausgelagert',
             'next':'weiter',   'previous':'zurück',
@@ -421,21 +431,4 @@ class Translate:
         s = self.get_translation(origin)
         return s[:1].upper() + s[1:] if s else ''
 
-    def setup_i18n(self, lang=locale.getdefaultlocale()[0][:2]):
-        """ Loads the language version and install it into global _ function
-        :param lang: Language that has to be installed. By default, it is the
-        default language of the user's operating system
-        """
-
-        # get locale subdirectory of the matuc main directory
-        config_dir = os.path.join(dirname(dirname(os.path.realpath(__file__))),
-                                  "locale")
-
-        try:
-            trans = gettext.translation("messages", localedir=config_dir,
-                                        languages=[lang])
-            return trans.gettext  # load .mo files
-        except IOError:
-            # if the .mo file is not found, original strings are used
-            def _(s): return s
-            return _
+setup_i18n()

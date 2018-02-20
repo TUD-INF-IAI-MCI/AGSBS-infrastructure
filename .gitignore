@@ -1,7 +1,12 @@
-*.pyc
-*.mo
+*~
 build
 cli/build
 dist
 installer/matuc-installer*.exe
+*.mo
+*.pot
+*.pot
+*.pyc
 __pycache__
+*.swo
+*.swp

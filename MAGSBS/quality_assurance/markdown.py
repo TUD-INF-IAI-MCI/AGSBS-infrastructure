@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2015-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2015-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 #pylint: disable=line-too-long,arguments-differ,too-few-public-methods
 """All checkers for MarkDown files belong here."""
 
@@ -9,8 +9,6 @@ import os
 import re
 from .meta import Mistake, MistakeType, OnelinerMistake
 from .. import config, common
-from ..config import Translate
-_ = Translate().setup_i18n()  # set _ function to the translation of strings
 MetaInfo = config.MetaInfo
 
 class PageNumberIsParagraph(Mistake):

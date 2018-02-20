@@ -1,0 +1,17 @@
+[VARIABLES]
+additional-builtins = _
+persistent=no
+[REPORTS]
+reports=no
+
+[FORMAT]
+max-line-length=81
+indent-string='    '
+
+[BASIC]
+# Regular expression which should only match functions or classes name which do
+# not require a docstring
+no-docstring-rgx=(__.*__|get.*|set.*|is_.*|main||__.*?\b)
+
+[MESSAGES CONTROL]
+disable=bad-continuation
