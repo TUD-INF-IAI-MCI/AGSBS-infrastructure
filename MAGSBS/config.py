@@ -47,19 +47,26 @@ PAGENUMBERING_PATTERN = re.compile(r'''
 
 
 def setup_i18n():
-    lang = locale.getdefaultlocale()[0][:2]  # default system's language # ToDo:
-            # examples suggest that this can be left to gettext for automated detection
-    trans = gettext.NullTranslations() # fallback
-    if lang: # use systems locale
-        # ToDo: hard-coded locale directory path
-        CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
-                          "locale")
+    """Set up internationalisation support in MAGSBS/matuc."""
+    # ignore country suffix for now, we are lucky if we find localisation for
+    # German or Spanish and we do not care too much about the rather small
+    # differences between these, for *now*
+    lang = None
+    # ToDo: use a more clever algorithm for autodiscovery + manual creation for
+    # development usage
+    CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
+            "locale")
+
+    trans = gettext.translation("matuc", localedir=CONFIG_DIR, fallback=True)
+    if locale.getdefaultlocale()[0] and len(locale.getdefaultlocale()[0]) > 2:
         try:
-            # Todo: do not hard-code path
-            trans = gettext.translation("messages", localedir=CONFIG_DIR,
-                                languages=[lang])
-        except IOError:
-            pass
+            trans = gettext.translation("matuc", localedir=CONFIG_DIR,
+                languages=[locale.getdefaultlocale()[0][:2]])
+        except FileNotFoundError:
+            from .common import WarningRegistry
+            WarningRegistry().register_warning(("No localisation information "
+                    "found, falling back to English"))
+            # ^: trans is already initialised
     trans.install()
 
 
@@ -343,7 +350,7 @@ class Translate:
             'preface':'introduction',   'appendix':'appendice',
             'table of contents':'table des matières',
             'chapters':'chapitres',
-            'image description of image':"description à l'image",
+            'description of image':"description à l'image",
             'pages':'pages',
             'external image description' : "description de l'image externe",
             'next':'suivant',  'previous':'précédent',
@@ -374,7 +381,7 @@ class Translate:
                 "page": "Seite", "slide": "Folie",
             'table of contents' : 'inhaltsverzeichnis',
             'chapters':'kapitel',
-            'image description of image':'bildbeschreibung von Bild',
+            'description of image':'Beschreibung von Bild',
             'pages':'Seiten',
             'external image description':'Bildbeschreibung ausgelagert',
             'next':'weiter',   'previous':'zurück',

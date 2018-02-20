@@ -19,9 +19,9 @@ class ConfigurationValuesAreAllSet(Mistake):
             return node.tag[node.tag.find('}') + 1 :]
         for node in root.getchildren():
             if not node.text or 'unknown' in node.text.lower():
-                return self.error(_("Fehler in der Konfiguration: Der Wert {} ist "
-                    "nicht gesetzt, wodurch die Kopfdaten in den HTML-Dateien "
-                    "nicht erzeugt werden können.").format(get_tag(node)),
+                return self.error(_("Error in the lecture configuration: "
+                        "the value {} is unset, thefefore the meta data in the "
+                        "HTML files cannot be generated.").format(get_tag(node)),
                     config.get_lnum_of_tag(args[0], node.tag), args[0])
 
 class BrokenUmlautsFromPDFFiles(OnelinerMistake):
@@ -34,7 +34,8 @@ class BrokenUmlautsFromPDFFiles(OnelinerMistake):
         super().__init__()
         self.set_file_types(["md"])
         # save the malicious sequences as UTF-8 byte arrays
-        self.garbled = [b'\xc2\xb4\xc4\xb1', b'\xc2\xa8\xc4\xb1', b'\xc2\xb8c'] + \
+        self.garbled = [b'\xc2\xb4\xc4\xb1', b'\xc2\xa8\xc4\xb1',
+                    b'\xc2\xb8c'] + \
                 [b'\xc2\xa8' + l  for l in [b'a', b'o', b'u', b's']] + \
                 [b'\xc2\xa8 ' + l  for l in [b'a', b'o', b'u', b's']]
         self.garbled = [x.decode('utf-8') for x in self.garbled]
