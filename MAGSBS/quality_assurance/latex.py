@@ -5,7 +5,8 @@ embedded there as well."""
 
 import re
 from .meta import FormulaMistake, OnelinerMistake, Mistake, MistakeType
-from ..config import _
+from ..config import Translate
+_ = Translate().setup_i18n()  # set _ function to the translation of strings
 
 class CasesSqueezedOnOneLine(FormulaMistake):
     r"""\begin{cases} ... lots of stuff \end{cases} is hard to read. There

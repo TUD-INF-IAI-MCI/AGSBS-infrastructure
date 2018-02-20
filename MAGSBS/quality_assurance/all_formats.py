@@ -4,7 +4,8 @@ import os
 from xml.etree import ElementTree as ET
 from .. import config, common
 from .meta import MistakeType, Mistake, OnelinerMistake
-from ..config import _
+from ..config import Translate
+_ = Translate().setup_i18n()  # set _ function to the translation of strings
 
 class ConfigurationValuesAreAllSet(Mistake):
     """Check whether all configuration options have been set."""

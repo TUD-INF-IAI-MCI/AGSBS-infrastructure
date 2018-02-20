@@ -10,7 +10,8 @@ mistake."""
 
 from abc import ABCMeta, abstractmethod
 import enum
-from ..config import _
+from ..config import Translate
+_ = Translate().setup_i18n()  # set _ function to the translation of strings
 
 class MistakeType(enum.Enum):
     """The mistake type determines the arguments and the environment in which to
