@@ -9,7 +9,8 @@ import os
 import re
 from .meta import Mistake, MistakeType, OnelinerMistake
 from .. import config, common
-from ..config import _
+from ..config import Translate
+_ = Translate().setup_i18n()  # set _ function to the translation of strings
 MetaInfo = config.MetaInfo
 
 class PageNumberIsParagraph(Mistake):
