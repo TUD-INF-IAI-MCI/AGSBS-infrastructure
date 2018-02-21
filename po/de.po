@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-02-20 15:38+CET\n"
+"POT-Creation-Date: 2018-02-21 13:48+CET\n"
 "PO-Revision-Date: 2018-02-15 17:33+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -48,19 +48,22 @@ msgstr ""
 "Fehler in der Konfiguration: Der Wert {} ist nicht gesetzt, wodurch die "
 "Kopfdaten in den HTML-Dateien nicht erzeugt werden können."
 
-
 #: MAGSBS/quality_assurance/all_formats.py:46
 msgid ""
+"Incorrectly formatted umlauts have been found. This usually happens when "
+"copying texts from PDFs. This makes text nearly impossible to read."
+msgstr ""
 "Es wurden inkorrekt dargestellte Umlaute gefunden. Dies geschieht oft, wenn "
 "Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings schwer "
 "leserlich."
-msgstr ""
 
-#: MAGSBS/quality_assurance/all_formats.py:61
+#: MAGSBS/quality_assurance/all_formats.py:60
 msgid ""
-"Die Datei \"{}\" ist falsch benannt und folgt nicht den Namenskonventionen. "
-"Dies führt zu einer falschen Verwendung der Datei."
+"The naming of the file or directory \"{}\" is incorrect and does not follow "
+"the naming conventions. This leads to an incorrect usage of the file."
 msgstr ""
+"Die Datei oder das Verzeichnis \"{}\" ist falsch benannt und folgt nicht den "
+"Namenskonventionen. Dies führt zu einer falschen Verwendung der Datei."
 
 #: MAGSBS/quality_assurance/latex.py:21
 msgid ""

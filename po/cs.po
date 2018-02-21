@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-02-20 15:38+CET\n"
+"POT-Creation-Date: 2018-02-21 13:48+CET\n"
 "PO-Revision-Date: 2018-02-19 09:19+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -48,20 +48,15 @@ msgstr ""
 
 #: MAGSBS/quality_assurance/all_formats.py:46
 msgid ""
-"Es wurden inkorrekt dargestellte Umlaute gefunden. Dies geschieht oft, wenn "
-"Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings schwer "
-"leserlich."
+"Incorrectly formatted umlauts have been found. This usually happens when "
+"copying texts from PDFs. This makes text nearly impossible to read."
 msgstr ""
-"Byly nalezeny nesprávně zobrazené nápisy. To se často stává, když je text "
-"zkopírován ze souborů PDF. To ztěžuje čtení textu."
 
-#: MAGSBS/quality_assurance/all_formats.py:61
+#: MAGSBS/quality_assurance/all_formats.py:60
 msgid ""
-"Die Datei \"{}\" ist falsch benannt und folgt nicht den Namenskonventionen. "
-"Dies führt zu einer falschen Verwendung der Datei."
+"The naming of the file or directory \"{}\" is incorrect and does not follow "
+"the naming conventions. This leads to an incorrect usage of the file."
 msgstr ""
-"Soubor (adresář) \"{}\" je pojmenován nesprávně a nedodržuje konvence "
-"pojmenování. To může vést k nesprávnému použití souboru."
 
 #: MAGSBS/quality_assurance/latex.py:21
 msgid ""
@@ -403,8 +398,23 @@ msgid "remarks about the accessible version"
 msgstr ""
 
 #~ msgid ""
+#~ "Die Datei \"{}\" ist falsch benannt und folgt nicht den "
+#~ "Namenskonventionen. Dies führt zu einer falschen Verwendung der Datei."
+#~ msgstr ""
+#~ "Soubor (adresář) \"{}\" je pojmenován nesprávně a nedodržuje konvence "
+#~ "pojmenování. To může vést k nesprávnému použití souboru."
+
+#~ msgid ""
 #~ "Fehler in der Konfiguration: Der Wert {} ist nicht gesetzt, wodurch die "
 #~ "Kopfdaten in den HTML-Dateien nicht erzeugt werden können."
 #~ msgstr ""
 #~ "Chyba konfigurace: Hodnota {} není nastavena, což znamená, že záhlaví v "
 #~ "HTML souborech nelze generovat."
+
+#~ msgid ""
+#~ "Es wurden inkorrekt dargestellte Umlaute gefunden. Dies geschieht oft, "
+#~ "wenn Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings "
+#~ "schwer leserlich."
+#~ msgstr ""
+#~ "Byly nalezeny nesprávně zobrazené nápisy. To se často stává, když je text "
+#~ "zkopírován ze souborů PDF. To ztěžuje čtení textu."

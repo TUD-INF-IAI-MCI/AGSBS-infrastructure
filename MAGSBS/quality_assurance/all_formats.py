@@ -43,10 +43,9 @@ class BrokenUmlautsFromPDFFiles(OnelinerMistake):
     def check(self, num, line):
         for seq in self.garbled:
             if seq in line:
-                return super().error(_("Es wurden inkorrekt dargestellte Umlaute "
-                        "gefunden. Dies geschieht oft, wenn Text aus "
-                        "PDF-Dateien kopiert wird. Das macht den Text "
-                        "allerdings schwer leserlich."), num)
+                return super().error(_("Incorrectly formatted umlauts have "
+                    "been found. This usually happens when copying texts from "
+                    "PDFs. This makes text nearly impossible to read."), num)
 
 class OnlyCorrectDirectoriesFound(Mistake):
     mistake_type = MistakeType.lecture_root
@@ -58,6 +57,7 @@ class OnlyCorrectDirectoriesFound(Mistake):
                     '.lecture_meta')):
                 continue
             if not common.is_valid_file(file):
-                return self.error(_("Die Datei \"{}\" ist falsch benannt und folgt "
-                    "nicht den Namenskonventionen. Dies führt zu einer falschen "
-                    "Verwendung der Datei.").format(file), path=root)
+                return self.error(_("The naming of the file or directory \"{}\""
+                    " is incorrect and does not follow the naming conventions. "
+                    "This leads to an incorrect usage of the file.").format(file), path=root)
+
