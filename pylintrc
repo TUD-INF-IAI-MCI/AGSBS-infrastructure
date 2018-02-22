@@ -14,4 +14,4 @@ indent-string='    '
 no-docstring-rgx=(__.*__|get.*|set.*|is_.*|main||__.*?\b)
 
 [MESSAGES CONTROL]
-disable=bad-continuation
+disable=bad-continuation,trailing-newlines
