@@ -9,7 +9,7 @@ matuc and alters the OutputFormatter to print JSON."""
 import json
 import os
 import sys
-import matuc_impl
+from . import matuc_impl
 
 # enable debugging for matuc_js, since it is an API internface and it is
 # useful to report errors when they occur
@@ -45,7 +45,11 @@ class JsonFormatter(matuc_impl.OutputFormatter):
         """Screen will _not_ be cleared in JSON output  mode."""
         pass
 
-if __name__ == '__main__':
+
+def main():
     main_inst = matuc_impl.main(JsonFormatter())
     main_inst.run(sys.argv)
 
+
+if __name__ == '__main__':
+    main()
