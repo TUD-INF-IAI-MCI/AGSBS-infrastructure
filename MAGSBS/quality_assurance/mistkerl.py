@@ -37,6 +37,7 @@ from .all_formats import *
 from .latex import *
 from .markdown import *
 from .meta import *
+from .linkchecker import *
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
@@ -120,6 +121,7 @@ class Mistkerl():
                     self.__append_error(path, e)
                     continue
                 self.__run_filters_on_file(file_path, paragraphs)
+            self.__run_linkchecker(file_tree)
         # the last directory must be processed, even though there was no directory
         # change
         self.run_directory_filters(directoryname)
@@ -220,3 +222,5 @@ class Mistkerl():
             e = ErrorMessage(msg, last_par, file_path)
             return e
 
+    def __run_linkchecker(self, file_tree):
+        lnk_check = LinkParser(file_tree)
