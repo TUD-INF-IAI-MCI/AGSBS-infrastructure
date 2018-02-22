@@ -1,9 +1,11 @@
-0.7.1
+0.8
 
-* recognise headings with non-letter characters as first character
+* change from distutils to setuptools, easy installation using pip
+* introduce gettext localisation, localise Mistkerl messages properly
 * Mistkerl:
 	* show correct formula sign for min/max mistkerl checker
 	* accept a file name as input, too
+* bug fix: recognise headings with non-letter characters as first character
 
 0.7 
 
