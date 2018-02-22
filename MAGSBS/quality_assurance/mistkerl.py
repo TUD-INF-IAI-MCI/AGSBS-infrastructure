@@ -85,7 +85,7 @@ class Mistkerl():
         recursively."""
         file_tree = [(None, [], [])] # empty os.walk()-alike data structure
         if os.path.isfile(path):
-            file_tree = [[os.path.dirname(path), [], [path]]]
+            file_tree = [[os.path.dirname(path), [], [os.path.basename(path)]]]
             if not file_tree[0][0]: # no directory part extracted
                 file_tree[0][0] = os.path.dirname(os.path.abspath(path))
         else:
