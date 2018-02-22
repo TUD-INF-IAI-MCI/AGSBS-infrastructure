@@ -16,7 +16,7 @@ import shutil
 import sys
 import textwrap
 import MAGSBS
-import matuc_impl
+from . import matuc_impl
 
 def get_terminal_size():
     """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""
@@ -154,8 +154,10 @@ class TextFormatter(matuc_impl.OutputFormatter):
                     " found, install it, i.e. with `apt-get install ncurses-bin`.")})
 
 
+def main():
+    main_inst = matuc_impl.main(TextFormatter())
+    main_inst.run(sys.argv)
 
 
 if __name__ == '__main__':
-    main_inst = matuc_impl.main(TextFormatter())
-    main_inst.run(sys.argv)
+    main()
