@@ -65,16 +65,19 @@ class LinkParser():
     # ToDo: how to thread ..? just check with os.path.exists()? needs base
     # directory
     # def __init__(self, links, images, files):
-    def __init__(self, file_tree):
-        self.errors = []  # generated errors
-        self.file_tree = file_tree  # files to be examined
-        self.links_list = []
+    def __init__(self, file_tree_):
+        self.__errors = []  # generated errors
+        self.__file_tree = file_tree  # files to be examined
+        self.__links_list = []
+        self.__regexps = ["INLINE_LINK", "INLINE_LINK_WITH_TITLE",
+                          "FOOTNOTE_LINK_TEXT", "FOOTNOTE_LINK_URL",
+                          "TEXT_LINK_ITSELF", "ANGLE_BRACKETS_LINK"]
 
     def get_list_of_md_files(self):
         """ This function creates list of paths to .md files which links should
         be tested. It also returns the name of the file. """
         md_file_list = []
-        for directory_name, dir_list, file_list in self.file_tree:
+        for directory_name, dir_list, file_list in self.__file_tree:
             for file in file_list:
                 if file.endswith(".md"):  # only .md files will be inspected
                     file_path = os.path.join(directory_name, file)
@@ -90,22 +93,20 @@ class LinkParser():
             with open(file_path, encoding="utf-8") as f:
                 # call the function for finding links
                 self.find_md_links(f, file_name)
-        print(self.links_list)  # TODO: remove this testing string
+        print(self.__links_list)  # TODO: remove this testing string
 
     def find_md_links(self, md_file_data, file_name):
         """ Updates the list of dictionaries that contains the links retrieved
         from the markdown string. """
         for line_i, line in enumerate(md_file_data, 1):
-            # for reg_expr in ["INLINE_LINK", "INLINE_LINK_WITH_TITLE"]:
-            for reg_expr in ["FOOTNOTE_LINK_TEXT", "FOOTNOTE_LINK_URL"]:
-            # for reg_expr in ["TEXT_LINK_ITSELF", "ANGLE_BRACKETS_LINK"]:
+            for reg_expr in self.__regexps:
                 # detect links using regular expressions
                 links = eval(reg_expr + ".findall(line)")
                 # links to be have at least two information - link heading and
                 # link itself - otherwise it is not checked
                 if links:
-                    self.links_list.append(self.create_dct(file_name, reg_expr,
-                                                           line_i, links))
+                    self.__links_list.append(self.create_dct(file_name,
+                                             reg_expr, line_i, links))
 
         # TODO: parsing if link is written over one line
         # TODO: if the link is with the title
