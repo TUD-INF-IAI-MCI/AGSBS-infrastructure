@@ -23,6 +23,7 @@ INLINE_LINK = re.compile(r'\[([^\]]+)\]\s*\(([^)^"]+)\)')
 INLINE_LINK_WITH_TITLE = re.compile(r'\[([^\]]+)\]\s*\(([^)]+("|\')[^)]+)\)')
 FOOTNOTE_LINK_TEXT = re.compile(r'\[([^\]]+)\]\s*\[(.+)\]')
 FOOTNOTE_LINK_URL = re.compile(r'\[(.+)\]:\s*(\S+)')
+TEXT_LINK_ITSELF = re.compile(r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s]')
 ANGLE_BRACKETS_LINK = re.compile(r'<\S+>')
 
 """
@@ -96,9 +97,9 @@ class LinkParser():
         from the markdown string. """
         for line_i, line in enumerate(md_file_data, 1):
             # for reg_expr in ["INLINE_LINK", "INLINE_LINK_WITH_TITLE"]:
-            #for reg_expr in ["FOOTNOTE_LINK_TEXT", "FOOTNOTE_LINK_URL"]:
-            # for reg_expr in ["TEXT_LINK_ITSELF"]:
-            for reg_expr in ["ANGLE_BRACKETS_LINK"]:
+            # for reg_expr in ["FOOTNOTE_LINK_TEXT", "FOOTNOTE_LINK_URL"]:
+            for reg_expr in ["TEXT_LINK_ITSELF"]:
+            # for reg_expr in ["ANGLE_BRACKETS_LINK"]:
                 # detect links using regular expressions
                 links = eval(reg_expr + ".findall(line)")
                 # links to be have at least two information - link heading and
