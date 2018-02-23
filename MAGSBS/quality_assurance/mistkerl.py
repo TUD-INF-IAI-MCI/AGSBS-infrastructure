@@ -121,7 +121,9 @@ class Mistkerl():
                     self.__append_error(path, e)
                     continue
                 self.__run_filters_on_file(file_path, paragraphs)
-            self.__run_linkchecker(file_tree)
+        # temporary call of linkchecker
+        # TODO: implement it in a clearer way
+        self.__run_linkchecker(file_tree)
         # the last directory must be processed, even though there was no directory
         # change
         self.run_directory_filters(directoryname)
@@ -183,6 +185,14 @@ class Mistkerl():
         for issue in self.get_issues(MistakeType.formulas, file_path):
             self.__append_error(file_path, issue.run(formulas))
 
+    def __run_linkchecker(self, file_tree):
+        """
+        Temporary function for running linkchecker. This should be implemented
+        in the run function in a clearer way.
+        """
+        lnk_check = LinkParser(file_tree)
+        lnk_check.extract_links()
+
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""
         if self.__cache_pnums:
@@ -221,6 +231,3 @@ class Mistkerl():
                 "Schema kxxyy.md oder kleiner aufgeteilt werden.")
             e = ErrorMessage(msg, last_par, file_path)
             return e
-
-    def __run_linkchecker(self, file_tree):
-        lnk_check = LinkParser(file_tree)
