@@ -98,8 +98,7 @@ class LinkParser():
         for line_i, line in enumerate(md_file_data, 1):
             # for reg_expr in ["INLINE_LINK", "INLINE_LINK_WITH_TITLE"]:
             # for reg_expr in ["FOOTNOTE_LINK_TEXT", "FOOTNOTE_LINK_URL"]:
-            for reg_expr in ["TEXT_LINK_ITSELF"]:
-            # for reg_expr in ["ANGLE_BRACKETS_LINK"]:
+            for reg_expr in ["TEXT_LINK_ITSELF", "ANGLE_BRACKETS_LINK"]:
                 # detect links using regular expressions
                 links = eval(reg_expr + ".findall(line)")
                 # links to be have at least two information - link heading and
@@ -124,14 +123,22 @@ class LinkParser():
         link_dictionary["file"] = file_name
         link_dictionary["type"] = type.lower()
         link_dictionary["line_no"] = line_no
-        if isinstance(links[0], str):  # its only the angle_brackets or text_link_itself
-            link_dictionary["link"] = links[0][1:-1]
+        if isinstance(links[0], str):  # angle_brackets and text_link_itself
+            link_dictionary["link"] = self.cleanse_link(type, links[0])
         else:  # the result has two parts
             link_dictionary["link_title"] = links[0][0]  # title
             link_dictionary["link"] = links[0][1]  # link itself
             link_dictionary["link"] = links[0][1]  # link itself
 
         return link_dictionary
+
+    def cleanse_link(self, type, link):
+        """ This function clear the string as the regular expression is
+        not able to return the string in the preferred form. """
+        if type == "TEXT_LINK_ITSELF":  # strip everything before [ and after ]
+            return link[link.find('[') + 1: link.find(']')]
+        if type == "ANGLE_BRACKETS_LINK":  # remove angle brackets
+            return link[1:-1]
 
     def target_exists(self, target_file_name):
         pass
