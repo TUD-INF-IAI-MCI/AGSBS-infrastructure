@@ -21,12 +21,14 @@ those for the link checker.
 import os
 import re
 
-INLINE_LINK = r'\[([^\]]+)\]\s*\(([^)^"]+)\)'
-INLINE_LINK_WITH_TITLE = r'\[([^\]]+)\]\s*\(([^)]+("|\')[^)]+)\)'
-FOOTNOTE_LINK_TEXT = r'\[([^\]]+)\]\s*\[([^\]]+)\]'
-FOOTNOTE_LINK_REFERENCE = r'\[([^\]]+)\]:\s*(\S+)'
-STANDALONE_LINK = r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]'
-ANGLE_BRACKETS_LINK = r'[^(:\])\s]\s*<[^>]+>'
+INLINE_LINK = r"\[([^\]]+)\]\s*\(([^)^\"]+)\)"
+INLINE_LINK_WITH_TITLE = r"\[([^\]]+)\]\s*\(([^)]+(\"|')[^)]+)\)"
+FOOTNOTE_LINK_TEXT = r"\[([^\]]+)\]\s*\[([^\]]+)\]"
+REFERENCE = r"\[([^\]]+)\]:\s*([\S^['\"]]+)"
+REF_WITH_TITLE_APOSTROPHE = r"\[([^\]]+)\]:\s*(\S+\s'.*')"
+REF_WITH_TITLE_QUOTES = r"\[([^\]]+)\]:\s*(\S+)\s\"(.*)\""
+STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]"
+ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<[^>]+>"
 
 """
 A common source of error are broken links. Normal link checkers won't work,
@@ -64,7 +66,9 @@ class LinkParser():
         self.__regexps = {"inline": INLINE_LINK,
                           "inline_with_title": INLINE_LINK_WITH_TITLE,
                           "footnote": FOOTNOTE_LINK_TEXT,
-                          "reference": FOOTNOTE_LINK_REFERENCE,
+                          "reference": REFERENCE,
+                          "reference_apostrophe": REF_WITH_TITLE_APOSTROPHE,
+                          "reference_quotes": REF_WITH_TITLE_QUOTES,
                           "standalone_link": STANDALONE_LINK,
                           "angle_brackets": ANGLE_BRACKETS_LINK
                           }
@@ -95,11 +99,12 @@ class LinkParser():
             "standalone_link": link in square brackets referenced somewhere
                 else in the document
             "reference": reference to the footnote and standalone_links types
+            "reference_with_title": reference that contains title
             "angle_brackets": link given by square brackets
         "line_no": number of line where regular expression
         "link": explored link
         "link_text": contains link text, if exists
-        """
+        "link_title": title of the link, if exists """
         for file_path, file_name in self.get_list_of_md_files():
             # encoding should be already checked
             with open(file_path, encoding="utf-8") as f:
@@ -116,12 +121,15 @@ class LinkParser():
 
             # detects the line numbers
             line_nums = self.get_starting_line_numbers(reg_expr, text)
-            # detect links using regular expressions
-            links = re.compile(reg_expr).findall(text)
+            # detect links using regexps (no need to have line breaks)
+            links = re.compile(reg_expr).findall(text.replace('\n', ''))
             if len(line_nums) != len(links):
                 #  TODO: Change print to error and throw it
+                print(len(line_nums), len(links), description, links, line_nums[0])
                 print("Internal error: number of numbers should be the same"
                       " as the number of regular expression matches.")
+
+            print(links)
 
             for i in range(len(links)):
                 self.__links_list.append(self.create_dct(
@@ -133,15 +141,14 @@ class LinkParser():
         link_dict = {}
         link_dict["file"] = file_name
         link_dict["type"] = type
-        link_dict["line_no"] = line_no
+        link_dict["line_no"] = line_no + 1
         if isinstance(link, str):  # angle_brackets and text_link_itself
             link_dict["link"] = link
-        elif isinstance(link, tuple) and len(link) > 1:  # result has two parts
-            link_dict["link_text"] = link[0].replace('\n', '')  # title
+        if isinstance(link, tuple) and len(link) > 1:  # result has two parts
+            link_dict["link_text"] = link[0]  # link text
             link_dict["link"] = link[1]  # link itself
-        else:
-            #  TODO: Change print to error and throw it
-            print("Internal error with parsing links.")
+        if isinstance(link, tuple) and len(link) > 2:
+            link_dict["link_title"] = link[2]  # link title
 
         # strip all unnecessary characters from the link
         link_dict["link"] = self.cleanse_link(type, link_dict["link"])
@@ -178,7 +185,8 @@ class LinkParser():
 
 
 class LinkStructureChecker():
-    """"""
+    """ Structure of the link should follow the basic rules of creating
+    links. """
     pass
 
 
@@ -218,8 +226,16 @@ class DetectCorrectEmail():
         'mailto' is the starting substring of the link. """
         return link.find("mailto:") == 0
 
+class TitleIsTooLong():
+    """ Title should be 'reasonably' long. Long text lowers the readability
+    and they also can be caused by a incorrect syntax of link. """
+    pass
 
+
+# TODO: count spaces using regexpr
 # TODO: Link with title
         # move title to the title
 # TODO: link within picture description
 # value = d.get(key)
+
+
