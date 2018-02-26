@@ -25,7 +25,7 @@ INLINE_LINK = r'\[([^\]]+)\]\s*\(([^)^"]+)\)'
 INLINE_LINK_WITH_TITLE = r'\[([^\]]+)\]\s*\(([^)]+("|\')[^)]+)\)'
 FOOTNOTE_LINK_TEXT = r'\[([^\]]+)\]\s*\[([^\]]+)\]'
 FOOTNOTE_LINK_REFERENCE = r'\[([^\]]+)\]:\s*(\S+)'
-STANDALONE_LINK = r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s]'
+STANDALONE_LINK = r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]'
 ANGLE_BRACKETS_LINK = r'<[^>]+>'
 
 """
@@ -98,7 +98,7 @@ class LinkParser():
             "angle_brackets": link given by square brackets
         "line_no": number of line where regular expression
         "link": explored link
-        "link_text": if exist, the link text is given here
+        "link_text": contains link text, if exists
         """
         for file_path, file_name in self.get_list_of_md_files():
             # encoding should be already checked
@@ -137,13 +137,14 @@ class LinkParser():
         if isinstance(link, str):  # angle_brackets and text_link_itself
             link_dict["link"] = link
         elif isinstance(link, tuple) and len(link) > 1:  # result has two parts
-            link_dict["link_text"] = link[0]  # title
+            link_dict["link_text"] = link[0].replace('\n', '')  # title
             link_dict["link"] = link[1]  # link itself
         else:
             #  TODO: Change print to error and throw it
             print("Internal error with parsing links.")
+
+        # strip all unnecessary characters from the link
         link_dict["link"] = self.cleanse_link(type, link_dict["link"])
-        # ^ strip all unnecessary characters from the link
 
         return link_dict
 
@@ -154,9 +155,9 @@ class LinkParser():
             return ""
 
         output = link
-        if output[0] == '<' and output[-1] == ">":
+        if output[0] == '<' and output[-1] == '>':
             output = output[1:-1]
-        if "[" in link and "]" in link:  # strip trash before [ and after ]
+        if '[' in link and ']' in link:  # strip trash before [ and after ]
             output = output[output.find('[') + 1: output.find(']')]
         return output
 
@@ -169,14 +170,10 @@ class LinkParser():
         line_numbers = []
         matches = re.compile(reg_expr, re.MULTILINE | re.DOTALL)
         for match in matches.finditer(text):
-            line_numbers.append(text[0:match.start()].count("\n"))
+            line_numbers.append(text[0:match.start()].count('\n'))
         return line_numbers
 
     def target_exists(self, target_file_name):
-        pass
-
-    def is_system_online(self):
-        """ Returns True, if the system is online, False otherwise."""
         pass
 
 
@@ -205,7 +202,7 @@ class TitleInLinkIsCorrect():
     pass
 
 
-class TitleInLinkCannotContailFormatting():
+class TitleInLinkCannotContainFormatting():
     """ When using INLINE_LINK_WITH_TITLE, it is not allowed to have
     formatting information within link title. """
     pass
