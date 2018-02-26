@@ -26,7 +26,7 @@ INLINE_LINK_WITH_TITLE = r'\[([^\]]+)\]\s*\(([^)]+("|\')[^)]+)\)'
 FOOTNOTE_LINK_TEXT = r'\[([^\]]+)\]\s*\[([^\]]+)\]'
 FOOTNOTE_LINK_REFERENCE = r'\[([^\]]+)\]:\s*(\S+)'
 STANDALONE_LINK = r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]'
-ANGLE_BRACKETS_LINK = r'<[^>]+>'
+ANGLE_BRACKETS_LINK = r'[^(:\])\s]\s*<[^>]+>'
 
 """
 A common source of error are broken links. Normal link checkers won't work,
@@ -129,7 +129,7 @@ class LinkParser():
 
     def create_dct(self, file_name, line_no, type, link):
         """ This function generates the dictionary that contains all the
-        important data for the link """
+        important data for the link. """
         link_dict = {}
         link_dict["file"] = file_name
         link_dict["type"] = type
