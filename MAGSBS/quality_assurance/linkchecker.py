@@ -1,7 +1,9 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda |at|gmx |dot| de>
+# (c) 2018 Sebastian Humenda <shumenda |at|gmx |dot| de>
+#               Jaromir Plhak <xplhak |at| gmail |dot| com>
+
 """
 Link checker for MarkDown documents.
 
@@ -19,20 +21,12 @@ those for the link checker.
 import os
 import re
 
-INLINE_LINK = re.compile(r'\[([^\]]+)\]\s*\(([^)^"]+)\)')
-INLINE_LINK_WITH_TITLE = re.compile(r'\[([^\]]+)\]\s*\(([^)]+("|\')[^)]+)\)')
-FOOTNOTE_LINK_TEXT = re.compile(r'\[([^\]]+)\]\s*\[([^\]]+)\]')
-FOOTNOTE_LINK_REFERENCE = re.compile(r'\[([^\]]+)\]:\s*(\S+)')
-STANDALONE_LINK = re.compile(r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s]')
-ANGLE_BRACKETS_LINK = re.compile(r'<[^>]+>')
-
-"""
-def_links = re.compile(
-    r'^ *\[([^^\]]+)\]: *'  # [key]:
-    r'<?([^\s>]+)>?'  # <link> or link
-    r'(?: +["(]([^\n]+)[")])? *(?:\n+|$)'
-)
-"""
+INLINE_LINK = r'\[([^\]]+)\]\s*\(([^)^"]+)\)'
+INLINE_LINK_WITH_TITLE = r'\[([^\]]+)\]\s*\(([^)]+("|\')[^)]+)\)'
+FOOTNOTE_LINK_TEXT = r'\[([^\]]+)\]\s*\[([^\]]+)\]'
+FOOTNOTE_LINK_REFERENCE = r'\[([^\]]+)\]:\s*(\S+)'
+STANDALONE_LINK = r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s]'
+ANGLE_BRACKETS_LINK = r'<[^>]+>'
 
 """
 A common source of error are broken links. Normal link checkers won't work,
@@ -50,13 +44,11 @@ div equivalent.
 """
 Checking links in the markdown document
 - a) parse the links
-- b) test if they are corretly structured
-- c) check external links
-    - ca) test if the computer is online
-    - cb) if online - test the reachability of the link
-- d) check internal links (no need to be online, files should be on the disk)
-    - da) check if files are generated
-    - db) if they are - check all links given by markdown
+- b) test if they are correctly structured
+- c) check internal links (no need to be online, files should be on the disk)
+    - ca) check the structure of the link
+    - ca) check if files are generated
+    - cb) if they are - check all links given by markdown
 """
 
 
@@ -91,7 +83,23 @@ class LinkParser():
                         md_file_list.append((file_path, file))
         return md_file_list
 
-    def extract_links(self):
+    def parse_links(self):
+        """ Parses all links from the file and stores them in the dictionary
+        that has following structure:
+        "file": name of the file, where the link is stored
+        "type": type of the link - this should be as follows:
+            "inline": basic inline link in square brackets, syntax
+            "inline_with_title": inline link that contains title
+            "footnote": link to the footnote that is referenced somewhere else
+                in the document
+            "standalone_link": link in square brackets referenced somewhere
+                else in the document
+            "reference": reference to the footnote and standalone_links types
+            "angle_brackets": link given by square brackets
+        "line_no": number of line where regular expression
+        "link": explored link
+        "link_text": if exist, the link text is given here
+        """
         for file_path, file_name in self.get_list_of_md_files():
             # encoding should be already checked
             with open(file_path, encoding="utf-8") as f:
@@ -105,37 +113,36 @@ class LinkParser():
 
         text = md_file_data.read()
         for description, reg_expr in self.__regexps.items():
+
+            # detects the line numbers
+            line_nums = self.get_starting_line_numbers(reg_expr, text)
             # detect links using regular expressions
-            links = reg_expr.findall(text)
-            for link in links:
-                self.__links_list.append(self.create_dct(file_name,
-                                                         description, link))
+            links = re.compile(reg_expr).findall(text)
+            if len(line_nums) != len(links):
+                #  TODO: Change print to error and throw it
+                print("Internal error: number of numbers should be the same"
+                      " as the number of regular expression matches.")
 
-        # TODO: find the line of the link
-        # TODO: if the link is with the title
-            # check if it is correctly build using " or ' (the last
-            # char should be the there at least twice - and first one
-            # is the end of the link
-        # TODO: detect also TEXT_LINK_ITSELF - link only in []
-            # error if it has no reference in footnote_link_url
-        # TODO: link within picture description
+            for i in range(len(links)):
+                self.__links_list.append(self.create_dct(
+                    file_name, line_nums[i], description, links[i]))
 
-    def create_dct(self, file_name, type, link):
+    def create_dct(self, file_name, line_no, type, link):
         """ This function generates the dictionary that contains all the
         important data for the link """
-        print(link)
         link_dict = {}
         link_dict["file"] = file_name
-        link_dict["type"] = type.lower()
-        link_dict["line_no"] = "NaN"
-        link_dict["link"] = None
-        link_dict["link_title"] = None
+        link_dict["type"] = type
+        link_dict["line_no"] = line_no
         if isinstance(link, str):  # angle_brackets and text_link_itself
             link_dict["link"] = link
-        elif isinstance(link, str):  # the result has two parts
-            link_dict["link_title"] = link[0]  # title
+        elif isinstance(link, tuple) and len(link) > 1:  # result has two parts
+            link_dict["link_text"] = link[0]  # title
             link_dict["link"] = link[1]  # link itself
-        link_dict["link"] = self.cleanse_link(type, link)
+        else:
+            #  TODO: Change print to error and throw it
+            print("Internal error with parsing links.")
+        link_dict["link"] = self.cleanse_link(type, link_dict["link"])
         # ^ strip all unnecessary characters from the link
 
         return link_dict
@@ -143,7 +150,7 @@ class LinkParser():
     def cleanse_link(self, type, link):
         """ This function clear the string as the regular expression is
         not able to return the string in the preferred form. """
-        if isinstance(link, str) or len(link) < 1:
+        if not isinstance(link, str) or len(link) < 1:
             return ""
 
         output = link
@@ -152,6 +159,18 @@ class LinkParser():
         if "[" in link and "]" in link:  # strip trash before [ and after ]
             output = output[output.find('[') + 1: output.find(']')]
         return output
+
+    def get_starting_line_numbers(self, reg_expr, text):
+        """ This method searches for the line number of the regular expression
+        matches.
+        Note: This is not the most efficient way to do this. In case, the
+        examined data will have non-trivial length and number of links,
+        this function should be reimplemented. """
+        line_numbers = []
+        matches = re.compile(reg_expr, re.MULTILINE | re.DOTALL)
+        for match in matches.finditer(text):
+            line_numbers.append(text[0:match.start()].count("\n"))
+        return line_numbers
 
     def target_exists(self, target_file_name):
         pass
@@ -179,6 +198,13 @@ class NoSpaceBetweenRoundAndSquareBrackets():
     pass
 
 
+class TitleInLinkIsCorrect():
+    # check if it is correctly build using " or ' (the last
+    # char should be the there at least twice - and first one
+    # is the end of the link
+    pass
+
+
 class TitleInLinkCannotContailFormatting():
     """ When using INLINE_LINK_WITH_TITLE, it is not allowed to have
     formatting information within link title. """
@@ -194,3 +220,9 @@ class DetectCorrectEmail():
         """ Detecting, if the link is email address. It only checks, if the
         'mailto' is the starting substring of the link. """
         return link.find("mailto:") == 0
+
+
+# TODO: Link with title
+        # move title to the title
+# TODO: link within picture description
+# value = d.get(key)
