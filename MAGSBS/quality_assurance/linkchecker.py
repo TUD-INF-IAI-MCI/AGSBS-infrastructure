@@ -22,8 +22,8 @@ import re
 INLINE_LINK = re.compile(r'\[([^\]]+)\]\s*\(([^)^"]+)\)')
 INLINE_LINK_WITH_TITLE = re.compile(r'\[([^\]]+)\]\s*\(([^)]+("|\')[^)]+)\)')
 FOOTNOTE_LINK_TEXT = re.compile(r'\[([^\]]+)\]\s*\[([^\]]+)\]')
-FOOTNOTE_LINK_URL = re.compile(r'\[([^\]]+)\]:\s*(\S+)')
-TEXT_LINK_ITSELF = re.compile(r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s]')
+FOOTNOTE_LINK_REFERENCE = re.compile(r'\[([^\]]+)\]:\s*(\S+)')
+STANDALONE_LINK = re.compile(r'[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s]')
 ANGLE_BRACKETS_LINK = re.compile(r'<[^>]+>')
 
 """
@@ -65,13 +65,17 @@ class LinkParser():
     # ToDo: how to thread ..? just check with os.path.exists()? needs base
     # directory
     # def __init__(self, links, images, files):
-    def __init__(self, file_tree_):
+    def __init__(self, file_tree):
         self.__errors = []  # generated errors
         self.__file_tree = file_tree  # files to be examined
         self.__links_list = []
-        self.__regexps = ["INLINE_LINK", "INLINE_LINK_WITH_TITLE",
-                          "FOOTNOTE_LINK_TEXT", "FOOTNOTE_LINK_URL",
-                          "TEXT_LINK_ITSELF", "ANGLE_BRACKETS_LINK"]
+        self.__regexps = {"inline": INLINE_LINK,
+                          "inline_with_title": INLINE_LINK_WITH_TITLE,
+                          "footnote": FOOTNOTE_LINK_TEXT,
+                          "reference": FOOTNOTE_LINK_REFERENCE,
+                          "standalone_link": STANDALONE_LINK,
+                          "angle_brackets": ANGLE_BRACKETS_LINK
+                          }
 
     def get_list_of_md_files(self):
         """ This function creates list of paths to .md files which links should
@@ -89,7 +93,7 @@ class LinkParser():
 
     def extract_links(self):
         for file_path, file_name in self.get_list_of_md_files():
-            # encodingshould be already checked
+            # encoding should be already checked
             with open(file_path, encoding="utf-8") as f:
                 # call the function for finding links
                 self.find_md_links(f, file_name)
@@ -98,60 +102,95 @@ class LinkParser():
     def find_md_links(self, md_file_data, file_name):
         """ Updates the list of dictionaries that contains the links retrieved
         from the markdown string. """
-        for line_i, line in enumerate(md_file_data, 1):
-            for reg_expr in self.__regexps:
-                # detect links using regular expressions
-                links = eval(reg_expr + ".findall(line)")
-                # links to be have at least two information - link heading and
-                # link itself - otherwise it is not checked
-                if links:
-                    self.__links_list.append(self.create_dct(file_name,
-                                             reg_expr, line_i, links))
 
-        # TODO: parsing if link is written over one line
+        text = md_file_data.read()
+        for description, reg_expr in self.__regexps.items():
+            # detect links using regular expressions
+            links = reg_expr.findall(text)
+            for link in links:
+                self.__links_list.append(self.create_dct(file_name,
+                                                         description, link))
+
+        # TODO: find the line of the link
         # TODO: if the link is with the title
-                    # check if it is correctly build using " or ' (the last
-                    # char should be the there at least twice - and first one
-                    # is the end of the link
+            # check if it is correctly build using " or ' (the last
+            # char should be the there at least twice - and first one
+            # is the end of the link
         # TODO: detect also TEXT_LINK_ITSELF - link only in []
-                    # error if it has no reference in footnote_link_url
+            # error if it has no reference in footnote_link_url
         # TODO: link within picture description
 
-    def create_dct(self, file_name, type, line_no, links):
+    def create_dct(self, file_name, type, link):
         """ This function generates the dictionary that contains all the
         important data for the link """
-        link_dictionary = {}
-        link_dictionary["file"] = file_name
-        link_dictionary["type"] = type.lower()
-        link_dictionary["line_no"] = line_no
-        if isinstance(links[0], str):  # angle_brackets and text_link_itself
-            link_dictionary["link"] = self.cleanse_link(type, links[0])
-        else:  # the result has two parts
-            link_dictionary["link_title"] = links[0][0]  # title
-            link_dictionary["link"] = links[0][1]  # link itself
-            link_dictionary["link"] = links[0][1]  # link itself
+        print(link)
+        link_dict = {}
+        link_dict["file"] = file_name
+        link_dict["type"] = type.lower()
+        link_dict["line_no"] = "NaN"
+        link_dict["link"] = None
+        link_dict["link_title"] = None
+        if isinstance(link, str):  # angle_brackets and text_link_itself
+            link_dict["link"] = link
+        elif isinstance(link, str):  # the result has two parts
+            link_dict["link_title"] = link[0]  # title
+            link_dict["link"] = link[1]  # link itself
+        link_dict["link"] = self.cleanse_link(type, link)
+        # ^ strip all unnecessary characters from the link
 
-        return link_dictionary
+        return link_dict
 
     def cleanse_link(self, type, link):
         """ This function clear the string as the regular expression is
         not able to return the string in the preferred form. """
-        if type == "TEXT_LINK_ITSELF":  # strip everything before [ and after ]
-            return link[link.find('[') + 1: link.find(']')]
-        if type == "ANGLE_BRACKETS_LINK":  # remove angle brackets
-            return link[1:-1]
+        if isinstance(link, str) or len(link) < 1:
+            return ""
+
+        output = link
+        if output[0] == '<' and output[-1] == ">":
+            output = output[1:-1]
+        if "[" in link and "]" in link:  # strip trash before [ and after ]
+            output = output[output.find('[') + 1: output.find(']')]
+        return output
 
     def target_exists(self, target_file_name):
         pass
 
+    def is_system_online(self):
+        """ Returns True, if the system is online, False otherwise."""
+        pass
+
 
 class LinkStructureChecker():
+    """"""
     pass
 
 
-class LinkOnlineChecker():
+class LinkDefinitionShouldBeLinkedToReferenceLink():
+    """ When FOOTNOTE_LINK_TEXT or TEXT_LINK_ITSELF is used, it should be
+    connected to the reference link with []: syntax. Otherwise it should not
+    be paired together.
+    Note: Links are not case sensitive """
+
+
+class NoSpaceBetweenRoundAndSquareBrackets():
+    """ When the inline link or footnote link is used, it is not allowed by
+    pandoc to have a space/spaces between square and round brackets."""
     pass
 
 
-class RelativeUrlChecker():
+class TitleInLinkCannotContailFormatting():
+    """ When using INLINE_LINK_WITH_TITLE, it is not allowed to have
+    formatting information within link title. """
     pass
+
+
+class DetectCorrectEmail():
+    """ When 'mailto:' is used, the structure of the email address should
+    be detected. """
+    pass
+
+    def detect_email_address(self, link):
+        """ Detecting, if the link is email address. It only checks, if the
+        'mailto' is the starting substring of the link. """
+        return link.find("mailto:") == 0
