@@ -74,7 +74,7 @@ class LinkParser:
                           }
 
     def get_list_of_md_files(self):
-        """ This function creates list of paths to .md files which links should
+        """ This method creates list of paths to .md files which links should
         be tested. It also returns the name of the file. """
         md_file_list = []
         for directory_name, dir_list, file_list in self.__file_tree:
@@ -89,7 +89,7 @@ class LinkParser:
 
     def parse_links(self):
         """ Parses all links from the file and stores them in the dictionary
-        that has following structure:
+        that has the following structure:
         "file": name of the file, where the link is stored
         "link_type": type of the link - this should be as follows:
             "inline": basic inline link in square brackets, syntax
@@ -133,7 +133,7 @@ class LinkParser:
                     file_name, line_nums[i], description, links[i]))
 
     def create_dct(self, file_name, line_no, link_type, link):
-        """ This function generates the dictionary that contains all the
+        """ This method generates the dictionary that contains all the
         important data for the link. """
         link_dict = dict()
         link_dict["file"] = file_name
@@ -154,7 +154,7 @@ class LinkParser:
 
     @staticmethod
     def cleanse_link(self, link):
-        """ This function clear the string as the regular expression is
+        """ This static method clear the string as the regular expression is
         not able to return the string in the preferred form. """
         if not isinstance(link, str) or len(link) < 1:
             return ""
