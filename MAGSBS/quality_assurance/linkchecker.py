@@ -21,13 +21,11 @@ those for the link checker.
 import os
 import re
 
-INLINE_LINK = r"(!?)\[([^\]]+)\](\s*)\(([^)^\"]+)\)"
-INLINE_LINK_WITH_TITLE = r"(!?)\[([^\]]+)\](\s*)\(([^)]+(\"|')[^)]+)\)"
+INLINE_LINK = r"(!?)\[([^\]]+)\](\s*)\(([^)\"']+)\)"
+INLINE_LINK_WITH_TITLE = r"(!?)\[([^\]]+)\](\s*)\((\S+)\s*['\"](.+)['\"]\)"
 FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\](\s*)\[([^\]]+)\]"
 REFERENCE = r"(!?)\[([^\]]+)\]:(\s*)(\S+)"
-# ^ accepts also ones with title (title is not neccessary to test)
-# REF_WITH_TITLE_APOSTROPHE = r"(!?)\[([^\]]+)\]:(\s*)(\S+\s'.*')"
-# REF_WITH_TITLE_QUOTES = r"(!?)\[([^\]]+)\]:(\s*)(\S+)\s\"(.*)\""
+# ^ accepts also ones with title (title is not necessary to test)
 STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]"
 ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<[^>]+>"
 
@@ -68,8 +66,6 @@ class LinkParser:
                           "inline_with_title": INLINE_LINK_WITH_TITLE,
                           "footnote": FOOTNOTE_LINK_TEXT,
                           "reference": REFERENCE,
-                          # "reference_apostrophe": REF_WITH_TITLE_APOSTROPHE,
-                          # "reference_quotes": REF_WITH_TITLE_QUOTES,
                           "standalone_link": STANDALONE_LINK,
                           "angle_brackets": ANGLE_BRACKETS_LINK
                           }
@@ -99,8 +95,9 @@ class LinkParser:
                 in the document
             "standalone_link": link in square brackets referenced somewhere
                 else in the document
-            "reference": reference to the footnote and standalone_links types
-            "reference_with_title": reference that contains title
+            "reference": reference to the footnote and standalone_links types.
+                References with titles are not detected as they are not
+                relevant to the link testing
             "angle_brackets": link given by square brackets
         "line_no": number of line where regular expression
         "is_picture": 'True' if the link is a picture, 'False' otherwise
@@ -155,8 +152,6 @@ class LinkParser:
         link_dict["link"] = self.cleanse_link(link_dict["link"])
 
         return link_dict
-
-    def remove_duplicates
 
     @staticmethod
     def cleanse_link(link):
