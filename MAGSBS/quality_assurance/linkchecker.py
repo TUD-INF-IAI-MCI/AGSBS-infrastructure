@@ -54,7 +54,7 @@ Checking links in the markdown document
 """
 
 
-class LinkParser():
+class LinkParser:
     # ToDo: document: files must be relative to document being checked
     # ToDo: how to thread ..? just check with os.path.exists()? needs base
     # directory
@@ -91,7 +91,7 @@ class LinkParser():
         """ Parses all links from the file and stores them in the dictionary
         that has following structure:
         "file": name of the file, where the link is stored
-        "type": type of the link - this should be as follows:
+        "link_type": type of the link - this should be as follows:
             "inline": basic inline link in square brackets, syntax
             "inline_with_title": inline link that contains title
             "footnote": link to the footnote that is referenced somewhere else
@@ -125,22 +125,19 @@ class LinkParser():
             links = re.compile(reg_expr).findall(text.replace('\n', ''))
             if len(line_nums) != len(links):
                 #  TODO: Change print to error and throw it
-                print(len(line_nums), len(links), description, links, line_nums[0])
                 print("Internal error: number of numbers should be the same"
                       " as the number of regular expression matches.")
-
-            print(links)
 
             for i in range(len(links)):
                 self.__links_list.append(self.create_dct(
                     file_name, line_nums[i], description, links[i]))
 
-    def create_dct(self, file_name, line_no, type, link):
+    def create_dct(self, file_name, line_no, link_type, link):
         """ This function generates the dictionary that contains all the
         important data for the link. """
-        link_dict = {}
+        link_dict = dict()
         link_dict["file"] = file_name
-        link_dict["type"] = type
+        link_dict["link_type"] = link_type
         link_dict["line_no"] = line_no + 1
         if isinstance(link, str):  # angle_brackets and text_link_itself
             link_dict["link"] = link
@@ -151,11 +148,12 @@ class LinkParser():
             link_dict["link_title"] = link[2]  # link title
 
         # strip all unnecessary characters from the link
-        link_dict["link"] = self.cleanse_link(type, link_dict["link"])
+        link_dict["link"] = self.cleanse_link(link_dict["link"])
 
         return link_dict
 
-    def cleanse_link(self, type, link):
+    @staticmethod
+    def cleanse_link(self, link):
         """ This function clear the string as the regular expression is
         not able to return the string in the preferred form. """
         if not isinstance(link, str) or len(link) < 1:
@@ -168,6 +166,7 @@ class LinkParser():
             output = output[output.find('[') + 1: output.find(']')]
         return output
 
+    @staticmethod
     def get_starting_line_numbers(self, reg_expr, text):
         """ This method searches for the line number of the regular expression
         matches.
@@ -226,6 +225,7 @@ class DetectCorrectEmail():
         'mailto' is the starting substring of the link. """
         return link.find("mailto:") == 0
 
+
 class TitleIsTooLong():
     """ Title should be 'reasonably' long. Long text lowers the readability
     and they also can be caused by a incorrect syntax of link. """
@@ -234,8 +234,6 @@ class TitleIsTooLong():
 
 # TODO: count spaces using regexpr
 # TODO: Link with title
-        # move title to the title
+    # move title to the title
 # TODO: link within picture description
 # value = d.get(key)
-
-
