@@ -21,12 +21,12 @@ those for the link checker.
 import os
 import re
 
-INLINE_LINK = r"\[([^\]]+)\]\s*\(([^)^\"]+)\)"
-INLINE_LINK_WITH_TITLE = r"\[([^\]]+)\]\s*\(([^)]+(\"|')[^)]+)\)"
-FOOTNOTE_LINK_TEXT = r"\[([^\]]+)\]\s*\[([^\]]+)\]"
-REFERENCE = r"\[([^\]]+)\]:\s*([\S^['\"]]+)"
-REF_WITH_TITLE_APOSTROPHE = r"\[([^\]]+)\]:\s*(\S+\s'.*')"
-REF_WITH_TITLE_QUOTES = r"\[([^\]]+)\]:\s*(\S+)\s\"(.*)\""
+INLINE_LINK = r"\[([^\]]+)\](\s*)\(([^)^\"]+)\)"
+INLINE_LINK_WITH_TITLE = r"\[([^\]]+)\](\s*)\(([^)]+(\"|')[^)]+)\)"
+FOOTNOTE_LINK_TEXT = r"\[([^\]]+)\](\s*)\[([^\]]+)\]"
+REFERENCE = r"\[([^\]]+)\]:(\s*)([\S^['\"]]+)"
+REF_WITH_TITLE_APOSTROPHE = r"\[([^\]]+)\]:(\s*)(\S+\s'.*')"
+REF_WITH_TITLE_QUOTES = r"\[([^\]]+)\]:(\s*)(\S+)\s\"(.*)\""
 STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]"
 ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<[^>]+>"
 
@@ -118,7 +118,6 @@ class LinkParser:
 
         text = md_file_data.read()
         for description, reg_expr in self.__regexps.items():
-
             # detects the line numbers
             line_nums = self.get_starting_line_numbers(reg_expr, text)
             # detect links using regexps (no need to have line breaks)
@@ -153,7 +152,7 @@ class LinkParser:
         return link_dict
 
     @staticmethod
-    def cleanse_link(self, link):
+    def cleanse_link(link):
         """ This static method clear the string as the regular expression is
         not able to return the string in the preferred form. """
         if not isinstance(link, str) or len(link) < 1:
@@ -167,7 +166,7 @@ class LinkParser:
         return output
 
     @staticmethod
-    def get_starting_line_numbers(self, reg_expr, text):
+    def get_starting_line_numbers(reg_expr, text):
         """ This method searches for the line number of the regular expression
         matches.
         Note: This is not the most efficient way to do this. In case, the
