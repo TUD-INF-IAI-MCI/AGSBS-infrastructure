@@ -26,8 +26,8 @@ INLINE_LINK_WITH_TITLE = r"(!?)\[([^\]]+)\](\s*)\((\S+)\s*['\"](.+)['\"]\)"
 FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\](\s*)\[([^\]]+)\]"
 REFERENCE = r"(!?)\[([^\]]+)\]:(\s*)(\S+)"
 # ^ accepts also ones with title that is ignored (not necessary for testing)
-STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]"
-ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<[^>]+>"
+STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\][\[\]]?\s*[^\[\(\s\:]"
+ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<([^>]+)>"  # should be revised
 
 """
 Issue #20
@@ -58,10 +58,9 @@ class LinkParser:
     # ToDo: how to thread ..? just check with os.path.exists()? needs base
     # directory
     # def __init__(self, links, images, files):
-    def __init__(self, file_tree):
+    def __init__(self):
         self.__errors = []  # generated errors
-        self.__file_tree = file_tree  # files to be examined
-        self.__links_list = []  # links generated in the examined files
+        self.links_list = []  # links generated in the examined files
         self.__regexps = {"inline": INLINE_LINK,
                           "inline_with_title": INLINE_LINK_WITH_TITLE,
                           "footnote": FOOTNOTE_LINK_TEXT,
@@ -70,11 +69,11 @@ class LinkParser:
                           "angle_brackets": ANGLE_BRACKETS_LINK
                           }
 
-    def get_list_of_md_files(self):
+    def get_list_of_md_files(self, file_tree):
         """ This method creates list of paths to .md files which links should
         be tested. It also returns the name of the file. """
         md_file_list = []
-        for directory_name, _, file_list in self.__file_tree:
+        for directory_name, _, file_list in file_tree:
             for file in file_list:
                 if file.endswith(".md"):  # only .md files will be inspected
                     file_path = os.path.join(directory_name, file)
@@ -84,7 +83,7 @@ class LinkParser:
                         md_file_list.append((file_path, file))
         return md_file_list
 
-    def parse_all_links_in_md_files(self):
+    def parse_all_links_in_md_files(self, file_tree):
         """ Parses all links in the .md files and stores them in the dictionary
         that has the following structure:
         "file": name of the file, where the link is stored
@@ -104,12 +103,12 @@ class LinkParser:
         "link": explored link
         "link_text": contains link text, if exists
         "link_title": title of the link, if exists """
-        for file_path, file_name in self.get_list_of_md_files():
+        for file_path, file_name in self.get_list_of_md_files(file_tree):
             # encoding should be already checked
             with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
                 self.find_links_in_markdown(file_data.read(), file_name)
-        print(self.__links_list)  # TODO: remove this testing string
+        print(self.links_list)  # TODO: remove this testing string
 
     def find_links_in_markdown(self, text, file_name):
         """ Updates the list of dictionaries that contains the links retrieved
@@ -126,8 +125,8 @@ class LinkParser:
                                  "matches in file {}.".format(file_name))
 
             for i, link in enumerate(links):
-                self.__links_list.append(self.create_dct(
-                    file_name, line_nums[i], description, link))
+                self.links_list.append(self.create_dct(file_name, line_nums[i],
+                                                       description, link))
 
     def create_dct(self, file_name, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
@@ -229,6 +228,7 @@ class TitleIsTooLong():
     """ Title should be 'reasonably' long. Long text lowers the readability
     and they also can be caused by a incorrect syntax of link. """
     pass
+
 
 class IncorrectImageFormattingUsingAngleBrackets():
     """It is not allowed to enter image using angle brackets."""
