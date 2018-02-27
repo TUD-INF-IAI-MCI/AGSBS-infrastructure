@@ -191,7 +191,7 @@ class Mistkerl():
         in the run function in a clearer way.
         """
         lnk_check = LinkParser(file_tree)
-        lnk_check.parse_links()
+        lnk_check.parse_all_links_in_md_files()
 
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""

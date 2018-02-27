@@ -25,7 +25,7 @@ INLINE_LINK = r"(!?)\[([^\]]+)\](\s*)\(([^)\"']+)\)"
 INLINE_LINK_WITH_TITLE = r"(!?)\[([^\]]+)\](\s*)\((\S+)\s*['\"](.+)['\"]\)"
 FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\](\s*)\[([^\]]+)\]"
 REFERENCE = r"(!?)\[([^\]]+)\]:(\s*)(\S+)"
-# ^ accepts also ones with title (title is not necessary to test)
+# ^ accepts also ones with title that is ignored (not necessary for testing)
 STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]"
 ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<[^>]+>"
 
@@ -84,8 +84,8 @@ class LinkParser:
                         md_file_list.append((file_path, file))
         return md_file_list
 
-    def parse_links(self):
-        """ Parses all links from the file and stores them in the dictionary
+    def parse_all_links_in_md_files(self):
+        """ Parses all links in the .md files and stores them in the dictionary
         that has the following structure:
         "file": name of the file, where the link is stored
         "link_type": type of the link - this should be as follows:
@@ -108,14 +108,13 @@ class LinkParser:
             # encoding should be already checked
             with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
-                self.find_md_links(file_data, file_name)
+                self.find_links_in_markdown(file_data.read(), file_name)
         print(self.__links_list)  # TODO: remove this testing string
 
-    def find_md_links(self, md_file_data, file_name):
+    def find_links_in_markdown(self, text, file_name):
         """ Updates the list of dictionaries that contains the links retrieved
         from the markdown string. """
 
-        text = md_file_data.read()
         for description, reg_expr in self.__regexps.items():
             # detects the line numbers
             line_nums = self.get_starting_line_numbers(reg_expr, text)
