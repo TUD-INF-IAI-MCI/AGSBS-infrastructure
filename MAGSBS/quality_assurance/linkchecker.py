@@ -21,16 +21,19 @@ those for the link checker.
 import os
 import re
 
-INLINE_LINK = r"\[([^\]]+)\](\s*)\(([^)^\"]+)\)"
-INLINE_LINK_WITH_TITLE = r"\[([^\]]+)\](\s*)\(([^)]+(\"|')[^)]+)\)"
-FOOTNOTE_LINK_TEXT = r"\[([^\]]+)\](\s*)\[([^\]]+)\]"
-REFERENCE = r"\[([^\]]+)\]:(\s*)([\S^['\"]]+)"
-REF_WITH_TITLE_APOSTROPHE = r"\[([^\]]+)\]:(\s*)(\S+\s'.*')"
-REF_WITH_TITLE_QUOTES = r"\[([^\]]+)\]:(\s*)(\S+)\s\"(.*)\""
+INLINE_LINK = r"(!?)\[([^\]]+)\](\s*)\(([^)^\"]+)\)"
+INLINE_LINK_WITH_TITLE = r"(!?)\[([^\]]+)\](\s*)\(([^)]+(\"|')[^)]+)\)"
+FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\](\s*)\[([^\]]+)\]"
+REFERENCE = r"(!?)\[([^\]]+)\]:(\s*)(\S+)"
+# ^ accepts also ones with title (title is not neccessary to test)
+# REF_WITH_TITLE_APOSTROPHE = r"(!?)\[([^\]]+)\]:(\s*)(\S+\s'.*')"
+# REF_WITH_TITLE_QUOTES = r"(!?)\[([^\]]+)\]:(\s*)(\S+)\s\"(.*)\""
 STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\]\s*[^\[\(\s\:]"
 ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<[^>]+>"
 
 """
+Issue #20
+
 A common source of error are broken links. Normal link checkers won't work,
 since they are working on HTML files. It is hence necessary to parse all
 MarkDown links and implement the destination checks manually (to the
@@ -41,9 +44,7 @@ For checking IDs, it is a good idea to generate IDs of the target document.
 Headings get automatic IDs, which can be generated using datastructures.gen_id.
 Furthermore, the user may create own anchors with <span id="foo"/> or the
 div equivalent.
-"""
 
-"""
 Checking links in the markdown document
 - a) parse the links
 - b) test if they are correctly structured
@@ -62,13 +63,13 @@ class LinkParser:
     def __init__(self, file_tree):
         self.__errors = []  # generated errors
         self.__file_tree = file_tree  # files to be examined
-        self.__links_list = []
+        self.__links_list = []  # links generated in the examined files
         self.__regexps = {"inline": INLINE_LINK,
                           "inline_with_title": INLINE_LINK_WITH_TITLE,
                           "footnote": FOOTNOTE_LINK_TEXT,
                           "reference": REFERENCE,
-                          "reference_apostrophe": REF_WITH_TITLE_APOSTROPHE,
-                          "reference_quotes": REF_WITH_TITLE_QUOTES,
+                          # "reference_apostrophe": REF_WITH_TITLE_APOSTROPHE,
+                          # "reference_quotes": REF_WITH_TITLE_QUOTES,
                           "standalone_link": STANDALONE_LINK,
                           "angle_brackets": ANGLE_BRACKETS_LINK
                           }
@@ -77,7 +78,7 @@ class LinkParser:
         """ This method creates list of paths to .md files which links should
         be tested. It also returns the name of the file. """
         md_file_list = []
-        for directory_name, dir_list, file_list in self.__file_tree:
+        for directory_name, _, file_list in self.__file_tree:
             for file in file_list:
                 if file.endswith(".md"):  # only .md files will be inspected
                     file_path = os.path.join(directory_name, file)
@@ -102,14 +103,15 @@ class LinkParser:
             "reference_with_title": reference that contains title
             "angle_brackets": link given by square brackets
         "line_no": number of line where regular expression
+        "is_picture": 'True' if the link is a picture, 'False' otherwise
         "link": explored link
         "link_text": contains link text, if exists
         "link_title": title of the link, if exists """
         for file_path, file_name in self.get_list_of_md_files():
             # encoding should be already checked
-            with open(file_path, encoding="utf-8") as f:
+            with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
-                self.find_md_links(f, file_name)
+                self.find_md_links(file_data, file_name)
         print(self.__links_list)  # TODO: remove this testing string
 
     def find_md_links(self, md_file_data, file_name):
@@ -121,15 +123,15 @@ class LinkParser:
             # detects the line numbers
             line_nums = self.get_starting_line_numbers(reg_expr, text)
             # detect links using regexps (no need to have line breaks)
-            links = re.compile(reg_expr).findall(text.replace('\n', ''))
+            links = re.compile(reg_expr).findall(text.replace('\n', ' '))
             if len(line_nums) != len(links):
-                #  TODO: Change print to error and throw it
-                print("Internal error: number of numbers should be the same"
-                      " as the number of regular expression matches.")
+                raise ValueError("Line numbers count should be the same"
+                                 " as the number of regular expression "
+                                 "matches in file {}.".format(file_name))
 
-            for i in range(len(links)):
+            for i, link in enumerate(links):
                 self.__links_list.append(self.create_dct(
-                    file_name, line_nums[i], description, links[i]))
+                    file_name, line_nums[i], description, link))
 
     def create_dct(self, file_name, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
@@ -140,16 +142,21 @@ class LinkParser:
         link_dict["line_no"] = line_no + 1
         if isinstance(link, str):  # angle_brackets and text_link_itself
             link_dict["link"] = link
-        if isinstance(link, tuple) and len(link) > 1:  # result has two parts
-            link_dict["link_text"] = link[0]  # link text
-            link_dict["link"] = link[1]  # link itself
-        if isinstance(link, tuple) and len(link) > 2:
-            link_dict["link_title"] = link[2]  # link title
+        if isinstance(link, tuple) and len(link) > 3:
+            link_dict["is_image"] = True if link[0] == "!" else False
+            link_dict["link_text"] = link[1]
+            # number of spaces between brackets
+            link_dict["spaces"] = len(link[2])
+            link_dict["link"] = link[3]  # link itself
+        if isinstance(link, tuple) and len(link) > 4:
+            link_dict["link_title"] = link[4]
 
         # strip all unnecessary characters from the link
         link_dict["link"] = self.cleanse_link(link_dict["link"])
 
         return link_dict
+
+    def remove_duplicates
 
     @staticmethod
     def cleanse_link(link):
@@ -217,7 +224,6 @@ class TitleInLinkCannotContainFormatting():
 class DetectCorrectEmail():
     """ When 'mailto:' is used, the structure of the email address should
     be detected. """
-    pass
 
     def detect_email_address(self, link):
         """ Detecting, if the link is email address. It only checks, if the
@@ -230,9 +236,10 @@ class TitleIsTooLong():
     and they also can be caused by a incorrect syntax of link. """
     pass
 
+class IncorrectImageFormattingUsingAngleBrackets():
+    """It is not allowed to enter image using angle brackets."""
+    pass
 
-# TODO: count spaces using regexpr
-# TODO: Link with title
-    # move title to the title
+# TODO: Detect images
 # TODO: link within picture description
 # value = d.get(key)
