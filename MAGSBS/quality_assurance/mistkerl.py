@@ -190,7 +190,7 @@ class Mistkerl():
         Temporary function for running linkchecker. This should be implemented
         in the run function in a clearer way.
         """
-        lnk_check = LinkParser()
+        lnk_check = LinkExtractor()
         lnk_check.parse_all_links_in_md_files(file_tree)
 
     def run_directory_filters(self, dname):

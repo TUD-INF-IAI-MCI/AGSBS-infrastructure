@@ -25,9 +25,13 @@ INLINE_LINK = r"(!?)\[([^\]]+)\](\s*)\(([^)\"']+)\)"
 INLINE_LINK_WITH_TITLE = r"(!?)\[([^\]]+)\](\s*)\((\S+)\s*['\"](.+)['\"]\)"
 FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\](\s*)\[([^\]]+)\]"
 REFERENCE = r"(!?)\[([^\]]+)\]:(\s*)(\S+)"
-# ^ accepts also ones with title that is ignored (not necessary for testing)
+# ^ accepts also ones with title that is ignored (unimportant for link testing)
 STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\][\[\]]?\s*[^\[\(\s\:]"
-ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<([^>]+)>"  # should be revised
+# ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<([^>]+)>"
+ANGLE_BRACKETS_LINK = r"<\S+?>"
+# This ^ matches also the reference links in format [1]: <google.com>, however
+# this does not change the asymptotic complexity. For better performance, the
+# markdown file should be preprocessed [1]: <google.com> => [1]: google.com
 
 """
 Issue #20
@@ -53,11 +57,12 @@ Checking links in the markdown document
 """
 
 
-class LinkParser:
-    # ToDo: document: files must be relative to document being checked
-    # ToDo: how to thread ..? just check with os.path.exists()? needs base
-    # directory
-    # def __init__(self, links, images, files):
+class LinkExtractor:
+    """ The purpose of this class is to extract all links that has to
+    be checked.
+    Note: This class assumes that markdown links are correctly structured
+    according to the rules specified by pandoc manual, available at
+    https://pandoc.org/MANUAL.html#links """
     def __init__(self):
         self.__errors = []  # generated errors
         self.links_list = []  # links generated in the examined files
@@ -104,7 +109,7 @@ class LinkParser:
         "link_text": contains link text, if exists
         "link_title": title of the link, if exists """
         for file_path, file_name in self.get_list_of_md_files(file_tree):
-            # encoding should be already checked
+            # encoding of the file should be already checked
             with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
                 self.find_links_in_markdown(file_data.read(), file_name)
@@ -148,7 +153,6 @@ class LinkParser:
 
         # strip all unnecessary characters from the link
         link_dict["link"] = self.cleanse_link(link_dict["link"])
-
         return link_dict
 
     @staticmethod
@@ -177,6 +181,14 @@ class LinkParser:
         for match in matches.finditer(text):
             line_numbers.append(text[0:match.start()].count('\n'))
         return line_numbers
+
+
+class LinkParser:
+    # ToDo: document: files must be relative to document being checked
+    # ToDo: how to thread ..? just check with os.path.exists()? needs base
+    # directory
+    def __init__(self, links, images, files):
+        pass
 
     def target_exists(self, target_file_name):
         pass

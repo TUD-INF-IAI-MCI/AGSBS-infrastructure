@@ -1,22 +1,22 @@
 import unittest
 from MAGSBS.quality_assurance.meta import ErrorMessage
-from MAGSBS.quality_assurance.linkchecker import LinkParser
+from MAGSBS.quality_assurance.linkchecker import LinkExtractor
 
 
-class TestLinkParser(unittest.TestCase):
+class TestLinkExtractor(unittest.TestCase):
     # Note: Test cases are taken from https://pandoc.org/MANUAL.html#links
     # and https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 
     def make_comparison(self, test_inputs, test_outputs, test_name):
         for i, in_string in enumerate(test_inputs):  # take all inputs
-            link_checker = LinkParser()
+            link_checker = LinkExtractor()
             link_checker.find_links_in_markdown(in_string, '')
             # first test, if the number of results is as expected
             self.assertTrue(
                 len(test_outputs[i]) == len(link_checker.links_list),
-                "{}: Number of returned dictionaries ({}) is not as "
-                "expected ({})".format(test_name, len(link_checker.links_list),
-                                       len(test_outputs[i])))
+                "{}: For test input {}, the number of returned dictionaries "
+                "({}) is not as expected ({})".format(test_name, i, len(
+                    link_checker.links_list), len(test_outputs[i])))
             for j in range(len(test_outputs[i])):
                 # find the difference to give it as a feedback
                 difference = set(link_checker.links_list[j].items()) ^ \
@@ -127,25 +127,25 @@ class TestLinkParser(unittest.TestCase):
                        " turned into links.\n http://www.example.com or "
                        "<http://www.example.com> and sometimes example.com "
                        "(but not on Github, for example).",
-                       "<http://www.example.com>"]
+                       "<http://www.example.com>",
+                        "<http://www.example.com>pokus<k01.md#heading1>"]
         test_outputs = [[{'file': '', 'link_type': 'angle_brackets',
-                          'line_no': 2, 'link': 'http://www.example.com'}]]
+                          'line_no': 2, 'link': 'http://www.example.com'}],
+                        [{'file': '', 'link_type': 'angle_brackets',
+                          'line_no': 1, 'link': 'http://www.example.com'}],
+                        [{'file': '', 'link_type': 'angle_brackets',
+                          'line_no': 1, 'link': 'http://www.example.com'},
+                         {'file': '', 'link_type': 'angle_brackets',
+                          'line_no': 1, 'link': 'k01.md#heading1'}]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Angle brackets links")
 
-    def test_nested_links(self):
-        # Abc ![<http://test>](google.com/img.jpg) -> first should not be tested or?
-
-        test_inputs = ["- [x] Finish my changes\n[ ] Push my commits to GitHub"]
+    def test_other_links(self):
+        test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub"]
         test_outputs = [
             [{'file': '', 'link_type': 'standalone_link', 'line_no': 1,
               'link': 'x'}, {'file': '', 'link_type': 'standalone_link',
               'line_no': 1, 'link': ' '}]
-
         ]
         # run comparison
-        self.make_comparison(test_inputs, test_outputs, "Nested links")
-
-    def test_broken_links(self):
-        # Try to generate links that could broke the links
-        pass
+        self.make_comparison(test_inputs, test_outputs, "Other links")
