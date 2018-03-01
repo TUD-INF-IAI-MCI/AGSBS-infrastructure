@@ -14,56 +14,52 @@ class TestLinkExtractor(unittest.TestCase):
             # first test, if the number of results is as expected
             self.assertTrue(
                 len(test_outputs[i]) == len(link_checker.links_list),
-                "{}: For test input {}, the number of returned dictionaries "
-                "({}) is not as expected ({})".format(test_name, i, len(
-                    link_checker.links_list), len(test_outputs[i])))
+                "{}: Returned list for string \"{}\" contains "
+                "({}) of dictionaries, but ({}) expected.".format(
+                    test_name, test_inputs[i], len(link_checker.links_list),
+                    len(test_outputs[i])))
             for j in range(len(test_outputs[i])):
                 # find the difference to give it as a feedback
                 difference = set(link_checker.links_list[j].items()) ^ \
                              set(test_outputs[i][j].items())
 
                 self.assertTrue(difference == set(),
-                                "Dictionary on position {}"
+                                "{}: Returned dictionary for string \"{}\""
                                 " is not same as expected. The differences"
-                                " are as follows {}".format(j, difference))
+                                " are as follows {}".format(
+                                    test_name, test_inputs[i], difference))
 
     def test_parsing_inline_links(self):
         test_inputs = ["\nThis is an [inline link](/url), \n and here's [one "
                        "with \n a title](http://fsf.org \"click here for a "
                        "good time!\").",
                        "[Write me!](mailto:sam@green.eggs.ham)",
-                       "[I'm an inline-style link](https://www.google.com)"]
+                       "[I'm an inline-style link](https://www.google.com)",
+                       "[I'm an inline-style link with title]"
+                       "(https://www.google.com \"Google's Homepage\")"
+                       ]
         test_outputs = [
             [{'file': '', 'link_type': 'inline', 'line_no': 2,
-              'is_image': False, 'link_text': 'inline link', 'spaces': 0,
+              'is_image': False, 'link_text': 'inline link',
               'link': '/url'},
-             {'file': '', 'link_type': 'inline_with_title',
+             {'file': '', 'link_type': 'inline',
               'line_no': 3, 'is_image': False,
-              'link_text': 'one with   a title', 'spaces': 0,
-              'link': 'http://fsf.org',
-              'link_title': 'click here for a good time!'}
+              'link_text': 'one with   a title',
+              'link': 'http://fsf.org'}
              ],
             [{'file': '', 'link_type': 'inline', 'line_no': 1,
-              'is_image': False, 'link_text': 'Write me!', 'spaces': 0,
+              'is_image': False, 'link_text': 'Write me!',
               'link': 'mailto:sam@green.eggs.ham'}],
             [{'file': '', 'link_type': 'inline', 'line_no': 1,
               'is_image': False, 'link_text': "I'm an inline-style link",
-              'spaces': 0, 'link': 'https://www.google.com'}]
+              'link': 'https://www.google.com'}],
+            [{'file': '', 'link_type': 'inline',
+               'line_no': 1, 'is_image': False,
+               'link_text': "I'm an inline-style link with title",
+               'link': 'https://www.google.com'}]
         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Inline links")
-
-    def test_parsing_inline_links_with_tile(self):
-        test_inputs = ["[I'm an inline-style link with title]"
-                       "(https://www.google.com \"Google's Homepage\")"]
-        test_outputs = [[{'file': '', 'link_type': 'inline_with_title',
-                          'line_no': 1, 'is_image': False,
-                          'link_text': "I'm an inline-style link with title",
-                          'spaces': 0, 'link': 'https://www.google.com',
-                          'link_title': "Google's Homepage"}]]
-        # run comparison
-        self.make_comparison(test_inputs, test_outputs,
-                             "Inline links with title")
 
     def test_footnote_links(self):
         test_inputs = [
@@ -72,12 +68,11 @@ class TestLinkExtractor(unittest.TestCase):
         test_outputs = [[{'file': '', 'link_type': 'footnote',
                           'line_no': 1, 'is_image': False,
                           'link_text': "I'm a reference-style link",
-                          'spaces': 0,
                           'link': 'Arbitrary case-insensitive reference text'}],
                         [{'file': '', 'link_type': 'footnote', 'line_no': 1,
                           'is_image': False,
                           'link_text': 'You can use numbers for reference - style link definitions',
-                          'spaces': 0, 'link': '1'}],
+                          'link': '1'}]
                         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Footnote links")
@@ -88,35 +83,37 @@ class TestLinkExtractor(unittest.TestCase):
                        "[my label 3]: http://fsf.org (The free software foundation)",
                        "[my label 4]: /bar#special  'A title in single quotes']",
                        "[my label 5]: <http://foo.bar.baz>",
+                       # ^ this one is also detected as angle_brackets link
                        "\n[my label 3]: http://fsf.org \n\t\"The free software foundation\""]
         test_outputs = [
             [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False, 'link_text': 'my label 1', 'spaces': 1,
+              'is_image': False, 'link_text': 'my label 1',
               'link': '/foo/bar.html'}],
             [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False, 'link_text': 'my label 2', 'spaces': 1,
+              'is_image': False, 'link_text': 'my label 2',
               'link': '/foo'}],
             [{'file': '', 'link_type': 'reference', 'line_no': 1,
               'is_image': False, 'link_text': 'my label 3',
-              'spaces': 1, 'link': 'http://fsf.org'}],
+              'link': 'http://fsf.org'}],
             [{'file': '', 'link_type': 'reference', 'line_no': 1,
               'is_image': False,
-              'link_text': 'my label 4', 'spaces': 1,
+              'link_text': 'my label 4',
               'link': '/bar#special'}],
             [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False,
-              'link_text': 'my label 5', 'spaces': 1,
+              'is_image': False, 'link_text': 'my label 5',
+              'link': 'http://foo.bar.baz'},
+             {'file': '', 'link_type': 'angle_brackets', 'line_no': 1,
               'link': 'http://foo.bar.baz'}],
             [{'file': '', 'link_type': 'reference',
               'line_no': 2, 'is_image': False,
-              'link_text': 'my label 3', 'spaces': 1,
+              'link_text': 'my label 3',
               'link': 'http://fsf.org'}]
         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
     def test_standalone_links(self):
-        test_inputs = ["See[my website][]."]
+        test_inputs = ["See [my website][]."]
         test_outputs = [[{'file': '', 'link_type': 'standalone_link',
                           'line_no': 1, 'link': 'my website'}]]
         # run comparison

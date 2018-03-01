@@ -21,17 +21,27 @@ those for the link checker.
 import os
 import re
 
-INLINE_LINK = r"(!?)\[([^\]]+)\](\s*)\(([^)\"']+)\)"
-INLINE_LINK_WITH_TITLE = r"(!?)\[([^\]]+)\](\s*)\((\S+)\s*['\"](.+)['\"]\)"
-FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\](\s*)\[([^\]]+)\]"
-REFERENCE = r"(!?)\[([^\]]+)\]:(\s*)(\S+)"
-# ^ accepts also ones with title that is ignored (unimportant for link testing)
-STANDALONE_LINK = r"[^\]\(\s]\s*\[[^\]]+\][\[\]]?\s*[^\[\(\s\:]"
-# ANGLE_BRACKETS_LINK = r"[^(:\])\s]\s*<([^>]+)>"
-ANGLE_BRACKETS_LINK = r"<\S+?>"
-# This ^ matches also the reference links in format [1]: <google.com>, however
-# this does not change the asymptotic complexity. For better performance, the
-# markdown file should be preprocessed [1]: <google.com> => [1]: google.com
+# Searching for the patterns in the form [link text](link) (also for
+# images with exclamation mark.
+INLINE_LINK = r"(!?)\[([^\]]+)\]\(([^)\s]+).*?\)"
+
+# Searching for the patterns in the form [link text][link ref] (also for
+# images with exclamation mark. This should be coupled with the reference.
+FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\]\[([^\]]+)\]"
+
+# Accepts also ones with title that is ignored. Detection for exclamation mark
+# is used due to compatibility with the structure of previous regexps.
+REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
+
+# Detect all links in format [link] or [link][]. Ale cases, when it is a part
+# of inline/footnote/reference links are ignored
+STANDALONE_LINK = r"[^\]]\s*?\[(.*?)\][\[\]]?\s*?[^\[\(\:]"
+
+# Following regexp matches also the reference links in
+# format [1]: <google.com>, however this does not change the asymptotic
+# complexity. For better performance, the markdown file should be preprocessed
+# [1]: <google.com> => [1]: google.com
+ANGLE_BRACKETS_LINK = r"<(\S+?)>"
 
 """
 Issue #20
@@ -67,7 +77,6 @@ class LinkExtractor:
         self.__errors = []  # generated errors
         self.links_list = []  # links generated in the examined files
         self.__regexps = {"inline": INLINE_LINK,
-                          "inline_with_title": INLINE_LINK_WITH_TITLE,
                           "footnote": FOOTNOTE_LINK_TEXT,
                           "reference": REFERENCE,
                           "standalone_link": STANDALONE_LINK,
@@ -94,7 +103,6 @@ class LinkExtractor:
         "file": name of the file, where the link is stored
         "link_type": type of the link - this should be as follows:
             "inline": basic inline link in square brackets, syntax
-            "inline_with_title": inline link that contains title
             "footnote": link to the footnote that is referenced somewhere else
                 in the document
             "standalone_link": link in square brackets referenced somewhere
@@ -142,32 +150,12 @@ class LinkExtractor:
         link_dict["line_no"] = line_no + 1
         if isinstance(link, str):  # angle_brackets and text_link_itself
             link_dict["link"] = link
-        if isinstance(link, tuple) and len(link) > 3:
+        if isinstance(link, tuple) and len(link) > 2:
             link_dict["is_image"] = True if link[0] == "!" else False
             link_dict["link_text"] = link[1]
-            # number of spaces between brackets
-            link_dict["spaces"] = len(link[2])
-            link_dict["link"] = link[3]  # link itself
-        if isinstance(link, tuple) and len(link) > 4:
-            link_dict["link_title"] = link[4]
+            link_dict["link"] = link[2]  # link itself
 
-        # strip all unnecessary characters from the link
-        link_dict["link"] = self.cleanse_link(link_dict["link"])
         return link_dict
-
-    @staticmethod
-    def cleanse_link(link):
-        """ This static method clear the string as the regular expression is
-        not able to return the string in the preferred form. """
-        if not isinstance(link, str) or len(link) < 1:
-            return ""
-
-        output = link
-        if output[0] == '<' and output[-1] == '>':
-            output = output[1:-1]
-        if '[' in link and ']' in link:  # strip trash before [ and after ]
-            output = output[output.find('[') + 1: output.find(']')]
-        return output
 
     @staticmethod
     def get_starting_line_numbers(reg_expr, text):
