@@ -335,3 +335,132 @@ class TestCodeBlockRemoval(unittest.TestCase):
                 "Expected {} in data, but not found.  Got: ".format(start, data))
         self.assertEqual(data[3][0].strip(), '')
 
+##############################################################################
+# test link extraction
+
+class TestLinkExtractor(unittest.TestCase):
+    # Note: Test cases are taken from https://pandoc.org/MANUAL.html#links
+    # and https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+
+    def make_comparison(self, test_inputs, test_outputs, test_name):
+        for i, in_string in enumerate(test_inputs):  # take all inputs
+            result = mp.find_links_in_markdown(in_string)
+            # first test, if the number of results is as expected
+            self.assertTrue(
+                len(test_outputs[i]) == len(result),
+                "{}: Returned list for string \"{}\" contains "
+                "({}) triple(s), but ({}) expected.".format(
+                    test_name, test_inputs[i], len(result),
+                    len(test_outputs[i])))
+            self.assertTrue(result == test_outputs[i],
+                            "{}: Returned triple(s) for string \"{}\""
+                            " is(are) not the same.\nExpected: {}\n"
+                            "Returned: {}".format(test_name, test_inputs[i],
+                                                  test_outputs[i], result))
+
+
+    def test_parsing_inline_links(self):
+        test_inputs = ["\nThis is an [inline link](/url), \n and here's [one "
+                       "with \n a title](http://fsf.org \"click here for a "
+                       "good time!\").",
+                       "[Write me!](mailto:sam@green.eggs.ham)",
+                       "[I'm an inline-style link](https://www.google.com)",
+                       "[I'm an inline-style link with title]"
+                       "(https://www.google.com \"Google's Homepage\")"
+                       ]
+        test_outputs = [[(2, 'inline', ('', 'inline link', '/url')),
+                         (3, 'inline', ('', 'one with   a title', 'http://fsf.org'))],
+                        [(1, 'inline', ('', 'Write me!', 'mailto:sam@green.eggs.ham'))],
+                        [(1, 'inline', ('', "I'm an inline-style link", 'https://www.google.com'))],
+                        [(1, 'inline', ('', "I'm an inline-style link with title", 'https://www.google.com'))]
+                        ]
+        # run comparison
+        self.make_comparison(test_inputs, test_outputs, "Inline links")
+
+"""
+    def test_footnote_links(self):
+        test_inputs = [
+            "[I'm a reference-style link][Arbitrary case-insensitive reference text]",
+            "[You can use numbers for reference - style link definitions][1]"]
+        test_outputs = [[{'file': '', 'link_type': 'footnote',
+                          'line_no': 1, 'is_image': False,
+                          'link_text': "I'm a reference-style link",
+                          'link': 'Arbitrary case-insensitive reference text'}],
+                        [{'file': '', 'link_type': 'footnote', 'line_no': 1,
+                          'is_image': False,
+                          'link_text': 'You can use numbers for reference - style link definitions',
+                          'link': '1'}]
+                        ]
+        # run comparison
+        self.make_comparison(test_inputs, test_outputs, "Footnote links")
+
+    def test_reference_links(self):
+        test_inputs = ["[my label 1]: /foo/bar.html  \"My title, optional\"",
+                       "[my label 2]: /foo",
+                       "[my label 3]: http://fsf.org (The free software foundation)",
+                       "[my label 4]: /bar#special  'A title in single quotes']",
+                       "[my label 5]: <http://foo.bar.baz>",
+                       # ^ this one is also detected as angle_brackets link
+                       "\n[my label 3]: http://fsf.org \n\t\"The free software foundation\""]
+        test_outputs = [
+            [{'file': '', 'link_type': 'reference', 'line_no': 1,
+              'is_image': False, 'link_text': 'my label 1',
+              'link': '/foo/bar.html'}],
+            [{'file': '', 'link_type': 'reference', 'line_no': 1,
+              'is_image': False, 'link_text': 'my label 2',
+              'link': '/foo'}],
+            [{'file': '', 'link_type': 'reference', 'line_no': 1,
+              'is_image': False, 'link_text': 'my label 3',
+              'link': 'http://fsf.org'}],
+            [{'file': '', 'link_type': 'reference', 'line_no': 1,
+              'is_image': False,
+              'link_text': 'my label 4',
+              'link': '/bar#special'}],
+            [{'file': '', 'link_type': 'reference', 'line_no': 1,
+              'is_image': False, 'link_text': 'my label 5',
+              'link': 'http://foo.bar.baz'},
+             {'file': '', 'link_type': 'angle_brackets', 'line_no': 1,
+              'link': 'http://foo.bar.baz'}],
+            [{'file': '', 'link_type': 'reference',
+              'line_no': 2, 'is_image': False,
+              'link_text': 'my label 3',
+              'link': 'http://fsf.org'}]
+        ]
+        # run comparison
+        self.make_comparison(test_inputs, test_outputs, "Reference links")
+
+    def test_standalone_links(self):
+        test_inputs = ["See [my website][]."]
+        test_outputs = [[{'file': '', 'link_type': 'standalone_link',
+                          'line_no': 1, 'link': 'my website'}]]
+        # run comparison
+        self.make_comparison(test_inputs, test_outputs, "Standalone links")
+
+    def test_angle_brackets_links(self):
+        test_inputs = ["URLs and URLs in angle brackets will automatically get"
+                       " turned into links.\n http://www.example.com or "
+                       "<http://www.example.com> and sometimes example.com "
+                       "(but not on Github, for example).",
+                       "<http://www.example.com>",
+                        "<http://www.example.com>pokus<k01.md#heading1>"]
+        test_outputs = [[{'file': '', 'link_type': 'angle_brackets',
+                          'line_no': 2, 'link': 'http://www.example.com'}],
+                        [{'file': '', 'link_type': 'angle_brackets',
+                          'line_no': 1, 'link': 'http://www.example.com'}],
+                        [{'file': '', 'link_type': 'angle_brackets',
+                          'line_no': 1, 'link': 'http://www.example.com'},
+                         {'file': '', 'link_type': 'angle_brackets',
+                          'line_no': 1, 'link': 'k01.md#heading1'}]]
+        # run comparison
+        self.make_comparison(test_inputs, test_outputs, "Angle brackets links")
+
+    def test_other_links(self):
+        test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub"]
+        test_outputs = [
+            [{'file': '', 'link_type': 'standalone_link', 'line_no': 1,
+              'link': 'x'}, {'file': '', 'link_type': 'standalone_link',
+              'line_no': 1, 'link': ' '}]
+        ]
+        # run comparison
+        self.make_comparison(test_inputs, test_outputs, "Other links")
+"""

@@ -16,6 +16,7 @@ from .. import config, datastructures, errors, roman
 
 from .headings import extract_headings_from_par, extract_headings
 from .remove_codeblocks import rm_codeblocks
+from .links import find_links_in_markdown
 
 # this must be in mparser, because otherwise there will be a cyclic dependency
 # between mparser and filesystem

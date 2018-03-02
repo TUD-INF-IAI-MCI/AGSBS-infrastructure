@@ -2,7 +2,7 @@
 # details.
 #
 # (c) 2018 Sebastian Humenda <shumenda |at|gmx |dot| de>
-#               Jaromir Plhak <xplhak |at| gmail |dot| com>
+#   Jaromir Plhak <xplhak |at| gmail |dot| com>
 
 """
 Link checker for MarkDown documents.
@@ -19,29 +19,7 @@ those for the link checker.
 """
 
 import os
-import re
-
-# Searching for the patterns in the form [link text](link) (also for
-# images with exclamation mark.
-INLINE_LINK = r"(!?)\[([^\]]+)\]\(([^)\s]+).*?\)"
-
-# Searching for the patterns in the form [link text][link ref] (also for
-# images with exclamation mark. This should be coupled with the reference.
-FOOTNOTE_LINK_TEXT = r"(!?)\[([^\]]+)\]\[([^\]]+)\]"
-
-# Accepts also ones with title that is ignored. Detection for exclamation mark
-# is used due to compatibility with the structure of previous regexps.
-REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
-
-# Detect all links in format [link] or [link][]. Ale cases, when it is a part
-# of inline/footnote/reference links are ignored
-STANDALONE_LINK = r"[^\]]\s*?\[(.*?)\][\[\]]?\s*?[^\[\(\:]"
-
-# Following regexp matches also the reference links in
-# format [1]: <google.com>, however this does not change the asymptotic
-# complexity. For better performance, the markdown file should be preprocessed
-# [1]: <google.com> => [1]: google.com
-ANGLE_BRACKETS_LINK = r"<(\S+?)>"
+from .. import mparser
 
 """
 Issue #20
@@ -75,13 +53,7 @@ class LinkExtractor:
     https://pandoc.org/MANUAL.html#links """
     def __init__(self):
         self.__errors = []  # generated errors
-        self.links_list = []  # links generated in the examined files
-        self.__regexps = {"inline": INLINE_LINK,
-                          "footnote": FOOTNOTE_LINK_TEXT,
-                          "reference": REFERENCE,
-                          "standalone_link": STANDALONE_LINK,
-                          "angle_brackets": ANGLE_BRACKETS_LINK
-                          }
+        self.links_list = []  # dicts of links generated in the examined files
 
     def get_list_of_md_files(self, file_tree):
         """ This method creates list of paths to .md files which links should
@@ -105,7 +77,7 @@ class LinkExtractor:
             "inline": basic inline link in square brackets, syntax
             "footnote": link to the footnote that is referenced somewhere else
                 in the document
-            "standalone_link": link in square brackets referenced somewhere
+            "standalone": link in square brackets referenced somewhere
                 else in the document
             "reference": reference to the footnote and standalone_links types.
                 References with titles are not detected as they are not
@@ -120,26 +92,11 @@ class LinkExtractor:
             # encoding of the file should be already checked
             with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
-                self.find_links_in_markdown(file_data.read(), file_name)
+                data = mparser.find_links_in_markdown(file_data.read())
+                for link_dict in data:
+                    self.links_list.append(self.create_dct(
+                        file_name, link_dict[0], link_dict[1], link_dict[2]))
         print(self.links_list)  # TODO: remove this testing string
-
-    def find_links_in_markdown(self, text, file_name):
-        """ Updates the list of dictionaries that contains the links retrieved
-        from the markdown string. """
-
-        for description, reg_expr in self.__regexps.items():
-            # detects the line numbers
-            line_nums = self.get_starting_line_numbers(reg_expr, text)
-            # detect links using regexps (no need to have line breaks)
-            links = re.compile(reg_expr).findall(text.replace('\n', ' '))
-            if len(line_nums) != len(links):
-                raise ValueError("Line numbers count should be the same"
-                                 " as the number of regular expression "
-                                 "matches in file {}.".format(file_name))
-
-            for i, link in enumerate(links):
-                self.links_list.append(self.create_dct(file_name, line_nums[i],
-                                                       description, link))
 
     def create_dct(self, file_name, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
@@ -156,19 +113,6 @@ class LinkExtractor:
             link_dict["link"] = link[2]  # link itself
 
         return link_dict
-
-    @staticmethod
-    def get_starting_line_numbers(reg_expr, text):
-        """ This method searches for the line number of the regular expression
-        matches.
-        Note: This is not the most efficient way to do this. In case, the
-        examined data will have non-trivial length and number of links,
-        this function should be reimplemented. """
-        line_numbers = []
-        matches = re.compile(reg_expr, re.MULTILINE | re.DOTALL)
-        for match in matches.finditer(text):
-            line_numbers.append(text[0:match.start()].count('\n'))
-        return line_numbers
 
 
 class LinkParser:
