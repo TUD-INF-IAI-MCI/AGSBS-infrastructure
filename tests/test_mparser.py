@@ -377,19 +377,13 @@ class TestLinkExtractor(unittest.TestCase):
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Inline links")
 
-"""
+
     def test_footnote_links(self):
         test_inputs = [
             "[I'm a reference-style link][Arbitrary case-insensitive reference text]",
             "[You can use numbers for reference - style link definitions][1]"]
-        test_outputs = [[{'file': '', 'link_type': 'footnote',
-                          'line_no': 1, 'is_image': False,
-                          'link_text': "I'm a reference-style link",
-                          'link': 'Arbitrary case-insensitive reference text'}],
-                        [{'file': '', 'link_type': 'footnote', 'line_no': 1,
-                          'is_image': False,
-                          'link_text': 'You can use numbers for reference - style link definitions',
-                          'link': '1'}]
+        test_outputs = [[(1, 'footnote', ('', "I'm a reference-style link", 'Arbitrary case-insensitive reference text'))],
+                        [(1, 'footnote', ('', 'You can use numbers for reference - style link definitions', '1'))]
                         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Footnote links")
@@ -401,38 +395,22 @@ class TestLinkExtractor(unittest.TestCase):
                        "[my label 4]: /bar#special  'A title in single quotes']",
                        "[my label 5]: <http://foo.bar.baz>",
                        # ^ this one is also detected as angle_brackets link
-                       "\n[my label 3]: http://fsf.org \n\t\"The free software foundation\""]
+                       "\n[my label 6]: http://fsf.org \n\t\"The free software foundation\""]
         test_outputs = [
-            [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False, 'link_text': 'my label 1',
-              'link': '/foo/bar.html'}],
-            [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False, 'link_text': 'my label 2',
-              'link': '/foo'}],
-            [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False, 'link_text': 'my label 3',
-              'link': 'http://fsf.org'}],
-            [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False,
-              'link_text': 'my label 4',
-              'link': '/bar#special'}],
-            [{'file': '', 'link_type': 'reference', 'line_no': 1,
-              'is_image': False, 'link_text': 'my label 5',
-              'link': 'http://foo.bar.baz'},
-             {'file': '', 'link_type': 'angle_brackets', 'line_no': 1,
-              'link': 'http://foo.bar.baz'}],
-            [{'file': '', 'link_type': 'reference',
-              'line_no': 2, 'is_image': False,
-              'link_text': 'my label 3',
-              'link': 'http://fsf.org'}]
+            [(1, 'reference', ('', 'my label 1', '/foo/bar.html'))],
+            [(1, 'reference', ('', 'my label 2', '/foo'))],
+            [(1, 'reference', ('', 'my label 3', 'http://fsf.org'))],
+            [(1, 'reference', ('', 'my label 4', '/bar#special'))],
+            [(1, 'reference', ('', 'my label 5', 'http://foo.bar.baz')),
+             (1, 'angle_brackets', 'http://foo.bar.baz')],
+            [(2, 'reference', ('', 'my label 6', 'http://fsf.org'))]
         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
     def test_standalone_links(self):
         test_inputs = ["See [my website][]."]
-        test_outputs = [[{'file': '', 'link_type': 'standalone_link',
-                          'line_no': 1, 'link': 'my website'}]]
+        test_outputs = [[(1, 'standalone', 'my website')]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
@@ -443,24 +421,15 @@ class TestLinkExtractor(unittest.TestCase):
                        "(but not on Github, for example).",
                        "<http://www.example.com>",
                         "<http://www.example.com>pokus<k01.md#heading1>"]
-        test_outputs = [[{'file': '', 'link_type': 'angle_brackets',
-                          'line_no': 2, 'link': 'http://www.example.com'}],
-                        [{'file': '', 'link_type': 'angle_brackets',
-                          'line_no': 1, 'link': 'http://www.example.com'}],
-                        [{'file': '', 'link_type': 'angle_brackets',
-                          'line_no': 1, 'link': 'http://www.example.com'},
-                         {'file': '', 'link_type': 'angle_brackets',
-                          'line_no': 1, 'link': 'k01.md#heading1'}]]
+        test_outputs = [[(2, 'angle_brackets', 'http://www.example.com')],
+                        [(1, 'angle_brackets', 'http://www.example.com')],
+                        [(1, 'angle_brackets', 'http://www.example.com'),
+                         (1, 'angle_brackets', 'k01.md#heading1')]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Angle brackets links")
 
     def test_other_links(self):
         test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub"]
-        test_outputs = [
-            [{'file': '', 'link_type': 'standalone_link', 'line_no': 1,
-              'link': 'x'}, {'file': '', 'link_type': 'standalone_link',
-              'line_no': 1, 'link': ' '}]
-        ]
+        test_outputs = [[(1, 'standalone', 'x'), (1, 'standalone', ' ')]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Other links")
-"""
