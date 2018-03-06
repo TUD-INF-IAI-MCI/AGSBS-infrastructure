@@ -18,15 +18,18 @@ FOOTNOTE = r"(!?)\[([^\]]+)\]\[([^\]]+)\]"
 # is used due to compatibility with the structure of previous regexps.
 REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
 
-# Detect all links in format [link] or [link][]. Ale cases, when it is a part
-# of inline/footnote/reference links are ignored
-STANDALONE = r"[^\]]\s*?\[(.*?)\][\[\]]?\s*?[^\[\(\:]"
+# Detect all links in format [link] or [link][]. When it is a part
+# of inline/footnote/reference, it is not detected
+STANDALONE = r"([^\]]\s*?)\[(.*?)\][\[\]]?\s*?[^\[\(\:]"
+
 
 # Following regexp matches also the reference links in
-# format [1]: <google.com>, however this does not change the asymptotic
+# format [1]: <google.com>, however this does not change the
 # complexity. For better performance, the markdown file should be preprocessed
 # [1]: <google.com> => [1]: google.com
-ANGLE_BRACKETS = r"<(\S+?)>"
+# This also ignores the div and span tags
+# Note: If any other tag will be allowed, this regexp should be updated
+ANGLE_BRACKETS = r"<((?!/?div|/?span)\S*?)>"
 
 REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE,
             "reference": REFERENCE, "standalone": STANDALONE,
@@ -58,8 +61,7 @@ def find_links_in_markdown(text):
     for description, reg_expr in REG_EXPS.items():
         # detects the line numbers
         line_nums = get_starting_line_numbers(reg_expr, text)
-        # detect links using regexps (no need to have line breaks)
-        links = re.compile(reg_expr).findall(text.replace('\n', ' '))
+        links = re.compile(reg_expr).findall(text)
         if len(line_nums) != len(links):
             raise ValueError("Line numbers count should be the same"
                              " as the number of regular expressions.")

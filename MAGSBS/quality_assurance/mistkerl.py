@@ -190,8 +190,12 @@ class Mistkerl():
         Temporary function for running linkchecker. This should be implemented
         in the run function in a clearer way.
         """
-        lnk_check = LinkExtractor()
-        lnk_check.parse_all_links_in_md_files(file_tree)
+        links = LinkExtractor()
+        links.parse_all_links_in_md_files(file_tree)
+        link_check = LinkChecker(links.links_list)
+        link_check.run_checks()
+        for em in link_check.errors:
+            print(em.lineno, ":", em.message)
 
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""

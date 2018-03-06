@@ -369,7 +369,7 @@ class TestLinkExtractor(unittest.TestCase):
                        "(https://www.google.com \"Google's Homepage\")"
                        ]
         test_outputs = [[(2, 'inline', ('', 'inline link', '/url')),
-                         (3, 'inline', ('', 'one with   a title', 'http://fsf.org'))],
+                         (3, 'inline', ('', 'one with \n a title', 'http://fsf.org'))],
                         [(1, 'inline', ('', 'Write me!', 'mailto:sam@green.eggs.ham'))],
                         [(1, 'inline', ('', "I'm an inline-style link", 'https://www.google.com'))],
                         [(1, 'inline', ('', "I'm an inline-style link with title", 'https://www.google.com'))]
@@ -410,7 +410,7 @@ class TestLinkExtractor(unittest.TestCase):
 
     def test_standalone_links(self):
         test_inputs = ["See [my website][]."]
-        test_outputs = [[(1, 'standalone', 'my website')]]
+        test_outputs = [[(1, 'standalone', ('e ', 'my website'))]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
@@ -429,7 +429,20 @@ class TestLinkExtractor(unittest.TestCase):
         self.make_comparison(test_inputs, test_outputs, "Angle brackets links")
 
     def test_other_links(self):
-        test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub"]
-        test_outputs = [[(1, 'standalone', 'x'), (1, 'standalone', ' ')]]
+        test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub",
+                       "<div><div id=\"my_id\"><span></span><div/><span/>"]
+        test_outputs = [[(1, 'standalone', ('- ', 'x')), (1, 'standalone',
+                                                          ('s\n', ' '))],
+                        []]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Other links")
+
+    def test_line_nums(self):
+        test_inputs = ["\n[second]\n<third.md>\n\n[fif\nth](k01.md)\nabs "
+                    "[second]: k07.md"]
+        test_outputs = [[(5, 'inline', ('', 'fif\nth', 'k01.md')),
+                         (7, 'reference', ('', 'second', 'k07.md')),
+                         (1, 'standalone', ('\n', 'second')),
+                         (3, 'angle_brackets', 'third.md')]]
+
+        self.make_comparison(test_inputs, test_outputs, "Line numbers")
