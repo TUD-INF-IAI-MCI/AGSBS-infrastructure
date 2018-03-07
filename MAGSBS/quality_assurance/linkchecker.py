@@ -71,8 +71,8 @@ class LinkExtractor:
 
     @staticmethod
     def get_list_of_md_files(file_tree):
-        """ This method creates list of paths to .md files which links should
-        be tested. It also returns the name of the file. """
+        """ This method creates a list of tuples that contain paths and file
+         name of .md files which links should be tested. """
         md_file_list = []
         for directory_name, _, file_list in file_tree:
             for file in file_list:
@@ -80,7 +80,6 @@ class LinkExtractor:
                     file_path = os.path.join(directory_name, file)
                     # check if file exists
                     if os.path.isfile(file_path):
-                        # whole path for generation, filename for feedback
                         md_file_list.append((file_path, file))
         return md_file_list
 
@@ -94,15 +93,14 @@ class LinkExtractor:
                 in the document
             "standalone": link in square brackets referenced somewhere
                 else in the document
-            "reference": reference to the footnote and standalone_links types.
-                References with titles are not detected as they are not
+            "reference": reference to the footnote and standalone links.
+                References' titles are not detected as they are not
                 relevant to the link testing
             "angle_brackets": link given by square brackets
-        "line_no": number of line where regular expression
-        "is_picture": 'True' if the link is a picture, 'False' otherwise
-        "link": explored link
-        "link_text": contains link text, if exists
-        "link_title": title of the link, if exists """
+        "line_no": number of line on which link is matched
+        "is_image": 'True' if the link is a picture, 'False' otherwise
+        "link": link
+        "link_text": link decription, if exists """
         for file_path, file_name in self.get_list_of_md_files(file_tree):
             # encoding of the file should be already checked
             with open(file_path, encoding="utf-8") as file_data:
@@ -116,7 +114,7 @@ class LinkExtractor:
     @staticmethod
     def create_dct(file_name, file_path, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
-        important data for the link. """
+        important data for the link examination. """
         link_dict = dict()
         link_dict["file"] = file_name
         link_dict["file_path"] = file_path
@@ -126,14 +124,14 @@ class LinkExtractor:
             link_dict["link"] = link
         if isinstance(link, tuple) and len(link) == 2:  # standalone
             # page number update - regexp needs to check previous chars and
-            # it can consume some \n. Therefore, page number is not correct
+            # it can consume some \n. Therefore, page number should not
+            # be correct and needs recalculation
             link_dict["line_no"] += link[0].count('\n')
             link_dict["link"] = link[1]
         if isinstance(link, tuple) and len(link) > 2:
             link_dict["is_image"] = True if link[0] == "!" else False
             link_dict["link_text"] = link[1]
             link_dict["link"] = link[2]  # link itself
-
         return link_dict
 
 
@@ -211,6 +209,7 @@ class LinkChecker:
          executes the checks based on the given link type, its structure and
          place, where it leads. """
         parsed_url = urlparse(link.get("link"))
+        inspect_fragment = False  # specify if anchor should be inspected
         if parsed_url.path:  # if something is in path
             # prepare main paths
             base_dir = os.path.dirname(link.get("file_path"))
@@ -221,11 +220,14 @@ class LinkChecker:
             if is_within_lecture(file_path):
                 if self.check_extension(parsed_url.path, link):
                     # checking .md existence and anchors only for non-images
-                    if not link.get("is_image") and \
-                            self.target_md_file_exists(parsed_url.path, link,
-                                                  file_path):
-                        # check anchor if extension is OK and .md file exists
-                        self.target_anchor_exists(parsed_url, link)
+                    if not link.get("is_image"):
+                        if self.target_md_file_exists(parsed_url.path, link,
+                                                      file_path):
+                            inspect_fragment = True
+        if (parsed_url.fragment and inspect_fragment) or not parsed_url.path:
+            # check fragment only in situation when file is .md file within
+            # project and when path is empty (it is the same file)
+            self.target_anchor_exists(parsed_url, link)
 
     def check_extension(self, path, link):
         """ Checks the correct extension of the file in the given path. It
@@ -258,7 +260,6 @@ class LinkChecker:
                 ErrorMessage("The file given by link {} doesn't exist.".format(
                     parsed_path), link.get("line_no"),
                     link.get("file_path")))
-            return False
 
     def target_md_file_exists(self, parsed_path, link, file_path):
         """ Within the lecture structure, hypertext files are generated from
@@ -272,20 +273,40 @@ class LinkChecker:
             return False
         return True
 
-    def replace_web_extension_with_md(self, path):
+    def target_anchor_exists(self, parsed_url, link):
+        """ Detects if the anchored element within .md file exists. """
+        # check, if the anchor is within same file
+        if self.is_path_same_file(parsed_url.path, link):
+            print("anchor to solve:", parsed_url.fragment)
+
+            # TODO: Implement this
+        else:
+            # TODO: implement this part
+            # First, file should be opened and stored in the cache (it can
+            # be pointed by different link - so no reopen should be needed)
+            # Then, anchor should be checked within the target file
+            pass
+
+    @staticmethod
+    def replace_web_extension_with_md(path):
         """ Replace the hypertext file extension with .md extension """
         for extension in WEB_EXTENSIONS:
             last_dot = path.rfind(".")
-            print(path[last_dot + 1:])
             if len(path) - last_dot - 1 == len(extension) and \
                     path[last_dot + 1:] == extension:
                 return path[:last_dot] + ".md"
         return path  # if no extension passed the condition
 
-    def target_anchor_exists(self, parsed_url, link):
-        """ Detects if the anchored element within .md file exists. """
-        # TODO: Implement this
-        pass
+    @staticmethod
+    def is_path_same_file(path, link):
+        """ This method tests if the file in the link is the same as the
+        file that contains that link."""
+        full_path = os.path.realpath(os.path.join(os.path.dirname(
+            link.get("file_path")), path))
+        full_path = LinkChecker.replace_web_extension_with_md(full_path)
+        # True if path is empty or the result of join is the same
+        return path == "" or \
+               os.path.realpath(link.get("file_path")) == full_path
 
 # ############ MARKDOWN ############ #
 
