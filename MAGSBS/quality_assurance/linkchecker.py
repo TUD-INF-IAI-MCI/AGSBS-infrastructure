@@ -30,14 +30,16 @@ IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
 
 
 def print_list(input_list):
-    """ This function prints the list elements in a readable way. It is used
-    for ErrorMessage generation. """
-    if not input_list:
+    """ This function creates a string from the list elements that can be used
+    for outputs when error occurs. Last element is treated in a special way,
+    therefore simple join cannot be used. It is used specifically for
+    ErrorMessage generation. """
+    if not input_list:  # list should have at least one element
         raise ValueError("At least one extension should be defined for web "
-                         "links and images.")
+                         "links and also for images.")
 
     output = "." + str(input_list[0])
-    if len(input_list) == 1:
+    if len(input_list) == 1:  # return immediately single element
         return output
     for i in range(1, len(input_list) - 1):
         output += ", ." + str(input_list[i])
@@ -46,20 +48,21 @@ def print_list(input_list):
 
 def get_list_of_md_files(file_tree):
     """ This method creates a list of tuples that contain paths and file
-     name of .md files which links should be tested. """
+    name of .md files which links should be tested. """
     md_file_list = []
     for directory_name, _, file_list in file_tree:
         for file in file_list:
             if file.endswith(".md"):  # only .md files will be inspected
                 file_path = os.path.join(directory_name, file)
-                # check if file exists
-                if os.path.isfile(file_path):
+                if os.path.isfile(file_path):  # check if file exists
                     md_file_list.append((file_path, file))
     return md_file_list
 
 
 def replace_web_extension_with_md(path):
-    """ Replace the hypertext file extension with .md extension """
+    """ Replace the hypertext file extension with .md extension. It takes the
+    last dot in the string and if it is there, then it compares all possible
+    extensions. It some of them is the same, then it is replaced by 'md' """
     for extension in WEB_EXTENSIONS:
         last_dot = path.rfind(".")
         if len(path) - last_dot - 1 == len(extension) and \
@@ -69,7 +72,7 @@ def replace_web_extension_with_md(path):
 
 
 class LinkExtractor:
-    """ The purpose of this class is to extract all links that has to
+    """ The purpose of this class is to extract all links that have to
     be checked.
     Note: This class assumes that markdown links are correctly structured
     according to the rules specified by pandoc manual, available at
@@ -78,23 +81,24 @@ class LinkExtractor:
         self.links_list = []  # dicts of links generated in the examined files
 
     def parse_all_links_in_md_files(self, file_tree):
-        """ Parses all links in the .md files and stores them in the dictionary
-        that has the following structure:
+        """ Parses all links in the .md files. Each link is stored in the
+        dictionary that has the following structure:
         "file": name of the file, where the link is stored
+        "file_path": full path to the file, where the link is stored
         "link_type": type of the link - this should be as follows:
-            "inline": basic inline link in square brackets, syntax
+            "inline": basic inline link in square brackets, syntax;
             "footnote": link to the footnote that is referenced somewhere else
-                in the document
+                in the document;
             "standalone": link in square brackets referenced somewhere
-                else in the document
+                else in the document;
             "reference": reference to the footnote and standalone links.
                 References' titles are not detected as they are not
-                relevant to the link testing
-            "angle_brackets": link given by square brackets
-        "line_no": number of line on which link is matched
+                relevant to the link testing;
+        "line_no": number of line on which link is matched;
         "is_image": 'True' if the link is a picture, 'False' otherwise
-        "link": link
-        "link_text": link decription, if exists """
+        "link": link;
+        "link_text": link description, if exists.
+        All dictionaries are added to the link_list attribute. """
         for file_path, file_name in get_list_of_md_files(file_tree):
             # encoding of the file should be already checked
             with open(file_path, encoding="utf-8") as file_data:
@@ -109,20 +113,23 @@ class LinkExtractor:
     def create_dct(file_name, file_path, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
         important data for the link examination. """
+        if not isinstance(link, tuple):
+            raise TypeError(
+                "The processed link shoud be a tuple, but {} was "
+                "returned.".format(type(link)))
+
         link_dict = dict()
         link_dict["file"] = file_name
         link_dict["file_path"] = file_path
         link_dict["link_type"] = link_type
         link_dict["line_no"] = line_no
-        if isinstance(link, str):  # angle_brackets
-            link_dict["link"] = link
-        if isinstance(link, tuple) and len(link) == 2:  # standalone
+        if len(link) == 2:  # standalone
             # page number update - regexp needs to check previous chars and
             # it can consume some \n. Therefore, page number should not
             # be correct and needs recalculation
             link_dict["line_no"] += link[0].count('\n')
             link_dict["link"] = link[1]
-        if isinstance(link, tuple) and len(link) > 2:
+        if len(link) > 2:
             link_dict["is_image"] = True if link[0] == "!" else False
             link_dict["link_text"] = link[1]
             link_dict["link"] = link[2]  # link itself
