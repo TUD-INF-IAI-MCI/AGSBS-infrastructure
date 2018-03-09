@@ -75,8 +75,8 @@ class LinkExtractor:
     """ The purpose of this class is to extract all links that have to
     be checked.
     Note: This class assumes that markdown links are correctly structured
-    according to the rules specified by pandoc manual, available at
-    https://pandoc.org/MANUAL.html#links """
+        according to the rules specified by pandoc manual, available at
+        https://pandoc.org/MANUAL.html#links """
     def __init__(self):
         self.links_list = []  # dicts of links generated in the examined files
 
@@ -105,9 +105,14 @@ class LinkExtractor:
                 # call the function for finding links
                 data = mparser.find_links_in_markdown(file_data.read())
                 for link_dict in data:
-                    self.links_list.append(
-                        self.create_dct(file_name, file_path, link_dict[0],
-                                        link_dict[1], link_dict[2]))
+                    new_dct = self.create_dct(
+                        file_name, file_path, link_dict[0], link_dict[1],
+                        link_dict[2])
+                    # dct can be None in specific case described in the
+                    # create_dct function
+                    if new_dct:
+                        self.links_list.append(new_dct)
+
 
     @staticmethod
     def create_dct(file_name, file_path, line_no, link_type, link):
@@ -124,9 +129,13 @@ class LinkExtractor:
         link_dict["link_type"] = link_type
         link_dict["line_no"] = line_no
         if len(link) == 2:  # standalone
+            # STANDALONE regexp currently produce false positive match with ']'
+            # char in the link[0]. In this cases, dct should not be created
+            if link[0] == ']':
+                return
             # page number update - regexp needs to check previous chars and
-            # it can consume some \n. Therefore, page number should not
-            # be correct and needs recalculation
+            # it can consume \n. Therefore, page number should not
+            # be correct and needs recalculation.
             link_dict["line_no"] += link[0].count('\n')
             link_dict["link"] = link[1]
         if len(link) > 2:

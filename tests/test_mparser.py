@@ -382,8 +382,9 @@ class TestLinkExtractor(unittest.TestCase):
         test_inputs = [
             "[I'm a reference-style link][Arbitrary case-insensitive reference text]",
             "[You can use numbers for reference - style link definitions][1]"]
-        test_outputs = [[(1, 'footnote', ('', "I'm a reference-style link", 'Arbitrary case-insensitive reference text'))],
-                        [(1, 'footnote', ('', 'You can use numbers for reference - style link definitions', '1'))]
+        test_outputs = [[(1, 'footnote', ('', "I'm a reference-style link", 'Arbitrary case-insensitive reference text')),  (1, 'standalone', (']', 'Arbitrary case-insensitive reference text'))],
+                        [(1, 'footnote', ('', 'You can use numbers for reference - style link definitions', '1')), (1, 'standalone', (']', '1'))]
+                        # in both cases second part is false possitive cleared later in the code
                         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Footnote links")
@@ -392,28 +393,32 @@ class TestLinkExtractor(unittest.TestCase):
         test_inputs = ["[my label 1]: /foo/bar.html  \"My title, optional\"",
                        "[my label 2]: /foo",
                        "[my label 3]: http://fsf.org (The free software foundation)",
-                       "[my label 4]: /bar#Special  'A title in single quotes']",
+                       "[my label 4]: /bar#Special  'A title in single quotes'",
                        "[my label 5]: <http://foo.bar.baz>",
-                       # ^ this one is also detected as angle_brackets link
                        "\n[my label 6]: http://fsf.org \n\t\"The free software foundation\""]
         test_outputs = [
             [(1, 'reference', ('', 'my label 1', '/foo/bar.html'))],
             [(1, 'reference', ('', 'my label 2', '/foo'))],
             [(1, 'reference', ('', 'my label 3', 'http://fsf.org'))],
             [(1, 'reference', ('', 'my label 4', '/bar#Special'))],
-            [(1, 'reference', ('', 'my label 5', 'http://foo.bar.baz')),
-             (1, 'angle_brackets', 'http://foo.bar.baz')],
+            [(1, 'reference', ('', 'my label 5', 'http://foo.bar.baz'))],
             [(2, 'reference', ('', 'my label 6', 'http://fsf.org'))]
         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
     def test_standalone_links(self):
-        test_inputs = ["See [my website][]."]
-        test_outputs = [[(1, 'standalone', ('e ', 'my website'))]]
+        test_inputs = ["See [my website][].",
+                       "\n[test2][]",
+                       "[test3][]"]
+        test_outputs = [[(1, 'standalone', (' ', 'my website'))],
+                        [(1, 'standalone', ('\n', 'test2'))],
+                        [(1, 'standalone', ('', 'test3'))]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
+    """
+    Note: Not used in the current version
     def test_angle_brackets_links(self):
         test_inputs = ["URLs and URLs in angle brackets will automatically get"
                        " turned into links.\n http://www.example.com or "
@@ -427,25 +432,26 @@ class TestLinkExtractor(unittest.TestCase):
                          (1, 'angle_brackets', 'k01.md#heading1')]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Angle brackets links")
+    """
 
     def test_other_links(self):
         test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub",
                        "<div><div id=\"my_ID\"/><span></span></div><span/>"
                        "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN>"
                        "</DiV><SPAN/>"]
-        test_outputs = [[(1, 'standalone', ('- ', 'x')), (1, 'standalone',
-                                                          ('s\n', ' '))],
+        test_outputs = [[(1, 'standalone', (' ', 'x')), (1, 'standalone',
+                                                          ('\n', ' '))],
                         [(1, 'inline', ('', 'tEst', '#TesT'))]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
     def test_line_nums(self):
-        test_inputs = ["\n[second]\n<third.md>\n\n[fif\nth](k01.md)\nabs "
+        test_inputs = ["\n[second]\n[third][]\n\n[fif\nth](k01.md)\nabs "
                     "[second]: k07.md"]
         test_outputs = [[(5, 'inline', ('', 'fif\nth', 'k01.md')),
                          (7, 'reference', ('', 'second', 'k07.md')),
                          (1, 'standalone', ('\n', 'second')),
-                         (3, 'angle_brackets', 'third.md')]]
+                         (2, 'standalone', ('\n', 'third'))]]
 
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
 
