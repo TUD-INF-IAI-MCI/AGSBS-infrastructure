@@ -14,22 +14,7 @@ This link checker is hence tailored to MarkDown.
 This link checker also checks for broken image references.
 
 This link checker does not touch the file system. It requires a list of files
-(as produced by os.walk()) and all links and images. Helper function extract
-those for the link checker.
-
-
-Issue #20
-
-A common source of error are broken links. Normal link checkers won't work,
-since they are working on HTML files. It is hence necessary to parse all
-MarkDown links and implement the destination checks manually (to the
-resulting HTML files). As a plus, references within the document could be
-checked as well.
-
-For checking IDs, it is a good idea to generate IDs of the target document.
-Headings get automatic IDs, which can be generated using datastructures.gen_id.
-Furthermore, the user may create own anchors with <span id="foo"/> or the
-div equivalent.
+(as produced by os.walk()) and all links and images provided by LinkExtractor.
 """
 
 import os
@@ -39,11 +24,9 @@ from urllib.parse import urlparse
 from .. import mparser
 from .meta import ErrorMessage
 from ..common import is_within_lecture
-from ..datastructures import gen_id
-
 
 WEB_EXTENSIONS = ["html"]
-IMAGE_EXTENSIONS = ["jpg", "png", "svg"]
+IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
 
 
 def print_list(input_list):
@@ -185,8 +168,8 @@ class LinkChecker:
             pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
             if not bool(re.match(pattern, link.get("link")[7:])):
                 self.errors.append(ErrorMessage(
-                    "Email address {} is not in a correct form."
-                        .format(link.get("link")[7:]),
+                    "Email address {} is not in a correct form.".format(
+                        link.get("link")[7:]),
                     link.get("line_no"), link.get("file_path")))
 
     def find_reference_for_link(self, link):
@@ -254,8 +237,8 @@ class LinkChecker:
 
         if path.rfind(".") < 0:  # no extension
             self.errors.append(ErrorMessage(
-                "Link path {} has no extension, but it should be {}."
-                    .format(path, print_list(extensions)), link.get("line_no"),
+                "Link path {} has no extension, but it should be {}.".format(
+                    path, print_list(extensions)), link.get("line_no"),
                 link.get("file_path")))
             return False
         # search fo last comma and extension is what follows it
@@ -299,8 +282,8 @@ class LinkChecker:
         for heading in self.__headings_dict[path]:  # search in headings
             if heading.get_id() == parsed_url.fragment:
                 return  # anchor was found
-        for id in self.__html_ids_dict[path]:  # search div and span ids
-            if id == parsed_url.fragment:
+        for html_id in self.__html_ids_dict[path]:  # search div and span ids
+            if html_id == parsed_url.fragment:
                 return  # anchor was found
 
         self.errors.append(
@@ -332,8 +315,6 @@ class LinkChecker:
         with open(path, encoding="utf-8") as file:
             self.__html_ids_dict[path] = mparser.get_ids_of_html_elements(
                 file.read())
-
-        print(self.__html_ids_dict)
 
 
 # ############ MARKDOWN ############ #

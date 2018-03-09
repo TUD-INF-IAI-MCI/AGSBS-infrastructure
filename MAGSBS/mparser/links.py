@@ -4,6 +4,11 @@
 # (c) 2017-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 #   Jaromir Plhak <xplhak |at| gmail |dot| com>
 
+"""
+Functions in this file allows linkchecker to extract the links from .md files
+and to get the ids from allowed html elements.
+"""
+
 import re
 
 # Searching for the patterns in the form [link text](link) (also for
@@ -37,7 +42,7 @@ REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE,
             "angle_brackets": ANGLE_BRACKETS}
 
 # Regexp for finding ids within div and span hmtl elements
-IDS_REGEX = "<(?:div|span).*?id=[\"'](\S+?)[\"']"
+IDS_REGEX = r"<(?:div|span).*?id=[\"'](\S+?)[\"']"
 
 
 def get_starting_line_numbers(reg_expr, text):
