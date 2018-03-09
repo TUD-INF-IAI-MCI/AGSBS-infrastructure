@@ -11,37 +11,41 @@ and to get the ids from allowed html elements.
 
 import re
 
-# Searching for the patterns in the form [link text](link) (also for
-# images with exclamation mark.
+# Searches for the patterns in the form [link_text](link) (it also includes
+# images with exclamation mark).
 INLINE = r"(!?)\[([^\]]+)\]\(([^)\s]+).*?\)"
 
-# Searching for the patterns in the form [link text][link ref] (also for
-# images with exclamation mark. This should be coupled with the reference.
+# Searches for the patterns in the form [link_text][link_ref] (it also includes
+# images with exclamation mark). Footnote links should be coupled with the
+# reference.
 FOOTNOTE = r"(!?)\[([^\]]+)\]\[([^\]]+)\]"
 
-# Accepts also ones with title that is ignored. Detection for exclamation mark
-# is used due to compatibility with the structure of previous regexps.
+# Searches for references in form [link_ref]: link. This should be coupled with
+# FOOTNOTE or STANDALONE links through link_ref (link insensitively).
+# Detection for exclamation mark is used due to compatibility with the
+# structure of previous regexps (and could be used for link structure checks).
 REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
 
-# Detect all links in format [link] or [link][]. When it is a part
-# of inline/footnote/reference, it is not detected
+# Searches for patterns in format [link_ref] or [link_ref][]. Moreover, this
+# pattern ignores cases when it is a part of inline/footnote/reference.
 STANDALONE = r"([^\]]\s*?)\[(.*?)\][\[\]]?\s*?[^\[\(\:]"
 
-# Following regexp matches also the reference links in
+# Searches for links in format <link> while ignoring the div and span tags.
+# Note: Currently, this pattern is not used, because pandoc change this into
+# link only if it contains http substring or if link an email.
+# Note: If any other tag will be allowed, this regexp should be updated
+# Note: Following regexp matches also the reference links in
 # format [1]: <google.com>, however this does not change the
 # complexity. For better performance, the markdown file should be preprocessed
 # [1]: <google.com> => [1]: google.com
-# This also ignores the div and span tags
-# Note: If any other tag will be allowed, this regexp should be updated
-ANGLE_BRACKETS = r"<((?!/?div|/?span)\S*?)>"
+# ANGLE_BRACKETS = r"<((?!/?div|/?span)\S*?)>"
 
 # This constant represents the dictionary of used regular expressions for
 # parsing .md files. The structure is "description_of_regexp_type": regexp.
 REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE,
-            "reference": REFERENCE, "standalone": STANDALONE,
-            "angle_brackets": ANGLE_BRACKETS}
+            "reference": REFERENCE, "standalone": STANDALONE}
 
-# Regexp for finding ids within div and span hmtl elements
+# Regexp for finding ids within div and span html elements
 IDS_REGEX = r"<(?:div|span).*?id=[\"'](\S+?)[\"']"
 
 
@@ -64,8 +68,8 @@ def find_links_in_markdown(text):
     from the markdown string. Triples are structured as follows:
     - line number of the link;
     - type of regular expression that matched the link;
-    - link itself (list of retrieved data about link). """
-
+    - link itself. It could be a raw text or tuple (based on the regexp used).
+    """
     output = []
     for description, reg_expr in REG_EXPS.items():
         # detects the line numbers
@@ -81,7 +85,7 @@ def find_links_in_markdown(text):
 
 
 def get_ids_of_html_elements(text):
-    """ Returns the set of ids for valid html elements that are allowed
+    """ Returns a set of ids for valid html elements that are allowed
     in matuc (currently div and span elements).
     Note: When new element(s) will be allowed, the IDS constant has to
     be updated. """
