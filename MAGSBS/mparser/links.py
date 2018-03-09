@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2017-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 #   Jaromir Plhak <xplhak |at| gmail |dot| com>
 
 """
