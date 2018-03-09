@@ -196,6 +196,7 @@ class Mistkerl():
         link_check.run_checks()
         for em in link_check.errors:
             print(em.lineno, ":", em.message)
+            pass
 
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""

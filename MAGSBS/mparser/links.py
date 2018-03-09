@@ -22,7 +22,6 @@ REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
 # of inline/footnote/reference, it is not detected
 STANDALONE = r"([^\]]\s*?)\[(.*?)\][\[\]]?\s*?[^\[\(\:]"
 
-
 # Following regexp matches also the reference links in
 # format [1]: <google.com>, however this does not change the
 # complexity. For better performance, the markdown file should be preprocessed
@@ -31,9 +30,14 @@ STANDALONE = r"([^\]]\s*?)\[(.*?)\][\[\]]?\s*?[^\[\(\:]"
 # Note: If any other tag will be allowed, this regexp should be updated
 ANGLE_BRACKETS = r"<((?!/?div|/?span)\S*?)>"
 
+# This constant represents the dictionary of used regular expressions for
+# parsing .md files. The structure is "description_of_regexp_type": regexp.
 REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE,
             "reference": REFERENCE, "standalone": STANDALONE,
             "angle_brackets": ANGLE_BRACKETS}
+
+# Regexp for finding ids within div and span hmtl elements
+IDS_REGEX = "<(?:div|span).*?id=[\"'](\S+?)[\"']"
 
 
 def get_starting_line_numbers(reg_expr, text):
@@ -43,7 +47,7 @@ def get_starting_line_numbers(reg_expr, text):
     examined data will have non-trivial length and number of links,
     this function should be reimplemented. """
     line_numbers = []
-    matches = re.compile(reg_expr, re.MULTILINE | re.DOTALL)
+    matches = re.compile(reg_expr, re.MULTILINE | re.DOTALL | re.IGNORECASE)
     for match in matches.finditer(text):
         # One is added, because there is no line ending in front first line
         line_numbers.append(1 + text[0:match.start()].count('\n'))
@@ -61,11 +65,23 @@ def find_links_in_markdown(text):
     for description, reg_expr in REG_EXPS.items():
         # detects the line numbers
         line_nums = get_starting_line_numbers(reg_expr, text)
-        links = re.compile(reg_expr).findall(text)
+        links = re.compile(reg_expr, re.IGNORECASE).findall(text)
         if len(line_nums) != len(links):
             raise ValueError("Line numbers count should be the same"
                              " as the number of regular expressions.")
 
         for i, link in enumerate(links):
             output.append((line_nums[i], description, link))
+    return output
+
+
+def get_ids_of_html_elements(text):
+    """ Returns the set of ids for valid html elements that are allowed
+    in matuc (currently div and span elements).
+    Note: When new element(s) will be allowed, the IDS constant has to
+    be updated. """
+    output = set()
+    result = re.compile(IDS_REGEX).findall(text)
+    for elem in result:
+        output.add(elem)
     return output

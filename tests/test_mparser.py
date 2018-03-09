@@ -335,7 +335,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
                 "Expected {} in data, but not found.  Got: ".format(start, data))
         self.assertEqual(data[3][0].strip(), '')
 
-##############################################################################
+#  ###########################################################################
 # test link extraction
 
 class TestLinkExtractor(unittest.TestCase):
@@ -392,7 +392,7 @@ class TestLinkExtractor(unittest.TestCase):
         test_inputs = ["[my label 1]: /foo/bar.html  \"My title, optional\"",
                        "[my label 2]: /foo",
                        "[my label 3]: http://fsf.org (The free software foundation)",
-                       "[my label 4]: /bar#special  'A title in single quotes']",
+                       "[my label 4]: /bar#Special  'A title in single quotes']",
                        "[my label 5]: <http://foo.bar.baz>",
                        # ^ this one is also detected as angle_brackets link
                        "\n[my label 6]: http://fsf.org \n\t\"The free software foundation\""]
@@ -400,7 +400,7 @@ class TestLinkExtractor(unittest.TestCase):
             [(1, 'reference', ('', 'my label 1', '/foo/bar.html'))],
             [(1, 'reference', ('', 'my label 2', '/foo'))],
             [(1, 'reference', ('', 'my label 3', 'http://fsf.org'))],
-            [(1, 'reference', ('', 'my label 4', '/bar#special'))],
+            [(1, 'reference', ('', 'my label 4', '/bar#Special'))],
             [(1, 'reference', ('', 'my label 5', 'http://foo.bar.baz')),
              (1, 'angle_brackets', 'http://foo.bar.baz')],
             [(2, 'reference', ('', 'my label 6', 'http://fsf.org'))]
@@ -430,10 +430,12 @@ class TestLinkExtractor(unittest.TestCase):
 
     def test_other_links(self):
         test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub",
-                       "<div><div id=\"my_id\"><span></span><div/><span/>"]
+                       "<div><div id=\"my_ID\"/><span></span></div><span/>"
+                       "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN>"
+                       "</DiV><SPAN/>"]
         test_outputs = [[(1, 'standalone', ('- ', 'x')), (1, 'standalone',
                                                           ('s\n', ' '))],
-                        []]
+                        [(1, 'inline', ('', 'tEst', '#TesT'))]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
@@ -446,3 +448,34 @@ class TestLinkExtractor(unittest.TestCase):
                          (3, 'angle_brackets', 'third.md')]]
 
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
+
+#  ###########################################################################
+# test id detection
+
+
+class TestElementsIdsExtractor(unittest.TestCase):
+
+    def test_long_entry(self):
+        res = mp.get_ids_of_html_elements(
+            "<div id=\"first\"></div><div id='second'>something <div>\n"
+            "<span id=\"3rd\">\n\n</span>")
+        self.assertTrue(
+            res == {"first", "second", "3rd"}, msg="Result is {}".format(res))
+
+    def test_short_entry(self):
+        res = mp.get_ids_of_html_elements(
+            "<div id=\"1\"/><span id='2_nd'/>")
+        self.assertTrue(res == {"1", "2_nd"}, msg="Result is {}".format(res))
+
+    def test_no_id_entry(self):
+        res = mp.get_ids_of_html_elements(
+            "<div></div><div/><span></span></span><div id=\"\"/>"
+            "<span id=''></span>")
+        self.assertTrue(res == set(), msg="Result is {}".format(res))
+
+    def test_more_attributes(self):
+        res = mp.get_ids_of_html_elements(
+            "<div class=\"test\" id=\"1\"/><span id='2_nd' test='test'/>"
+            "<span middle='2_nd' id=\"middle\" test='test'/>")
+        self.assertTrue(res == {"1", "2_nd", "middle"},
+                        msg="Result is {}".format(res))
