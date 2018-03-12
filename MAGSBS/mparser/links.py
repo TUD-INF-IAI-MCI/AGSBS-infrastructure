@@ -29,7 +29,6 @@ FOOTNOTE = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!/?:|/?\()+"
 # structure of previous regexps (and could be used for link structure checks).
 REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
 
-
 # This constant represents the dictionary of used regular expressions for
 # parsing .md files. The structure is "description_of_regexp_type": regexp.
 REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE, "reference": REFERENCE}
