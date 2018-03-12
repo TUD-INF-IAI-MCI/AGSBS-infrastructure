@@ -338,103 +338,104 @@ class TestCodeBlockRemoval(unittest.TestCase):
 #  ###########################################################################
 # test link extraction
 
+
 class TestLinkExtractor(unittest.TestCase):
     # Note: Test cases are taken from https://pandoc.org/MANUAL.html#links
     # and https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 
-    def make_comparison(self, test_inputs, test_outputs, test_name):
-        for i, in_string in enumerate(test_inputs):  # take all inputs
+    def make_comparison(self, inputs, outputs, test_name):
+        for i, in_string in enumerate(inputs):  # take all inputs
             result = mp.find_links_in_markdown(in_string)
             # first test, if the number of results is as expected
             self.assertTrue(
-                len(test_outputs[i]) == len(result),
+                len(outputs[i]) == len(result),
                 "{}: Returned list for string \"{}\" contains "
                 "({}) triple(s), but ({}) expected.".format(
-                    test_name, test_inputs[i], len(result),
-                    len(test_outputs[i])))
-            self.assertTrue(result == test_outputs[i],
+                    test_name, inputs[i], len(result), len(outputs[i])))
+            self.assertTrue(result == outputs[i],
                             "{}: Returned triple(s) for string \"{}\""
                             " is(are) not the same.\nExpected: {}\n"
-                            "Returned: {}".format(test_name, test_inputs[i],
-                                                  test_outputs[i], result))
-
+                            "Returned: {}".format(test_name, inputs[i],
+                                                  outputs[i], result))
 
     def test_parsing_inline_links(self):
-        test_inputs = ["\nThis is an [inline link](/url), \n and here's [one "
-                       "with \n a title](http://fsf.org \"click here for a "
-                       "good time!\").",
-                       "[Write me!](mailto:sam@green.eggs.ham)",
-                       "[I'm an inline-style link](https://www.google.com)",
-                       "[I'm an inline-style link with title]"
-                       "(https://www.google.com \"Google's Homepage\")"
-                       ]
-        test_outputs = [[(2, 'inline', ('', 'inline link', '/url')),
-                         (3, 'inline', ('', 'one with \n a title', 'http://fsf.org'))],
-                        [(1, 'inline', ('', 'Write me!', 'mailto:sam@green.eggs.ham'))],
-                        [(1, 'inline', ('', "I'm an inline-style link", 'https://www.google.com'))],
-                        [(1, 'inline', ('', "I'm an inline-style link with title", 'https://www.google.com'))]
-                        ]
-        # run comparison
+        test_inputs = [
+            "\nThis is an [inline link](/url), \n and here's [one with \n a "
+            "title](http://fsf.org \"click here for a good time!\").",
+            "[Write me!](mailto:sam@green.eggs.ham)",
+            "[I'm an inline-style link](https://www.google.com)",
+            "[I'm an inline-style link with title](https://www.google.com"
+            " \"Google's Homepage\")"]
+        test_outputs = [
+            [(2, "inline", ("", "inline link", "/url")),
+             (3, "inline", ("", "one with \n a title", "http://fsf.org"))],
+            [(1, "inline", ("", "Write me!", "mailto:sam@green.eggs.ham"))],
+            [(1, "inline", ("", "I'm an inline-style link",
+                            "https://www.google.com"))],
+            [(1, "inline", ("", "I'm an inline-style link with title",
+                            "https://www.google.com"))]
+            ]
         self.make_comparison(test_inputs, test_outputs, "Inline links")
-
 
     def test_footnote_links(self):
         test_inputs = [
-            "[I'm a reference-style link][Arbitrary case-insensitive reference text]",
+            "[I'm a reference-style link][Arbitrary case-insensitive text]",
             "![You can use numbers for reference - style link definitions][1]"]
-        test_outputs = [[(1, 'footnote', ("", "I'm a reference-style link", 'Arbitrary case-insensitive reference text'))],
-                        [(1, 'footnote', ("!", "You can use numbers for reference - style link definitions", "1"))]
-                        ]
-        # run comparison
+        test_outputs = [
+            [(1, 'footnote', ("", "I'm a reference-style link",
+                              "Arbitrary case-insensitive text"))],
+            [(1, 'footnote', ("!", "You can use numbers for reference - style "
+                                   "link definitions", "1"))]
+        ]
         self.make_comparison(test_inputs, test_outputs, "Footnote links")
 
     def test_reference_links(self):
-        test_inputs = ["[my label 1]: /foo/bar.html  \"My title, optional\"",
-                       "[my label 2]: /foo",
-                       "[my label 3]: http://fsf.org (The free software foundation)",
-                       "[my label 4]: /bar#Special  'A title in single quotes'",
-                       "[my label 5]: <http://foo.bar.baz>",
-                       "\n[my label 6]: http://fsf.org \n\t\"The free software foundation\""]
+        test_inputs = [
+            "[my label 1]: /foo/bar.html  \"My title, optional\"",
+            "[my label 2]: /foo",
+            "[my label 3]: http://fsf.org (The free software foundation)",
+            "[my label 4]: /bar#Special  'A title in single quotes'",
+            "[my label 5]: <http://foo.bar.baz>",
+            "\n[my label 6]: http://fsf.org \n\t\"The free sw foundation\""]
         test_outputs = [
-            [(1, 'reference', ('', 'my label 1', '/foo/bar.html'))],
-            [(1, 'reference', ('', 'my label 2', '/foo'))],
-            [(1, 'reference', ('', 'my label 3', 'http://fsf.org'))],
-            [(1, 'reference', ('', 'my label 4', '/bar#Special'))],
-            [(1, 'reference', ('', 'my label 5', 'http://foo.bar.baz'))],
-            [(2, 'reference', ('', 'my label 6', 'http://fsf.org'))]
+            [(1, "reference", ("", "my label 1", "/foo/bar.html"))],
+            [(1, "reference", ("", "my label 2", "/foo"))],
+            [(1, "reference", ("", "my label 3", "http://fsf.org"))],
+            [(1, "reference", ("", "my label 4", "/bar#Special"))],
+            [(1, "reference", ("", "my label 5", "http://foo.bar.baz"))],
+            [(2, "reference", ("", "my label 6", "http://fsf.org"))]
         ]
-        # run comparison
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
     def test_standalone_links(self):
         # standalone links are specific types of footnote links
-        test_inputs = ["See [my website][].",
-                       "[1]\n[test2][]\nabc ![test3] def"]
-        test_outputs = [[(1, "footnote", ("", "my website", ""))],
-                        [(1, "footnote", ("", "1", "")), (2, "footnote", ("", "test2", "")),
-                        (3, "footnote", ("!", "test3", ""))]]
-        # run comparison
+        test_inputs = [
+            "See [my website][].",
+            "[1]\n[test][]\nabc ![test2] def"]
+        test_outputs = [
+            [(1, "footnote", ("", "my website", ""))],
+            [(1, "footnote", ("", "1", "")), (2, "footnote", ("", "test", "")),
+             (3, "footnote", ("!", "test2", ""))]]
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
     def test_other_links(self):
-        test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub",
-                       "<div><div id=\"my_ID\"/><span></span></div><span/>"
-                       "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN>"
-                       "</DiV><SPAN/>"]
-        test_outputs = [[(1, 'footnote', ("", 'x', '')), (2, 'footnote',
-                                                          ("", ' ', ''))],
-                        [(1, 'inline', ('', 'tEst', '#TesT'))]]
-        # run comparison
+        test_inputs = [
+            "- [x] Finish changes\n[ ] Push my commits to GitHub",
+            "<div><div id=\"my_ID\"/><span></span></div><span/>"
+            "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN></DiV><SPAN/>"]
+        test_outputs = [
+            [(1, "footnote", ("", "x", "")), (2, "footnote", ("", " ", ""))],
+            [(1, "inline", ("", "tEst", "#TesT"))]]
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
     def test_line_nums(self):
-        test_inputs = ["\n[second]\n![third][]\n\n[fif\nth](k01.md)\nabs "
-                    "[second]: k07.md"]
-        test_outputs = [[(5, 'inline', ('', 'fif\nth', 'k01.md')),
-                         (2, 'footnote', ("", 'second', '')),
-                         (3, 'footnote', ("!", 'third', '')),
-                         (7, 'reference', ('', 'second', 'k07.md'))]]
-
+        test_inputs = [
+            "\n[second]\n![third][]\n\n[fif\nth](k01.md)\nab [second]: k07.md"]
+        test_outputs = [
+            [(5, "inline", ("", "fif\nth", "k01.md")),
+             (2, "footnote", ("", "second", "")),
+             (3, "footnote", ("!", "third", "")),
+             (7, "reference", ("", "second", "k07.md"))]]
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
 
 #  ###########################################################################
@@ -443,27 +444,29 @@ class TestLinkExtractor(unittest.TestCase):
 
 class TestElementsIdsExtractor(unittest.TestCase):
 
+    def out_msg(self, message):
+        return "Result is {}".format(message)
+
     def test_long_entry(self):
         res = mp.get_ids_of_html_elements(
             "<div id=\"first\"></div><div id='second'>something <div>\n"
             "<span id=\"3rd\">\n\n</span>")
         self.assertTrue(
-            res == {"first", "second", "3rd"}, msg="Result is {}".format(res))
+            res == {"first", "second", "3rd"}, msg=self.out_msg(res))
 
     def test_short_entry(self):
         res = mp.get_ids_of_html_elements(
             "<div id=\"1\"/><span id='2_nd'/>")
-        self.assertTrue(res == {"1", "2_nd"}, msg="Result is {}".format(res))
+        self.assertTrue(res == {"1", "2_nd"}, msg=self.out_msg(res))
 
     def test_no_id_entry(self):
         res = mp.get_ids_of_html_elements(
             "<div></div><div/><span></span></span><div id=\"\"/>"
             "<span id=''></span>")
-        self.assertTrue(res == set(), msg="Result is {}".format(res))
+        self.assertTrue(res == set(), msg=self.out_msg(res))
 
     def test_more_attributes(self):
         res = mp.get_ids_of_html_elements(
             "<div class=\"test\" id=\"1\"/><span id='2_nd' test='test'/>"
             "<span middle='2_nd' id=\"middle\" test='test'/>")
-        self.assertTrue(res == {"1", "2_nd", "middle"},
-                        msg="Result is {}".format(res))
+        self.assertTrue(res == {"1", "2_nd", "middle"}, msg=self.out_msg(res))
