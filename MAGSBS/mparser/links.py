@@ -9,7 +9,7 @@ Functions in this file allows linkchecker to extract the links from .md files
 and to get the ids from allowed html elements.
 
 Note: This parser expects the file with correct markdown links (e.g. no spaces
-    between brackets used for link are allowed.
+    between brackets used for link are allowed).
 """
 
 import re
