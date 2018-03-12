@@ -192,7 +192,7 @@ class Mistkerl():
         """
         links = LinkExtractor()
         links.parse_all_links_in_md_files(file_tree)
-        print(links.links_list)
+        # print(links.links_list)
         link_check = LinkChecker(links.links_list)
         link_check.run_checks()
         for err in link_check.errors:

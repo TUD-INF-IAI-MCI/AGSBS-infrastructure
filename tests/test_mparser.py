@@ -352,11 +352,7 @@ class TestLinkExtractor(unittest.TestCase):
                 "{}: Returned list for string \"{}\" contains "
                 "({}) triple(s), but ({}) expected.".format(
                     test_name, inputs[i], len(result), len(outputs[i])))
-            self.assertEqual(result, outputs[i],
-                             "{}: Returned triple(s) for string \"{}\""
-                             " is(are) not the same.\nExpected: {}\n"
-                             "Returned: {}".format(test_name, inputs[i],
-                                                   outputs[i], result))
+            self.assertEqual(result, outputs[i])
 
     def test_parsing_inline_links(self):
         test_inputs = [

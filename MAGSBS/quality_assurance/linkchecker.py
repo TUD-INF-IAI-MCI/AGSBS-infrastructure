@@ -29,7 +29,7 @@ WEB_EXTENSIONS = ["html"]
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
 
 
-def print_list(input_list):
+def print_list_of_extensions(input_list):
     """ This function creates a string from the list elements that can be used
     for outputs when error occurs. Last element is treated in a special way,
     therefore simple join cannot be used. It is used specifically for
@@ -56,13 +56,15 @@ def get_list_of_md_files(file_tree):
                 file_path = os.path.join(directory_name, file)
                 if os.path.isfile(file_path):  # check if file exists
                     md_file_list.append((file_path, file))
+    print(md_file_list)
     return md_file_list
 
 
 def replace_web_extension_with_md(path):
     """ Replace the hypertext file extension with .md extension. It takes the
-    last dot in the string and if it is there, then it compares all possible
-    extensions. It some of them is the same, then it is replaced by 'md' """
+    last dot in the string and if it is there, then it compares string after
+    the dot with all possible extensions. If some of them is the same,
+    then it is replaced by 'md' string. """
     for extension in WEB_EXTENSIONS:
         last_dot = path.rfind(".")
         if len(path) - last_dot - 1 == len(extension) and \
@@ -111,7 +113,6 @@ class LinkExtractor:
                     if new_dct:
                         self.links_list.append(new_dct)
 
-
     @staticmethod
     def create_dct(file_name, file_path, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
@@ -131,8 +132,8 @@ class LinkExtractor:
         if not link[2]:  # standalone - type "text [link] text text"
             link_dict["link"] = link[1]
         else:  # other footnote links, references and inline links"
-            link_dict["link_text"] = link[0]
-            link_dict["link"] = link[1]
+            link_dict["link_text"] = link[1]
+            link_dict["link"] = link[2]
         return link_dict
 
 
@@ -140,6 +141,7 @@ class LinkChecker:
     """ This class is checking the extracted links. It allows system to check
     their structure as well as the internal files, where links are pointing.
     All errors are saved in the public attribute self.errors. """
+
     def __init__(self, links_list):
         self.errors = []  # generated errors
         self.links_list = links_list
@@ -150,6 +152,7 @@ class LinkChecker:
 
     def run_checks(self):
         """ This methods runs all available checks within this class. """
+        self.find_reference_duplicates()  # check dulicate references
         for link in self.links_list:
             self.check_correct_email_address(link)
             if link.get("link_type") in {"footnote"}:
@@ -161,17 +164,17 @@ class LinkChecker:
             if link.get("link_type") in {"reference", "inline"}:
                 self.check_target_availability(link)
 
-    @staticmethod
-    def is_email_address(link):
-        """ Detecting, if the link is email address. Method checks, if the
-        'mailto' is the starting substring of the link. """
-        return link.find("mailto:") == 0
-
     def check_correct_email_address(self, link):
-        """ When 'mailto:' is used, the standard structure of the email address
-        should be followed. Otherwise, an error message is created. """
-        if self.is_email_address(link.get("link")):
+        """ When 'mailto:' is used as a fist substring, the standard structure
+        of the email address should be followed. Otherwise, an error message
+        is created.
+        Note: The regex pattern check only the basic structure. There can exist
+        some false negative cases (email pass even though it is not in a
+        correct form). """
+        if link.get("link").find("mailto:") == 0:  # mailto: is first substring
+            # pattern for email. Note: it is only a basic check
             pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
+
             if not bool(re.match(pattern, link.get("link")[7:])):
                 self.errors.append(ErrorMessage(
                     "Email address {} is not in a correct form.".format(
@@ -179,13 +182,13 @@ class LinkChecker:
                     link.get("line_no"), link.get("file_path")))
 
     def find_reference_for_link(self, link):
-        """ FOOTNOTE and STANDALONE links should be connected to the
-        reference link with []: syntax. Otherwise it should not be paired
-        together. If this is not satisfied, an error message is created.
+        """ FOOTNOTE links should be connected to the reference link
+        with []: syntax. Otherwise it cannot be paired together. If this
+        is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
         link_ref = link.get("link").lower()
         for tested_link in self.links_list:
-            if tested_link.get("link_type") == {"reference"} \
+            if tested_link.get("link_type") == "reference" \
                     and tested_link.get("link_text").lower() == link_ref:
                 return  # it is ok, reference has been found
         self.errors.append(ErrorMessage("Problem with coupling a reference to "
@@ -193,14 +196,38 @@ class LinkChecker:
                                         link.get("line_no"),
                                         link.get("file_path")))
 
+    def find_reference_duplicates(self):
+        """ References should not be duplicated in the file, because it can
+        cause confusion (pandoc takes the last one as relevant).
+        Note: If the references are totally same then they are not reported
+        """
+        # check only references
+        list_of_refs = [link for link in self.links_list if
+                        link.get("link_type") == "reference"]
+        seen = set()  # set of link_texts that were already checked
+        for link in list_of_refs:
+            if link.get("link_text").lower() not in seen:
+                link_txt = link.get("link_text").lower()
+                seen.add(link_txt)  # add as seen
+                for tested_link in list_of_refs:
+                    if tested_link.get("link_text").lower() == link_txt \
+                            and link != tested_link:  # ignore same dicts
+                        self.errors.append(ErrorMessage(
+                            "Reference \"{}\" is duplicated on lines {} "
+                            "and {}.".format(link.get("link_text"),
+                                             link.get("line_no"),
+                                             tested_link.get("line_no")),
+                            link.get("line_no"),
+                            link.get("file_path")))
+
     def find_link_for_reference(self, link):
-        """ REFERENCE links should be connected to the FOOTNOTE or STANDALONE
-        link with []: syntax. Otherwise it should not be paired together.
+        """ REFERENCE links should be connected to the FOOTNOTE link with
+        []: syntax. Otherwise it should not be paired together.
         If this is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
         link_txt = link.get("link_text").lower()
         for tested_link in self.links_list:
-            if tested_link.get("link_type") in {"footnote", "standalone"} \
+            if tested_link.get("link_type") == "footnote" \
                     and tested_link.get("link").lower() == link_txt:
                 return  # it is ok, link has been found
         self.errors.append(ErrorMessage("Problem with coupling a link to "
@@ -209,12 +236,16 @@ class LinkChecker:
                                         link.get("file_path")))
 
     def check_target_availability(self, link):
-        """ Do the checks according to the path given in the link. This method
-         executes the checks based on the given link type, its structure and
-         place, where it leads. """
+        """ Makes the checks according to the path given in the link.
+        This method executes the checks based on the given link type,
+        its structure and place, where it leads. It takes only files to be
+        tested. Moreover, some tests are triggered only when they are in a
+        lecture structure. """
         parsed_url = urlparse(link.get("link"))
+        # True if it is a file is a file structure
+        is_file = not parsed_url.netloc and not parsed_url.scheme
         inspect_fragment = False  # specify if anchor should be inspected
-        if parsed_url.path:  # if something is in path
+        if parsed_url.path and is_file:  # if something is in path
             # prepare main paths
             base_dir = os.path.dirname(link.get("file_path"))
             file_path = os.path.join(base_dir, parsed_url.path)
@@ -228,8 +259,10 @@ class LinkChecker:
                         if self.target_md_file_exists(parsed_url.path, link,
                                                       file_path):
                             inspect_fragment = True
-        if (parsed_url.fragment and inspect_fragment) or not parsed_url.path:
-            # check fragment only in situation when file is .md file within
+
+        if (parsed_url.fragment and inspect_fragment) or \
+                (not parsed_url.path and is_file):
+            # check fragment only in situation when file exists .md file within
             # project and when path is empty (it is the same file)
             self.target_anchor_exists(parsed_url, link)
 
@@ -244,16 +277,16 @@ class LinkChecker:
         if path.rfind(".") < 0:  # no extension
             self.errors.append(ErrorMessage(
                 "Link path {} has no extension, but it should be {}.".format(
-                    path, print_list(extensions)), link.get("line_no"),
-                link.get("file_path")))
+                    path, print_list_of_extensions(extensions)),
+                link.get("line_no"), link.get("file_path")))
             return False
         # search fo last comma and extension is what follows it
         elif path[path.rfind(".") + 1:] not in extensions:
             self.errors.append(ErrorMessage(
                 "Link path {} has .{} extension, but it should be {}."
                 .format(path, path[path.rfind(".") + 1:],
-                        print_list(extensions)), link.get("line_no"),
-                link.get("file_path")))
+                        print_list_of_extensions(extensions)),
+                link.get("line_no"), link.get("file_path")))
             return False
         return True  # everything OK
 
@@ -294,9 +327,9 @@ class LinkChecker:
                 return  # anchor was found
 
         self.errors.append(
-            ErrorMessage("The anchor {} was not found in the {} file.".format(
-                parsed_url.fragment, path), link.get("line_no"),
-                link.get("file_path")))
+            ErrorMessage("The anchor \"{}\" was not found in the {} "
+                         "file.".format(parsed_url.fragment, path),
+                         link.get("line_no"), link.get("file_path")))
 
     @staticmethod
     def get_files_full_path(path, link):
