@@ -352,11 +352,11 @@ class TestLinkExtractor(unittest.TestCase):
                 "{}: Returned list for string \"{}\" contains "
                 "({}) triple(s), but ({}) expected.".format(
                     test_name, inputs[i], len(result), len(outputs[i])))
-            self.assertTrue(result == outputs[i],
-                            "{}: Returned triple(s) for string \"{}\""
-                            " is(are) not the same.\nExpected: {}\n"
-                            "Returned: {}".format(test_name, inputs[i],
-                                                  outputs[i], result))
+            self.assertEqual(result, outputs[i],
+                             "{}: Returned triple(s) for string \"{}\""
+                             " is(are) not the same.\nExpected: {}\n"
+                             "Returned: {}".format(test_name, inputs[i],
+                                                   outputs[i], result))
 
     def test_parsing_inline_links(self):
         test_inputs = [
@@ -450,23 +450,22 @@ class TestElementsIdsExtractor(unittest.TestCase):
     def test_long_entry(self):
         res = mp.get_ids_of_html_elements(
             "<div id=\"first\"></div><div id='second'>something <div>\n"
-            "<span id=\"3rd\">\n\n</span>")
-        self.assertTrue(
-            res == {"first", "second", "3rd"}, msg=self.out_msg(res))
+            "<span id=\"3\">\n\n</span>")
+        self.assertEqual(res, {"first", "second", "3"}, msg=self.out_msg(res))
 
     def test_short_entry(self):
         res = mp.get_ids_of_html_elements(
             "<div id=\"1\"/><span id='2_nd'/>")
-        self.assertTrue(res == {"1", "2_nd"}, msg=self.out_msg(res))
+        self.assertEqual(res, {"1", "2_nd"}, msg=self.out_msg(res))
 
     def test_no_id_entry(self):
         res = mp.get_ids_of_html_elements(
             "<div></div><div/><span></span></span><div id=\"\"/>"
             "<span id=''></span>")
-        self.assertTrue(res == set(), msg=self.out_msg(res))
+        self.assertEqual(res, set(), msg=self.out_msg(res))
 
     def test_more_attributes(self):
         res = mp.get_ids_of_html_elements(
             "<div class=\"test\" id=\"1\"/><span id='2_nd' test='test'/>"
             "<span middle='2_nd' id=\"middle\" test='test'/>")
-        self.assertTrue(res == {"1", "2_nd", "middle"}, msg=self.out_msg(res))
+        self.assertEqual(res, {"1", "2_nd", "middle"}, msg=self.out_msg(res))
