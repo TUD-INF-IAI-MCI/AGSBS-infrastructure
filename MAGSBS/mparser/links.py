@@ -18,40 +18,21 @@ import re
 # images with exclamation mark).
 INLINE = r"(!?)\[([^\]]+)\]\(([^)\s]+).*?\)"
 
-# Searches for the patterns in the form [link_text][link_ref] (it also includes
-# images with exclamation mark). Footnote links should be coupled with the
-# reference.
-FOOTNOTE = r"(!?)\[([^\]]+)\]\[([^\]]+)\]"
+# Searches for the patterns in the forms [link_text][link_ref], [link_ref]
+# and [link_ref][] (it also includes images with exclamation mark).
+# Footnote links should be coupled with the REFERENCE.
+FOOTNOTE = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!/?:|/?\()+"
 
 # Searches for references in form [link_ref]: link. This should be coupled with
-# FOOTNOTE or STANDALONE links through link_ref (link insensitively).
+# FOOTNOTE links through link_ref (link insensitively).
 # Detection for exclamation mark is used due to compatibility with the
 # structure of previous regexps (and could be used for link structure checks).
 REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
 
-# Searches for patterns in format [link_ref] or [link_ref][]. Moreover, this
-# pattern ignores cases when it is a part of inline/footnote/reference.
-# Note: This pattern also accepts patterns in format [text][text]. In this
-#   case, first part of tuple contains ']'. This should be corrected later.
-# Note: If this is replaced by different regexp, correction in create_dct
-#   (linkchecker.py) method should be removed.
-STANDALONE = r"([\s\]])?\[([^\[]+?)\](?:\[\])?(?!/?:|/?\(|/?\[)+"
-
-
-# Searches for links in format <link> while ignoring the div and span tags.
-# Note: Currently, this pattern is not used, because pandoc change this into
-# link only if it contains http substring or if link an email.
-# Note: If any other tag will be allowed, this regexp should be updated
-# Note: Following regexp matches also the reference links in
-#   format [1]: <google.com>, however this does not change the
-#   complexity. For better performance, the markdown file should be
-#   preprocessed [1]: <google.com> => [1]: google.com
-# ANGLE_BRACKETS = r"<((?!/?div|/?span)\S*?)>"
 
 # This constant represents the dictionary of used regular expressions for
 # parsing .md files. The structure is "description_of_regexp_type": regexp.
-REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE,
-            "reference": REFERENCE, "standalone": STANDALONE}
+REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE, "reference": REFERENCE}
 
 # Regexp for finding ids within div and span html elements
 IDS_REGEX = r"<(?:div|span).*?id=[\"'](\S+?)[\"']"

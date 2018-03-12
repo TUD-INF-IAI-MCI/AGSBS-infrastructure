@@ -195,6 +195,8 @@ class Mistkerl():
         print(links.links_list)
         link_check = LinkChecker(links.links_list)
         link_check.run_checks()
+        for err in link_check.errors:
+            print(err.lineno, ":", err.message)
         # TODO: Implement it into mistkerl -> when error occurs, it should
         # be reported by matuc
 

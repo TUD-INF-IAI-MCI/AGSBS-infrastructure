@@ -89,8 +89,6 @@ class LinkExtractor:
             "inline": basic inline link in square brackets, syntax;
             "footnote": link to the footnote that is referenced somewhere else
                 in the document;
-            "standalone": link in square brackets referenced somewhere
-                else in the document;
             "reference": reference to the footnote and standalone links.
                 References' titles are not detected as they are not
                 relevant to the link testing;
@@ -128,20 +126,13 @@ class LinkExtractor:
         link_dict["file_path"] = file_path
         link_dict["link_type"] = link_type
         link_dict["line_no"] = line_no
-        if len(link) == 2:  # standalone
-            # STANDALONE regexp currently produce false positive match with ']'
-            # char in the link[0]. In this cases, dct should not be created
-            if link[0] == ']':
-                return
-            # page number update - regexp needs to check previous chars and
-            # it can consume \n. Therefore, page number should not
-            # be correct and needs recalculation.
-            link_dict["line_no"] += link[0].count('\n')
+        link_dict["is_image"] = True if link[0] == "!" else False
+
+        if not link[2]:  # standalone - type "text [link] text text"
             link_dict["link"] = link[1]
-        if len(link) > 2:
-            link_dict["is_image"] = True if link[0] == "!" else False
-            link_dict["link_text"] = link[1]
-            link_dict["link"] = link[2]  # link itself
+        else:  # other footnote links, references and inline links"
+            link_dict["link_text"] = link[0]
+            link_dict["link"] = link[1]
         return link_dict
 
 
@@ -161,14 +152,13 @@ class LinkChecker:
         """ This methods runs all available checks within this class. """
         for link in self.links_list:
             self.check_correct_email_address(link)
-            if link.get("link_type") in {"footnote", "standalone"}:
+            if link.get("link_type") in {"footnote"}:
                 # links should be connected somewhere
                 self.find_reference_for_link(link)
             if link.get("link_type") == "reference":
                 # reference should be called
                 self.find_link_for_reference(link)
-            if link.get("link_type") in {"reference", "angle_brackets",
-                                         "inline"}:
+            if link.get("link_type") in {"reference", "inline"}:
                 self.check_target_availability(link)
 
     @staticmethod
@@ -271,9 +261,10 @@ class LinkChecker:
         """ Checks, if the target file exists. """
         if not os.path.exists(file_path):
             self.errors.append(
-                ErrorMessage("The file given by link {} doesn't exist.".format(
-                    parsed_path), link.get("line_no"),
-                    link.get("file_path")))
+                ErrorMessage(
+                    "The file \"{}\" given by the reference [{}] doesn't "
+                    "exist.".format(parsed_path, link.get("link_text")),
+                    link.get("line_no"), link.get("file_path")))
 
     def target_md_file_exists(self, parsed_path, link, file_path):
         """ Within the lecture structure, hypertext files are generated from

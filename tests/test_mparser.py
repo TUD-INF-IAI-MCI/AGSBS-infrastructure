@@ -381,10 +381,9 @@ class TestLinkExtractor(unittest.TestCase):
     def test_footnote_links(self):
         test_inputs = [
             "[I'm a reference-style link][Arbitrary case-insensitive reference text]",
-            "[You can use numbers for reference - style link definitions][1]"]
-        test_outputs = [[(1, 'footnote', ('', "I'm a reference-style link", 'Arbitrary case-insensitive reference text')),  (1, 'standalone', (']', 'Arbitrary case-insensitive reference text'))],
-                        [(1, 'footnote', ('', 'You can use numbers for reference - style link definitions', '1')), (1, 'standalone', (']', '1'))]
-                        # in both cases second part is false possitive cleared later in the code
+            "![You can use numbers for reference - style link definitions][1]"]
+        test_outputs = [[(1, 'footnote', ("", "I'm a reference-style link", 'Arbitrary case-insensitive reference text'))],
+                        [(1, 'footnote', ("!", "You can use numbers for reference - style link definitions", "1"))]
                         ]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Footnote links")
@@ -408,50 +407,33 @@ class TestLinkExtractor(unittest.TestCase):
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
     def test_standalone_links(self):
+        # standalone links are specific types of footnote links
         test_inputs = ["See [my website][].",
-                       "\n[test2][]",
-                       "[test3][]"]
-        test_outputs = [[(1, 'standalone', (' ', 'my website'))],
-                        [(1, 'standalone', ('\n', 'test2'))],
-                        [(1, 'standalone', ('', 'test3'))]]
+                       "[1]\n[test2][]\nabc ![test3] def"]
+        test_outputs = [[(1, "footnote", ("", "my website", ""))],
+                        [(1, "footnote", ("", "1", "")), (2, "footnote", ("", "test2", "")),
+                        (3, "footnote", ("!", "test3", ""))]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
-
-    """
-    Note: Not used in the current version
-    def test_angle_brackets_links(self):
-        test_inputs = ["URLs and URLs in angle brackets will automatically get"
-                       " turned into links.\n http://www.example.com or "
-                       "<http://www.example.com> and sometimes example.com "
-                       "(but not on Github, for example).",
-                       "<http://www.example.com>",
-                        "<http://www.example.com>pokus<k01.md#heading1>"]
-        test_outputs = [[(2, 'angle_brackets', 'http://www.example.com')],
-                        [(1, 'angle_brackets', 'http://www.example.com')],
-                        [(1, 'angle_brackets', 'http://www.example.com'),
-                         (1, 'angle_brackets', 'k01.md#heading1')]]
-        # run comparison
-        self.make_comparison(test_inputs, test_outputs, "Angle brackets links")
-    """
 
     def test_other_links(self):
         test_inputs = ["- [x] Finish changes\n[ ] Push my commits to GitHub",
                        "<div><div id=\"my_ID\"/><span></span></div><span/>"
                        "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN>"
                        "</DiV><SPAN/>"]
-        test_outputs = [[(1, 'standalone', (' ', 'x')), (1, 'standalone',
-                                                          ('\n', ' '))],
+        test_outputs = [[(1, 'footnote', ("", 'x', '')), (2, 'footnote',
+                                                          ("", ' ', ''))],
                         [(1, 'inline', ('', 'tEst', '#TesT'))]]
         # run comparison
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
     def test_line_nums(self):
-        test_inputs = ["\n[second]\n[third][]\n\n[fif\nth](k01.md)\nabs "
+        test_inputs = ["\n[second]\n![third][]\n\n[fif\nth](k01.md)\nabs "
                     "[second]: k07.md"]
         test_outputs = [[(5, 'inline', ('', 'fif\nth', 'k01.md')),
-                         (7, 'reference', ('', 'second', 'k07.md')),
-                         (1, 'standalone', ('\n', 'second')),
-                         (2, 'standalone', ('\n', 'third'))]]
+                         (2, 'footnote', ("", 'second', '')),
+                         (3, 'footnote', ("!", 'third', '')),
+                         (7, 'reference', ('', 'second', 'k07.md'))]]
 
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
 
