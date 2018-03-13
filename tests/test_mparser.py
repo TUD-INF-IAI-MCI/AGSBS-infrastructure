@@ -414,6 +414,15 @@ class TestLinkExtractor(unittest.TestCase):
              (3, "footnote", ("!", "test2", ""))]]
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
+    def test_nested_inlines(self):
+        test_inputs = ["[![Bildbeschreibung](bilder/test.jpg)](bilder.html#"
+                       "title-of-the-graphic)"]
+        test_outputs = [
+            [(1, "inline", ("!", "Bildbeschreibung", "bilder/test.jpg")),
+             (1, "inline_nested", ("", "![Bildbeschreibung](bilder/test.jpg)",
+                                   "bilder.html#title-of-the-graphic"))]]
+        self.make_comparison(test_inputs, test_outputs, "Inline nested")
+
     def test_other_links(self):
         test_inputs = [
             "- [x] Finish changes\n[ ] Push my commits to GitHub",

@@ -16,7 +16,13 @@ import re
 
 # Searches for the patterns in the form [link_text](link) (it also includes
 # images with exclamation mark).
-INLINE = r"(!?)\[([^\]]+)\]\(([^)\s]+).*?\)"
+INLINE = r"(!?)\[([^\]\[\(\)]+)\]\(([^)\s]+).*?\)"
+
+# Searches for the same patterns as INLINE, but this contains nested image
+# inside link text. The example can be:
+# [![Bildbeschreibung](bilder/test.jpg)](bilder.html#title-of-the-graphic)
+INLINE_NESTED = \
+    r"(!?)\[([^\[\]\(\)]*(?:!?)?\[(?:.*?)\]\((?:.*)\)?)\]\(([^)\s]+).*?\)"
 
 # Searches for the patterns in the forms [link_text][link_ref], [link_ref]
 # and [link_ref][] (it also includes images with exclamation mark).
@@ -31,7 +37,8 @@ REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
 
 # This constant represents the dictionary of used regular expressions for
 # parsing .md files. The structure is "description_of_regexp_type": regexp.
-REG_EXPS = {"inline": INLINE, "footnote": FOOTNOTE, "reference": REFERENCE}
+REG_EXPS = {"inline": INLINE, "inline_nested": INLINE_NESTED,
+            "footnote": FOOTNOTE, "reference": REFERENCE}
 
 # Regexp for finding ids within div and span html elements
 IDS_REGEX = r"<(?:div|span).*?id=[\"'](\S+?)[\"']"

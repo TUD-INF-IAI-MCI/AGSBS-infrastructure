@@ -90,6 +90,7 @@ class LinkExtractor:
         "file_path": full path to the file, where the link is stored
         "link_type": type of the link - this should be as follows:
             "inline": basic inline link in square brackets, syntax;
+            "inline_nested": inline link the contains inline link
             "footnote": link to the footnote that is referenced somewhere else
                 in the document;
             "reference": reference to the footnote and standalone links.
@@ -118,7 +119,7 @@ class LinkExtractor:
         important data for the link examination. """
         if not isinstance(link, tuple):
             raise TypeError(
-                "The processed link shoud be a tuple, but {} was "
+                "The processed link should be a tuple, but {} was "
                 "returned.".format(type(link)))
 
         link_dict = dict()
