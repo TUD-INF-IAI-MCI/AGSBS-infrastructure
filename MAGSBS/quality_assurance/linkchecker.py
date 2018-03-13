@@ -58,7 +58,6 @@ def get_list_of_md_files(file_tree):
                 file_path = os.path.join(directory_name, file)
                 if os.path.isfile(file_path):  # check if file exists
                     md_file_list.append((file_path, file))
-    print(md_file_list)
     return md_file_list
 
 

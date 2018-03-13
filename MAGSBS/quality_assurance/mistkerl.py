@@ -193,15 +193,10 @@ class Mistkerl():
         """
         links = LinkExtractor()
         links.parse_all_links_in_md_files(file_tree)
-        # print(links.links_list)
         link_check = LinkChecker(links.links_list)
         link_check.run_checks()
-        for err in link_check.errors:
-            # self.__append_error(err.path, err)
-            print(err.lineno, ":", err.message)
-
-        # TODO: Implement it into mistkerl -> when error occurs, it should
-        # be reported by matuc
+        # for err in link_check.errors:
+        #    self.__append_error(err.path, err)
 
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""
