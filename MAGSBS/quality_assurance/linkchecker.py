@@ -4,6 +4,8 @@
 # (c) 2018 Sebastian Humenda <shumenda |at|gmx |dot| de>
 #   Jaromir Plhak <xplhak |at| gmail |dot| com>
 
+# pylint: disable=too-few-public-methods
+
 """
 Link checker for MarkDown documents.
 
@@ -108,9 +110,7 @@ class LinkExtractor:
                     new_dct = self.create_dct(
                         file_name, file_path, link_dict[0], link_dict[1],
                         link_dict[2])
-                    # dct can be None in specific case described in the
-                    # create_dct function
-                    if new_dct:
+                    if self.check_dict_integrity(new_dct):  # data are correct
                         self.links_list.append(new_dct)
 
     @staticmethod
@@ -135,6 +135,23 @@ class LinkExtractor:
             link_dict["link_text"] = link[1]
             link_dict["link"] = link[2]
         return link_dict
+
+    @staticmethod
+    def check_dict_integrity(dct):
+        """ This method checks the data in the dictionary and returns True,
+        if they are correct, False otherwise. This is needed to ensure, that
+        LinkChecker class gets the correct data and, therefore, no additional
+        data structure testing is needed. """
+        if not isinstance(dct, dict):
+            return False
+        if dct.get("file") is None or dct.get("file_path") is None \
+                or dct.get("link_type") is None or dct.get("line_no") is None \
+                or dct.get("is_image") is None or dct.get("link") is None:
+            return False
+        if dct.get("link_type") == "reference" and \
+                dct.get("link_text") is None:
+            return False
+        return True
 
 
 class LinkChecker:
@@ -295,7 +312,7 @@ class LinkChecker:
         if not os.path.exists(file_path):
             self.errors.append(
                 ErrorMessage(
-                    "The file \"{}\" given by the reference [{}] doesn't "
+                    "The file \"{}\" given by the reference [{}] does not "
                     "exist.".format(parsed_path, link.get("link_text")),
                     link.get("line_no"), link.get("file_path")))
 
@@ -343,15 +360,21 @@ class LinkChecker:
         return replace_web_extension_with_md(full_path)
 
     def load_headings_to_dict(self, path):
-        """ This method loads headings into dictionary. This dictionary
-        prevents loading same files repeatedly. """
+        """ This method loads headings into the __headings_dict attribute
+        (dictionary). This dictionary prevents loading same files repeatedly
+        if links are pointing on the same files.
+        Note: This brings some extra space complexity.
+        """
         with open(path, encoding="utf-8") as file:
             paragraphs = mparser.file2paragraphs(file.read())
         self.__headings_dict[path] = mparser.extract_headings(path, paragraphs)
 
     def load_html_ids_to_dict(self, path):
-        """ This method loads headings into dictionary. This dictionary
-        prevents loading same files repeatedly. """
+        """ This method loads ids of div and span elements into
+        self.__html_ids_dict attribute (dictionary). This dictionary prevents
+        loading same files repeatedly if links are pointing on the same files.
+        Note: This brings some extra space complexity.
+        """
         with open(path, encoding="utf-8") as file:
             self.__html_ids_dict[path] = mparser.get_ids_of_html_elements(
                 file.read())

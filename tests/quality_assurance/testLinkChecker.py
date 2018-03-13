@@ -1,9 +1,9 @@
-import itertools
+# pylint: disable=missing-docstring,invalid-name
+
 import unittest
 from urllib.parse import urlparse
 
 from MAGSBS.quality_assurance import linkchecker
-from MAGSBS.quality_assurance.meta import ErrorMessage
 
 
 class TestHelpingFunctions(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestHelpingFunctions(unittest.TestCase):
         self.assertEqual(linkchecker.print_list_of_extensions(
             ["jpg", "bmp", "svg", "png"]), ".jpg, .bmp, .svg or .png")
 
-    def test_replace_web_extension_with_md(self):
+    def test_replace_web_extension(self):
         self.assertEqual(linkchecker.replace_web_extension_with_md(""), "")
         self.assertEqual(linkchecker.replace_web_extension_with_md("no_dot"),
                          "no_dot")
@@ -43,15 +43,57 @@ class TestLinkExtractor(unittest.TestCase):
             {"file": "file.md", "file_path": "path", "link_type": "footnote",
              "line_no": 5, "is_image": False, "link": "link"})
 
+    def test_check_dict_integrity(self):
+        correct_link = {
+            "file": "f", "file_path": "p", "link_type": "reference",
+            "line_no": 1, "is_image": False, "link": "l", "link_text": "text"}
+        string_not_dct = "I am a fake dictionary."
+        empty_dict = {}
+        missing_link = {
+            "file": "f", "file_path": "p", "link_type": "reference",
+            "line_no": 1, "is_image": False, "link_text": "text"}
+        missing_file = {"file_path": "p", "link_type": "footnote",
+                        "line_no": 5, "is_image": False, "link": "l"}
+        missing_path = {"file": "f", "link_type": "footnote",
+                        "line_no": 5, "is_image": False, "link": "l"}
+        missing_type = {"file_path": "p", "file": "f",
+                        "line_no": 5, "is_image": False, "link": "l"}
+        missing_lineno = {"file_path": "p", "file": "f", "link": "l",
+                          "link_type": "footnote", "is_image": False}
+        incorrect_lineno = {"file": "f", "file_path": "p", "is_image": False,
+                            "link_type": "reference", "line_no": "abc",
+                            "link": "l"}
+        no_link_text_in_ref = {
+            "file": "f", "file_path": "p", "link_type":
+            "reference", "line_no": 1, "is_image": False, "link": "l"}
+
+        extractor = linkchecker.LinkExtractor()
+        self.assertTrue(extractor.check_dict_integrity(correct_link))
+        self.assertFalse(extractor.check_dict_integrity(string_not_dct))
+        self.assertFalse(extractor.check_dict_integrity(empty_dict))
+        self.assertFalse(extractor.check_dict_integrity(missing_link))
+        self.assertFalse(extractor.check_dict_integrity(missing_file))
+        self.assertFalse(extractor.check_dict_integrity(missing_path))
+        self.assertFalse(extractor.check_dict_integrity(missing_type))
+        self.assertFalse(extractor.check_dict_integrity(missing_lineno))
+        self.assertFalse(extractor.check_dict_integrity(incorrect_lineno))
+        self.assertFalse(extractor.check_dict_integrity(no_link_text_in_ref))
+
+
 class TestLinkChecker(unittest.TestCase):
 
-    def test_check_correct_email_address(self):
-        correct_link = {"file": "file.md", "file_path": "path", "link_type":
-                    "reference", "line_no": 1, "is_image": False,
-                    "link": "mailto: jones@gmail.com"}
-        wrong_link = {"file": "file.md", "file_path": "path", "link_type":
-                    "reference", "line_no": 5, "is_image": False,
-                    "link": "mailto: fail@.@gmail.com"}
+    @staticmethod
+    def get_path(link):
+        parsed = urlparse(link.get("link"))
+        return parsed.path
+
+    def test_check_correct_email(self):
+        correct_link = {
+            "file": "file.md", "file_path": "path", "link_type": "reference",
+            "line_no": 1, "is_image": False, "link": "mailto: jones@gmail.com"}
+        wrong_link = {
+            "file": "file.md", "file_path": "path", "link_type": "reference",
+            "line_no": 5, "is_image": False, "link": "mailto: fail@.@gml.com"}
 
         checker = linkchecker.LinkChecker([])
         checker.check_correct_email_address(correct_link)
@@ -60,7 +102,7 @@ class TestLinkChecker(unittest.TestCase):
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 5)
 
-    def test_find_reference_for_link_and_link_for_reference(self):
+    def test_coupling_references(self):
         test_links = [
             {"file": "file.md", "file_path": "path", "link_type": "reference",
              "line_no": 1, "is_image": False, "link": "k01.html",
@@ -115,16 +157,56 @@ class TestLinkChecker(unittest.TestCase):
             "line_no": 3, "is_image": True, "link": "k01.md",
             "link_text": "1"}
 
-        def get_path(link):
-            parsed = urlparse(link.get("link"))
-            return parsed.path
-
         checker = linkchecker.LinkChecker([])
-        checker.check_extension(get_path(correct_link), correct_link)
+        checker.check_extension(self.get_path(correct_link), correct_link)
         self.assertEqual(checker.errors, [])
-        checker.check_extension(get_path(img_instead_html), img_instead_html)
-        checker.check_extension(get_path(html_instead_img), html_instead_img)
-        checker.check_extension(get_path(incorrect_link), incorrect_link)
+        checker.check_extension(self.get_path(img_instead_html),
+                                img_instead_html)
+        checker.check_extension(self.get_path(html_instead_img),
+                                html_instead_img)
+        checker.check_extension(self.get_path(incorrect_link),
+                                incorrect_link)
         self.assertEqual(len(checker.errors), 3)
         for i in range(len(checker.errors)):
             self.assertEqual(checker.errors[i].lineno, i + 1)
+
+    def test_duplicities(self):
+        test_links = [
+            {"file": "file.md", "file_path": "path", "link_type": "reference",
+             "line_no": 1, "is_image": False, "link": "k01.html",
+             "link_text": "my_reference"},
+            {"file": "file.md", "file_path": "path", "link_type": "reference",
+             "line_no": 2, "is_image": False, "link": "1",
+             "link_text": "k01.html"}]
+
+        checker = linkchecker.LinkChecker(test_links)
+        checker.find_reference_duplicates()
+        self.assertEqual(checker.errors, [])
+
+        test_links.append(
+            {"file": "file.md", "file_path": "path", "link_type": "reference",
+             "line_no": 3, "is_image": False, "link": "k01.html",
+             "link_text": "my_reference"})
+        test_links.append(
+            {"file": "file.md", "file_path": "path", "link_type": "reference",
+             "line_no": 4, "is_image": False, "link": "1",
+             "link_text": "k01.html"})
+
+        checker = linkchecker.LinkChecker(test_links)
+        checker.find_reference_duplicates()
+        self.assertEqual(len(checker.errors), 2)
+        self.assertTrue(checker.errors[0].lineno, 1)
+        self.assertTrue(checker.errors[1].lineno, 2)
+
+    def test_target_exist(self):
+        # add testing of hand-made temp file existence
+        link = {
+            "file": "file.md", "file_path": "path", "link_type": "reference",
+            "line_no": 1, "is_image": False, "link": "nonsenspath with space",
+            "link_text": "my_reference"}
+
+        checker = linkchecker.LinkChecker([])
+        checker.target_exists(self.get_path(link), link,
+                              "nonsenspath with space")
+        self.assertEqual(len(checker.errors), 1)
+        self.assertEqual(checker.errors[0].lineno, 1)
