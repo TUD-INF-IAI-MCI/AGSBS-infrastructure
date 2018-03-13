@@ -100,13 +100,22 @@ def extract_headings_from_par(paragraphs, max_headings=-1):
     return headings
 
 
-def extract_headings(path, paragraphs):
+def extract_headings(path, paragraphs, extract_chapter=True):
     """Extract headings from given paragraphs with given path. Internally,
     extract_headings_from_par is called.
     The difference to extract_headings_from_par is that it'll annotate the
-    chapter number form the given path."""
+    chapter number form the given path.
+    Extract_chapter parameter specifies if chapter number should be
+    extracted.  This method needs to have the file name in format
+    charsdigits.md. However, it make sense (for checking links) to extract
+    headings from other .md files (e.g. bilder.md).
+    """
     headings = []
-    chapter_number = datastructures.extract_chapter_number(path)
+
+    if extract_chapter:
+        chapter_number = datastructures.extract_chapter_number(path)
+    else:  # in cases the chapter number is not needed
+        chapter_number = 0
     for heading in extract_headings_from_par(paragraphs):
         heading.set_chapter_number(chapter_number)
         headings.append(heading)
