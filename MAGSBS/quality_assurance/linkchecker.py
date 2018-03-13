@@ -364,9 +364,11 @@ class LinkChecker:
         if links are pointing on the same files.
         Note: This brings some extra space complexity.
         """
+        print("path", path)
         with open(path, encoding="utf-8") as file:
             paragraphs = mparser.file2paragraphs(file.read())
-        self.__headings_dict[path] = mparser.extract_headings(path, paragraphs)
+        self.__headings_dict[path] = mparser.extract_headings(
+            path, paragraphs, False)
 
     def load_html_ids_to_dict(self, path):
         """ This method loads ids of div and span elements into

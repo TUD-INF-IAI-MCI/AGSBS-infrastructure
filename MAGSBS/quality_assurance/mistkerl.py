@@ -121,9 +121,7 @@ class Mistkerl():
                     self.__append_error(path, e)
                     continue
                 self.__run_filters_on_file(file_path, paragraphs)
-
-        # temporary call of linkchecker
-        # TODO: implement calling of LinkChecker in a clearer way
+        # call linkchecker
         self.__run_linkchecker(file_tree)
         # the last directory must be processed, even though there was no directory
         # change
@@ -195,8 +193,8 @@ class Mistkerl():
         links.parse_all_links_in_md_files(file_tree)
         link_check = LinkChecker(links.links_list)
         link_check.run_checks()
-        # for err in link_check.errors:
-        #    self.__append_error(err.path, err)
+        for err in link_check.errors:
+            self.__append_error(err.path, err)
 
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""
