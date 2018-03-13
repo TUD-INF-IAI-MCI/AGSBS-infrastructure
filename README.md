@@ -8,26 +8,26 @@ Introduction
 
 This module and it's sample command client is meant to ease the work flow from
 the [AG SBS](https://elvis.inf.tu-dresden.de/index.php?menuid=23). In short it
-helps prepare lecture material for visually impaired and blind students. The
-format for editing is MarkDown.
-
-The MarkDown files are converted to HTML which is sent to the students.  HTML
-has the advantage that images can be included and images can be described (using
-the alt attribute) at the same time so that visually impaired/blind students can
-work with their sighted colleagues using the same document.
+helps prepare lecture material and relevant literature for visually impaired and
+blind students. The format for editing is MarkDown and the accessible output
+format is HTML.
+HTML has the advantage that the referenced images can be described with an
+alternate text for the screen reader user, while displaying the actual image on
+the screen.
+This enables visually impaired/blind students to work with their sighted
+colleagues using the same document.
 
 This module automates a lot of processes and can be used in other applications
-as a plug in or on the command line. It'll help convert the files (with a few AG
-SBS-specific language extensions), create a table of contents for the lecture,
-create navigation bars in the documents and more.
+as a plugin or on the command line. It converts the source markdown documents
+(with a few AG SBS-specific language extensions), creates a table of contents
+for the lecture, creates navigation bars in the documents and more.
 
 Installation
 ------------
 
 You can install this module as well as the program from source. The following
-sections describe the installation on Windows and GNU/Linux. The installation
-for Mac should work similar. You're welcome to send corrections or improvement
-requests.
+sections describe the installation for Windows, GNU/Linux and Mac. You are
+welcome to send corrections or additions, as well as any requests.
 
 ### Dependencies
 
@@ -38,46 +38,32 @@ To test what your default Python is, execute:
     python --version
 
 If it outputs a version starting with 3, everything is fine and you can execute
-all commands below with "python". If however the command returns something like
-2.x.x, you need to call every mentioned command instead with "python3". In the
-latter case, you should also check that Python3 is instaled.
+all commands below with "python" (and "pip". If however the command returns
+something like 2.x.x, you need to call every mentioned command instead with
+"python3". In the latter case, you should also check that Python3 is instaled.
 
-In addition you need [Pandoc](http://pandoc.org) (version >= 1.12),
-[GladTeX](http://humenda.github.io/GladTeX) and Python-Pandocfilters.
+This software depends on [GladTex](https://github.com/humenda/GladTeX) and a
+LaTeX distribution.
 
-**Note:** For Windows, there are pre-compiled installers available. If you don't want to
-use those, you have to set up the dependencies manually:
+-   On GNU/Linux, you should use your package manager to get a recent version of
+    GladTeX and a LaTeX distribution. If you happen to run Debian, Linux Mint or
+    Ubuntu, typing `sudo apt-get install gladtex texlive-full` should be enough.
+-   On OS/X, you should install
+    [GladTeX](https://github.com/humenda/GladTeX)
+    from source and install [MacTeX](www.tug.org/mactex/).
+-   On windows, install a TeX distribution, for instance
+    [MikTeX](https://miktex.org/)  and fetch a
+    [GladTeX binary]](http://humenda.github.io/GladTeX/downloads.html).
 
-    pip install pandocfilters
 
-### Installation From Source On Windows
+### Installation
 
+On any platform, it is enough to change to the source directory and issue the
+following command:
 
-+ Windows: open a cmd window (e.g. press Windows + r and type there `cmd<enter>`),
-  switch with the "cd"-command to the correct directory and execute the
-  following command:
+    pip install --upgrade .
 
-    setup.py install
-
-Now you can run matuc, which was installed to `c:\python<version>\scripts`.
-Consider adding this path to the `%PATH%` variable. Also keep in mind that by
-default, you have to type matuc.py.
-
-### Debian/Ubuntu/Mint, et al.
-
-    sudo apt install python3-pandocfilters gladtex pandoc
-
-Then proceed with the next section.
-
-### unixoid systems
-
-Please test, whether you have to run python3 or python. Try `python3 --version`
-to find out whether python3 exists and if so, use that. Otherwise use python as
-this:
-
-    python setup.py install
-
-You can run `matuc` straight away.
+**Note:** on Debian and derivatives (Mint, Ubuntu), pip3 should be used instead.
 
 Localization
 ------------

@@ -21,13 +21,22 @@ import shutil
 import sys
 import textwrap
 
-import MAGSBS
-import MAGSBS.quality_assurance
+import MAGSBS.common
+import MAGSBS.config
+import MAGSBS.datastructures
+import MAGSBS.errors
+import MAGSBS.factories
+import MAGSBS.filesystem
+import MAGSBS.master
+import MAGSBS.mparser
 from MAGSBS import pagenumbering
+import MAGSBS.pandoc
+import MAGSBS.quality_assurance
+import MAGSBS.toc
 
 PROCNAME = os.path.basename(sys.argv[0])
 
-main_usage = """%s <command> <options>
+MAIN_USAGE = """%s <command> <options>
 
 <command> determines which action to take. The syntax might vary between
 commands. Use %s <command> -h for help.
@@ -48,30 +57,6 @@ version         - output program version
 """ % (PROCNAME, PROCNAME)
 
 
-def getTerminalSize():
-    """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""
-    #pylint: disable=bare-except,multiple-imports
-    env = os.environ
-    def ioctl_GWINSZ(fd):
-        try:
-            import fcntl, termios, struct
-            cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
-        except:
-            return
-        return cr
-    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
-    if not cr:
-        try:
-            fd = os.open(os.ctermid(), os.O_RDONLY)
-            cr = ioctl_GWINSZ(fd)
-            os.close(fd)
-        except:
-            pass
-        if not cr:
-            cr = (env.get('LINES', 25), env.get('COLUMNS', 80))
-    return int(cr[1]), int(cr[0])
-
-
 class OutputFormatter:
     """The OutputFormatter provides abstract methods to format the output produced
     by Matuc to either a TTY or into other formats, i.e. usable by a GUI or
@@ -84,7 +69,8 @@ class OutputFormatter:
     this special case of {'verbatim': 'something'} into 'something'. to be
     compliant with the JSON API specification."""
     __metaclass__ = ABCMeta
-    def register_warning(self, warn):
+    @staticmethod
+    def register_warning(warn):
         """A simple wrapper to pass the warning to the warning registry."""
         if not hasattr('__getitem__'):
             raise TypeError('Dictionary-alike object required')
@@ -180,14 +166,14 @@ class main():
 
     def run(self, args):
         if len(args) < 2:
-            self.output_formatter.emit_usage(main_usage)
+            self.output_formatter.emit_usage(MAIN_USAGE)
         else:
             # try to get a handler for it
             try:
                 invokation_command = '%s %s' % (PROCNAME, sys.argv[1])
                 func = getattr(self, 'handle_%s' % args[1])
             except AttributeError:
-                self.output_formatter.emit_usage(main_usage, "Invalid command: " + args[1])
+                self.output_formatter.emit_usage(MAIN_USAGE, "Invalid command: " + args[1])
                 sys.exit(127)
             ret = func(invokation_command, args[2:])
             if not ret:

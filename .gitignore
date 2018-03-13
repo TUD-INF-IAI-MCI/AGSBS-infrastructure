@@ -2,6 +2,7 @@
 build
 cli/build
 dist
+*.egg-info
 installer/matuc-installer*.exe
 *.mo
 *.pot

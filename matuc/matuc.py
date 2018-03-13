@@ -16,7 +16,32 @@ import shutil
 import sys
 import textwrap
 import MAGSBS
-import matuc_impl
+from . import matuc_impl
+
+def get_terminal_size():
+    """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""
+    #pylint: disable=bare-except,multiple-imports
+    env = os.environ
+    def ioctl_GWINSZ(fd):
+        try:
+            import fcntl, termios, struct
+            cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
+        except:
+            return
+        return cr
+    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+    if not cr:
+        try:
+            fd = os.open(os.ctermid(), os.O_RDONLY)
+            cr = ioctl_GWINSZ(fd)
+            os.close(fd)
+        except:
+            pass
+        if not cr:
+            cr = (env.get('LINES', 25), env.get('COLUMNS', 80))
+    return int(cr[1]), int(cr[0])
+
+
 
 def flatten(thing): # flatten a list of lists
     if isinstance(thing, list):
@@ -54,7 +79,7 @@ class TextFormatter(matuc_impl.OutputFormatter):
             line = str(line)
         prefix = ' ' * indent + prefix
         indent = indent + 2 # indent subsequent lines with indent + 2
-        t = textwrap.TextWrapper(width=matuc_impl.getTerminalSize()[0] - indent,
+        t = textwrap.TextWrapper(width=get_terminal_size()[0] - indent,
                 initial_indent=prefix)
         lines = t.wrap(line)
         return [lines[0]] + ['\n{}{}'.format(' ' * indent, l) for l in lines[1:]]
@@ -96,7 +121,7 @@ class TextFormatter(matuc_impl.OutputFormatter):
         try:
             print(text.rstrip())
         except UnicodeEncodeError as e:
-            print("Error while printing non-ascii text.\n")
+            print("Error while printing non-ascii text: %s\n" % str(e))
             print(text.encode('ascii', errors='ignore'))
 
     def emit_error(self, error):
@@ -123,14 +148,16 @@ class TextFormatter(matuc_impl.OutputFormatter):
         elif shutil.which('clear'):
             os.system('clear')
         else:
-            print("\n" + "-" * matuc_impl.getTerminalSize()[0])
+            print("\n" + "-" * get_terminal_size()[0])
             if 'linux' in sys.platform:
                 self.register_warning({'message': ("The `clear` command was not"
                     " found, install it, i.e. with `apt-get install ncurses-bin`.")})
 
 
+def main():
+    main_inst = matuc_impl.main(TextFormatter())
+    main_inst.run(sys.argv)
 
 
 if __name__ == '__main__':
-    main_inst = matuc_impl.main(TextFormatter())
-    main_inst.run(sys.argv)
+    main()
