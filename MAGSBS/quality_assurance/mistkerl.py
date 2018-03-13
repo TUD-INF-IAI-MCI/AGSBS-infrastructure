@@ -185,10 +185,9 @@ class Mistkerl():
             self.__append_error(file_path, issue.run(formulas))
 
     def __run_linkchecker(self, file_tree):
-        """
-        Temporary function for running linkchecker. This should be implemented
-        in the run function in a clearer way.
-        """
+        """ This method runs the linkchecker. First, it extracts the links
+        using link extractor. Then it executes all checks of links and,
+        finally, add them as errors. """
         links = LinkExtractor()
         links.parse_all_links_in_md_files(file_tree)
         link_check = LinkChecker(links.links_list)
