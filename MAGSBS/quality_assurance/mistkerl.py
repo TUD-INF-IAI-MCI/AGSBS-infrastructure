@@ -121,6 +121,7 @@ class Mistkerl():
                     self.__append_error(path, e)
                     continue
                 self.__run_filters_on_file(file_path, paragraphs)
+
         # temporary call of linkchecker
         # TODO: implement calling of LinkChecker in a clearer way
         self.__run_linkchecker(file_tree)
@@ -196,7 +197,9 @@ class Mistkerl():
         link_check = LinkChecker(links.links_list)
         link_check.run_checks()
         for err in link_check.errors:
+            # self.__append_error(err.path, err)
             print(err.lineno, ":", err.message)
+
         # TODO: Implement it into mistkerl -> when error occurs, it should
         # be reported by matuc
 
