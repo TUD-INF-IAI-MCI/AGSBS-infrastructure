@@ -379,9 +379,9 @@ class TestLinkExtractor(unittest.TestCase):
             "![You can use numbers for reference - style link definitions][1]"]
         test_outputs = [
             [(1, "labeled", ("", "I'm a reference-style link",
-                              "Arbitrary case-insensitive text"))],
+                             "Arbitrary case-insensitive text"))],
             [(1, "labeled", ("!", "You can use numbers for reference - style "
-                                   "link definitions", "1"))]
+                                  "link definitions", "1"))]
         ]
         self.make_comparison(test_inputs, test_outputs, "Labeled links")
 

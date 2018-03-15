@@ -38,7 +38,7 @@ LABELED = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!/?:|/?\()+"
 REFERENCE = r"(!?)\[([^\^\]]+[^\]]+)\]:\s*<?([^>\s]+)>?"
 
 # Searches for references to footnotes in form [^link_ref]: text (where text
-# end with \n\n or end of file). In the text, there can be inline links as well.
+# end with \n\n or end of file). In the text, there can be e.g. inline links.
 REFERENCE_FOOTNOTE = r"(!?)\[(\^[^\]]+)\]:(.*?)(?:\n\n|\Z)"
 
 # This constant represents the dictionary of used regular expressions for

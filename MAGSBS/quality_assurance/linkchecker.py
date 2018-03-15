@@ -108,17 +108,15 @@ class LinkExtractor:
             with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
                 data = mparser.find_links_in_markdown(file_data.read())
-                for link_dict in data:
-                    self.add_dict_to_list(file_name, file_path, link_dict)
+                for link_data in data:
+                    new_dct = self.create_dct(
+                        file_name, file_path, link_data[0], link_data[1],
+                        link_data[2])
+                    if self.check_dict_integrity(new_dct):  # correct data
+                        self.links_list.append(new_dct)
 
-    def add_dict_to_list(self, file_name, file_path, link_dict):
-        """ Creates new dictionary and add it to the attribute links_list."""
-        new_dct = self.create_dct(file_name, file_path, link_dict[0],
-                                  link_dict[1], link_dict[2])
-        if self.check_dict_integrity(new_dct):  # data are correct
-            self.links_list.append(new_dct)
-
-    def create_dct(self, file_name, file_path, line_no, link_type, link):
+    @staticmethod
+    def create_dct(file_name, file_path, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
         important data for the link examination. """
         if not isinstance(link, tuple):
@@ -139,9 +137,6 @@ class LinkExtractor:
             link_dict["link_text"] = link[1]
             link_dict["link"] = link[2]
 
-        return link_dict
-
-    def resolve_footnote_references(self, link_dict):
         return link_dict
 
     @staticmethod

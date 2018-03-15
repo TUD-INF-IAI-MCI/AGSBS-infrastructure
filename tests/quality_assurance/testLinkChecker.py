@@ -38,11 +38,9 @@ class TestLinkExtractor(unittest.TestCase):
              "line_no": 5, "is_image": True, "link_text": "text",
              "link": "link"})
         self.assertEqual(
-            extractor.create_dct("file.md", "path", 5, "labeled"
-,
+            extractor.create_dct("file.md", "path", 5, "labeled",
                                  ("", "link", "")),
-            {"file": "file.md", "file_path": "path", "link_type": "labeled"
-,
+            {"file": "file.md", "file_path": "path", "link_type": "labeled",
              "line_no": 5, "is_image": False, "link": "link"})
 
     def test_check_dict_integrity(self):
@@ -54,17 +52,14 @@ class TestLinkExtractor(unittest.TestCase):
         missing_link = {
             "file": "f", "file_path": "p", "link_type": "reference",
             "line_no": 1, "is_image": False, "link_text": "text"}
-        missing_file = {"file_path": "p", "link_type": "labeled"
-,
+        missing_file = {"file_path": "p", "link_type": "labeled",
                         "line_no": 5, "is_image": False, "link": "l"}
-        missing_path = {"file": "f", "link_type": "labeled"
-,
+        missing_path = {"file": "f", "link_type": "labeled",
                         "line_no": 5, "is_image": False, "link": "l"}
         missing_type = {"file_path": "p", "file": "f",
                         "line_no": 5, "is_image": False, "link": "l"}
         missing_lineno = {"file_path": "p", "file": "f", "link": "l",
-                          "link_type": "labeled"
-, "is_image": False}
+                          "link_type": "labeled", "is_image": False}
         incorrect_lineno = {"file": "f", "file_path": "p", "is_image": False,
                             "link_type": "reference", "line_no": "abc",
                             "link": "l"}
@@ -215,4 +210,3 @@ class TestLinkChecker(unittest.TestCase):
                               "nonsenspath with space")
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 1)
-
