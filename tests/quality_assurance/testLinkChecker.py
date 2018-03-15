@@ -38,9 +38,11 @@ class TestLinkExtractor(unittest.TestCase):
              "line_no": 5, "is_image": True, "link_text": "text",
              "link": "link"})
         self.assertEqual(
-            extractor.create_dct("file.md", "path", 5, "footnote",
+            extractor.create_dct("file.md", "path", 5, "labeled"
+,
                                  ("", "link", "")),
-            {"file": "file.md", "file_path": "path", "link_type": "footnote",
+            {"file": "file.md", "file_path": "path", "link_type": "labeled"
+,
              "line_no": 5, "is_image": False, "link": "link"})
 
     def test_check_dict_integrity(self):
@@ -52,14 +54,17 @@ class TestLinkExtractor(unittest.TestCase):
         missing_link = {
             "file": "f", "file_path": "p", "link_type": "reference",
             "line_no": 1, "is_image": False, "link_text": "text"}
-        missing_file = {"file_path": "p", "link_type": "footnote",
+        missing_file = {"file_path": "p", "link_type": "labeled"
+,
                         "line_no": 5, "is_image": False, "link": "l"}
-        missing_path = {"file": "f", "link_type": "footnote",
+        missing_path = {"file": "f", "link_type": "labeled"
+,
                         "line_no": 5, "is_image": False, "link": "l"}
         missing_type = {"file_path": "p", "file": "f",
                         "line_no": 5, "is_image": False, "link": "l"}
         missing_lineno = {"file_path": "p", "file": "f", "link": "l",
-                          "link_type": "footnote", "is_image": False}
+                          "link_type": "labeled"
+, "is_image": False}
         incorrect_lineno = {"file": "f", "file_path": "p", "is_image": False,
                             "link_type": "reference", "line_no": "abc",
                             "link": "l"}
@@ -104,10 +109,10 @@ class TestLinkChecker(unittest.TestCase):
 
     def test_coupling_references(self):
         test_links = [
-            {"file": "file.md", "file_path": "path", "link_type": "reference",
-             "line_no": 1, "is_image": False, "link": "k01.html",
-             "link_text": "my_reference"},
-            {"file": "file.md", "file_path": "path", "link_type": "footnote",
+            {"file": "file.md", "file_path": "path", "line_no": 1,
+             "link_type": "reference_footnote", "is_image": False,
+             "link": "k01.html", "link_text": "my_reference"},
+            {"file": "file.md", "file_path": "path", "link_type": "labeled",
              "line_no": 3, "is_image": False, "link": "1"}]
 
         correct_ref = {
@@ -119,10 +124,10 @@ class TestLinkChecker(unittest.TestCase):
             "line_no": 8, "is_image": False, "link": "k01.html",
             "link_text": "non-existing link"}
         correct_foot = {
-            "file": "file.md", "file_path": "path", "link_type": "footnote",
+            "file": "file.md", "file_path": "path", "link_type": "labeled",
             "line_no": 10, "is_image": False, "link": "my_reference"}
         wrong_foot = {
-            "file": "file.md", "file_path": "path", "link_type": "footnote",
+            "file": "file.md", "file_path": "path", "link_type": "labeled",
             "line_no": 12, "is_image": False, "link": "incorrect_reference"}
 
         checker = linkchecker.LinkChecker(test_links)
@@ -210,3 +215,4 @@ class TestLinkChecker(unittest.TestCase):
                               "nonsenspath with space")
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 1)
+

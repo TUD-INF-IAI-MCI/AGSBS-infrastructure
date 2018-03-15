@@ -91,11 +91,13 @@ class LinkExtractor:
         "link_type": type of the link - this should be as follows:
             "inline": basic inline link in square brackets, syntax;
             "inline_nested": inline link the contains inline link
-            "footnote": link to the footnote that is referenced somewhere else
+            "labeled": labeled link that is referenced somewhere else
                 in the document;
-            "reference": reference to the footnote and standalone links.
+            "reference": reference to the labeled links.
                 References' titles are not detected as they are not
                 relevant to the link testing;
+            "reference_footnote": reference that has ^ as a first character.
+                This can contain longer text
         "line_no": number of line on which link is matched;
         "is_image": 'True' if the link is a picture, 'False' otherwise
         "link": link;
@@ -107,14 +109,16 @@ class LinkExtractor:
                 # call the function for finding links
                 data = mparser.find_links_in_markdown(file_data.read())
                 for link_dict in data:
-                    new_dct = self.create_dct(
-                        file_name, file_path, link_dict[0], link_dict[1],
-                        link_dict[2])
-                    if self.check_dict_integrity(new_dct):  # data are correct
-                        self.links_list.append(new_dct)
+                    self.add_dict_to_list(file_name, file_path, link_dict)
 
-    @staticmethod
-    def create_dct(file_name, file_path, line_no, link_type, link):
+    def add_dict_to_list(self, file_name, file_path, link_dict):
+        """ Creates new dictionary and add it to the attribute links_list."""
+        new_dct = self.create_dct(file_name, file_path, link_dict[0],
+                                  link_dict[1], link_dict[2])
+        if self.check_dict_integrity(new_dct):  # data are correct
+            self.links_list.append(new_dct)
+
+    def create_dct(self, file_name, file_path, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
         important data for the link examination. """
         if not isinstance(link, tuple):
@@ -131,9 +135,13 @@ class LinkExtractor:
 
         if not link[2]:  # standalone - type "text [link] text text"
             link_dict["link"] = link[1]
-        else:  # other footnote links, references and inline links"
+        else:  # other labeled links, references and inline links"
             link_dict["link_text"] = link[1]
             link_dict["link"] = link[2]
+
+        return link_dict
+
+    def resolve_footnote_references(self, link_dict):
         return link_dict
 
     @staticmethod
@@ -172,10 +180,10 @@ class LinkChecker:
         self.find_reference_duplicates()  # check dulicate references
         for link in self.links_list:
             self.check_correct_email_address(link)
-            if link.get("link_type") in {"footnote"}:
+            if link.get("link_type") == "labeled":
                 # links should be connected somewhere
                 self.find_reference_for_link(link)
-            if link.get("link_type") == "reference":
+            if link.get("link_type") == {"reference", "reference_footnote"}:
                 # reference should be called
                 self.find_link_for_reference(link)
             if link.get("link_type") in {"reference", "inline",
@@ -200,13 +208,14 @@ class LinkChecker:
                     link.get("line_no"), link.get("file_path")))
 
     def find_reference_for_link(self, link):
-        """ FOOTNOTE links should be connected to the reference link
+        """ LABELED links should be connected to the reference(_footnote) link
         with []: syntax. Otherwise it cannot be paired together. If this
         is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
         link_ref = link.get("link").lower()
         for tested_link in self.links_list:
-            if tested_link.get("link_type") == "reference" \
+            if tested_link.get("link_type") in \
+                    {"reference", "reference_footnote"} \
                     and tested_link.get("link_text").lower() == link_ref:
                 return  # it is ok, reference has been found
         self.errors.append(ErrorMessage("Problem with coupling a reference to "
@@ -239,13 +248,13 @@ class LinkChecker:
                             link.get("file_path")))
 
     def find_link_for_reference(self, link):
-        """ REFERENCE links should be connected to the FOOTNOTE link with
-        []: syntax. Otherwise it should not be paired together.
+        """ REFERENCE(_FOOTNOTE) links should be connected to the LABELED link
+        with []: syntax. Otherwise it should not be paired together.
         If this is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
         link_txt = link.get("link_text").lower()
         for tested_link in self.links_list:
-            if tested_link.get("link_type") == "footnote" \
+            if tested_link.get("link_type") == "labeled" \
                     and tested_link.get("link").lower() == link_txt:
                 return  # it is ok, link has been found
         self.errors.append(ErrorMessage("Problem with coupling a link to "
@@ -405,7 +414,7 @@ class TitleInInlineLinkIsCorrect():
 
 
 class NoSpaceBetweenRoundAndSquareBrackets():
-    """ When the inline link or footnote link is used, it is not allowed by
+    """ When the inline link or labeled link is used, it is not allowed by
     pandoc to have a space/spaces between square and round brackets."""
     pass
 

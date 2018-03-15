@@ -373,17 +373,17 @@ class TestLinkExtractor(unittest.TestCase):
             ]
         self.make_comparison(test_inputs, test_outputs, "Inline links")
 
-    def test_footnote_links(self):
+    def test_labeled_links(self):
         test_inputs = [
             "[I'm a reference-style link][Arbitrary case-insensitive text]",
             "![You can use numbers for reference - style link definitions][1]"]
         test_outputs = [
-            [(1, 'footnote', ("", "I'm a reference-style link",
+            [(1, "labeled", ("", "I'm a reference-style link",
                               "Arbitrary case-insensitive text"))],
-            [(1, 'footnote', ("!", "You can use numbers for reference - style "
+            [(1, "labeled", ("!", "You can use numbers for reference - style "
                                    "link definitions", "1"))]
         ]
-        self.make_comparison(test_inputs, test_outputs, "Footnote links")
+        self.make_comparison(test_inputs, test_outputs, "Labeled links")
 
     def test_reference_links(self):
         test_inputs = [
@@ -404,14 +404,14 @@ class TestLinkExtractor(unittest.TestCase):
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
     def test_standalone_links(self):
-        # standalone links are specific types of footnote links
+        # standalone links are specific types of labeled links
         test_inputs = [
             "See [my website][].",
             "[1]\n[test][]\nabc ![test2] def"]
         test_outputs = [
-            [(1, "footnote", ("", "my website", ""))],
-            [(1, "footnote", ("", "1", "")), (2, "footnote", ("", "test", "")),
-             (3, "footnote", ("!", "test2", ""))]]
+            [(1, "labeled", ("", "my website", ""))],
+            [(1, "labeled", ("", "1", "")), (2, "labeled", ("", "test", "")),
+             (3, "labeled", ("!", "test2", ""))]]
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
     def test_nested_inlines(self):
@@ -429,7 +429,7 @@ class TestLinkExtractor(unittest.TestCase):
             "<div><div id=\"my_ID\"/><span></span></div><span/>"
             "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN></DiV><SPAN/>"]
         test_outputs = [
-            [(1, "footnote", ("", "x", "")), (2, "footnote", ("", " ", ""))],
+            [(1, "labeled", ("", "x", "")), (2, "labeled", ("", " ", ""))],
             [(1, "inline", ("", "tEst", "#TesT"))]]
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
@@ -438,10 +438,28 @@ class TestLinkExtractor(unittest.TestCase):
             "\n[second]\n![third][]\n\n[fif\nth](k01.md)\nab [second]: k07.md"]
         test_outputs = [
             [(5, "inline", ("", "fif\nth", "k01.md")),
-             (2, "footnote", ("", "second", "")),
-             (3, "footnote", ("!", "third", "")),
+             (2, "labeled", ("", "second", "")),
+             (3, "labeled", ("!", "third", "")),
              (7, "reference", ("", "second", "k07.md"))]]
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
+
+    def test_reference_footnotes(self):
+        test_inputs = [
+            "[^1]: [k05025](k0502.html#heading-1) asdsad\nasdsad\n\nabc",
+            "[^2]: text not to be tested",
+            "[^3]: test\n",
+            "![^extended]: http://fsf.org \n(SW foundation)\n\nabc"]
+        test_outputs = [
+            [(1, "inline", ("", "k05025", "k0502.html#heading-1")),
+             (1, "reference_footnote", (
+                 "", "^1", " [k05025](k0502.html#heading-1) asdsad\nasdsad"))],
+            [(1, "reference_footnote", ("", "^2", " text not to be tested"))],
+            [(1, "reference_footnote", ("", "^3", " test\n"))],
+            [(1, "reference_footnote", (
+                "!", "^extended", " http://fsf.org \n(SW foundation)"))]
+        ]
+        self.make_comparison(test_inputs, test_outputs, "Reference links")
+
 
 #  ###########################################################################
 # test id detection

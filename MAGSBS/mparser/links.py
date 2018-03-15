@@ -26,19 +26,26 @@ INLINE_NESTED = \
 
 # Searches for the patterns in the forms [link_text][link_ref], [link_ref]
 # and [link_ref][] (it also includes images with exclamation mark).
-# Footnote links should be coupled with the REFERENCE.
-FOOTNOTE = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!/?:|/?\()+"
+# Labeled links should be coupled with the REFERENCE or REFERENCE_FOOTNOTE.
+LABELED = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!/?:|/?\()+"
 
-# Searches for references in form [link_ref]: link. This should be coupled with
-# FOOTNOTE links through link_ref (link insensitively).
-# Detection for exclamation mark is used due to compatibility with the
+# Searches for references in form [link_ref]: link (link_ref should not start
+# with ^ character - in this case it is a REFERENCE_FOOTNOTE.
+# This reference should be coupled with LABELED links through link_ref
+# (link insensitively).
+# Note: Detection for exclamation mark is used due to compatibility with the
 # structure of previous regexps (and could be used for link structure checks).
-REFERENCE = r"(!?)\[([^\]]+)\]:\s*<?([^>\s]+)>?"
+REFERENCE = r"(!?)\[([^\^\]]+[^\]]+)\]:\s*<?([^>\s]+)>?"
+
+# Searches for references to footnotes in form [^link_ref]: text (where text
+# end with \n\n or end of file). In the text, there can be inline links as well.
+REFERENCE_FOOTNOTE = r"(!?)\[(\^[^\]]+)\]:(.*?)(?:\n\n|\Z)"
 
 # This constant represents the dictionary of used regular expressions for
 # parsing .md files. The structure is "description_of_regexp_type": regexp.
 REG_EXPS = {"inline": INLINE, "inline_nested": INLINE_NESTED,
-            "footnote": FOOTNOTE, "reference": REFERENCE}
+            "labeled": LABELED, "reference": REFERENCE,
+            "reference_footnote": REFERENCE_FOOTNOTE}
 
 # Regexp for finding ids within div and span html elements
 IDS_REGEX = r"<(?:div|span).*?id=[\"'](\S+?)[\"']"
@@ -69,7 +76,8 @@ def find_links_in_markdown(text):
     for description, reg_expr in REG_EXPS.items():
         # detects the line numbers
         line_nums = get_starting_line_numbers(reg_expr, text)
-        links = re.compile(reg_expr, re.IGNORECASE).findall(text)
+        links = re.compile(
+            reg_expr, re.MULTILINE | re.DOTALL | re.IGNORECASE).findall(text)
         if len(line_nums) != len(links):
             raise ValueError("Line numbers count should be the same"
                              " as the number of regular expressions.")
