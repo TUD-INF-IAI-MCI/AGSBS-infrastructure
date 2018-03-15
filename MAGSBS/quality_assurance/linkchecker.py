@@ -178,7 +178,8 @@ class LinkChecker:
             if link.get("link_type") == "reference":
                 # reference should be called
                 self.find_link_for_reference(link)
-            if link.get("link_type") in {"reference", "inline"}:
+            if link.get("link_type") in {"reference", "inline",
+                                         "inline_nested"}:
                 self.check_target_availability(link)
 
     def check_correct_email_address(self, link):
