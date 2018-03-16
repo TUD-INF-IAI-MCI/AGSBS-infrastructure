@@ -112,10 +112,8 @@ def extract_headings(path, paragraphs, extract_chapter=True):
     """
     headings = []
 
-    if extract_chapter:
-        chapter_number = datastructures.extract_chapter_number(path)
-    else:  # in cases the chapter number is not needed
-        chapter_number = 0
+    chapter_number = datastructures.extract_chapter_number(path) \
+        if extract_chapter else 0
     for heading in extract_headings_from_par(paragraphs):
         heading.set_chapter_number(chapter_number)
         headings.append(heading)
