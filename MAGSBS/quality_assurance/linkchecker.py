@@ -69,7 +69,7 @@ def replace_web_extension_with_md(path):
     for extension in WEB_EXTENSIONS:
         last_dot = path.rfind(".")
         if len(path) - last_dot - 1 == len(extension) and \
-                path[last_dot + 1:] == extension:
+                path[last_dot + 1:].lower() == extension:
             return path[:last_dot] + ".md"
     return path  # if no extension passed the condition
 
@@ -303,7 +303,7 @@ class LinkChecker:
                 link.get("line_no"), link.get("file_path")))
             return False
         # search fo last comma and extension is what follows it
-        elif path[path.rfind(".") + 1:] not in extensions:
+        elif path[path.rfind(".") + 1:].lower() not in extensions:
             self.errors.append(ErrorMessage(
                 "Link path {} has .{} extension, but it should be {}."
                 .format(path, path[path.rfind(".") + 1:],
