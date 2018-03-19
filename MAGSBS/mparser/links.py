@@ -22,7 +22,8 @@ INLINE = r"(!?)\[([^\]\[\(\)]+)\]\(([^)\s]+).*?\)"
 # inside link text. The example can be:
 # [![Bildbeschreibung](bilder/test.jpg)](bilder.html#title-of-the-graphic)
 INLINE_NESTED = \
-    r"(!?)\[([^\[\]\(\)]*(?:!?)?\[(?:.*?)\]\((?:.*)\)?)\]\(([^)\s]+).*?\)"
+    r"(!?)\[([^\[\]\(\)]*?(?:!?)?\[(?:[^\]]*?)\]\((?:[^\s]*)[^\[\]\(\)]*?" \
+    r"(?:!?)?\)?)\]\(([^)\s]+).*?\)"
 
 # Searches for the patterns in the forms [link_text][link_ref], [link_ref]
 # and [link_ref][] (it also includes images with exclamation mark).

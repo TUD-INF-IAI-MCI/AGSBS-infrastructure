@@ -416,11 +416,19 @@ class TestLinkExtractor(unittest.TestCase):
 
     def test_nested_inlines(self):
         test_inputs = ["[![Bildbeschreibung](bilder/test.jpg)](bilder.html#"
-                       "title-of-the-graphic)"]
+                       "title-of-the-graphic)",
+                       "[ ![Bildbeschreib](bilder/bild1.PNG) ]"
+                       "(bilder.html#bildb)\n\n|| - Seite 4 - \nabc"
+                       "[www.schattauer.de](www.schattauer.de)"]
         test_outputs = [
             [(1, "inline", ("!", "Bildbeschreibung", "bilder/test.jpg")),
              (1, "inline_nested", ("", "![Bildbeschreibung](bilder/test.jpg)",
-                                   "bilder.html#title-of-the-graphic"))]]
+                                   "bilder.html#title-of-the-graphic"))],
+            [(1, "inline", ("!", "Bildbeschreib", "bilder/bild1.PNG")),
+             (4, "inline", ("", "www.schattauer.de", "www.schattauer.de")),
+             (1, "inline_nested", ("", " ![Bildbeschreib](bilder/bild1.PNG) ",
+                                   "bilder.html#bildb"))]
+        ]
         self.make_comparison(test_inputs, test_outputs, "Inline nested")
 
     def test_other_links(self):

@@ -29,6 +29,7 @@ from ..common import is_within_lecture
 
 WEB_EXTENSIONS = ["html"]
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
+EXCPEPTED_REGEXS = [r"^www\."]
 
 
 def print_list_of_extensions(input_list):
@@ -264,8 +265,10 @@ class LinkChecker:
         tested. Moreover, some tests are triggered only when they are in a
         lecture structure. """
         parsed_url = urlparse(link.get("link"))
-        # True if it is a file is a file structure
-        is_file = not parsed_url.netloc and not parsed_url.scheme
+        # True if it is a file in a file structure; excepted strings removes
+        # false possitives
+        is_file = not parsed_url.netloc and not parsed_url.scheme and \
+                  not self.is_within_excepted_string(parsed_url.path)
         inspect_fragment = False  # specify if anchor should be inspected
         if parsed_url.path and is_file:  # if something is in path
             # prepare main paths
@@ -287,6 +290,17 @@ class LinkChecker:
             # check fragment only in situation when file exists .md file within
             # project and when path is empty (it is the same file)
             self.target_anchor_exists(parsed_url, link)
+
+    @staticmethod
+    def is_within_excepted_string(string):
+        """ This method detect, if the string is not false positively detected
+        as a path by urlparse. This could happen, e.g. when somebody forgets
+        to write http:// and write www.google.de. String that should be ignored
+        are saved in the EXCEPTED_REGEXS as regex patterns."""
+        for regex in EXCPEPTED_REGEXS:
+            if re.findall(re.compile(regex), string.lower()):
+                return True
+        return False
 
     def check_extension(self, path, link):
         """ Checks the correct extension of the file in the given path. It
