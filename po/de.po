@@ -1,11 +1,10 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR ORGANIZATION
-# xplhak <xplhak@fi.muni.cz>, 2018.
+# MAGSBS German translation file
+# Copyright (C) 2018 Sebastian Humenda
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-02-22 13:17+CET\n"
-"PO-Revision-Date: 2018-02-15 17:33+0100\n"
+"POT-Creation-Date: 2018-03-19 16:06+CET\n"
+"PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
 "Language: de\n"
@@ -18,27 +17,27 @@ msgstr ""
 
 #: MAGSBS/factories.py:56
 msgid "images"
-msgstr ""
+msgstr "Bilder"
 
 #: MAGSBS/factories.py:81
 msgid "external image description"
-msgstr ""
+msgstr "ausgelagerte Bildbeschreibung"
 
 #: MAGSBS/factories.py:94
 msgid "description of image"
-msgstr ""
+msgstr "Bildbeschreibung"
 
 #: MAGSBS/filesystem.py:140
 msgid "chapter"
-msgstr ""
+msgstr "Kapitel"
 
 #: MAGSBS/filesystem.py:142
 msgid "paper"
-msgstr ""
+msgstr "Papier"
 
 #: MAGSBS/filesystem.py:150 MAGSBS/filesystem.py:152
 msgid "image descriptions"
-msgstr ""
+msgstr "Bildbeschreibungen"
 
 #: MAGSBS/quality_assurance/all_formats.py:22
 msgid ""
@@ -142,105 +141,112 @@ msgstr ""
 
 #: MAGSBS/quality_assurance/markdown.py:18
 msgid ""
-"Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile "
+"Each line number has to have an empty line before and after it, that is, on "
+"a paragraph of its own."
+msgstr ""
+"Jede Seitenzahl muss in der Zeile darüber oder darunter eine Leerzeile "
 "haben, das heißt sie muss in einem eigenen Absatz stehen."
-msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:47
+#: MAGSBS/quality_assurance/markdown.py:48
 msgid ""
-"In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Dies "
-"ist nicht erlaubt. Beispielsweise hat jeder Foliensatz nur eine "
-"Hauptüberschrift und auch ein Kapitel wird nur mit einer Überschrift "
-"bezeichnet."
+"There is more than one heading of level one, which is not allowed. For "
+"instance, a slide set or a chapter has only one heading of level 1."
 msgstr ""
+"Es wurde mehr als eine Überschrift der Ebene 1 gefunden, was nicht erlaubt "
+"ist. Beispielsweise hat ein Foliensatz oder Kapitel auch nur eine "
+"Überschrift der Ebene 1."
 
-#: MAGSBS/quality_assurance/markdown.py:87
+#: MAGSBS/quality_assurance/markdown.py:89
 msgid ""
-"Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss zumindest "
-"davor eine Leerzeile existieren."
+"A list or enumeration needs to be on a paragraph of its own and needs to "
+"have at least an empty line before."
 msgstr ""
+"Eine Auflistund oder Aufzählung muss in einem eigenen Absatz stehen und muss "
+"zumindest davor eine Leerzeile haben."
 
-#: MAGSBS/quality_assurance/markdown.py:106
+#: MAGSBS/quality_assurance/markdown.py:109
 msgid ""
+"The page number \"{}\" can't be recognised, possibly due to a typo, hence it "
+"is ignored at the moment."
+msgstr ""
 "Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um "
-"einen Tippfehler. Die Seitenzahl wird ignoriert."
-msgstr ""
+"einen Tippfehler, wodurch sie momentan ignoriert wird."
 
-#: MAGSBS/quality_assurance/markdown.py:123
-msgid "später dann aber \"{}\""
+#: MAGSBS/quality_assurance/markdown.py:124
+msgid "Two differing page number identifiers were found."
 msgstr ""
+"Es wurden zwei sich unterscheidende Seitenzahlenkennzeichnungen gefunden."
 
-#: MAGSBS/quality_assurance/markdown.py:125
-msgid "in der Datei \"{}\" dann aber \"{}\""
-msgstr ""
+#: MAGSBS/quality_assurance/markdown.py:127
+msgid "First \"{pagenum}\", later \"{another}\"."
+msgstr "Zuerst \"{pagenum}\", dann \"{another}\"."
 
-#: MAGSBS/quality_assurance/markdown.py:126
+#: MAGSBS/quality_assurance/markdown.py:131
+msgid "First \"{pagenum}\", but then \"{another}\" in \"{file}\"."
+msgstr "Zuerst \"{pagenum}\", dann allerdings \"{another}\" in \"{file}\"."
+
+#: MAGSBS/quality_assurance/markdown.py:178
 msgid ""
-"In der Datei \"{}\"  wurde zuerst \"{}\" verwendet, {}. Dies sollte "
-"einheitlich sein."
+"There are more than {count} headings of level {depth}. This can be "
+"circumvented by decreasing the heading depth which will end up the the table "
+"of contents, by decreasing the value tocDepth in the configuration."
 msgstr ""
+"Es existieren mehr als {count} Überschriften der Ebene {depth}. Dies kann "
+"durch verringern der Überschriftentiefe für das Inhaltsverzeichnis, durch "
+"verringern des Wertes tocDepth umgangen werden."
 
-#: MAGSBS/quality_assurance/markdown.py:170
+#: MAGSBS/quality_assurance/markdown.py:213
+msgid "There is a page number where the actual number is missing."
+msgstr "Wahrscheinlich wurde bei dieser Seitenzahl die Zahl vergessen."
+
+#: MAGSBS/quality_assurance/markdown.py:221
 msgid ""
-"Es existieren mehr als {} Überschriften der Ebene {}. Das macht das "
-"Inhaltsverzeichnis sehr unübersichtlich. Man kann entweder in der "
-"Konfiguration tocDepth kleiner setzen, um Überschriften dieser Ebene nicht "
-"ins Inhaltsverzeichnis aufzunehmen (für Foliensätze z.B. tocDepth 1) oder "
-"die Anzahl an Überschriften minimieren, sofern möglich."
+"Headings with the same name make table of contents'hard to read and it "
+"difficult to navigate. It is best to set the configuration value tocDepth "
+"low enough to prevent these headings from appearing in the table of contents."
 msgstr ""
-
-#: MAGSBS/quality_assurance/markdown.py:204
-msgid ""
-"Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach "
-"dem Wort die anschließende Nummer vergessen wurde."
-msgstr ""
-
-#: MAGSBS/quality_assurance/markdown.py:212
-msgid ""
 "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und "
-"erschweren die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten "
-"man setzt das TocDepth so, dass nur die Überschrift des Foliensatzes (oft "
-"Ebene 1) aufgenommen wird und alle Überschriften, mitsamt der Überschriften "
-"die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen."
-msgstr ""
+"erschweren die Navigation. Am Besten man setzt den Konfigurationswert "
+"tocDepth klein genug, damit diese Überschriften nicht im Inhaltsverzeichnis "
+"erscheinen."
 
-#: MAGSBS/quality_assurance/markdown.py:242
-msgid "Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: \"|| - Seite xyz -\""
-msgstr ""
+#: MAGSBS/quality_assurance/markdown.py:252
+msgid "A \"-\" in the page number is missing, required: \"|| - Page xyz -\""
+msgstr "Es fehlt ein \"-\" in der Seitenzahl, Vorgabe: \"|| - Seite xyz -\""
 
-#: MAGSBS/quality_assurance/markdown.py:257
+#: MAGSBS/quality_assurance/markdown.py:267
 msgid ""
-"Es sollte kein Umbruch mittels HTML-Tags erzeugt werden. Platziert man einen "
-"\\ als einziges Zeichen auf eine Zeile und lässt davor und danach eine Zeile "
-"frei, hat dies denselben Effekt."
+"\"{tag}\" is not allowed, use a new paragraph or a \"\\\" at the end of a "
+"line."
 msgstr ""
+"Unerlaubte Nutzung von \"{tag}\"; verwendne Sie einen neuen Absatz oder \"\\"
+"\" am Ende einer Zeile."
 
-#: MAGSBS/quality_assurance/markdown.py:262
+#: MAGSBS/quality_assurance/markdown.py:271
+msgid "It is not allowed to use HTML tags, except for div and span."
+msgstr "Es ist nicht erlaubt HTML-tags, außer div und span, zu verwenden."
+
+#: MAGSBS/quality_assurance/markdown.py:283
 msgid ""
-"Es dürfen, bis auf div und span keine HTML-tags in das Markdown-Dokument "
-"eingebettet werden."
+"Comparison operators shouldn't be marked up in HTML, but with \\< and \\>."
 msgstr ""
-
-#: MAGSBS/quality_assurance/markdown.py:275
-msgid ""
-"Relationsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
+"Vergleichsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
 "mittels \\< und \\> erzeugt werden."
-msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:284
+#: MAGSBS/quality_assurance/markdown.py:292
 msgid ""
 "Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. Am "
 "Besten ist es, die da sie sonst als Text angezeigt werden."
 msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:303
+#: MAGSBS/quality_assurance/markdown.py:311
 msgid ""
 "Wenn ein Absatz mit einem \\ umgebrochen wird, so wird die nächste (leere) "
 "Zeile dem vorigen Absatz zugeordnet. Der Absatz geht verloren und in der "
 "Folge wird das folgende Element falsch formatiert."
 msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:324
+#: MAGSBS/quality_assurance/markdown.py:332
 msgid ""
 "Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile entdeckt. "
 "Entweder eine Formel wurde nicht geschlossen, oder es wurde versucht, eine "
@@ -249,7 +255,7 @@ msgid ""
 "doppelten Dollarzeichen umrahmt werden."
 msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:367
+#: MAGSBS/quality_assurance/markdown.py:375
 msgid ""
 "In Aufzählungen und Nummerierungen darf direkt nach dem Aufzählungszeichen "
 "nicht ein weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, "
@@ -257,38 +263,27 @@ msgid ""
 "Zahlen ein \\ vor dem Punkt verhindert dies."
 msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:386
+#: MAGSBS/quality_assurance/markdown.py:394
 msgid ""
 "Die Bildbeschreibung ist wahrscheinlich nicht vollständig, da ein Marker wie "
 "\"to do\" gefunden wurde."
 msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:406
+#: MAGSBS/quality_assurance/markdown.py:414
 msgid ""
 "Ein Bild wurde mit fehlerhafter Syntax eingebunden, wodurch das Bild vom "
 "Konverter ignoriert wird."
 msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:436
+#: MAGSBS/quality_assurance/markdown.py:444
 msgid ""
 "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit "
 "Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert werden."
 msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:478
+#: MAGSBS/quality_assurance/markdown.py:486
 msgid "Es wurde keine Bildbeschreibung eingefügt."
 msgstr ""
-
-#: MAGSBS/quality_assurance/meta.py:60
-msgid "List or tuple expected."
-msgstr "Liste oder Tupel erwartet."
-
-#: MAGSBS/quality_assurance/meta.py:111
-msgid ""
-"For a mistake checker of type oneliner, exactly two arguments are required."
-msgstr ""
-"Für eine Fehlerüberprüfung vom Typ oneliner sind genau zwei Argumente "
-"erforderlich."
 
 #: MAGSBS/quality_assurance/mistkerl.py:118
 msgid ""
@@ -310,44 +305,44 @@ msgstr ""
 
 #: MAGSBS/toc.py:202
 msgid "table of contents"
-msgstr ""
+msgstr "Inhaltsverzeichnis"
 
 #: MAGSBS/toc.py:210
 msgid "title page"
-msgstr ""
+msgstr "Titelseite"
 
 #: MAGSBS/toc.py:214
 msgid "preface"
-msgstr ""
+msgstr "Vorwort"
 
 #: MAGSBS/toc.py:219
 msgid "chapters"
-msgstr ""
+msgstr "Kapitel"
 
 #: MAGSBS/toc.py:222
 msgid "appendix"
-msgstr ""
+msgstr "Appendix"
 
 #: MAGSBS/toc.py:227
 msgid "glossary"
-msgstr ""
+msgstr "Glossar"
 
 #: MAGSBS/toc.py:229
 msgid "index"
-msgstr ""
+msgstr "Inhalt"
 
 #: MAGSBS/toc.py:232
 msgid "list of abbreviations"
-msgstr ""
+msgstr "Abkürzungsverzeichnis"
 
 #: MAGSBS/toc.py:234
 msgid "list of tactile graphics"
-msgstr ""
+msgstr "Liste taktiler Grafiken"
 
 #: MAGSBS/toc.py:236
 msgid "copyright notice"
-msgstr ""
+msgstr "Urheberrechtshinweis"
 
 #: MAGSBS/toc.py:243
 msgid "remarks about the accessible version"
-msgstr ""
+msgstr "Hinweise zur barrierefreien Version"
