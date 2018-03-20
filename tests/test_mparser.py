@@ -435,10 +435,15 @@ class TestLinkExtractor(unittest.TestCase):
         test_inputs = [
             "- [x] Finish changes\n[ ] Push my commits to GitHub",
             "<div><div id=\"my_ID\"/><span></span></div><span/>"
-            "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN></DiV><SPAN/>"]
+            "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN></DiV><SPAN/>",
+            "Seiten: [[15]](#seite-15--), [[20]](#seite-20--)"
+            ]
         test_outputs = [
             [(1, "labeled", ("", "x", "")), (2, "labeled", ("", " ", ""))],
-            [(1, "inline", ("", "tEst", "#TesT"))]]
+            [(1, "inline", ("", "tEst", "#TesT"))],
+            [(1, "inline", ("", "[15]", "#seite-15--")),
+             (1, "inline", ("", "[20]", "#seite-20--"))]
+            ]
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
     def test_line_nums(self):

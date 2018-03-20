@@ -16,12 +16,14 @@ import re
 
 # Searches for the patterns in the form [link_text](link) (it also includes
 # images with exclamation mark).
-INLINE = r"(!?)\[([^\]\[\(\)]+)\]\(([^)\s]+).*?\)"
+# One nested [text] is allowed
+INLINE = (r"(!?)\[([^\[\]\(\)]*(?:\[[^\]\[\(\)]+\])?[^\[\]\(\)]*)\]"
+          r"\(([^)\s]+).*?\)")
 
 # Searches for the same patterns as INLINE, but this contains nested image
 # inside link text. The example can be:
 # [![Bildbeschreibung](bilder/test.jpg)](bilder.html#title-of-the-graphic)
-# This regex uis constructed from following parts:
+# This regex is constructed from following parts:
 # - exclamation mark, if it is there
 # - "["
 # - whatever except following chars []()
@@ -34,7 +36,7 @@ INLINE_NESTED = (r"(!?)\[([^\[\]\(\)]*?(?:\[(?:[^\]]*?)\]\((?:[^\s]*)"
 # Searches for the patterns in the forms [link_text][link_ref], [link_ref]
 # and [link_ref][] (it also includes images with exclamation mark).
 # Labeled links should be coupled with the REFERENCE or REFERENCE_FOOTNOTE.
-LABELED = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!/?:|/?\()+"
+LABELED = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!:|\(|\])+"
 
 # Searches for references in form [link_ref]: link (link_ref should not start
 # with ^ character - in this case it is a REFERENCE_FOOTNOTE.
