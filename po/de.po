@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-03-19 16:06+CET\n"
+"POT-Creation-Date: 2018-03-20 15:04+CET\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -234,74 +234,87 @@ msgstr ""
 "mittels \\< und \\> erzeugt werden."
 
 #: MAGSBS/quality_assurance/markdown.py:292
-msgid ""
-"Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. Am "
-"Besten ist es, die da sie sonst als Text angezeigt werden."
+msgid "The heading was underlined and also marked with #'s."
 msgstr ""
+"Die Überschrift wurde unterstrichen und gleichzeitig mit # gekennzeichnet."
 
-#: MAGSBS/quality_assurance/markdown.py:311
+#: MAGSBS/quality_assurance/markdown.py:310
 msgid ""
-"Wenn ein Absatz mit einem \\ umgebrochen wird, so wird die nächste (leere) "
-"Zeile dem vorigen Absatz zugeordnet. Der Absatz geht verloren und in der "
-"Folge wird das folgende Element falsch formatiert."
+"If a paragraph ends on a \\, the next empty line will become part of the "
+"paragraph and hence the next paragraph is formatted incorrectly."
 msgstr ""
+"Wenn ein Absatz auf \\ endet, wird die folgende leere Zeile Teil des "
+"Absatzes und der darauf folgende Absatz falsch formatiert."
 
-#: MAGSBS/quality_assurance/markdown.py:332
+#: MAGSBS/quality_assurance/markdown.py:330
 msgid ""
-"Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile entdeckt. "
-"Entweder eine Formel wurde nicht geschlossen, oder es wurde versucht, eine "
-"eingebettete Formel über mehrere Zeilen zu strecken. Im ersteren Fall muss "
-"ein weiteres Dollar eingefügt werden, im zweiten Fall sollte die Formel mit "
-"doppelten Dollarzeichen umrahmt werden."
+"Line contains uneven number of dollar signs. Either a formula wasn't closed "
+"or an embedded formula was stretched across multiple lines (try double "
+"dollars). If you meant a real dollar sign, prepend a \\ to it."
 msgstr ""
+"Zeile enthält eine ungerade Anzahl von Dollarzeichen. Entweder eine Formel "
+"wurde nicht geschlossen, oder eine eingebettete Formel wurde über mehrere "
+"Zeilen gedehnt (versuchen Sie doppelte Dollars). Falls Sie tatsächlich ein "
+"Dollarzeichen schreiben wollten, fügen Sie einen \\ davor ein."
 
-#: MAGSBS/quality_assurance/markdown.py:375
+#: MAGSBS/quality_assurance/markdown.py:372
 msgid ""
+"In enumerations and lists, the enumeration character may not immediately be "
+"followed by another such character, because it will be recognised as a "
+"sublist. A \\ in front of a character or in front of the dot for "
+"enumerations will suppress this."
+msgstr ""
 "In Aufzählungen und Nummerierungen darf direkt nach dem Aufzählungszeichen "
-"nicht ein weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, "
-"da dies sonst als Unterliste erkannt wird. Ein \\ vor dem Zeichen, bzw. bei  "
-"Zahlen ein \\ vor dem Punkt verhindert dies."
-msgstr ""
+"nicht ein weiteres solches folgen, da dies sonst als Unterliste erkannt "
+"wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt "
+"verhindert dies."
 
-#: MAGSBS/quality_assurance/markdown.py:394
+#: MAGSBS/quality_assurance/markdown.py:393
 msgid ""
-"Die Bildbeschreibung ist wahrscheinlich nicht vollständig, da ein Marker wie "
-"\"to do\" gefunden wurde."
+"The image description is probably incomplete, since \"{todo}\" has been "
+"found."
 msgstr ""
+"Die Bildbeschreibung ist wahrscheinlich unvollständig, da eine Markierung "
+"wie \"{todo\" gefunden wurde."
 
-#: MAGSBS/quality_assurance/markdown.py:414
-msgid ""
+#: MAGSBS/quality_assurance/markdown.py:415
+msgid "An included image is using wrong syntax, the converter will ignore it."
+msgstr ""
 "Ein Bild wurde mit fehlerhafter Syntax eingebunden, wodurch das Bild vom "
 "Konverter ignoriert wird."
-msgstr ""
 
 #: MAGSBS/quality_assurance/markdown.py:444
 msgid ""
+"A hyphen was found which possibly originates from copied justified text. "
+"This will be incorrectly formatted in the output."
+msgstr ""
 "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit "
 "Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert werden."
-msgstr ""
 
 #: MAGSBS/quality_assurance/markdown.py:486
-msgid "Es wurde keine Bildbeschreibung eingefügt."
-msgstr ""
+msgid "No image description provided."
+msgstr "Keine Bildbeschreibung vorhanden."
 
 #: MAGSBS/quality_assurance/mistkerl.py:118
 msgid ""
-"Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im "
-"Editor."
+"File not encoded in UTF-8, please configure this encoding in your editor."
 msgstr ""
+"Datei nicht in UTF-8 gespeichert. Bitte wählen Sie diesen Zeichensatz in "
+"Ihrem Editor."
 
-#: MAGSBS/quality_assurance/mistkerl.py:207
-msgid "Die Konfiguration konnte nicht gelesen werden: {}"
-msgstr ""
+#: MAGSBS/quality_assurance/mistkerl.py:209
+msgid "The configuration could not be read: {reason}"
+msgstr "Die Konfiguration konnte nicht gelesen werden: {reason}"
 
-#: MAGSBS/quality_assurance/mistkerl.py:217
+#: MAGSBS/quality_assurance/mistkerl.py:220
 msgid ""
-"Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache "
-"Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen "
-"in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt "
-"werden."
+"The file is too long. To ease navigation and maintain readability, the file "
+"should be split into fileswith less than {count} lines by naming them like "
+"kXXYY.md."
 msgstr ""
+"Die Datei ist zu lang. Um die Navigation zu erleichtern und die Lesbarkeit zu "
+"gewährleisten sollten lange Kapitel mit mehr als {count} Zeilen in mehrere "
+"Dateien mit einer Bennung wie kXXYY.md aufgeteilt werden."
 
 #: MAGSBS/toc.py:202
 msgid "table of contents"

@@ -289,9 +289,8 @@ class HeadingsUseEitherUnderliningOrHashes(Mistake):
     def worker(self, *args):
         for heading in args[0]:
             if heading.get_text().startswith('#'):
-                return self.error(_("Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. "
-                    "Am Besten ist es, die da sie sonst als Text angezeigt werden."),
-                    lnum=heading.get_line_number())
+                return self.error(_("The heading was underlined and also "
+                        "marked with #'s."), lnum=heading.get_line_number())
 
 class ParagraphMayNotEndOnBackslash(Mistake):
     r"""If a paragraph ends on a backslash, the next line will be treated as
@@ -307,11 +306,10 @@ class ParagraphMayNotEndOnBackslash(Mistake):
     mistake_type = MistakeType.full_file
     def worker(self, *args):
         for start_line, paragraph in args[0].items():
-            if paragraph and paragraph[-1].endswith('\\'):
-                return self.error(_("Wenn ein Absatz mit einem \\ umgebrochen "
-                    "wird, so wird die nächste (leere) Zeile dem vorigen "
-                    "Absatz zugeordnet. Der Absatz geht verloren und in der "
-                    "Folge wird das folgende Element falsch formatiert."),
+            if paragraph and paragraph[-1].rstrip().endswith('\\'):
+                return self.error(_("If a paragraph ends on a \\, the next "
+                        "empty line will become part of the paragraph and "
+                        "hence the next paragraph is formatted incorrectly."),
                     lnum=start_line + len(paragraph))
 
 class DetectStrayingDollars(OnelinerMistake):
@@ -329,11 +327,10 @@ class DetectStrayingDollars(OnelinerMistake):
                 return
 
         if num_dollars % 2: # odd number of dollars
-            return self.error(_("Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile "
-                "entdeckt. Entweder eine Formel wurde nicht geschlossen, oder es wurde "
-                "versucht, eine eingebettete Formel über mehrere Zeilen zu strecken. "
-                "Im ersteren Fall muss ein weiteres Dollar eingefügt werden, im zweiten "
-                "Fall sollte die Formel mit doppelten Dollarzeichen umrahmt werden."), lnum)
+            return self.error(_("Line contains uneven number of dollar signs. "
+                    "Either a formula wasn't closed or an embedded formula was "
+                    "stretched across multiple lines (try double dollars). If "
+                    "you meant a real dollar sign, prepend a \\ to it."), lnum)
 
 
 class TextInItemizeShouldntStartWithItemizeCharacter(Mistake):
@@ -372,9 +369,11 @@ This will lead to Pandoc identifying these as sublists.
                         if enumeration_signs >= 2: # it's a proper enumeration
                             break # an error case was encountered
             if errorneous_line:
-                return self.error(_("In Aufzählungen und Nummerierungen darf "
-                    "direkt nach dem Aufzählungszeichen nicht ein weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, "
-                    "da dies sonst als Unterliste erkannt wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt verhindert dies."),
+                return self.error(_("In enumerations and lists, the enumeration"
+                        " character may not immediately be followed by another "
+                        "such character, because it will be recognised as a "
+                        "sublist. A \\ in front of a character or in front of "
+                        "the dot for enumerations will suppress this."),
                     lnum=errorneous_line-1)
 
 
@@ -383,16 +382,17 @@ class ToDosInImageDescriptionsAreBad(OnelinerMistake):
     def __init__(self):
         super().__init__()
         self._todo_pattern = re.compile(r'''
-        (?:to|To|TO)\s*(do|Do|DO)
-        # expect punctuation, etc. to not match false positives
-        (?:\.|,|:|$)
-        ''',
-                re.VERBOSE)
+                ((?:to|To|TO)\s*(?:do|Do|DO))\s*
+                # expect punctuation, etc. to not match false positives
+                (?:\.|,|:|$)
+                ''', re.VERBOSE)
 
     def check(self, lnum, line):
-        if self._todo_pattern.search(line):
-            return self.error(_("Die Bildbeschreibung ist wahrscheinlich nicht vollständig, "
-                    "da ein Marker wie \"to do\" gefunden wurde."), lnum=lnum)
+        match = self._todo_pattern.search(line)
+        if match:
+            return self.error(_("The image description is probably incomplete, "
+                    "since \"{todo}\" has been found.").format(
+                        todo=match.groups()[0]), lnum=lnum)
 
 
 class BrokenImageLinksAreDetected(OnelinerMistake):
@@ -403,17 +403,17 @@ class BrokenImageLinksAreDetected(OnelinerMistake):
             (\![^[]+?\]\([^)]+\) # image link where [ has been forgotten
              |\!\[[^]]+\([^)]+\) # image link where ] has been forgotten
              |\!\[[^]]+\][^(]+?\) # image link where ( has been forgotten
+             |\[[^]]+\]\s*\([^)]+?\.(?:jpg|png|tif|gif|svg)\) # image link where ! has been forgotten
              |\!\[[^]]+?\]\([^)]+$) # image link where ) has been forgotten
             ''', re.VERBOSE)
 
     def check(self, num, line):
-        if self._pattern.search(line):
+        if self._pattern.search(line.lower()):
             # check whether ! [ ] ( ) are all in the line, if so, it's a false positive
             for punct in ['(', ')', '[', ']', '!']:
                 if not punct in line:
-                    return self.error(_("Ein Bild wurde mit fehlerhafter Syntax "
-                        "eingebunden, wodurch das Bild vom Konverter ignoriert "
-                        "wird."), num)
+                    return self.error(_("An included image is using wrong "
+                            "syntax, the converter will ignore it."), num)
 
 class HyphensFromJustifiedTextWereRemoved(Mistake):
     """When copy-pasting text from i.e. PDFs, it is easy to forget to remove
@@ -441,10 +441,10 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
                     # it was justified text, if next line starts with a word
                     if next_line and next_line[0].isalpha() and not \
                             (next_line.startswith('und') or next_line.startswith('and')):
-                        return self.error(_("Es wurde ein Trennstrich gefunden, "
-                            "der wahrscheinlich aus einem Text mit "
-                            "Blocksatz kopiert wurde. Dies wird in der "
-                            "Ausgabe falsch formatiert werden."), start_line + lnum)
+                        return self.error(_("A hyphen was found which possibly "
+                                "originates from copied justified text. This "
+                                "will be incorrectly formatted in the output."),
+                            start_line + lnum)
 
 
 class DetectEmptyImageDescriptions(Mistake):
@@ -483,5 +483,6 @@ class DetectEmptyImageDescriptions(Mistake):
                     image_description_found = True
                     break
             if not image_description_found:
-                return self.error(_("Es wurde keine Bildbeschreibung eingefügt."),
+                return self.error(_("No image description provided."),
                     lnum=start_line, path=path)
+
