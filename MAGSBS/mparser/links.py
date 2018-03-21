@@ -27,11 +27,13 @@ def find_links_in_markdown(text, init_lineno=1):
     output = []
     lineno = init_lineno  # number of lines that were examined
     processed = 0  # specify the number of chars that were already processed
-    escape_next = False  # scpecify if next char should be escaped
+    escape_next = False  # specify if next char should be escaped
+    is_in_formula = False  # specify, if the character is within formula
 
     while processed < len(text):
         if text[processed] == "\n":  # count lines
             lineno += 1
+        # if text[processed] == "$" and not escape_next:
 
         # find the potential beginning of link (ignore the masked bracket)
         if text[processed] == "[" and not escape_next:

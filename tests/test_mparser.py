@@ -488,6 +488,21 @@ class TestLinkExtractor(unittest.TestCase):
         ]
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
+    def test_formulas(self):
+        test_inputs = [
+            "Formula (e.g. $\sqrt[5]{8547799037)}$."
+            "$$ blok formula [no] [detection](test) \n nor [ref]:abc.com $$"
+            "\$ there is no [formula] \$",
+            "\$ not even in [link \$ test]: reference"
+        ]
+        test_outputs = [
+            [],
+            [],
+            [(1, "labeled", ("", "formula", ""))],
+            [(1, "reference", ("", "link \$ test", "reference"))]
+        ]
+        self.make_comparison(test_inputs, test_outputs, "Reference links")
+
 
 #  ###########################################################################
 # test id detection
