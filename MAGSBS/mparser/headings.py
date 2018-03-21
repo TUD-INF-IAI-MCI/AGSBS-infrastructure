@@ -3,10 +3,9 @@
 #
 # (c) 2017-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 
-import os
 import re
 
-from .. import datastructures, errors
+from .. import datastructures
 
 _hashed_heading = re.compile(r'^#{1,6}(?!\.)\s*.*?\w+')
 
@@ -56,7 +55,8 @@ def __extract_hashed(start_line, paragraph):
         else:
             break
 
-def extract_headings_from_par(paragraphs, max_headings=-1):
+def extract_headings_from_par(paragraphs, max_headings=-1,
+        remove_duplicates=True):
     """extract_headings_from_par(list_of_paragraphs, max_headings=-1)
     Return list of heading objects; if max_headings is set to a value > -1, only
     this number of headings will be parsed.
@@ -66,6 +66,10 @@ def extract_headings_from_par(paragraphs, max_headings=-1):
     """
     headings = []
     def add_heading(start_line, text, level):
+        nonlocal headings
+        if remove_duplicates and headings and \
+                headings[-1].get_text().strip() == text.strip():
+            return # do not add duplicates
         h = datastructures.Heading(text, level)
         h.set_line_number(start_line)
         headings.append(h)
@@ -76,8 +80,12 @@ def extract_headings_from_par(paragraphs, max_headings=-1):
         if not paragraphs:
             continue
         if is_hashed_heading(paragraph[0]):
-            headings.extend(__extract_hashed(start_line, paragraph))
-            continue
+            for heading in __extract_hashed(start_line, paragraph):
+                if remove_duplicates and headings and headings[-1].get_text()\
+                        .strip() == heading.get_text().strip():
+                    continue # skip doubled headings
+                headings.append(heading)
+            continue # skip this paragraph, was parsed
         # find --- or ===, for this, read the "first line", including line
         # continuation instructions
         potential_underline_at = 0 # second line
@@ -100,14 +108,17 @@ def extract_headings_from_par(paragraphs, max_headings=-1):
     return headings
 
 
-def extract_headings(path, paragraphs):
+def extract_headings(path, paragraphs, remove_duplicates=True):
     """Extract headings from given paragraphs with given path. Internally,
     extract_headings_from_par is called.
     The difference to extract_headings_from_par is that it'll annotate the
-    chapter number form the given path."""
+    chapter number form the given path.
+    If remove_duplicates is true, headings with same name will be ignored and
+    only the first kept."""
     headings = []
     chapter_number = datastructures.extract_chapter_number(path)
-    for heading in extract_headings_from_par(paragraphs):
+    for heading in extract_headings_from_par(paragraphs,
+            remove_duplicates=remove_duplicates):
         heading.set_chapter_number(chapter_number)
         headings.append(heading)
     return headings

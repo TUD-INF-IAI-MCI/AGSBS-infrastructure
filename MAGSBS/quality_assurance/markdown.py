@@ -213,24 +213,6 @@ class ForgottenNumberInPageNumber(Mistake):
                 return self.error(_("There is a page number where the "
                         "actual number is missing."), start)
 
-class HeadingOccursMultipleTimes(Mistake):
-    """Parse headings; report doubled headings; ignore headings below
-tocDepth."""
-    mistake_type = MistakeType.headings
-    def worker(self, *args):
-        error_message = _("Headings with the same name make table of contents'"
-                "hard to read and it difficult to navigate. It is best to set "
-                "the configuration value tocDepth low enough to prevent these "
-                "headings from appearing in the table of contents.")
-        last_heading = None
-        for heading in args[0]:
-            if heading.get_level() > config.ConfFactory().\
-                    get_conf_instance_safe(".")[MetaInfo.TocDepth]:
-                continue # skip it
-            if last_heading == heading.get_text():
-                return self.error(error_message, heading.get_line_number())
-            last_heading = heading.get_text()
-
 class PageNumbersWithoutDashes(Mistake):
     """Page number should look like "|| - page 8 -", people sometimes write
 "|| page 8"."""
@@ -391,8 +373,8 @@ class ToDosInImageDescriptionsAreBad(OnelinerMistake):
         match = self._todo_pattern.search(line)
         if match:
             return self.error(_("The image description is probably incomplete, "
-                    "since \"{todo}\" has been found.").format(
-                        todo=match.groups()[0]), lnum=lnum)
+                    "since \"{marker}\" has been found.").format(
+                        marker=match.groups()[0]), lnum=lnum)
 
 
 class BrokenImageLinksAreDetected(OnelinerMistake):

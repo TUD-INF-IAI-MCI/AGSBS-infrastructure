@@ -204,7 +204,7 @@ class main():
             c = MAGSBS.toc.HeadingIndexer(directory)
             c.walk()
             if not c.is_empty():
-                fmt = MAGSBS.toc.TOCFormatter(c.get_index(),
+                fmt = MAGSBS.toc.TocFormatter(c.get_index(),
                         directory)
                 file.write(fmt.format())
                 if isinstance(file, io.StringIO):
