@@ -2,7 +2,7 @@
 additional-builtins = _
 persistent=no
 # Good variable names which should always be accepted, separated by a comma
-good-names=file,fn,_
+good-names=file,fn,_,e
 
 [REPORTS]
 reports=no
