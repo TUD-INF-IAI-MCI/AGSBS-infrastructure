@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-03-21 17:02+CET\n"
+"POT-Creation-Date: 2018-03-21 17:30+CET\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -39,7 +39,11 @@ msgstr "Papier"
 msgid "image descriptions"
 msgstr "Bildbeschreibungen"
 
-#: MAGSBS/pandoc/formats.py:277
+#: MAGSBS/pandoc/formats.py:218
+msgid "You need to have Pandoc installed."
+msgstr "Sie müssen Pandoc installiert haben."
+
+#: MAGSBS/pandoc/formats.py:285
 msgid ""
 "LaTeX reported an error while converting a fomrula. Unfortunately, "
 "improperly closed formula environments exist, therefore it cannot be "
