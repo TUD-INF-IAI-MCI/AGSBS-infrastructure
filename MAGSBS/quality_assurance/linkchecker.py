@@ -266,7 +266,7 @@ class LinkChecker:
         # True if it is a file in a file structure; excepted strings removes
         # false possitives
         is_file = not parsed_url.netloc and not parsed_url.scheme and \
-                  not self.is_within_excepted_string(parsed_url.path)
+            not self.is_within_excepted_string(parsed_url.path)
         inspect_fragment = False  # specify if anchor should be inspected
         if parsed_url.path and is_file:  # if something is in path
             # prepare main paths
