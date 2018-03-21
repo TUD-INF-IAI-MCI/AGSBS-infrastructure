@@ -112,3 +112,4 @@ def extract_headings(path, paragraphs):
         headings.append(heading)
     return headings
 
+
