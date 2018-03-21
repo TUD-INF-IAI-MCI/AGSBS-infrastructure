@@ -407,7 +407,7 @@ class TestLinkExtractor(unittest.TestCase):
         # standalone links are specific types of labeled links
         test_inputs = [
             "See [my website][].",
-            "[1]\n[test][]\nabc ![test2] def"]
+            "[1]\n\![test][]\nabc ![test2] def"]
         test_outputs = [
             [(1, "labeled", ("", "my website", ""))],
             [(1, "labeled", ("", "1", "")), (2, "labeled", ("", "test", "")),
@@ -421,13 +421,14 @@ class TestLinkExtractor(unittest.TestCase):
                        "(bilder.html#bildb)\n\n|| - Seite 4 - \nabc"
                        "[www.schattauer.de](www.schattauer.de)"]
         test_outputs = [
-            [(1, "inline", ("!", "Bildbeschreibung", "bilder/test.jpg")),
-             (1, "inline_nested", ("", "![Bildbeschreibung](bilder/test.jpg)",
-                                   "bilder.html#title-of-the-graphic"))],
-            [(1, "inline", ("!", "Bildbeschreib", "bilder/bild1.PNG")),
+            [(1, "inline", ("", "![Bildbeschreibung](bilder/test.jpg)",
+                                   "bilder.html#title-of-the-graphic")),
+             (1, "inline", ("!", "Bildbeschreibung", "bilder/test.jpg"))],
+            [(1, "inline", ("", " ![Bildbeschreib](bilder/bild1.PNG) ",
+                                   "bilder.html#bildb")),
+             (1, "inline", ("!", "Bildbeschreib", "bilder/bild1.PNG")),
              (4, "inline", ("", "www.schattauer.de", "www.schattauer.de")),
-             (1, "inline_nested", ("", " ![Bildbeschreib](bilder/bild1.PNG) ",
-                                   "bilder.html#bildb"))]
+             ]
         ]
         self.make_comparison(test_inputs, test_outputs, "Inline nested")
 
@@ -436,13 +437,27 @@ class TestLinkExtractor(unittest.TestCase):
             "- [x] Finish changes\n[ ] Push my commits to GitHub",
             "<div><div id=\"my_ID\"/><span></span></div><span/>"
             "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN></DiV><SPAN/>",
-            "Seiten: [[15]](#seite-15--), [[20]](#seite-20--)"
+            "Seiten: [[15]](#seite-15--),\n [[20]](#seite-20--)",
+            " \[RT\], errors) or biological (electromyographic \[EMG\]",
+            "[a\[], [\]], [\[\]] and \n[](\])",
+            "[po\\\[abc\\\][d]kus\](normal)",
+            "\![image](google.jpg)",
+            r"\\[this\\\[this not\]\\]"
             ]
         test_outputs = [
             [(1, "labeled", ("", "x", "")), (2, "labeled", ("", " ", ""))],
             [(1, "inline", ("", "tEst", "#TesT"))],
             [(1, "inline", ("", "[15]", "#seite-15--")),
-             (1, "inline", ("", "[20]", "#seite-20--"))]
+             (1, "labeled", ("", "15", "")),
+             (2, "inline", ("", "[20]", "#seite-20--")),
+             (2, "labeled", ("", "20", ""))],
+            [],
+            [(1, "labeled", ("", "a\[", "")), (1, "labeled", ("", "\]", "")),
+             (1, "labeled", ("", "\[\]", "")), (2, "inline", ("", "", "\]"))],
+            [(1, 'labeled', ("", "po\\\\[abc\\\\][d]kus\\](normal", "")),
+             (1, 'labeled', ("", "abc\\\\", "d"))],
+            [(1, "inline", ("", "image", "google.jpg"))],
+            [(1, "labeled", ("", r"this\\\[this not\]\\", ""))]
             ]
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
@@ -450,9 +465,9 @@ class TestLinkExtractor(unittest.TestCase):
         test_inputs = [
             "\n[second]\n![third][]\n\n[fif\nth](k01.md)\nab [second]: k07.md"]
         test_outputs = [
-            [(5, "inline", ("", "fif\nth", "k01.md")),
-             (2, "labeled", ("", "second", "")),
+            [(2, "labeled", ("", "second", "")),
              (3, "labeled", ("!", "third", "")),
+             (5, "inline", ("", "fif\nth", "k01.md")),
              (7, "reference", ("", "second", "k07.md"))]]
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
 
@@ -463,13 +478,13 @@ class TestLinkExtractor(unittest.TestCase):
             "[^3]: test\n",
             "![^extended]: http://fsf.org \n(SW foundation)\n\nabc"]
         test_outputs = [
-            [(1, "inline", ("", "k05025", "k0502.html#heading-1")),
-             (1, "reference_footnote", (
-                 "", "^1", " [k05025](k0502.html#heading-1) asdsad\nasdsad"))],
-            [(1, "reference_footnote", ("", "^2", " text not to be tested"))],
-            [(1, "reference_footnote", ("", "^3", " test\n"))],
             [(1, "reference_footnote", (
-                "!", "^extended", " http://fsf.org \n(SW foundation)"))]
+                 "", "^1", "[k05025](k0502.html#heading-1) asdsad\nasdsad")),
+             (1, "inline", ("", "k05025", "k0502.html#heading-1"))],
+            [(1, "reference_footnote", ("", "^2", "text not to be tested"))],
+            [(1, "reference_footnote", ("", "^3", "test\n"))],
+            [(1, "reference_footnote", (
+                "!", "^extended", "http://fsf.org \n(SW foundation)"))]
         ]
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 

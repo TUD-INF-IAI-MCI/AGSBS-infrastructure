@@ -91,7 +91,6 @@ class LinkExtractor:
         "file_path": full path to the file, where the link is stored
         "link_type": type of the link - this should be as follows:
             "inline": basic inline link in square brackets, syntax;
-            "inline_nested": inline link the contains inline link
             "labeled": labeled link that is referenced somewhere else
                 in the document;
             "reference": reference to the labeled links.
@@ -182,8 +181,7 @@ class LinkChecker:
             if link.get("link_type") == {"reference", "reference_footnote"}:
                 # reference should be called
                 self.find_link_for_reference(link)
-            if link.get("link_type") in {"reference", "inline",
-                                         "inline_nested"}:
+            if link.get("link_type") in {"reference", "inline"}:
                 self.check_target_availability(link)
 
     def check_correct_email_address(self, link):
