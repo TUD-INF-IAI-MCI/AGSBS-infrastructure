@@ -57,7 +57,7 @@ should set the relevant properties in the constructor."""
     def set_file_types(self, types):
         # is it list-alike
         if not (hasattr(types, '__iter__') or hasattr(types, '__getitem__')):
-            raise TypeError(_("List or tuple expected."))
+            raise TypeError("List or tuple expected.")
         self.__file_types = types
 
     def get_file_types(self):
@@ -108,7 +108,7 @@ It'll save typing."""
 
     def worker(self, *args):
         if len(args) != 2:
-            raise ValueError(_("For a mistake checker of type oneliner, exactly two arguments are required."))
+            raise ValueError("For a mistake checker of type oneliner, exactly two arguments are required.")
         return self.check(args[0], args[1])
 
 

@@ -1,7 +1,7 @@
 # This is free software licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2017 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2014-2018 Sebastian Humenda <shumenda@gmx.de>
 # line-too-long is overridden, because error messages should be not broken up.
 # Else it is strongly discouraged! Wild-card imports are here because we are
 # importing the mistakes and it is cumbersome to add them to the imports every
@@ -65,9 +65,9 @@ class Mistkerl():
                 HyphensFromJustifiedTextWereRemoved,
                 DisplayMathShouldNotBeUsedWithinAParagraph,
                 UseProperCommandsForMathOperatorsAndFunctions,
-                FormulasSpanningAParagraphShouldBeDisplayMath,
+                FreeStandingFormulasShouldBeDisplaymath,
                 DetectEmptyImageDescriptions, DetectStrayingDollars,
-                OnlyCorrectDirectoriesFound]
+                OnlyCorrectDirectoriesFound, ParagraphMayNotEndOnBackslash]
         self.__cache_pnums = collections.OrderedDict()
         self.__cached_headings = collections.OrderedDict()
         self.__output = []
@@ -75,7 +75,7 @@ class Mistkerl():
     def get_issues(self, required_type, fname=None):
         """Instanciate issue classes and filter for their configured file
         extension."""
-        extension = (os.path.splitext(fname)[1] if fname else 'md').lstrip('.')
+        extension = (os.path.splitext(fname)[1].replace('.', '') if fname else 'md')
         issues = (i for i in self.__issues
                 if i.mistake_type == required_type)
         return list(i for i in (i() for i in issues) # instanciate
@@ -98,7 +98,7 @@ class Mistkerl():
             file_tree = fw.walk()
         last_dir = None
         directoryname = None
-        for directoryname, dir_list, file_list in file_tree:
+        for directoryname, _, file_list in file_tree:
             if last_dir is not directoryname:
                 self.run_directory_filters(last_dir)
                 last_dir = directoryname
@@ -116,7 +116,8 @@ class Mistkerl():
                         paragraphs = mparser.rm_codeblocks(
                                 mparser.file2paragraphs(f.read(), join_lines=True))
                 except UnicodeDecodeError:
-                    msg = _("Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im Editor.")
+                    msg = _("File not encoded in UTF-8, please configure this "
+                            "encoding in your editor.")
                     e = ErrorMessage(msg, 1, file_path)
                     self.__append_error(path, e)
                     continue
@@ -131,9 +132,11 @@ class Mistkerl():
 
     def __append_error(self, path, err):
         """Add an error to the internal output dict."""
-        if not err: return
+        if not err:
+            return
         if not isinstance(err, ErrorMessage):
-            raise TypeError(_("Errors may only be of type ErrorMessage, got '{}'").format(str(err)))
+            raise TypeError("Errors may only be of type ErrorMessage, got '{}'"\
+                    .format(str(err)))
         if not err.path:
             err.path = path
         if os.path.dirname(err.path) == '.':
@@ -217,8 +220,8 @@ class Mistkerl():
                 self.__append_error(path, issue.run(path))
             except ET.ParseError as e:
                 pos = e.position
-                mistake = ErrorMessage(_("Die Konfiguration konnte nicht gelesen"
-                    " werden: {}").format(e.args[0]), pos[0], path)
+                mistake = ErrorMessage(_("The configuration could not be read: "
+                        "{reason}").format(e.args[0]), pos[0], path)
                 mistake.pos_on_line = pos[1]
                 self.__append_error(path, mistake)
 
@@ -226,10 +229,9 @@ class Mistkerl():
         if not paragraphs:
             return # ignore empty files
         last_par = next(reversed(paragraphs))
-        if last_par > 2500:
-            msg = _("Die Datei ist zu lang. Um die Navigation zu erleichtern und "
-                "die einfache Lesbarkeit zu gewährleisten sollten lange Kapitel"
-                " mit mehr als 2500 Zeilen in mehrere Unterdateien nach dem "
-                "Schema kxxyy.md oder kleiner aufgeteilt werden.")
-            e = ErrorMessage(msg, last_par, file_path)
-            return e
+        threshold = 2500
+        if last_par > threshold:
+            return ErrorMessage(_("The file is too long. To ease navigation and"
+                    " maintain readability, the file should be split into files"
+                    "with less than {count} lines by naming them like "
+                    "kXXYY.md.").format(count=threshold), last_par, file_path)

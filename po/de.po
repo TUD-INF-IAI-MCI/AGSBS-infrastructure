@@ -1,11 +1,10 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR ORGANIZATION
-# xplhak <xplhak@fi.muni.cz>, 2018.
+# MAGSBS German translation file
+# Copyright (C) 2018 Sebastian Humenda
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-02-20 15:38+CET\n"
-"PO-Revision-Date: 2018-02-15 17:33+0100\n"
+"POT-Creation-Date: 2018-03-20 15:04+CET\n"
+"PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
 "Language: de\n"
@@ -18,27 +17,27 @@ msgstr ""
 
 #: MAGSBS/factories.py:56
 msgid "images"
-msgstr ""
+msgstr "Bilder"
 
 #: MAGSBS/factories.py:81
 msgid "external image description"
-msgstr ""
+msgstr "ausgelagerte Bildbeschreibung"
 
 #: MAGSBS/factories.py:94
 msgid "description of image"
-msgstr ""
+msgstr "Bildbeschreibung"
 
 #: MAGSBS/filesystem.py:140
 msgid "chapter"
-msgstr ""
+msgstr "Kapitel"
 
 #: MAGSBS/filesystem.py:142
 msgid "paper"
-msgstr ""
+msgstr "Papier"
 
 #: MAGSBS/filesystem.py:150 MAGSBS/filesystem.py:152
 msgid "image descriptions"
-msgstr ""
+msgstr "Bildbeschreibungen"
 
 #: MAGSBS/quality_assurance/all_formats.py:22
 msgid ""
@@ -48,287 +47,315 @@ msgstr ""
 "Fehler in der Konfiguration: Der Wert {} ist nicht gesetzt, wodurch die "
 "Kopfdaten in den HTML-Dateien nicht erzeugt werden können."
 
-
 #: MAGSBS/quality_assurance/all_formats.py:46
 msgid ""
+"Incorrectly formatted umlauts have been found. This usually happens when "
+"copying texts from PDFs. This makes text nearly impossible to read."
+msgstr ""
 "Es wurden inkorrekt dargestellte Umlaute gefunden. Dies geschieht oft, wenn "
 "Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings schwer "
 "leserlich."
-msgstr ""
 
-#: MAGSBS/quality_assurance/all_formats.py:61
+#: MAGSBS/quality_assurance/all_formats.py:60
 msgid ""
-"Die Datei \"{}\" ist falsch benannt und folgt nicht den Namenskonventionen. "
-"Dies führt zu einer falschen Verwendung der Datei."
+"The naming of the file or directory \"{}\" is incorrect and does not follow "
+"the naming conventions. This leads to an incorrect usage of the file."
 msgstr ""
+"Die Datei oder das Verzeichnis \"{}\" ist falsch benannt und folgt nicht den "
+"Namenskonventionen. Dies führt zu einer falschen Verwendung der Datei."
 
 #: MAGSBS/quality_assurance/latex.py:21
 msgid ""
+"The LaTeX environment \"cases\" should contain line breaks at suitable "
+"places to increase readibility."
+msgstr ""
 "Die LaTeX-Umgebung zur Fallunterscheidung (cases) sollte Zeilenumbrüche an "
 "den passenden Stellen enthalten, um die Lesbarkeit zu gewährleisten."
-msgstr ""
 
-#: MAGSBS/quality_assurance/latex.py:39
+#: MAGSBS/quality_assurance/latex.py:38
 msgid ""
-"Matrizen sollten, damit sie einfach lesbar sind, nicht mit \\left\\(..., "
-"sondern einfach mit \\begin{pmatrix}...  erzeugt werden. Dabei werden auch "
-"Klammern automatisch gesetzt und es ist kürzer."
+"To increase readibility, matrices should not be constructed using manual "
+"formatting commands, but using \"\\begin{pmatrix}...\". This is also shorter."
 msgstr ""
+"Um die Lesbarkeit zu erhöhen, sollten Matrizen nicht mit manuellen "
+"Formattierungsinstruktionen, sonder mit \"\\begin{pmatrix}...\" gesetzt "
+"werden. Dies ist außerdem kürzer."
 
-#: MAGSBS/quality_assurance/latex.py:54
+#: MAGSBS/quality_assurance/latex.py:52
 msgid ""
-"Jede Zeile einer Matrix oder Tabelle sollte zur besseren Lesbarkeit auf eine "
-"eigene Zeile gesetzt werden."
+"Each line of a matrix or table should be written on one line, using a hard "
+"line break."
 msgstr ""
+"Jede Zeile einer Matrix oder Tabelle sollte auf eine eigene Zeile "
+"geschrieben werden, mittels eines echten Zeilenumbruchs."
 
-#: MAGSBS/quality_assurance/latex.py:72
+#: MAGSBS/quality_assurance/latex.py:71
 msgid ""
+"Instead of using an actual umlaut, a LaTeX control sequence was used. This "
+"is hard to read and not required with this program."
+msgstr ""
 "Anstatt einen Umlaut zu schreiben, wurde eine LaTeX-Kontrollsequenz "
-"verwendet. Das ist schwer leserlich und kann außerdem einfach durch setzen "
-"des Zeichensatzes umgangen werden."
-msgstr ""
+"verwendet. Das ist schwer leserlich und ist außerdem nicht nötig mit diesem "
+"Programm."
 
-#: MAGSBS/quality_assurance/latex.py:90
+#: MAGSBS/quality_assurance/latex.py:85
 msgid ""
+"Formulas within a paragraph surrounded by text have to be set with single "
+"dollars, because the formulas don't integrate into the line otherwise. $$ "
+"(displaymath) should be used in formulas standing on their own in a "
+"paragraph."
+msgstr ""
 "Formeln in einem Absatz (umgeben von Text), müssen mit einfachen $-Zeichen "
 "gesetzt werden, da sich die Formeln sonst in der Ausgabe nicht in den Text "
 "integrieren. $$ (display math) sollte für einzeln stehende Formeln verwendet "
 "werden."
-msgstr ""
 
-#: MAGSBS/quality_assurance/latex.py:102
+#: MAGSBS/quality_assurance/latex.py:97
 msgid ""
+"Empty space in formulas should be set with \\quad or \\qquad, because they "
+"are otherwise hard to read with speech synthesis."
+msgstr ""
 "Leerräume in Formeln sollten mit \\quad oder \\qquad gekennzeichnet werden, "
 "da sie sonst mit Sprachausgabe schwer lesbar sind."
-msgstr ""
 
-#: MAGSBS/quality_assurance/latex.py:124
+#: MAGSBS/quality_assurance/latex.py:120
 msgid ""
-"{0} sollte in LaTeX-Formeln grundsätzlich als Befehl gesetzt werden, d.h. "
-"mittels \\{0}. Nur so wird es in der Ausgabe korrekt formatiert und ist "
-"gleichzeitig gut lesbar."
+"'{0}' should be generally set using the appropriate LaTeX command, namely "
+"using \\{0}. This way it will be properly formatted in the output and easily "
+"readable by screen readers."
 msgstr ""
+"'{0}' sollte mit dem dafür vorgesehenen LaTeX-Kommando gesetzt werden, d.h. "
+"mittels \\{0}. Auf diese Weise wird es korrekt formattiert und ist leichter "
+"Lesbar für Bildschirmleser."
 
-#: MAGSBS/quality_assurance/latex.py:145
+#: MAGSBS/quality_assurance/latex.py:140
 msgid ""
-"Eine Formel, die einzeln in einem Absatz steht, wurde als eingebettete "
-"Formel mit einfachen $ gesetzt. Stattdessen sollten doppelte Dollarzeichen "
-"verwendet werden, da dies verhindert, dass LaTeX die Formel auf Zeilenhöhe "
-"staucht."
+"A formula, occurring on a paragraph on its own, has been set as an embedded "
+"formula using single dollars. Instead double dollar signs around the formula "
+"should be used, so that the formula is not squeezed to the line height."
 msgstr ""
+"Eine Formel, die als Einziges auf einem Absatz steht, wurde als eingebettete "
+"Formel mit einfachen Dollarzeichen gesetzt. Allerdings sollten doppelte "
+"Dollarzeichen um die Formel gesetzt werden, damit die Formel nicht auf "
+"Zeilenhöhe gestaucht wird."
 
 #: MAGSBS/quality_assurance/markdown.py:18
 msgid ""
-"Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile "
+"Each line number has to have an empty line before and after it, that is, on "
+"a paragraph of its own."
+msgstr ""
+"Jede Seitenzahl muss in der Zeile darüber oder darunter eine Leerzeile "
 "haben, das heißt sie muss in einem eigenen Absatz stehen."
-msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:47
+#: MAGSBS/quality_assurance/markdown.py:48
 msgid ""
-"In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Dies "
-"ist nicht erlaubt. Beispielsweise hat jeder Foliensatz nur eine "
-"Hauptüberschrift und auch ein Kapitel wird nur mit einer Überschrift "
-"bezeichnet."
+"There is more than one heading of level one, which is not allowed. For "
+"instance, a slide set or a chapter has only one heading of level 1."
 msgstr ""
+"Es wurde mehr als eine Überschrift der Ebene 1 gefunden, was nicht erlaubt "
+"ist. Beispielsweise hat ein Foliensatz oder Kapitel auch nur eine "
+"Überschrift der Ebene 1."
 
-#: MAGSBS/quality_assurance/markdown.py:87
+#: MAGSBS/quality_assurance/markdown.py:89
 msgid ""
-"Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss zumindest "
-"davor eine Leerzeile existieren."
+"A list or enumeration needs to be on a paragraph of its own and needs to "
+"have at least an empty line before."
 msgstr ""
+"Eine Auflistund oder Aufzählung muss in einem eigenen Absatz stehen und muss "
+"zumindest davor eine Leerzeile haben."
 
-#: MAGSBS/quality_assurance/markdown.py:106
+#: MAGSBS/quality_assurance/markdown.py:109
 msgid ""
+"The page number \"{}\" can't be recognised, possibly due to a typo, hence it "
+"is ignored at the moment."
+msgstr ""
 "Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um "
-"einen Tippfehler. Die Seitenzahl wird ignoriert."
-msgstr ""
+"einen Tippfehler, wodurch sie momentan ignoriert wird."
 
-#: MAGSBS/quality_assurance/markdown.py:123
-msgid "später dann aber \"{}\""
+#: MAGSBS/quality_assurance/markdown.py:124
+msgid "Two differing page number identifiers were found."
 msgstr ""
+"Es wurden zwei sich unterscheidende Seitenzahlenkennzeichnungen gefunden."
 
-#: MAGSBS/quality_assurance/markdown.py:125
-msgid "in der Datei \"{}\" dann aber \"{}\""
-msgstr ""
+#: MAGSBS/quality_assurance/markdown.py:127
+msgid "First \"{pagenum}\", later \"{another}\"."
+msgstr "Zuerst \"{pagenum}\", dann \"{another}\"."
 
-#: MAGSBS/quality_assurance/markdown.py:126
+#: MAGSBS/quality_assurance/markdown.py:131
+msgid "First \"{pagenum}\", but then \"{another}\" in \"{file}\"."
+msgstr "Zuerst \"{pagenum}\", dann allerdings \"{another}\" in \"{file}\"."
+
+#: MAGSBS/quality_assurance/markdown.py:178
 msgid ""
-"In der Datei \"{}\"  wurde zuerst \"{}\" verwendet, {}. Dies sollte "
-"einheitlich sein."
+"There are more than {count} headings of level {depth}. This can be "
+"circumvented by decreasing the heading depth which will end up the the table "
+"of contents, by decreasing the value tocDepth in the configuration."
 msgstr ""
+"Es existieren mehr als {count} Überschriften der Ebene {depth}. Dies kann "
+"durch verringern der Überschriftentiefe für das Inhaltsverzeichnis, durch "
+"verringern des Wertes tocDepth umgangen werden."
 
-#: MAGSBS/quality_assurance/markdown.py:170
+#: MAGSBS/quality_assurance/markdown.py:213
+msgid "There is a page number where the actual number is missing."
+msgstr "Wahrscheinlich wurde bei dieser Seitenzahl die Zahl vergessen."
+
+#: MAGSBS/quality_assurance/markdown.py:221
 msgid ""
-"Es existieren mehr als {} Überschriften der Ebene {}. Das macht das "
-"Inhaltsverzeichnis sehr unübersichtlich. Man kann entweder in der "
-"Konfiguration tocDepth kleiner setzen, um Überschriften dieser Ebene nicht "
-"ins Inhaltsverzeichnis aufzunehmen (für Foliensätze z.B. tocDepth 1) oder "
-"die Anzahl an Überschriften minimieren, sofern möglich."
+"Headings with the same name make table of contents'hard to read and it "
+"difficult to navigate. It is best to set the configuration value tocDepth "
+"low enough to prevent these headings from appearing in the table of contents."
 msgstr ""
-
-#: MAGSBS/quality_assurance/markdown.py:204
-msgid ""
-"Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der nach "
-"dem Wort die anschließende Nummer vergessen wurde."
-msgstr ""
-
-#: MAGSBS/quality_assurance/markdown.py:212
-msgid ""
 "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und "
-"erschweren die Navigation. Häufig kommt dies bei Foliensätzen vor. Am Besten "
-"man setzt das TocDepth so, dass nur die Überschrift des Foliensatzes (oft "
-"Ebene 1) aufgenommen wird und alle Überschriften, mitsamt der Überschriften "
-"die doppelt sind, gar nicht erst im Inhaltsverzeichnis erscheinen."
-msgstr ""
+"erschweren die Navigation. Am Besten man setzt den Konfigurationswert "
+"tocDepth klein genug, damit diese Überschriften nicht im Inhaltsverzeichnis "
+"erscheinen."
 
-#: MAGSBS/quality_assurance/markdown.py:242
-msgid "Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: \"|| - Seite xyz -\""
-msgstr ""
+#: MAGSBS/quality_assurance/markdown.py:252
+msgid "A \"-\" in the page number is missing, required: \"|| - Page xyz -\""
+msgstr "Es fehlt ein \"-\" in der Seitenzahl, Vorgabe: \"|| - Seite xyz -\""
 
-#: MAGSBS/quality_assurance/markdown.py:257
+#: MAGSBS/quality_assurance/markdown.py:267
 msgid ""
-"Es sollte kein Umbruch mittels HTML-Tags erzeugt werden. Platziert man einen "
-"\\ als einziges Zeichen auf eine Zeile und lässt davor und danach eine Zeile "
-"frei, hat dies denselben Effekt."
+"\"{tag}\" is not allowed, use a new paragraph or a \"\\\" at the end of a "
+"line."
 msgstr ""
+"Unerlaubte Nutzung von \"{tag}\"; verwendne Sie einen neuen Absatz oder \"\\"
+"\" am Ende einer Zeile."
 
-#: MAGSBS/quality_assurance/markdown.py:262
+#: MAGSBS/quality_assurance/markdown.py:271
+msgid "It is not allowed to use HTML tags, except for div and span."
+msgstr "Es ist nicht erlaubt HTML-tags, außer div und span, zu verwenden."
+
+#: MAGSBS/quality_assurance/markdown.py:283
 msgid ""
-"Es dürfen, bis auf div und span keine HTML-tags in das Markdown-Dokument "
-"eingebettet werden."
+"Comparison operators shouldn't be marked up in HTML, but with \\< and \\>."
 msgstr ""
-
-#: MAGSBS/quality_assurance/markdown.py:275
-msgid ""
-"Relationsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
+"Vergleichsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
 "mittels \\< und \\> erzeugt werden."
-msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:284
-msgid ""
-"Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. Am "
-"Besten ist es, die da sie sonst als Text angezeigt werden."
+#: MAGSBS/quality_assurance/markdown.py:292
+msgid "The heading was underlined and also marked with #'s."
 msgstr ""
+"Die Überschrift wurde unterstrichen und gleichzeitig mit # gekennzeichnet."
 
-#: MAGSBS/quality_assurance/markdown.py:303
+#: MAGSBS/quality_assurance/markdown.py:310
 msgid ""
-"Wenn ein Absatz mit einem \\ umgebrochen wird, so wird die nächste (leere) "
-"Zeile dem vorigen Absatz zugeordnet. Der Absatz geht verloren und in der "
-"Folge wird das folgende Element falsch formatiert."
+"If a paragraph ends on a \\, the next empty line will become part of the "
+"paragraph and hence the next paragraph is formatted incorrectly."
 msgstr ""
+"Wenn ein Absatz auf \\ endet, wird die folgende leere Zeile Teil des "
+"Absatzes und der darauf folgende Absatz falsch formatiert."
 
-#: MAGSBS/quality_assurance/markdown.py:324
+#: MAGSBS/quality_assurance/markdown.py:330
 msgid ""
-"Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile entdeckt. "
-"Entweder eine Formel wurde nicht geschlossen, oder es wurde versucht, eine "
-"eingebettete Formel über mehrere Zeilen zu strecken. Im ersteren Fall muss "
-"ein weiteres Dollar eingefügt werden, im zweiten Fall sollte die Formel mit "
-"doppelten Dollarzeichen umrahmt werden."
+"Line contains uneven number of dollar signs. Either a formula wasn't closed "
+"or an embedded formula was stretched across multiple lines (try double "
+"dollars). If you meant a real dollar sign, prepend a \\ to it."
 msgstr ""
+"Zeile enthält eine ungerade Anzahl von Dollarzeichen. Entweder eine Formel "
+"wurde nicht geschlossen, oder eine eingebettete Formel wurde über mehrere "
+"Zeilen gedehnt (versuchen Sie doppelte Dollars). Falls Sie tatsächlich ein "
+"Dollarzeichen schreiben wollten, fügen Sie einen \\ davor ein."
 
-#: MAGSBS/quality_assurance/markdown.py:367
+#: MAGSBS/quality_assurance/markdown.py:372
 msgid ""
+"In enumerations and lists, the enumeration character may not immediately be "
+"followed by another such character, because it will be recognised as a "
+"sublist. A \\ in front of a character or in front of the dot for "
+"enumerations will suppress this."
+msgstr ""
 "In Aufzählungen und Nummerierungen darf direkt nach dem Aufzählungszeichen "
-"nicht ein weiteres Aufzählungszeichen oder eine weitere Nummerierung folgen, "
-"da dies sonst als Unterliste erkannt wird. Ein \\ vor dem Zeichen, bzw. bei  "
-"Zahlen ein \\ vor dem Punkt verhindert dies."
-msgstr ""
+"nicht ein weiteres solches folgen, da dies sonst als Unterliste erkannt "
+"wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt "
+"verhindert dies."
 
-#: MAGSBS/quality_assurance/markdown.py:386
+#: MAGSBS/quality_assurance/markdown.py:393
 msgid ""
-"Die Bildbeschreibung ist wahrscheinlich nicht vollständig, da ein Marker wie "
-"\"to do\" gefunden wurde."
+"The image description is probably incomplete, since \"{todo}\" has been "
+"found."
 msgstr ""
+"Die Bildbeschreibung ist wahrscheinlich unvollständig, da eine Markierung "
+"wie \"{todo\" gefunden wurde."
 
-#: MAGSBS/quality_assurance/markdown.py:406
-msgid ""
+#: MAGSBS/quality_assurance/markdown.py:415
+msgid "An included image is using wrong syntax, the converter will ignore it."
+msgstr ""
 "Ein Bild wurde mit fehlerhafter Syntax eingebunden, wodurch das Bild vom "
 "Konverter ignoriert wird."
-msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:436
+#: MAGSBS/quality_assurance/markdown.py:444
 msgid ""
+"A hyphen was found which possibly originates from copied justified text. "
+"This will be incorrectly formatted in the output."
+msgstr ""
 "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit "
 "Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert werden."
-msgstr ""
 
-#: MAGSBS/quality_assurance/markdown.py:478
-msgid "Es wurde keine Bildbeschreibung eingefügt."
-msgstr ""
-
-#: MAGSBS/quality_assurance/meta.py:60
-msgid "List or tuple expected."
-msgstr "Liste oder Tupel erwartet."
-
-#: MAGSBS/quality_assurance/meta.py:111
-msgid ""
-"For a mistake checker of type oneliner, exactly two arguments are required."
-msgstr ""
-"Für eine Fehlerüberprüfung vom Typ oneliner sind genau zwei Argumente "
-"erforderlich."
+#: MAGSBS/quality_assurance/markdown.py:486
+msgid "No image description provided."
+msgstr "Keine Bildbeschreibung vorhanden."
 
 #: MAGSBS/quality_assurance/mistkerl.py:118
 msgid ""
-"Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz im "
-"Editor."
+"File not encoded in UTF-8, please configure this encoding in your editor."
 msgstr ""
+"Datei nicht in UTF-8 gespeichert. Bitte wählen Sie diesen Zeichensatz in "
+"Ihrem Editor."
 
-#: MAGSBS/quality_assurance/mistkerl.py:133
-msgid "Errors may only be of type ErrorMessage, got '{}'"
-msgstr ""
+#: MAGSBS/quality_assurance/mistkerl.py:209
+msgid "The configuration could not be read: {reason}"
+msgstr "Die Konfiguration konnte nicht gelesen werden: {reason}"
 
-#: MAGSBS/quality_assurance/mistkerl.py:206
-msgid "Die Konfiguration konnte nicht gelesen werden: {}"
-msgstr ""
-
-#: MAGSBS/quality_assurance/mistkerl.py:216
+#: MAGSBS/quality_assurance/mistkerl.py:220
 msgid ""
-"Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache "
-"Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 Zeilen "
-"in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner aufgeteilt "
-"werden."
+"The file is too long. To ease navigation and maintain readability, the file "
+"should be split into fileswith less than {count} lines by naming them like "
+"kXXYY.md."
 msgstr ""
+"Die Datei ist zu lang. Um die Navigation zu erleichtern und die Lesbarkeit zu "
+"gewährleisten sollten lange Kapitel mit mehr als {count} Zeilen in mehrere "
+"Dateien mit einer Bennung wie kXXYY.md aufgeteilt werden."
 
 #: MAGSBS/toc.py:202
 msgid "table of contents"
-msgstr ""
+msgstr "Inhaltsverzeichnis"
 
 #: MAGSBS/toc.py:210
 msgid "title page"
-msgstr ""
+msgstr "Titelseite"
 
 #: MAGSBS/toc.py:214
 msgid "preface"
-msgstr ""
+msgstr "Vorwort"
 
 #: MAGSBS/toc.py:219
 msgid "chapters"
-msgstr ""
+msgstr "Kapitel"
 
 #: MAGSBS/toc.py:222
 msgid "appendix"
-msgstr ""
+msgstr "Appendix"
 
 #: MAGSBS/toc.py:227
 msgid "glossary"
-msgstr ""
+msgstr "Glossar"
 
 #: MAGSBS/toc.py:229
 msgid "index"
-msgstr ""
+msgstr "Inhalt"
 
 #: MAGSBS/toc.py:232
 msgid "list of abbreviations"
-msgstr ""
+msgstr "Abkürzungsverzeichnis"
 
 #: MAGSBS/toc.py:234
 msgid "list of tactile graphics"
-msgstr ""
+msgstr "Liste taktiler Grafiken"
 
 #: MAGSBS/toc.py:236
 msgid "copyright notice"
-msgstr ""
+msgstr "Urheberrechtshinweis"
 
 #: MAGSBS/toc.py:243
 msgid "remarks about the accessible version"
-msgstr ""
+msgstr "Hinweise zur barrierefreien Version"

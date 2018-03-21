@@ -4,7 +4,7 @@ import unittest
 from MAGSBS.quality_assurance import latex
 
 def check(formula):
-    return latex.FormulasSpanningAParagraphShouldBeDisplayMath().worker({1:
+    return latex.FreeStandingFormulasShouldBeDisplaymath().worker({1:
         formula.split('\n')})
 
 class testFormulasSpanningAParagraphShouldBeDisplayMath(unittest.TestCase):
