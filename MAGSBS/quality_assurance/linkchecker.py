@@ -396,36 +396,3 @@ class LinkChecker:
         with open(path, encoding="utf-8") as file:
             self.__html_ids_dict[path] = mparser.get_ids_of_html_elements(
                 file.read())
-
-
-# ############ MARKDOWN ############ #
-
-
-class TitleInLinkCannotContainFormatting():
-    """ When using INLINE_LINK_WITH_TITLE, it is not allowed to have
-    formatting information within link title. """
-    pass
-
-
-class TitleIsTooLong():
-    """ Title should be 'reasonably' long. Long text lowers the readability
-    and they also can be caused by a incorrect syntax of link. """
-    pass
-
-
-class TitleInInlineLinkIsCorrect():
-    # check if it is correctly build using " or ' (the last
-    # char should be the there at least twice - and first one
-    # is the end of the link
-    pass
-
-
-class NoSpaceBetweenRoundAndSquareBrackets():
-    """ When the inline link or labeled link is used, it is not allowed by
-    pandoc to have a space/spaces between square and round brackets."""
-    pass
-
-
-class IncorrectImageFormattingUsingAngleBrackets():
-    """It is not allowed to enter image using angle brackets."""
-    pass
