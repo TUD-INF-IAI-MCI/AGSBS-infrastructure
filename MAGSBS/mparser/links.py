@@ -14,85 +14,144 @@ Note: This parser expects the file with correct markdown links (e.g. no spaces
 
 import re
 
-# Searches for the patterns in the form [link_text](link) (it also includes
-# images with exclamation mark).
-# One nested [text] is allowed
-INLINE = (r"(!?)\[([^\[\]\(\)]*(?:\[[^\]\[\(\)]+\])?[^\[\]\(\)]*)\]"
-          r"\(([^)\s]+).*?\)")
-
-# Searches for the same patterns as INLINE, but this contains nested image
-# inside link text. The example can be:
-# [![Bildbeschreibung](bilder/test.jpg)](bilder.html#title-of-the-graphic)
-# This regex is constructed from following parts:
-# - exclamation mark, if it is there
-# - "["
-# - whatever except following chars []()
-# - 1-n times: inline link [text](link) + whatever except following chars []()
-# - "]"
-# - rest of the inline link, it means "(link)"
-INLINE_NESTED = (r"(!?)\[([^\[\]\(\)]*?(?:\[(?:[^\]]*?)\]\((?:[^\s]*)"
-                 r"[^\[\]\(\)]*?\)?)+)\]\(([^)\s]+).*?\)")
-
-# Searches for the patterns in the forms [link_text][link_ref], [link_ref]
-# and [link_ref][] (it also includes images with exclamation mark).
-# Labeled links should be coupled with the REFERENCE or REFERENCE_FOOTNOTE.
-LABELED = r"(!)?\[([^\[\]]+)(?:\]\[)?([^\[\]]*)\](?!:|\(|\])+"
-
-# Searches for references in form [link_ref]: link (link_ref should not start
-# with ^ character - in this case it is a REFERENCE_FOOTNOTE.
-# This reference should be coupled with LABELED links through link_ref
-# (link insensitively).
-# Note: Detection for exclamation mark is used due to compatibility with the
-# structure of previous regexps (and could be used for link structure checks).
-REFERENCE = r"(!?)\[([^\^\]]+[^\]]+)\]:\s*<?([^>\s]+)>?"
-
-# Searches for references to footnotes in form [^link_ref]: text (where text
-# end with \n\n or end of file). In the text, there can be e.g. inline links.
-REFERENCE_FOOTNOTE = r"(!?)\[(\^[^\]]+)\]:(.*?)(?:\n\n|\Z)"
-
-# This constant represents the dictionary of used regular expressions for
-# parsing .md files. The structure is "description_of_regexp_type": regexp.
-REG_EXPS = {"inline": INLINE, "inline_nested": INLINE_NESTED,
-            "labeled": LABELED, "reference": REFERENCE,
-            "reference_footnote": REFERENCE_FOOTNOTE}
-
 # Regexp for finding ids within div and span html elements
 IDS_REGEX = r"<(?:div|span).*?id=[\"'](\S+?)[\"']"
 
 
-def get_starting_line_numbers(reg_expr, text):
-    """ This function searches for the line number of the regular expression
-    matches.
-    Note: This is not the most efficient way to do this. In case, the
-        examined data will have non-trivial length and number of links,
-        this function should be reimplemented. """
-    line_numbers = []
-    matches = re.compile(reg_expr, re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    for match in matches.finditer(text):
-        # One is added, because there is no line ending in front first line
-        line_numbers.append(1 + text[0:match.start()].count('\n'))
-    return line_numbers
-
-
-def find_links_in_markdown(text):
-    """ Return the the list of triples that contains the links retrieved
-    from the markdown string. Triples are structured as follows:
-    - line number of the link;
-    - type of regular expression that matched the link;
-    - link itself. It could be a raw text or tuple (based on the regexp used).
-    """
+def find_links_in_markdown(text, init_lineno=1):
+    """ This function parses the text written in markdown and creates the list
+    of triples about the links. Each triple has following structure:
+      (line number of link, type of link, (link triple), where link triple is:
+      (! if ! is before [, empty string otherwise, link or link text, link or
+      empty string). Last two parts are based on link structure. """
     output = []
-    for description, reg_expr in REG_EXPS.items():
-        # detects the line numbers
-        line_nums = get_starting_line_numbers(reg_expr, text)
-        links = re.compile(
-            reg_expr, re.MULTILINE | re.DOTALL | re.IGNORECASE).findall(text)
-        if len(line_nums) != len(links):
-            raise ValueError("Line numbers count should be the same"
-                             " as the number of regular expressions.")
+    lineno = init_lineno  # number of lines that were examined
+    processed = 0  # specify the number of chars that were already processed
+    escape_next = False  # scpecify if next char should be escaped
 
-        for i, link in enumerate(links):
-            output.append((line_nums[i], description, link))
+    while processed < len(text):
+        if text[processed] == "\n":  # count lines
+            lineno += 1
+
+        # find the potential beginning of link (ignore the masked bracket)
+        if text[processed] == "[" and not escape_next:
+            res = extract_link(text[max(0, processed - 2):])
+            if res:  # result processing
+                link = clear_link(res[4])  # remove redundant chars like < or >
+                output.append((lineno, res[1], (res[2], res[3], link)))
+                # there should be some inner links within line text
+                for inner_link in find_links_in_markdown(res[3], lineno):
+                    output.append(inner_link)
+                # there should be some inner links in link itself
+                for inner_link in find_links_in_markdown(link, lineno):
+                    output.append(inner_link)
+                # need to recalculate the processed char and number of lines
+                for _ in range(processed, processed + res[0] - 1):
+                    processed += 1
+                    if processed < len(text) and text[processed] == "\n":
+                        lineno += 1
+
+        escape_next = True if processed < len(text) and \
+            text[processed] == "\\" and not escape_next else False
+        processed += 1
+    return output
+
+
+def extract_link(text):
+    """ This function extract the link itself from the input text. Parameter
+    text should contain opening square bracket. Then it is resolved and
+    the link triple is returned.
+    """
+    procs = text.find("[")
+    image_char, is_footnote = detect_image_footnote(text[:procs + 2], procs)
+
+    # [ ... whatever ... ] part
+    first_part = get_text_inside_brackets(text[procs:])
+    procs += first_part[0]
+
+    if procs < len(text) and text[procs] == "[":  # solve labeled
+        second_part = get_text_inside_brackets(text[procs:])
+        return procs + second_part[0], "labeled", image_char, first_part[1], \
+            second_part[1]
+    elif procs < len(text) and text[procs] == "(":  # solve inline
+        second_part = get_text_inside_brackets(text[procs:])
+        second_part_str = second_part[1]
+        if second_part_str.find(" ") != -1:
+            second_part_str = second_part_str[:second_part_str.find(" ")]
+        return procs, "inline", image_char, first_part[1], second_part_str
+    elif procs < len(text) and text[procs] == ":":  # solve reference
+        if is_footnote:
+            end_index = text[procs:].find("\n\n")
+            # no two newlines there till end of string
+            end_index = len(text) if end_index < 0 else end_index + procs
+
+            return procs + end_index, "reference_footnote", image_char, \
+                first_part[1], text[procs + 2:end_index]
+        # normal reference, search for space after ": "
+        end_index = text[procs:].find(" ", 2)
+        end_index = len(text) if end_index < 0 else end_index + procs
+        return end_index, "reference", image_char, first_part[1], \
+            text[procs + 2:end_index]
+    # nothing from previous
+    return procs, "labeled", image_char, first_part[1], ""
+
+
+def detect_image_footnote(text, index):
+    """ Function for detecting if links is image or footnote. Image has the
+    exclamation mark before opening square brackets (that is not escaped).
+    Footnote has the "^" sign right after opening square brackets. """
+    if index > 1:
+        image_char = "!" if text[0] != "\\" and text[1] == "!" else ""
+    elif index > 0:
+        image_char = "!" if text[0] == "!" else ""
+    else:
+        image_char = ""
+
+    is_footnote = True if len(text) > index + 1 and text[index + 1] == "^" \
+        else False
+
+    return image_char, is_footnote
+
+
+def get_text_inside_brackets(text):
+    """ Function gets the text inside brackets. Note that same brackets can be
+    content of the text, however the number of opening and closing brackets
+    should be same. Escaped brackets are ignored. """
+    if not text or text[0] not in {"(", "["}:
+        return ""
+
+    brackets_dict = {"[": "]", "(": ")"}
+    bracket_char = text[0]
+    closing_bracket_char = brackets_dict[bracket_char]
+
+    procs = 1  # processed characters (bracket is already processed)
+    count_brackets = 1  # counting brackets
+    output = ""
+    escape_next = False
+
+    while count_brackets > 0 and procs < len(text):
+        if text[procs] == bracket_char and not escape_next:
+            count_brackets += 1
+        if text[procs] == closing_bracket_char and not escape_next:
+            count_brackets -= 1
+        escape_next = True if text[procs] == "\\" and not escape_next \
+            else False
+        output += text[procs]
+
+        procs += 1
+
+    return procs, output[:-1]
+
+
+def clear_link(string):
+    if not isinstance(string, str) or len(string) < 2:
+        return string
+
+    output = string
+    if output[0] == "<":
+        output = output[1:]
+    if output[len(output) - 1] == ">":
+        output = output[:len(output) - 1]
     return output
 
 
