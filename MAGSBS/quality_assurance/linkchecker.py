@@ -384,8 +384,8 @@ class LinkChecker:
         """
         with open(path, encoding="utf-8") as file:
             paragraphs = mparser.file2paragraphs(file.read())
-        self.__headings_dict[path] = mparser.extract_headings(
-            path, paragraphs, False)
+        self.__headings_dict[path] = mparser.extract_headings_from_par(
+            paragraphs)
 
     def load_html_ids_to_dict(self, path):
         """ This method loads ids of div and span elements into
