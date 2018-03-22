@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-03-21 17:30+CET\n"
+"POT-Creation-Date: 2018-03-21 21:44+CET\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -14,6 +14,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.0.6\n"
 "Generated-By: pygettext.py 1.5\n"
+
+#: MAGSBS/datastructures.py:145
+msgid "the file does not follow naming conventions"
+msgstr "der Dateiname folgt nicht den Namenskonventionen"
 
 #: MAGSBS/factories.py:56
 msgid "images"
@@ -212,8 +216,9 @@ msgstr ""
 "verringern des Wertes tocDepth umgangen werden."
 
 #: MAGSBS/quality_assurance/markdown.py:213
-msgid "There is a page number where the actual number is missing."
-msgstr "Wahrscheinlich wurde bei dieser Seitenzahl die Zahl vergessen."
+msgid ""
+"A page number was marked up, but the actual number has not been inserted."
+msgstr "Eine Seitenzahl wurde angegeben, doch die Zahl wurde vergessen."
 
 #: MAGSBS/quality_assurance/markdown.py:234
 msgid "A \"-\" in the page number is missing, required: \"|| - Page xyz -\""

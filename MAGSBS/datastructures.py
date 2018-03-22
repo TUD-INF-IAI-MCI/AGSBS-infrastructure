@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """Common datastructures."""
 
 import enum
@@ -45,10 +45,10 @@ def get_encoding():
         encoding = sys.stdout.encoding
     return encoding
 
-def decode(input):
+def decode(in_bytes):
     """Safe version to decode data from subprocesses."""
-    if not isinstance(input, bytes):
-        return input
+    if not isinstance(in_bytes, bytes):
+        return in_bytes
     else:
         encodings = [get_encoding()]
         # add some more:
@@ -59,11 +59,11 @@ def decode(input):
         while encodings and not output:
             encoding = encodings.pop()
             try:
-                output = input.decode(encoding)
+                output = in_bytes.decode(encoding)
             except UnicodeDecodeError:
                 pass
         if not output:
-            output = input.decode("utf-8", errors='ignore')
+            output = in_bytes.decode("utf-8", errors='ignore')
         return output
 
 
@@ -142,7 +142,8 @@ def extract_chapter_number(path):
     StructuralError is raised."""
     match = re.search(r'^(?:[a-z|A-Z]+)(\d+)\.md$', os.path.basename(path))
     if not match or len(match.groups()[0]) < 2:
-        raise errors.StructuralError("the file does not follow naming conventions", path)
+        raise errors.StructuralError(_("the file does not follow naming "
+                "conventions"), path)
     return int(match.groups()[0][:2])
 
 
@@ -238,8 +239,8 @@ class FileCache:
         for index, other_path in enumerate(files):
             if file_path == other_path:
                 previous = (files[index-1] if index > 0 else None)
-                next = (files[index+1] if (index+1) < len(files) else None)
-                return (previous, next)
+                succ = (files[index+1] if (index+1) < len(files) else None)
+                return (previous, succ)
         # if this code fragment is reached, file was not contained in list
         raise errors.StructuralError(("The file was not found in the lecture. "
             "This indicates a bug."), path)
@@ -247,7 +248,10 @@ class FileCache:
 
 
 class PageNumber:
-    """Abstract representation of a page number."""
+    """Abstract representation of a page number. It consists of a identifier (a
+    string like "page" or "slide), a boolean arabic (if False, roman) and a
+    number. Number can be a range, too. Optionally, the source code line number
+    can be stored as well."""
     def __init__(self, identification, number, is_arabic=True):
         self.arabic = is_arabic
         self.identifier = identification
@@ -255,10 +259,11 @@ class PageNumber:
         self.line_no = None
 
     def __str__(self):
-        if self.arabic:
-            return str(self.number)
+        conv = (str if self.arabic else roman.to_roman)
+        if isinstance(self.number, range):
+            return '%s-%s' % (conv(self.number.start), conv(self.number.stop))
         else:
-            return roman.to_roman(self.number)
+            return conv(self.number)
 
     def format(self):
         """Format this page number to a Markdown page number representation.
