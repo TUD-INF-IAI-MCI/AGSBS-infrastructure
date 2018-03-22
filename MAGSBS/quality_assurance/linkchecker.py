@@ -172,7 +172,7 @@ class LinkChecker:
     Parsed headings are taken from the mistkerl to avoid opening same files
     repeatedly.
     """
-    def __init__(self, links_list, headings):
+    def __init__(self, links_list, headings={}):
         self.errors = []  # generated errors
         self.links_list = links_list
         # following attributes are used for loading data from files, therefore
