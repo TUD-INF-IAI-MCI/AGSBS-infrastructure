@@ -101,7 +101,7 @@ files are converted."""
                 c.walk()
                 if not c.is_empty():
                     index = c.get_index()
-                    md_creator = toc.TOCFormatter(index, ".")
+                    md_creator = toc.TocFormatter(index, ".")
                     with open("inhalt.md", 'w', encoding="utf-8") as file:
                         file.write(md_creator.format())
 

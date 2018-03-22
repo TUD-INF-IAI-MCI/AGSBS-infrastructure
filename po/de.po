@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-03-20 15:04+CET\n"
+"POT-Creation-Date: 2018-03-21 21:44+CET\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -14,6 +14,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.0.6\n"
 "Generated-By: pygettext.py 1.5\n"
+
+#: MAGSBS/datastructures.py:145
+msgid "the file does not follow naming conventions"
+msgstr "der Dateiname folgt nicht den Namenskonventionen"
 
 #: MAGSBS/factories.py:56
 msgid "images"
@@ -38,6 +42,22 @@ msgstr "Papier"
 #: MAGSBS/filesystem.py:150 MAGSBS/filesystem.py:152
 msgid "image descriptions"
 msgstr "Bildbeschreibungen"
+
+#: MAGSBS/pandoc/formats.py:218
+msgid "You need to have Pandoc installed."
+msgstr "Sie müssen Pandoc installiert haben."
+
+#: MAGSBS/pandoc/formats.py:285
+msgid ""
+"LaTeX reported an error while converting a fomrula. Unfortunately, "
+"improperly closed formula environments exist, therefore it cannot be "
+"determined which formula was errorneous. Please re-read the document and fix "
+"any unclosed formula environments."
+msgstr ""
+"LaTeX stieß auf einen Fehler bei der Konvertierung einer Formel. Leider "
+"existieren nicht korrekt geschlossene Formelumgebungen, daher kann nicht "
+"ermittelt werden, welche Formel fehlerhaft ist. Bitte lesen Sie das Dokument "
+"erneut und korrigieren Sie ungeschlossene Formelumgebungen."
 
 #: MAGSBS/quality_assurance/all_formats.py:22
 msgid ""
@@ -196,25 +216,15 @@ msgstr ""
 "verringern des Wertes tocDepth umgangen werden."
 
 #: MAGSBS/quality_assurance/markdown.py:213
-msgid "There is a page number where the actual number is missing."
-msgstr "Wahrscheinlich wurde bei dieser Seitenzahl die Zahl vergessen."
-
-#: MAGSBS/quality_assurance/markdown.py:221
 msgid ""
-"Headings with the same name make table of contents'hard to read and it "
-"difficult to navigate. It is best to set the configuration value tocDepth "
-"low enough to prevent these headings from appearing in the table of contents."
-msgstr ""
-"Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar und "
-"erschweren die Navigation. Am Besten man setzt den Konfigurationswert "
-"tocDepth klein genug, damit diese Überschriften nicht im Inhaltsverzeichnis "
-"erscheinen."
+"A page number was marked up, but the actual number has not been inserted."
+msgstr "Eine Seitenzahl wurde angegeben, doch die Zahl wurde vergessen."
 
-#: MAGSBS/quality_assurance/markdown.py:252
+#: MAGSBS/quality_assurance/markdown.py:234
 msgid "A \"-\" in the page number is missing, required: \"|| - Page xyz -\""
 msgstr "Es fehlt ein \"-\" in der Seitenzahl, Vorgabe: \"|| - Seite xyz -\""
 
-#: MAGSBS/quality_assurance/markdown.py:267
+#: MAGSBS/quality_assurance/markdown.py:249
 msgid ""
 "\"{tag}\" is not allowed, use a new paragraph or a \"\\\" at the end of a "
 "line."
@@ -222,23 +232,23 @@ msgstr ""
 "Unerlaubte Nutzung von \"{tag}\"; verwendne Sie einen neuen Absatz oder \"\\"
 "\" am Ende einer Zeile."
 
-#: MAGSBS/quality_assurance/markdown.py:271
+#: MAGSBS/quality_assurance/markdown.py:253
 msgid "It is not allowed to use HTML tags, except for div and span."
 msgstr "Es ist nicht erlaubt HTML-tags, außer div und span, zu verwenden."
 
-#: MAGSBS/quality_assurance/markdown.py:283
+#: MAGSBS/quality_assurance/markdown.py:265
 msgid ""
 "Comparison operators shouldn't be marked up in HTML, but with \\< and \\>."
 msgstr ""
 "Vergleichsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
 "mittels \\< und \\> erzeugt werden."
 
-#: MAGSBS/quality_assurance/markdown.py:292
+#: MAGSBS/quality_assurance/markdown.py:274
 msgid "The heading was underlined and also marked with #'s."
 msgstr ""
 "Die Überschrift wurde unterstrichen und gleichzeitig mit # gekennzeichnet."
 
-#: MAGSBS/quality_assurance/markdown.py:310
+#: MAGSBS/quality_assurance/markdown.py:292
 msgid ""
 "If a paragraph ends on a \\, the next empty line will become part of the "
 "paragraph and hence the next paragraph is formatted incorrectly."
@@ -246,7 +256,7 @@ msgstr ""
 "Wenn ein Absatz auf \\ endet, wird die folgende leere Zeile Teil des "
 "Absatzes und der darauf folgende Absatz falsch formatiert."
 
-#: MAGSBS/quality_assurance/markdown.py:330
+#: MAGSBS/quality_assurance/markdown.py:312
 msgid ""
 "Line contains uneven number of dollar signs. Either a formula wasn't closed "
 "or an embedded formula was stretched across multiple lines (try double "
@@ -257,7 +267,7 @@ msgstr ""
 "Zeilen gedehnt (versuchen Sie doppelte Dollars). Falls Sie tatsächlich ein "
 "Dollarzeichen schreiben wollten, fügen Sie einen \\ davor ein."
 
-#: MAGSBS/quality_assurance/markdown.py:372
+#: MAGSBS/quality_assurance/markdown.py:354
 msgid ""
 "In enumerations and lists, the enumeration character may not immediately be "
 "followed by another such character, because it will be recognised as a "
@@ -269,21 +279,22 @@ msgstr ""
 "wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt "
 "verhindert dies."
 
-#: MAGSBS/quality_assurance/markdown.py:393
+#: MAGSBS/quality_assurance/markdown.py:375
+#, fuzzy
 msgid ""
-"The image description is probably incomplete, since \"{todo}\" has been "
+"The image description is probably incomplete, since \"{marker}\" has been "
 "found."
 msgstr ""
 "Die Bildbeschreibung ist wahrscheinlich unvollständig, da eine Markierung "
 "wie \"{todo\" gefunden wurde."
 
-#: MAGSBS/quality_assurance/markdown.py:415
+#: MAGSBS/quality_assurance/markdown.py:397
 msgid "An included image is using wrong syntax, the converter will ignore it."
 msgstr ""
 "Ein Bild wurde mit fehlerhafter Syntax eingebunden, wodurch das Bild vom "
 "Konverter ignoriert wird."
 
-#: MAGSBS/quality_assurance/markdown.py:444
+#: MAGSBS/quality_assurance/markdown.py:426
 msgid ""
 "A hyphen was found which possibly originates from copied justified text. "
 "This will be incorrectly formatted in the output."
@@ -291,71 +302,82 @@ msgstr ""
 "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit "
 "Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert werden."
 
-#: MAGSBS/quality_assurance/markdown.py:486
+#: MAGSBS/quality_assurance/markdown.py:468
 msgid "No image description provided."
 msgstr "Keine Bildbeschreibung vorhanden."
 
-#: MAGSBS/quality_assurance/mistkerl.py:118
+#: MAGSBS/quality_assurance/mistkerl.py:117
 msgid ""
 "File not encoded in UTF-8, please configure this encoding in your editor."
 msgstr ""
 "Datei nicht in UTF-8 gespeichert. Bitte wählen Sie diesen Zeichensatz in "
 "Ihrem Editor."
 
-#: MAGSBS/quality_assurance/mistkerl.py:209
+#: MAGSBS/quality_assurance/mistkerl.py:208
 msgid "The configuration could not be read: {reason}"
 msgstr "Die Konfiguration konnte nicht gelesen werden: {reason}"
 
-#: MAGSBS/quality_assurance/mistkerl.py:220
+#: MAGSBS/quality_assurance/mistkerl.py:219
 msgid ""
 "The file is too long. To ease navigation and maintain readability, the file "
 "should be split into fileswith less than {count} lines by naming them like "
 "kXXYY.md."
 msgstr ""
-"Die Datei ist zu lang. Um die Navigation zu erleichtern und die Lesbarkeit zu "
-"gewährleisten sollten lange Kapitel mit mehr als {count} Zeilen in mehrere "
-"Dateien mit einer Bennung wie kXXYY.md aufgeteilt werden."
+"Die Datei ist zu lang. Um die Navigation zu erleichtern und die Lesbarkeit "
+"zu gewährleisten sollten lange Kapitel mit mehr als {count} Zeilen in "
+"mehrere Dateien mit einer Bennung wie kXXYY.md aufgeteilt werden."
 
-#: MAGSBS/toc.py:202
+#: MAGSBS/toc.py:203
 msgid "table of contents"
 msgstr "Inhaltsverzeichnis"
 
-#: MAGSBS/toc.py:210
+#: MAGSBS/toc.py:211
 msgid "title page"
 msgstr "Titelseite"
 
-#: MAGSBS/toc.py:214
+#: MAGSBS/toc.py:215
 msgid "preface"
 msgstr "Vorwort"
 
-#: MAGSBS/toc.py:219
+#: MAGSBS/toc.py:220
 msgid "chapters"
 msgstr "Kapitel"
 
-#: MAGSBS/toc.py:222
+#: MAGSBS/toc.py:223
 msgid "appendix"
 msgstr "Appendix"
 
-#: MAGSBS/toc.py:227
+#: MAGSBS/toc.py:228
 msgid "glossary"
 msgstr "Glossar"
 
-#: MAGSBS/toc.py:229
+#: MAGSBS/toc.py:230
 msgid "index"
 msgstr "Inhalt"
 
-#: MAGSBS/toc.py:232
+#: MAGSBS/toc.py:233
 msgid "list of abbreviations"
 msgstr "Abkürzungsverzeichnis"
 
-#: MAGSBS/toc.py:234
+#: MAGSBS/toc.py:235
 msgid "list of tactile graphics"
 msgstr "Liste taktiler Grafiken"
 
-#: MAGSBS/toc.py:236
+#: MAGSBS/toc.py:237
 msgid "copyright notice"
 msgstr "Urheberrechtshinweis"
 
-#: MAGSBS/toc.py:243
+#: MAGSBS/toc.py:244
 msgid "remarks about the accessible version"
 msgstr "Hinweise zur barrierefreien Version"
+
+#~ msgid ""
+#~ "Headings with the same name make table of contents'hard to read and it "
+#~ "difficult to navigate. It is best to set the configuration value tocDepth "
+#~ "low enough to prevent these headings from appearing in the table of "
+#~ "contents."
+#~ msgstr ""
+#~ "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar "
+#~ "und erschweren die Navigation. Am Besten man setzt den Konfigurationswert "
+#~ "tocDepth klein genug, damit diese Überschriften nicht im "
+#~ "Inhaltsverzeichnis erscheinen."

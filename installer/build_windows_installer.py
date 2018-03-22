@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-# (C) 2015-2017 Sebastian Humenda
+# (C) 2015-2018 Sebastian Humenda
 """Helper script to prepare environment (and nsis installation script) for
 building a Windows installer. It also executes makensis.
 
 The version is automatically extracted from MAGSBS.config.VERSION.
 
-Dependencies: nsis (Nullsoft Installer), python3.4, pandocfilters,
+Dependencies:
+
+* nsis (Nullsoft Installer)
+* python >= 3.4
+* pandocfilters
+* 7z or unzip (command-line programs)
 If running from Windows: haskell-platform
 """
 
@@ -17,7 +22,7 @@ import sys
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
 
 GLADTEX_BINARY_URL = "http://github.com/humenda/GladTeX/releases/download/v2.3/gladtex-win64-2.3-py_3.4.4-standalone.zip"
-PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/1.19.2.1/pandoc-1.19.2.1-windows.msi"
+PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.1.3/pandoc-2.1.3-windows.zip"
 BUILD_DIRECTORY = "build"
 
 
@@ -130,11 +135,18 @@ class SetUp:
         os.mkdir(tmp)
         print("Downloading", PANDOC_INSTALLER_URL)
         with urllib.request.urlopen(PANDOC_INSTALLER_URL) as u:
-            with open(os.path.join(tmp, 'x.msi'), 'wb') as f:
+            with open(os.path.join(tmp, 'x.zip'), 'wb') as f:
                 f.write(u.read())
         os.chdir(tmp)
-        subprocess_call('7z x x.msi')
-        os.rename('pandocEXE', os.path.join('..', 'pandoc.exe'))
+        if not shutil.which('7z'):
+            subprocess_call('7z x x.zip')
+        else:
+            subprocess_call('7z x x.zip')
+        subdir = os.listdir('.')[0] # unzips with subdirectory
+        if not os.path.isdir(subdir):
+            raise OSError("Pandoc zip file layout changed, please fix this script.")
+        os.rename(os.path.join(subdir, 'pandoc.exe'),
+                os.path.join('..', 'pandoc.exe'))
         os.chdir("..")
         shutil.rmtree(os.path.basename(tmp)) # remove pandoc's temp directory
         os.chdir("..")
@@ -186,8 +198,8 @@ def update_installer_info(filename, version, total_size_kb):
 def compile_scripts(python_command):
     """Compile matuc using py2exe. Cross-compilation is determined by
     `python_command` (either 'python' or 'wine python')."""
-    origin = os.path.basename(os.getcwd())
-    os.chdir('..') # change to source root
+    origin = os.getcwd()
+    os.chdir(os.path.join('..', 'matuc')) # change to matuc script source directory
     ret = os.system('%s -m py2exe -b 3 matuc.py' % python_command )
     if ret: # error
         print("Stop installer creation.")
@@ -198,7 +210,8 @@ def compile_scripts(python_command):
         sys.exit(9)
     # move compiled binary files
     for file in os.listdir('dist'):
-        dest = os.path.join(os.path.join(origin, BUILD_DIRECTORY), file)
+        dest = os.path.join('..', # still in matuc/
+                os.path.basename(origin), BUILD_DIRECTORY, file)
         if not os.path.exists(dest):
             os.rename(os.path.join('dist', file), dest)
     os.chdir(origin)
@@ -208,7 +221,7 @@ def build_installer():
     # move a few files like e.g. README to distribution; MAGSBS and matuc_impl are
     # required, since py2exe doesn't include them properly
     target = lambda x: os.path.join(BUILD_DIRECTORY, x)
-    shutil.copytree(os.path.join('..', 'matuc_impl'), target('matuc_impl'))
+    shutil.copytree(os.path.join('..', 'matuc', 'matuc_impl'), target('matuc_impl'))
     shutil.copytree(os.path.join('..', 'MAGSBS'), target('MAGSBS'))
     shutil.copyfile(os.path.join('..', 'COPYING'), target('COPYING.txt'))
     shutil.copyfile(os.path.join('..', 'README.md'), target('README.md'))

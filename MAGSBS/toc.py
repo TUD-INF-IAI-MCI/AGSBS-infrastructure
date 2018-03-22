@@ -1,7 +1,8 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2017 Sebastian Humenda <shumenda |at|gmx |dot| de>
+# (c) 2015-2018 Sebastian Humenda <shumenda |at|gmx |dot| de>
+# ToDo: This file is pending a proper refactoring.
 """This file contains the classes necessary for the automated index
 generation."""
 
@@ -95,7 +96,7 @@ By calling the function, the actual index is build."""
     def get_index(self):
         tmp = collections.OrderedDict()
         for key in sorted(self.__index):
-            tmp[key] = self.__index[ key ]
+            tmp[key] = self.__index[key]
         return tmp
 
 class ChapterNumberEnumerator:
@@ -150,11 +151,11 @@ class ChapterNumberEnumerator:
         return (chapter_number if chapter_number  else [0])
 
 
-class TOCFormatter:
-    """TOCFormatter(OrderedDict(), lang, depth=4, use_appendix_prefix=False)
+class TocFormatter:
+    """TocFormatter(OrderedDict(), lang, depth=4, use_appendix_prefix=False)
 Take the ordered dict produced by HeadingIndexer() and transform it
 to a markdown file containing the formatted table of contents. With the
-specified path, the TOCFormatter is able to fetch the configuration to format
+specified path, the TocFormatter is able to fetch the configuration to format
 the TOC corrrectly."""
     def __init__(self, index, path):
         self.__index = index
@@ -258,7 +259,6 @@ the TOC corrrectly."""
                 chunks.append('\\')
         chunks.append('\n\n')
         return chunks
-
 
     def __heading2toclink(self, chapter_number, heading, path):
         """Convert a heading to a link as required in a TOC.

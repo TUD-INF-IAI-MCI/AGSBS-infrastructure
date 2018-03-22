@@ -187,16 +187,10 @@ class ForgottenNumberInPageNumber(Mistake):
     paragraphs and check for paragraphs with length 1 instead of iterating
     through *all* lines."""
     mistake_type = MistakeType.full_file
-    PAGE_IDENTIFICATION = re.compile(r'\s*-\s*(%s)' +
-                '|'.join(config.PAGENUMBERINGTOKENS) + '\\s+')
-    HAS_ARABIC_OR_ROMAN = re.compile(r'\s+(\d+|%s)\s*-\s*$' % \
-                config.roman_number_regex, re.VERBOSE)
-
+    PAGE_IDENTIFICATION = re.compile(r'^\|\|\s+-\s+\w+\s+(.*?)\s*-\s*$')
 
     def __init__(self):
         super().__init__()
-        # cannot be of Mistaketype.pagenumbers, because this leaves out
-        # incorrect page numbers
 
     def worker(self, *args):
         """Sometimes digits of page number get lost when typing."""
@@ -204,32 +198,15 @@ class ForgottenNumberInPageNumber(Mistake):
             line = par[0]
             if not line.startswith("||"):
                 continue
-            match = ForgottenNumberInPageNumber.PAGE_IDENTIFICATION.search(line.lower())
+            match = self.PAGE_IDENTIFICATION.search(line)
             if not match:
                 continue
-            match = ForgottenNumberInPageNumber.HAS_ARABIC_OR_ROMAN.search(line)
-            # no match or not one of the groups contains something, it's broken
-            if match and not any(match.groups()):
-                return self.error(_("There is a page number where the "
-                        "actual number is missing."), start)
-
-class HeadingOccursMultipleTimes(Mistake):
-    """Parse headings; report doubled headings; ignore headings below
-tocDepth."""
-    mistake_type = MistakeType.headings
-    def worker(self, *args):
-        error_message = _("Headings with the same name make table of contents'"
-                "hard to read and it difficult to navigate. It is best to set "
-                "the configuration value tocDepth low enough to prevent these "
-                "headings from appearing in the table of contents.")
-        last_heading = None
-        for heading in args[0]:
-            if heading.get_level() > config.ConfFactory().\
-                    get_conf_instance_safe(".")[MetaInfo.TocDepth]:
-                continue # skip it
-            if last_heading == heading.get_text():
-                return self.error(error_message, heading.get_line_number())
-            last_heading = heading.get_text()
+            number = match.groups()[0].split('-')[0] # if it's a range
+            # roman number regex returns empty string if nothing found
+            if not any(x.isdigit() for x in number) and not \
+                        config.ROMAN_NUMBER.search(number).end():
+                return self.error(_("A page number was marked up, but the "
+                        "actual number has not been inserted."), start)
 
 class PageNumbersWithoutDashes(Mistake):
     """Page number should look like "|| - page 8 -", people sometimes write
@@ -391,8 +368,8 @@ class ToDosInImageDescriptionsAreBad(OnelinerMistake):
         match = self._todo_pattern.search(line)
         if match:
             return self.error(_("The image description is probably incomplete, "
-                    "since \"{todo}\" has been found.").format(
-                        todo=match.groups()[0]), lnum=lnum)
+                    "since \"{marker}\" has been found.").format(
+                        marker=match.groups()[0]), lnum=lnum)
 
 
 class BrokenImageLinksAreDetected(OnelinerMistake):

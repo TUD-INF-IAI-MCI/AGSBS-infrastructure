@@ -36,13 +36,15 @@ PAGENUMBERINGTOKENS += [t.title() for t in PAGENUMBERINGTOKENS] # recognize with
 
 # regular expression to recognize page numbers, includes both arabic and roman
 # numbers
-roman_number_regex = roman.roman_numeral_pattern_string.strip().lstrip('^').rstrip('$')
+ROMAN_NUMBER = re.compile(roman.roman_numeral_pattern_string.strip() \
+        .lstrip('^').rstrip('$'), re.VERBOSE)
 PAGENUMBERING_PATTERN = re.compile(r'''
         # recognize all different languages which are supported for the words
         # "slide" and "page"
         -\s*(%s)\s+
-        (\d+|%s)\s*- # arabic or roman numbers
-        ''' % ('|'.join(PAGENUMBERINGTOKENS), roman_number_regex),
+        (\d+|%s(?:-(?:\d+|%s))?)\s*- # arabic or roman numbers
+        ''' % ('|'.join(PAGENUMBERINGTOKENS), ROMAN_NUMBER.pattern,
+            ROMAN_NUMBER.pattern),
         re.VERBOSE)
 
 

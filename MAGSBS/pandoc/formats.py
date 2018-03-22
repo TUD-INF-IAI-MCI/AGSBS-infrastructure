@@ -3,11 +3,12 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2017-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 
 import enum
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 from . import contentfilter
@@ -161,8 +162,8 @@ class HtmlConverter(OutputGenerator):
         """Set up the HtmlConverter. Prepare the template for later use."""
         self.template_path = tempfile.mktemp() + '.html'
         self.template_copy = self.get_template()
-        with open(self.template_path, "w", encoding="utf-8") as f:
-            f.write(self.template_copy)
+        with open(self.template_path, "w", encoding="utf-8") as file:
+            file.write(self.template_copy)
 
     def get_template(self):
         """Construct template."""
@@ -211,8 +212,15 @@ class HtmlConverter(OutputGenerator):
         super().set_meta_data(meta)
         self.setup()
 
+    def check_for_pandoc(self):
+        if not shutil.which('pandoc'):
+            raise errors.SubprocessError(['pandoc'],
+                _('You need to have Pandoc installed.'))
+
+
     def convert(self, json_ast, title, path):
         """See super class documentation."""
+        self.check_for_pandoc()
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + '.' + self.FILE_EXTENSION
         pandoc_args = ['-s', '--template=%s' % self.template_path]
@@ -274,11 +282,12 @@ class HtmlConverter(OutputGenerator):
                 # be counted; although there's somewhere a LaTeX error which
                 # we're trying to report, the improper maths environments HAVE
                 # to reported and fixed first
-                raise errors.SubprocessError(error.command, ("LaTeX reported an error "
-                    "while converting a fomrula. Unfortunately, improperly closed "
-                    "maths environments exist, therefore it cannot be determined "
-                    "which formula was errorneous. Please re-read the document "
-                    "and fix any unclosed maths environments."), file_path)
+                raise errors.SubprocessError(error.command, _(
+                        "LaTeX reported an error while converting a fomrula. "
+                        "Unfortunately, improperly closed formula environments "
+                        "exist, therefore it cannot be determined which formula "
+                        "was errorneous. Please re-read the document and fix "
+                        "any unclosed formula environments."), file_path)
 
             # get LaTeX error output
             msg = details['Message'].rstrip().lstrip()
@@ -320,7 +329,7 @@ def execute(args, stdin=None, cwd=None):
                 stderr=subprocess.PIPE, cwd=cwd)
             text = proc.communicate()
     except FileNotFoundError as e:
-        msg = str(args[0]) + ': ' + str(e + ' ' + str(text))
+        msg = '%s:_: %s %s ' %(args[0], str(e), text)
         raise errors.SubprocessError(args, msg)
     if not proc:
         raise ValueError("No subprocess handle exists, even though it " + \
@@ -332,10 +341,11 @@ def execute(args, stdin=None, cwd=None):
     return datastructures.decode(text[0])
 
 def remove_temp(fn):
-    if fn is None: return
+    if fn is None:
+        return
     if os.path.exists(fn):
         try:
-            os.remove( fn )
+            os.remove(fn)
         except OSError:
             common.WarningRegistry().register_warning(
             "Couldn't remove tempfile", path=fn)
