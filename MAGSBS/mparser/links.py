@@ -15,11 +15,11 @@ Note: This parser expects the file with correct markdown links (e.g. no spaces
 import re
 
 # Regexp for finding ids within div and span html elements
-IDS_REGEX = r"<(?:div|span).*?id=[\"'](\S+?)[\"']"
+IDS_REGEX = re.compile(r"<(?:div|span).*?id=[\"'](\S+?)[\"']")
 
 
 def find_links_in_markdown(text, init_lineno=1):
-    """ This function parses the text written in markdown and creates the list
+    """This function parses the text written in markdown and creates the list
     of triples about the links. Each triple has following structure:
       (line number of link, type of link, (link triple), where link triple is:
       (! if ! is before [, empty string otherwise, link or link text, link or
@@ -65,7 +65,7 @@ def find_links_in_markdown(text, init_lineno=1):
 
 
 def extract_link(text):
-    """ This function extract the link itself from the input text. Parameter
+    """This function extract the link itself from the input text. Parameter
     text should contain opening square bracket. Then it is resolved and
     the link triple is returned.
     """
@@ -104,7 +104,7 @@ def extract_link(text):
 
 
 def detect_image_footnote(text, index):
-    """ Function for detecting if links is image or footnote. Image has the
+    """Function for detecting if links is image or footnote. Image has the
     exclamation mark before opening square brackets (that is not escaped).
     Footnote has the "^" sign right after opening square brackets. """
     if index > 1:
@@ -121,7 +121,7 @@ def detect_image_footnote(text, index):
 
 
 def get_text_inside_brackets(text):
-    """ Function gets the text inside brackets. Note that same brackets can be
+    """Function gets the text inside brackets. Note that same brackets can be
     content of the text, however the number of opening and closing brackets
     should be same. Escaped brackets are ignored. """
     if not text or text[0] not in {"(", "["}:
@@ -162,13 +162,9 @@ def clear_link(string):
     return output
 
 
-def get_ids_of_html_elements(text):
-    """ Returns a set of ids for valid html elements that are allowed
-    in matuc (currently div and span elements).
-    Note: When new element(s) will be allowed, the IDS constant has to
-        be updated. """
-    output = set()
-    result = re.compile(IDS_REGEX).findall(text)
-    for elem in result:
-        output.add(elem)
-    return output
+def get_html_elements_ids_from_document(document):
+    """Returns a set of ids (of html elements) in a markdown document. Only
+    elements allowed in matuc are processed (currently div and span elements).
+    Note: When other type of element(s) are allowed, the IDS_REGEX constant
+    has to be updated. """
+    return set(IDS_REGEX.findall(document))

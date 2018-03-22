@@ -187,7 +187,7 @@ class Mistkerl():
             self.__append_error(file_path, issue.run(formulas))
 
     def __run_linkchecker(self, file_tree):
-        """ This method runs the linkchecker. First, it extracts the links
+        """This method runs the linkchecker. First, it extracts the links
         using link extractor. Then it executes all checks of links and,
         finally, add them as errors. """
         links = LinkExtractor()
