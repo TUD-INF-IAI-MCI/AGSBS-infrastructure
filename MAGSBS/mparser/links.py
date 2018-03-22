@@ -122,13 +122,12 @@ def detect_image_footnote(text, index):
     return is_image, is_footnote
 
 
-
 def get_text_inside_brackets(text):
     """Function gets the text inside brackets. Note that same brackets can be
     content of the text, however the number of opening and closing brackets
     should be same. Escaped brackets are ignored. """
     if not text or text[0] not in {"(", "["}:
-        return ""
+        return None
 
     brackets_dict = {"[": "]", "(": ")"}
     bracket_char = text[0]
@@ -154,7 +153,9 @@ def get_text_inside_brackets(text):
 
 
 def clear_link(string):
-    if not isinstance(string, str) or len(string) < 2:
+    """This function removes the opening angle bracket from the beginning of
+     the string and closing angle bracket from the strings end. """
+    if len(string) < 2:
         return string
 
     output = string
