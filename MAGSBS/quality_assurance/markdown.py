@@ -396,13 +396,14 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
     """When copy-pasting text from i.e. PDFs, it is easy to forget to remove
     the hyphenation at the end of the line. This checker attempts to warn in
     the obvious cases."""
+    HYPHENS = ['-', '\xad']
     mistake_type = MistakeType.full_file
     def __init__(self):
         super().__init__()
 
     def is_hyphenated_word(self, line):
         line = line.rstrip()
-        if line.endswith('-') and len(line) > 1:
+        if any(line.endswith(h) for h in self.HYPHENS) and len(line) > 1:
             if line[-2].isalpha(): # part of a word
                 return True
         return False
