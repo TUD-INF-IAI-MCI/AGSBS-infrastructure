@@ -33,10 +33,15 @@ def find_links_in_markdown(text, init_lineno=1):
     while processed < len(text):
         if text[processed] == "\n":  # count lines
             lineno += 1
-        # if text[processed] == "$" and not escape_next:
+        if text[processed] == "$" and not escape_next:
+            is_in_formula = not is_in_formula
+            # handle block formulas
+            if processed + 1 < len(text) and text[processed + 1] == "$":
+                processed += 1
 
-        # find the potential beginning of link (ignore the masked bracket)
-        if text[processed] == "[" and not escape_next:
+        # find the potential beginning of link (ignore the masked bracket and
+        # cases when [ is within formula)
+        if text[processed] == "[" and not escape_next and not is_in_formula:
             res = extract_link(text[max(0, processed - 2):])
             if res:  # result processing
                 link = clear_link(res[4])  # remove redundant chars like < or >

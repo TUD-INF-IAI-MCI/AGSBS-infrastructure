@@ -109,6 +109,12 @@ class LinkExtractor:
                 # call the function for finding links
                 data = mparser.find_links_in_markdown(file_data.read())
                 for link_data in data:
+                    if not isinstance(link_data, tuple) or len(link_data) != 3:
+                        raise TypeError(
+                            "The processed data extracted by link parser does "
+                            "not have correct type {} (should be tuple) or "
+                            "correct length {} (should be 3)."
+                            .format(type(link_data), len(link_data)))
                     new_dct = self.create_dct(
                         file_name, file_path, link_data[0], link_data[1],
                         link_data[2])
@@ -119,10 +125,11 @@ class LinkExtractor:
     def create_dct(file_name, file_path, line_no, link_type, link):
         """ This method generates the dictionary that contains all the
         important data for the link examination. """
-        if not isinstance(link, tuple):
+        if not isinstance(link, tuple) or len(link) != 3:
             raise TypeError(
-                "The processed link should be a tuple, but {} was "
-                "returned.".format(type(link)))
+                "The processed link part of data tuple given by parser does "
+                "not have correct type {} (should be tuple) or correct "
+                "length {} (should be 3).".format(type(link), len(link)))
 
         link_dict = dict()
         link_dict["file"] = file_name
@@ -212,10 +219,11 @@ class LinkChecker:
                     {"reference", "reference_footnote"} \
                     and tested_link.get("link_text").lower() == link_ref:
                 return  # it is ok, reference has been found
-        self.errors.append(ErrorMessage("Problem with coupling a reference to "
-                                        "the link [{}].".format(link_ref),
-                                        link.get("line_no"),
-                                        link.get("file_path")))
+        self.errors.append(
+            ErrorMessage("A reference to the link \"{}\" does not exist. "
+                         "Please write a reference in a form [{}]: link to the"
+                         " markdown file.".format(link_ref, link_ref),
+                         link.get("line_no"), link.get("file_path")))
 
     def find_reference_duplicates(self):
         """ References should not be duplicated in the file, because it can
@@ -251,10 +259,12 @@ class LinkChecker:
             if tested_link.get("link_type") == "labeled" \
                     and tested_link.get("link").lower() == link_txt:
                 return  # it is ok, link has been found
-        self.errors.append(ErrorMessage("Problem with coupling a link to "
-                                        "the reference [{}].".format(link_txt),
-                                        link.get("line_no"),
-                                        link.get("file_path")))
+        self.errors.append(
+            ErrorMessage("A link for the reference \"{}\" does not exist. "
+                         "Please write a link in a form [{}] link to the"
+                         " markdown file or remove the reference."
+                         .format(link_txt, link_txt), link.get("line_no"),
+                         link.get("file_path")))
 
     def check_target_availability(self, link):
         """ Makes the checks according to the path given in the link.
@@ -310,14 +320,14 @@ class LinkChecker:
 
         if path.rfind(".") < 0:  # no extension
             self.errors.append(ErrorMessage(
-                "Link path {} has no extension, but it should be {}.".format(
-                    path, print_list_of_extensions(extensions)),
+                "Link path \"{}\" has no extension, but it should be {}."
+                    .format(path, print_list_of_extensions(extensions)),
                 link.get("line_no"), link.get("file_path")))
             return False
         # search fo last comma and extension is what follows it
         elif path[path.rfind(".") + 1:].lower() not in extensions:
             self.errors.append(ErrorMessage(
-                "Link path {} has .{} extension, but it should be {}."
+                "Link path \"{}\" has .{} extension, but it should be {}."
                 .format(path, path[path.rfind(".") + 1:],
                         print_list_of_extensions(extensions)),
                 link.get("line_no"), link.get("file_path")))
@@ -329,7 +339,7 @@ class LinkChecker:
         if not os.path.exists(file_path):
             self.errors.append(
                 ErrorMessage(
-                    "The file \"{}\" given by the reference [{}] does not "
+                    "The file \"{}\" given by the reference \"{}\" does not "
                     "exist.".format(parsed_path, link.get("link_text")),
                     link.get("line_no"), link.get("file_path")))
 
@@ -338,7 +348,7 @@ class LinkChecker:
         .md files. Therefore, source .md file existence should be checked. """
         file_path_md = replace_web_extension_with_md(file_path)
         if not os.path.exists(file_path_md):
-            error_message = ("The source .md file for hypertext file {} "
+            error_message = ("The source .md file for hypertext file \"{}\" "
                              "does not exist.".format(parsed_path))
             self.errors.append(ErrorMessage(
                 error_message, link.get("line_no"), link.get("file_path")))
@@ -361,7 +371,7 @@ class LinkChecker:
                 return  # anchor was found
 
         self.errors.append(
-            ErrorMessage("The anchor \"{}\" was not found in the {} "
+            ErrorMessage("The anchor \"{}\" was not found in the \"{}\" "
                          "file.".format(parsed_url.fragment, path),
                          link.get("line_no"), link.get("file_path")))
 

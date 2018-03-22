@@ -490,9 +490,9 @@ class TestLinkExtractor(unittest.TestCase):
 
     def test_formulas(self):
         test_inputs = [
-            "Formula (e.g. $\sqrt[5]{8547799037)}$."
-            "$$ blok formula [no] [detection](test) \n nor [ref]:abc.com $$"
-            "\$ there is no [formula] \$",
+            "Formula (e.g. $\sqrt[5]{8547799037)}$.",
+            "$$ blok formula [no] [detection](test) \n nor [ref]:abc.com $$",
+            "\$ there is [formula] \$",
             "\$ not even in [link \$ test]: reference"
         ]
         test_outputs = [
