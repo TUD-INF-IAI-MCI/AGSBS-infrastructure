@@ -381,7 +381,7 @@ class TestLinkExtractor(unittest.TestCase):
             [(1, "labeled", (False, "I'm a reference-style link",
                              "Arbitrary case-insensitive text"))],
             [(1, "labeled", (True, "You can use numbers for reference - style "
-                                  "link definitions", "1"))]
+                                   "link definitions", "1"))]
         ]
         self.make_comparison(test_inputs, test_outputs, "Labeled links")
 
@@ -410,7 +410,8 @@ class TestLinkExtractor(unittest.TestCase):
             "[1]\n\![test][]\nabc ![test2] def"]
         test_outputs = [
             [(1, "labeled", (False, "my website", ""))],
-            [(1, "labeled", (False, "1", "")), (2, "labeled", (False, "test", "")),
+            [(1, "labeled", (False, "1", "")),
+             (2, "labeled", (False, "test", "")),
              (3, "labeled", (True, "test2", ""))]]
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
@@ -445,15 +446,18 @@ class TestLinkExtractor(unittest.TestCase):
             r"\\[this\\\[this not\]\\]"
             ]
         test_outputs = [
-            [(1, "labeled", (False, "x", "")), (2, "labeled", (False, " ", ""))],
+            [(1, "labeled", (False, "x", "")),
+             (2, "labeled", (False, " ", ""))],
             [(1, "inline", (False, "tEst", "#TesT"))],
             [(1, "inline", (False, "[15]", "#seite-15--")),
              (1, "labeled", (False, "15", "")),
              (2, "inline", (False, "[20]", "#seite-20--")),
              (2, "labeled", (False, "20", ""))],
             [],
-            [(1, "labeled", (False, "a\[", "")), (1, "labeled", (False, "\]", "")),
-             (1, "labeled", (False, "\[\]", "")), (2, "inline", (False, "", "\]"))],
+            [(1, "labeled", (False, "a\[", "")),
+             (1, "labeled", (False, "\]", "")),
+             (1, "labeled", (False, "\[\]", "")),
+             (2, "inline", (False, "", "\]"))],
             [(1, 'labeled', (False, "po\\\\[abc\\\\][d]kus\\](normal", "")),
              (1, 'labeled', (False, "abc\\\\", "d"))],
             [(1, "inline", (False, "image", "google.jpg"))],
@@ -473,15 +477,15 @@ class TestLinkExtractor(unittest.TestCase):
 
     def test_reference_footnotes(self):
         test_inputs = [
-            "[^1]: [k05025](k0502.html#heading-1) asdsad\nasdsad\n\nabc",
-            "[^2]: text not to be tested",
+            "[^1]: [k05025](k0502.html#head-1) asdsad\nasdsad\n\nabc",
+            "[^2]: not to be tested",
             "[^3]: test\n",
             "![^extended]: http://fsf.org \n(SW foundation)\n\nabc"]
         test_outputs = [
             [(1, "reference_footnote", (
-                 False, "^1", "[k05025](k0502.html#heading-1) asdsad\nasdsad")),
-             (1, "inline", (False, "k05025", "k0502.html#heading-1"))],
-            [(1, "reference_footnote", (False, "^2", "text not to be tested"))],
+                 False, "^1", "[k05025](k0502.html#head-1) asdsad\nasdsad")),
+             (1, "inline", (False, "k05025", "k0502.html#head-1"))],
+            [(1, "reference_footnote", (False, "^2", "not to be tested"))],
             [(1, "reference_footnote", (False, "^3", "test\n"))],
             [(1, "reference_footnote", (
                 True, "^extended", "http://fsf.org \n(SW foundation)"))]

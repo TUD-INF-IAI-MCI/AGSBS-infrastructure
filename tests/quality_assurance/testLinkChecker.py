@@ -213,9 +213,9 @@ class TestLinkChecker(unittest.TestCase):
 
     def test_www_unchecked(self):
         links = [
-            { "file": "file.md", "file_path": "path", "link_type": "inline",
-            "line_no": 1, "is_image": False, "link": "WWW.google.de",
-            "link_text": "my_reference"},
+            {"file": "file.md", "file_path": "path", "link_type": "inline",
+             "line_no": 1, "is_image": False, "link": "WWW.google.de",
+             "link_text": "my_reference"},
             {"file": "file.md", "file_path": "path", "link_type": "inline",
              "line_no": 2, "is_image": False, "link": "www.google.cz",
              "link_text": "my_reference"}
