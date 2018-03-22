@@ -104,20 +104,23 @@ def extract_link(text):
 
 
 def detect_image_footnote(text, index):
-    """Function for detecting if links is image or footnote. Image has the
-    exclamation mark before opening square brackets (that is not escaped).
-    Footnote has the "^" sign right after opening square brackets. """
+    """Function for detecting if the text in brackets represents an image or
+    footnote. Images have the not escaped exclamation mark before opening
+    square  brackets. Footnote has the "^" sign right after opening square
+    brackets. Function returns a tuple of two boolean value, first is True
+    if text in brackets represent image, second is it represents footnote. """
     if index > 1:
-        image_char = "!" if text[0] != "\\" and text[1] == "!" else ""
+        is_image = text[0] != "\\" and text[1] == "!"
     elif index > 0:
-        image_char = "!" if text[0] == "!" else ""
+        is_image = text[0] == "!"
     else:
-        image_char = ""
+        is_image = False
 
     is_footnote = True if len(text) > index + 1 and text[index + 1] == "^" \
         else False
 
-    return image_char, is_footnote
+    return is_image, is_footnote
+
 
 
 def get_text_inside_brackets(text):

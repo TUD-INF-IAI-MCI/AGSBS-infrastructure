@@ -33,13 +33,13 @@ class TestLinkExtractor(unittest.TestCase):
         extractor = linkchecker.LinkExtractor()
         self.assertEqual(
             extractor.create_dct("file.md", "path", 5, "reference",
-                                 ("!", "text", "link")),
+                                 (True, "text", "link")),
             {"file": "file.md", "file_path": "path", "link_type": "reference",
              "line_no": 5, "is_image": True, "link_text": "text",
              "link": "link"})
         self.assertEqual(
             extractor.create_dct("file.md", "path", 5, "labeled",
-                                 ("", "link", "")),
+                                 (False, "link", "")),
             {"file": "file.md", "file_path": "path", "link_type": "labeled",
              "line_no": 5, "is_image": False, "link": "link"})
 

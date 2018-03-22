@@ -137,7 +137,7 @@ class LinkExtractor:
         link_dict["file_path"] = file_path
         link_dict["link_type"] = link_type
         link_dict["line_no"] = line_no
-        link_dict["is_image"] = True if link[0] == "!" else False
+        link_dict["is_image"] = link[0]
 
         if not link[2]:  # standalone - type "text [link] text text"
             link_dict["link"] = link[1]
