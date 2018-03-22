@@ -9,11 +9,11 @@ from MAGSBS.quality_assurance import linkchecker
 class TestHelpingFunctions(unittest.TestCase):
 
     def test_print_list(self):
-        self.assertRaises(ValueError, linkchecker.print_list_of_extensions, [])
-        self.assertEqual(linkchecker.print_list_of_extensions(["jpg"]), ".jpg")
-        self.assertEqual(linkchecker.print_list_of_extensions(["jpg", "bmp"]),
+        self.assertRaises(ValueError, linkchecker.format_extensions_list, [])
+        self.assertEqual(linkchecker.format_extensions_list(["jpg"]), ".jpg")
+        self.assertEqual(linkchecker.format_extensions_list(["jpg", "bmp"]),
                          ".jpg or .bmp")
-        self.assertEqual(linkchecker.print_list_of_extensions(
+        self.assertEqual(linkchecker.format_extensions_list(
             ["jpg", "bmp", "svg", "png"]), ".jpg, .bmp, .svg or .png")
 
     def test_replace_web_extension(self):

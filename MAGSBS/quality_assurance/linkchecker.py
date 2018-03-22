@@ -30,24 +30,17 @@ from ..common import is_within_lecture
 
 WEB_EXTENSIONS = ["html"]
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
-EXCPEPTED_REGEXS = [r"^www\."]
+EXCEPTED_STRING_STARTS = ["www."]
 
 
-def print_list_of_extensions(input_list):
-    """This function creates a string from the list elements that can be used
-    for outputs when error occurs. Last element is treated in a special way,
-    therefore simple join cannot be used. It is used specifically for
-    ErrorMessage generation. """
-    if not input_list:  # list should have at least one element
-        raise ValueError("At least one extension should be defined for web "
-                         "links and also for images.")
+def format_extensions_list(extensions):
+    """Format a list of extensions in a human-readable way."""
+    if not extensions:  # list should have at least one element
+        raise ValueError("No extension defined for link, yet required")
 
-    output = "." + str(input_list[0])
-    if len(input_list) == 1:  # return immediately single element
-        return output
-    for i in range(1, len(input_list) - 1):
-        output += ", ." + str(input_list[i])
-    return output + " or ." + input_list[len(input_list) - 1]
+    if len(extensions) == 1:
+        return ".{}".format(extensions[0])
+    return _(".{} or .{}").format(', .'.join(extensions[:-1]), extensions[-1])
 
 
 def get_list_of_md_files(file_tree):
@@ -281,7 +274,7 @@ class LinkChecker:
         # True if it is a file in a file structure; excepted strings removes
         # false possitives
         is_file = not parsed_url.netloc and not parsed_url.scheme and \
-            not self.is_within_excepted_string(parsed_url.path)
+            not self.starts_with_excepted_string(parsed_url.path)
         inspect_fragment = False  # specify if anchor should be inspected
         if parsed_url.path and is_file:  # if something is in path
             # prepare main paths
@@ -305,13 +298,13 @@ class LinkChecker:
             self.target_anchor_exists(parsed_url, link)
 
     @staticmethod
-    def is_within_excepted_string(string):
+    def starts_with_excepted_string(string):
         """This method detect, if the string is not false positively detected
         as a path by urlparse. This could happen, e.g. when somebody forgets
         to write http:// and write www.google.de. String that should be ignored
-        are saved in the EXCEPTED_REGEXS as regex patterns."""
-        for regex in EXCPEPTED_REGEXS:
-            if re.findall(re.compile(regex), string.lower()):
+        are saved in the EXCEPTED_STRING_STARTS as regex patterns."""
+        for start in EXCEPTED_STRING_STARTS:
+            if string.lower().startswith(start):
                 return True
         return False
 
@@ -326,7 +319,7 @@ class LinkChecker:
         if path.rfind(".") < 0:  # no extension
             self.errors.append(ErrorMessage(
                 "Link path \"{}\" has no extension, but it should be {}."
-                    .format(path, print_list_of_extensions(extensions)),
+                    .format(path, format_extensions_list(extensions)),
                 link.get("line_no"), link.get("file_path")))
             return False
         # search fo last comma and extension is what follows it
@@ -334,7 +327,7 @@ class LinkChecker:
             self.errors.append(ErrorMessage(
                 "Link path \"{}\" has .{} extension, but it should be {}."
                 .format(path, path[path.rfind(".") + 1:],
-                        print_list_of_extensions(extensions)),
+                        format_extensions_list(extensions)),
                 link.get("line_no"), link.get("file_path")))
             return False
         return True  # everything OK
