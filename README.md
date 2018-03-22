@@ -42,18 +42,21 @@ all commands below with "python" (and "pip". If however the command returns
 something like 2.x.x, you need to call every mentioned command instead with
 "python3". In the latter case, you should also check that Python3 is instaled.
 
-This software depends on [GladTex](https://github.com/humenda/GladTeX) and a
-LaTeX distribution.
+***Other dependencies:***
 
--   On GNU/Linux, you should use your package manager to get a recent version of
-    GladTeX and a LaTeX distribution. If you happen to run Debian, Linux Mint or
-    Ubuntu, typing `sudo apt-get install gladtex texlive-full` should be enough.
--   On OS/X, you should install
-    [GladTeX](https://github.com/humenda/GladTeX)
-    from source and install [MacTeX](www.tug.org/mactex/).
--   On windows, install a TeX distribution, for instance
-    [MikTeX](https://miktex.org/)  and fetch a
-    [GladTeX binary]](http://humenda.github.io/GladTeX/downloads.html).
+-   Pandoc: <https://github.com/jgm/pandoc>
+-   pandocfilters for python
+    -   pip3 install pandocfilters
+-   GladTeX: <http://humenda.github.io/GladTeX/downloads.html>
+-   a LaTeX distribution.
+    -   On GNU/Linux, you should use your package manager to get a recent
+        version of GladTeX and a LaTeX distribution. If you happen to run
+        Debian, Linux Mint or Ubuntu, typing `sudo apt-get install gladtex
+        texlive-full` installs everything (or hunt down the packages yourself).
+    -   On OS/X, you should install
+        [GladTeX](https://github.com/humenda/GladTeX) from source and install
+        [MacTeX](www.tug.org/mactex/).
+    -   On windows you can try [MikTeX](https://miktex.org/)
 
 
 ### Installation
