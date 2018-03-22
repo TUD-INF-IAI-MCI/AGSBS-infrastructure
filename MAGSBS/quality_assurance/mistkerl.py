@@ -193,7 +193,7 @@ class Mistkerl():
         finally, add them as errors. """
         links = LinkExtractor()
         links.parse_all_links_in_md_files(file_tree)
-        link_check = LinkChecker(links.links_list)
+        link_check = LinkChecker(links.links_list, self.__cached_headings)
         link_check.run_checks()
         for err in link_check.errors:
             self.__append_error(err.path, err)

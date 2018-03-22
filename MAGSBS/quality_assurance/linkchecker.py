@@ -21,6 +21,7 @@ This link checker does not touch the file system. It requires a list of files
 
 import os
 import re
+import collections
 from urllib.parse import urlparse
 
 from .. import mparser
@@ -167,15 +168,19 @@ class LinkExtractor:
 class LinkChecker:
     """ This class is checking the extracted links. It allows system to check
     their structure as well as the internal files, where links are pointing.
-    All errors are saved in the public attribute self.errors. """
-
-    def __init__(self, links_list):
+    All errors are saved in the public attribute self.errors.
+    Parsed headings are taken from the mistkerl to avoid opening same files
+    repeatedly.
+    """
+    def __init__(self, links_list, headings):
         self.errors = []  # generated errors
         self.links_list = links_list
         # following attributes are used for loading data from files, therefore
         # it is not necessary to load and parse them repeatedly
-        self.__headings_dict = {}  # dictionary with headings
-        self.__html_ids_dict = {}  # dictionary with div and span ids
+        # dictionary with headings
+        self.__cached_headings = headings
+        # dictionary with div and span ids
+        self.__cashed_html_ids = collections.OrderedDict()
 
     def run_checks(self):
         """ This methods runs all available checks within this class. """
@@ -359,14 +364,14 @@ class LinkChecker:
         """ Detects if the anchored element within .md file exists. """
         # open file, its existence should be already checked
         path = self.get_files_full_path(parsed_url.path, link)
-        if path not in self.__headings_dict:
+        if path not in self.__cached_headings:
             self.load_headings_to_dict(path)
             self.load_html_ids_to_dict(path)
 
-        for heading in self.__headings_dict[path]:  # search in headings
+        for heading in self.__cached_headings[path]:  # search in headings
             if heading.get_id() == parsed_url.fragment:
                 return  # anchor was found
-        for html_id in self.__html_ids_dict[path]:  # search div and span ids
+        for html_id in self.__cashed_html_ids[path]:  # search div and span ids
             if html_id == parsed_url.fragment:
                 return  # anchor was found
 
@@ -387,22 +392,20 @@ class LinkChecker:
         return replace_web_extension_with_md(full_path)
 
     def load_headings_to_dict(self, path):
-        """ This method loads headings into the __headings_dict attribute
+        """ This method loads headings into the __cached_headings attribute
         (dictionary). This dictionary prevents loading same files repeatedly
         if links are pointing on the same files.
-        Note: This brings some extra space complexity.
         """
         with open(path, encoding="utf-8") as file:
             paragraphs = mparser.file2paragraphs(file.read())
-        self.__headings_dict[path] = mparser.extract_headings_from_par(
+        self.__cached_headings[path] = mparser.extract_headings_from_par(
             paragraphs)
 
     def load_html_ids_to_dict(self, path):
         """ This method loads ids of div and span elements into
-        self.__html_ids_dict attribute (dictionary). This dictionary prevents
+        self.__cashed_html_ids attribute (dictionary). This dictionary prevents
         loading same files repeatedly if links are pointing on the same files.
-        Note: This brings some extra space complexity.
         """
         with open(path, encoding="utf-8") as file:
-            self.__html_ids_dict[path] = mparser.get_ids_of_html_elements(
+            self.__cashed_html_ids[path] = mparser.get_ids_of_html_elements(
                 file.read())
