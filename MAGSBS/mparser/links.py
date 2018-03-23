@@ -22,7 +22,7 @@ def find_links_in_markdown(text, init_lineno=1):
     """This function parses the text written in markdown and creates the list
     of triples about the links. Each triple has following structure:
       (line number of link, type of link, (link triple), where link triple is:
-      (! if ! is before [, empty string otherwise, link or link text, link or
+      (True if ! is before [, False otherwise, link or link text, link or
       empty string). Last two parts are based on link structure. """
     output = []
     lineno = init_lineno  # number of lines that were examined
@@ -104,11 +104,12 @@ def extract_link(text):
 
 
 def detect_image_footnote(text, index):
-    """Function for detecting if the text in brackets represents an image or
+    """Function detects whether the text in brackets represents an image or
     footnote. Images have the not escaped exclamation mark before opening
-    square  brackets. Footnote has the "^" sign right after opening square
-    brackets. Function returns a tuple of two boolean value, first is True
-    if text in brackets represent image, second is it represents footnote. """
+    square brackets. Footnote has the "^" sign right after opening square
+    brackets. Function returns a tuple of two boolean values, first is True
+    if text in brackets represent image (False otherwise), second is True
+    if it represents footnote (False otherwise). """
     if index > 1:
         is_image = text[0] != "\\" and text[1] == "!"
     elif index > 0:
@@ -123,9 +124,9 @@ def detect_image_footnote(text, index):
 
 
 def get_text_inside_brackets(text):
-    """Function gets the text inside brackets. Note that same brackets can be
-    content of the text, however the number of opening and closing brackets
-    should be same. Escaped brackets are ignored. """
+    """Function extracts the text inside brackets. Note that same brackets
+    can be content of the text, however the number of opening and closing
+    brackets should be same. Escaped brackets are ignored. """
     if not text or text[0] not in {"(", "["}:
         return None
 
