@@ -27,6 +27,7 @@ from urllib.parse import urlparse
 from .. import mparser
 from .meta import ErrorMessage
 from ..common import is_within_lecture
+from ..filesystem import get_markdown_files
 
 WEB_EXTENSIONS = ["html"]
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
@@ -51,36 +52,13 @@ def get_list_of_md_files(file_tree):
         for file in file_list:
             if file.endswith(".md"):  # only .md files will be inspected
                 file_path = os.path.join(directory_name, file)
-                if os.path.isfile(file_path):  # check if file exists
-                    md_file_list.append((file_path, file))
+                md_file_list.append((file_path, file))
     return md_file_list
 
 
-def replace_web_extension_with_md(path):
-    """Replace the hypertext file extension with .md extension. It takes the
-    last dot in the string and if it is there, then it compares string after
-    the dot with all possible extensions. If some of them is the same,
-    then it is replaced by 'md' string. """
-    for extension in WEB_EXTENSIONS:
-        last_dot = path.rfind(".")
-        if len(path) - last_dot - 1 == len(extension) and \
-                path[last_dot + 1:].lower() == extension:
-            return path[:last_dot] + ".md"
-    return path  # if no extension passed the condition
-
-
 class LinkExtractor:
-    """The purpose of this class is to extract all links that have to
-    be checked.
-    Note: This class assumes that markdown links are correctly structured
-        according to the rules specified by pandoc manual, available at
-        https://pandoc.org/MANUAL.html#links """
-    def __init__(self):
-        self.links_list = []  # dicts of links generated in the examined files
-
-    def parse_all_links_in_md_files(self, file_tree):
-        """Parses all links in the .md files. Each link is stored in the
-        dictionary that has the following structure:
+    """Parses all links, images and footnote references in the .md files.
+    Each entry is stored in the dictionary that has following structure:
         "file": name of the file, where the link is stored
         "file_path": full path to the file, where the link is stored
         "link_type": type of the link - this should be as follows:
@@ -96,24 +74,23 @@ class LinkExtractor:
         "is_image": 'True' if the link is a picture, 'False' otherwise
         "link": link;
         "link_text": link description, if exists.
-        All dictionaries are added to the link_list attribute. """
+        All dictionaries are added to the link_list attribute.
+    Note: This class assumes that markdown links are correctly structured
+        according to the rules specified by pandoc manual, available at
+        https://pandoc.org/MANUAL.html#links """
+    def __init__(self, file_tree):
+        self.link_list = []  # dicts of links generated in the examined files
+
         for file_path, file_name in get_list_of_md_files(file_tree):
             # encoding of the file should be already checked
             with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
                 data = mparser.find_links_in_markdown(file_data.read())
-                for link_data in data:
-                    if not isinstance(link_data, tuple) or len(link_data) != 3:
-                        raise TypeError(
-                            "The processed data extracted by link parser does "
-                            "not have correct type {} (should be tuple) or "
-                            "correct length {} (should be 3)."
-                            .format(type(link_data), len(link_data)))
-                    new_dct = self.create_dct(
-                        file_name, file_path, link_data[0], link_data[1],
-                        link_data[2])
+                for line_no, link_type, link in data:
+                    new_dct = self.create_dct(file_name, file_path, line_no,
+                                              link_type, link)
                     if self.check_dict_integrity(new_dct):  # correct data
-                        self.links_list.append(new_dct)
+                        self.link_list.append(new_dct)
 
     @staticmethod
     def create_dct(file_name, file_path, line_no, link_type, link):
@@ -148,12 +125,10 @@ class LinkExtractor:
         data structure testing is needed. """
         if not isinstance(dct, dict):
             return False
-        if dct.get("file") is None or dct.get("file_path") is None \
-                or dct.get("link_type") is None or dct.get("line_no") is None \
-                or dct.get("is_image") is None or dct.get("link") is None:
+        if not all(key in dct for key in ("file", "file_path", "link_type",
+                                          "line_no", "is_image", "link")):
             return False
-        if dct.get("link_type") == "reference" and \
-                dct.get("link_text") is None:
+        if dct.get("link_type") == "reference" and "link_text" not in dct:
             return False
         return True
 
@@ -167,7 +142,7 @@ class LinkChecker:
     """
     def __init__(self, links_list, headings={}):
         self.errors = []  # generated errors
-        self.links_list = links_list
+        self.link_list = links_list
         # following attributes are used for loading data from files, therefore
         # it is not necessary to load and parse them repeatedly
         # dictionary with headings
@@ -177,59 +152,41 @@ class LinkChecker:
 
     def run_checks(self):
         """This methods runs all available checks within this class. """
-        self.find_reference_duplicates()  # check dulicate references
-        for link in self.links_list:
-            self.check_correct_email_address(link)
+        self.find_label_duplicates()  # check duplicate labels
+        for link in self.link_list:
             if link.get("link_type") == "labeled":
                 # links should be connected somewhere
-                self.find_reference_for_link(link)
+                self.find_label_for_link(link)
             if link.get("link_type") == {"reference", "reference_footnote"}:
                 # reference should be called
                 self.find_link_for_reference(link)
             if link.get("link_type") in {"reference", "inline"}:
                 self.check_target_availability(link)
 
-    def check_correct_email_address(self, link):
-        """When 'mailto:' is used as a fist substring, the standard structure
-        of the email address should be followed. Otherwise, an error message
-        is created.
-        Note: The regex pattern check only the basic structure. There can exist
-        some false negative cases (email pass even though it is not in a
-        correct form). """
-        if link.get("link").find("mailto:") == 0:  # mailto: is first substring
-            # pattern for email. Note: it is only a basic check
-            pattern = re.compile(r"[^@]+@[^@]+\.[^@]+")
-
-            if not bool(re.match(pattern, link.get("link")[7:])):
-                self.errors.append(ErrorMessage(
-                    "Email address {} is not in a correct form.".format(
-                        link.get("link")[7:]),
-                    link.get("line_no"), link.get("file_path")))
-
-    def find_reference_for_link(self, link):
-        """LABELED links should be connected to the reference(_footnote) link
-        with []: syntax. Otherwise it cannot be paired together. If this
+    def find_label_for_link(self, link):
+        """Links ("labeled")  should be connected to the "reference(_footnote)"
+        link with []: syntax. Otherwise it cannot be paired together. If this
         is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
         link_ref = link.get("link").lower()
-        for tested_link in self.links_list:
+        for tested_link in self.link_list:
             if tested_link.get("link_type") in \
                     {"reference", "reference_footnote"} \
                     and tested_link.get("link_text").lower() == link_ref:
                 return  # it is ok, reference has been found
         self.errors.append(
-            ErrorMessage("A reference to the link \"{}\" does not exist. "
+            ErrorMessage(_("A reference to the link \"{}\" does not exist. "
                          "Please write a reference in a form [{}]: link to the"
-                         " markdown file.".format(link_ref, link_ref),
+                         " markdown file.").format(link_ref, link_ref),
                          link.get("line_no"), link.get("file_path")))
 
-    def find_reference_duplicates(self):
-        """References should not be duplicated in the file, because it can
+    def find_label_duplicates(self):
+        """Labels should not be duplicated in the file, because it can
         cause confusion (pandoc takes the last one as relevant).
-        Note: If the references are totally same then they are not reported
+        Note: If the labels are completely same then they are not reported
         """
         # check only references
-        list_of_refs = [link for link in self.links_list if
+        list_of_refs = [link for link in self.link_list if
                         link.get("link_type") == "reference"]
         seen = set()  # set of link_texts that were already checked
         for link in list_of_refs:
@@ -240,8 +197,8 @@ class LinkChecker:
                     if tested_link.get("link_text").lower() == link_txt \
                             and link != tested_link:  # ignore same dicts
                         self.errors.append(ErrorMessage(
-                            "Reference \"{}\" is duplicated on lines {} "
-                            "and {}.".format(link.get("link_text"),
+                            _("Reference \"{}\" is duplicated on lines {} "
+                            "and {}.").format(link.get("link_text"),
                                              link.get("line_no"),
                                              tested_link.get("line_no")),
                             link.get("line_no"),
@@ -253,14 +210,14 @@ class LinkChecker:
         If this is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
         link_txt = link.get("link_text").lower()
-        for tested_link in self.links_list:
+        for tested_link in self.link_list:
             if tested_link.get("link_type") == "labeled" \
                     and tested_link.get("link").lower() == link_txt:
                 return  # it is ok, link has been found
         self.errors.append(
-            ErrorMessage("A link for the reference \"{}\" does not exist. "
+            ErrorMessage(_("A link for the reference \"{}\" does not exist. "
                          "Please write a link in a form [{}] link to the"
-                         " markdown file or remove the reference."
+                         " markdown file or remove the reference.")
                          .format(link_txt, link_txt), link.get("line_no"),
                          link.get("file_path")))
 
@@ -284,7 +241,7 @@ class LinkChecker:
             self.target_exists(parsed_url.path, link, file_path)
             # when the link is within lecture, it should be examined in detail
             if is_within_lecture(file_path):
-                if self.check_extension(parsed_url.path, link):
+                if self.is_correct_extension(parsed_url.path, link):
                     # checking .md existence and anchors only for non-images
                     if not link.get("is_image"):
                         if self.target_md_file_exists(parsed_url.path, link,
@@ -299,16 +256,16 @@ class LinkChecker:
 
     @staticmethod
     def starts_with_excepted_string(string):
-        """This method detect, if the string is not false positively detected
-        as a path by urlparse. This could happen, e.g. when somebody forgets
-        to write http:// and write www.google.de. String that should be ignored
-        are saved in the EXCEPTED_STRING_STARTS as regex patterns."""
+        """This method detect whether the string is not false positively
+        detected as a path by urlparse. This could happen, e.g. when somebody
+        forgets to write http:// and write www.google.de. String that should be
+        ignored are saved in the EXCEPTED_STRING_STARTS as regex patterns."""
         for start in EXCEPTED_STRING_STARTS:
             if string.lower().startswith(start):
                 return True
         return False
 
-    def check_extension(self, path, link):
+    def is_correct_extension(self, path, link):
         """Checks the correct extension of the file in the given path. It
         should exist and correspond to the allowed ones. Method returns True,
         if the file in the given path has correct extension, False otherwise.
@@ -318,14 +275,14 @@ class LinkChecker:
 
         if path.rfind(".") < 0:  # no extension
             self.errors.append(ErrorMessage(
-                "Link path \"{}\" has no extension, but it should be {}."
+                _("Link path \"{}\" has no extension, but it should be {}.")
                     .format(path, format_extensions_list(extensions)),
                 link.get("line_no"), link.get("file_path")))
             return False
         # search fo last comma and extension is what follows it
         elif path[path.rfind(".") + 1:].lower() not in extensions:
             self.errors.append(ErrorMessage(
-                "Link path \"{}\" has .{} extension, but it should be {}."
+                _("Link path \"{}\" has .{} extension, but it should be {}.")
                 .format(path, path[path.rfind(".") + 1:],
                         format_extensions_list(extensions)),
                 link.get("line_no"), link.get("file_path")))
@@ -333,20 +290,20 @@ class LinkChecker:
         return True  # everything OK
 
     def target_exists(self, parsed_path, link, file_path):
-        """Checks, if the target file exists. """
+        """Checks whether the target file exists. """
         if not os.path.exists(file_path):
             self.errors.append(
                 ErrorMessage(
-                    "The file \"{}\" given by the reference \"{}\" does not "
-                    "exist.".format(parsed_path, link.get("link_text")),
+                    _("The file \"{}\" given by the reference \"{}\" does not "
+                    "exist.").format(parsed_path, link.get("link_text")),
                     link.get("line_no"), link.get("file_path")))
 
     def target_md_file_exists(self, parsed_path, link, file_path):
         """Within the lecture structure, hypertext files are generated from
         .md files. Therefore, source .md file existence should be checked. """
-        file_path_md = replace_web_extension_with_md(file_path)
+        file_path_md = "{}.{}".format(os.path.splitext(file_path)[0], 'md')
         if not os.path.exists(file_path_md):
-            error_message = ("The source .md file for hypertext file \"{}\" "
+            error_message = _("The source .md file for hypertext file \"{}\" "
                              "does not exist.".format(parsed_path))
             self.errors.append(ErrorMessage(
                 error_message, link.get("line_no"), link.get("file_path")))
@@ -358,8 +315,8 @@ class LinkChecker:
         # open file, its existence should be already checked
         path = self.get_files_full_path(parsed_url.path, link)
         if path not in self.__cached_headings:
-            self.load_headings_to_dict(path)
-            self.load_html_ids_to_dict(path)
+            self.load_headings(path)
+            self.load_ids(path)
 
         for heading in self.__cached_headings[path]:  # search in headings
             if heading.get_id() == parsed_url.fragment:
@@ -369,8 +326,8 @@ class LinkChecker:
                 return  # anchor was found
 
         self.errors.append(
-            ErrorMessage("The anchor \"{}\" was not found in the \"{}\" "
-                         "file.".format(parsed_url.fragment, path),
+            ErrorMessage(_("The anchor \"{}\" was not found in the \"{}\" "
+                         "file.").format(parsed_url.fragment, path),
                          link.get("line_no"), link.get("file_path")))
 
     @staticmethod
@@ -382,9 +339,9 @@ class LinkChecker:
 
         full_path = os.path.realpath(os.path.join(os.path.dirname(
             link.get("file_path")), path))
-        return replace_web_extension_with_md(full_path)
+        return "{}.{}".format(os.path.splitext(full_path)[0], 'md')
 
-    def load_headings_to_dict(self, path):
+    def load_headings(self, path):
         """This method loads headings into the __cached_headings attribute
         (dictionary). This dictionary prevents loading same files repeatedly
         if links are pointing on the same files.
@@ -394,7 +351,7 @@ class LinkChecker:
         self.__cached_headings[path] = mparser.extract_headings_from_par(
             paragraphs)
 
-    def load_html_ids_to_dict(self, path):
+    def load_ids(self, path):
         """This method loads ids of div and span elements into
         self.__cashed_html_ids attribute (dictionary). This dictionary prevents
         loading same files repeatedly if links are pointing on the same files.

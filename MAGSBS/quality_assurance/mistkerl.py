@@ -37,7 +37,7 @@ from .all_formats import *
 from .latex import *
 from .markdown import *
 from .meta import *
-from .linkchecker import *
+from .linkchecker import LinkExtractor, LinkChecker
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
@@ -190,9 +190,8 @@ class Mistkerl():
         """This method runs the linkchecker. First, it extracts the links
         using link extractor. Then it executes all checks of links and,
         finally, add them as errors. """
-        links = LinkExtractor()
-        links.parse_all_links_in_md_files(file_tree)
-        link_check = LinkChecker(links.links_list, self.__cached_headings)
+        links = LinkExtractor(file_tree)
+        link_check = LinkChecker(links.link_list, self.__cached_headings)
         link_check.run_checks()
         for err in link_check.errors:
             self.__append_error(err.path, err)

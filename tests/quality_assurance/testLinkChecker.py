@@ -16,21 +16,11 @@ class TestHelpingFunctions(unittest.TestCase):
         self.assertEqual(linkchecker.format_extensions_list(
             ["jpg", "bmp", "svg", "png"]), ".jpg, .bmp, .svg or .png")
 
-    def test_replace_web_extension(self):
-        self.assertEqual(linkchecker.replace_web_extension_with_md(""), "")
-        self.assertEqual(linkchecker.replace_web_extension_with_md("no_dot"),
-                         "no_dot")
-        for ext in linkchecker.WEB_EXTENSIONS:
-            self.assertEqual(linkchecker.replace_web_extension_with_md(
-                "test/k01." + ext), "test/k01.md")
-            self.assertEqual(linkchecker.replace_web_extension_with_md(
-                "test.more.dots.k01." + ext), "test.more.dots.k01.md")
-
 
 class TestLinkExtractor(unittest.TestCase):
 
     def test_create_dct(self):
-        extractor = linkchecker.LinkExtractor()
+        extractor = linkchecker.LinkExtractor([])
         self.assertEqual(
             extractor.create_dct("file.md", "path", 5, "reference",
                                  (True, "text", "link")),
@@ -67,7 +57,7 @@ class TestLinkExtractor(unittest.TestCase):
             "file": "f", "file_path": "p", "link_type":
             "reference", "line_no": 1, "is_image": False, "link": "l"}
 
-        extractor = linkchecker.LinkExtractor()
+        extractor = linkchecker.LinkExtractor([])
         self.assertTrue(extractor.check_dict_integrity(correct_link))
         self.assertFalse(extractor.check_dict_integrity(string_not_dct))
         self.assertFalse(extractor.check_dict_integrity(empty_dict))
@@ -86,21 +76,6 @@ class TestLinkChecker(unittest.TestCase):
     def get_path(link):
         parsed = urlparse(link.get("link"))
         return parsed.path
-
-    def test_check_correct_email(self):
-        correct_link = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 1, "is_image": False, "link": "mailto: jones@gmail.com"}
-        wrong_link = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 5, "is_image": False, "link": "mailto: fail@.@gml.com"}
-
-        checker = linkchecker.LinkChecker([])
-        checker.check_correct_email_address(correct_link)
-        self.assertEqual(checker.errors, [])
-        checker.check_correct_email_address(wrong_link)
-        self.assertEqual(len(checker.errors), 1)
-        self.assertEqual(checker.errors[0].lineno, 5)
 
     def test_coupling_references(self):
         test_links = [
@@ -133,13 +108,13 @@ class TestLinkChecker(unittest.TestCase):
         self.assertEqual(checker.errors[0].lineno, 8)
 
         checker = linkchecker.LinkChecker(test_links)
-        checker.find_reference_for_link(correct_foot)
+        checker.find_label_for_link(correct_foot)
         self.assertEqual(checker.errors, [])
-        checker.find_reference_for_link(wrong_foot)
+        checker.find_label_for_link(wrong_foot)
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 12)
 
-    def test_check_extension(self):
+    def test_correct_extension(self):
         correct_link = {
             "file": "file.md", "file_path": "path", "link_type": "reference",
             "line_no": 10, "is_image": False, "link": "k01.html",
@@ -158,13 +133,13 @@ class TestLinkChecker(unittest.TestCase):
             "link_text": "1"}
 
         checker = linkchecker.LinkChecker([])
-        checker.check_extension(self.get_path(correct_link), correct_link)
+        checker.is_correct_extension(self.get_path(correct_link), correct_link)
         self.assertEqual(checker.errors, [])
-        checker.check_extension(self.get_path(img_instead_html),
+        checker.is_correct_extension(self.get_path(img_instead_html),
                                 img_instead_html)
-        checker.check_extension(self.get_path(html_instead_img),
+        checker.is_correct_extension(self.get_path(html_instead_img),
                                 html_instead_img)
-        checker.check_extension(self.get_path(incorrect_link),
+        checker.is_correct_extension(self.get_path(incorrect_link),
                                 incorrect_link)
         self.assertEqual(len(checker.errors), 3)
         for i in range(len(checker.errors)):
@@ -180,7 +155,7 @@ class TestLinkChecker(unittest.TestCase):
              "link_text": "k01.html"}]
 
         checker = linkchecker.LinkChecker(test_links)
-        checker.find_reference_duplicates()
+        checker.find_label_duplicates()
         self.assertEqual(checker.errors, [])
 
         test_links.append(
@@ -193,7 +168,7 @@ class TestLinkChecker(unittest.TestCase):
              "link_text": "k01.html"})
 
         checker = linkchecker.LinkChecker(test_links)
-        checker.find_reference_duplicates()
+        checker.find_label_duplicates()
         self.assertEqual(len(checker.errors), 2)
         self.assertTrue(checker.errors[0].lineno, 1)
         self.assertTrue(checker.errors[1].lineno, 2)
