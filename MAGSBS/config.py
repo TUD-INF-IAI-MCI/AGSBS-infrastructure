@@ -65,10 +65,7 @@ def setup_i18n():
             trans = gettext.translation("matuc", localedir=CONFIG_DIR,
                 languages=[locale.getdefaultlocale()[0][:2]])
         except FileNotFoundError:
-            from .common import WarningRegistry
-            WarningRegistry().register_warning(("No localisation information "
-                    "found, falling back to English"))
-            # ^: trans is already initialised
+            pass # use English without noise
     trans.install()
 
 

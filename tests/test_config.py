@@ -61,6 +61,7 @@ class Testconf(unittest.TestCase):
         write(c)
         conf('path', '0.9').read() # this registers the warning
         warns = common.WarningRegistry().get_warnings()
+        print(repr(warns))
         self.assertEqual(len(warns), 1)
 
     def test_unparseable_version_number_raises(self):

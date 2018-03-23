@@ -335,3 +335,207 @@ class TestCodeBlockRemoval(unittest.TestCase):
                 "Expected {} in data, but not found.  Got: ".format(start, data))
         self.assertEqual(data[3][0].strip(), '')
 
+#  ###########################################################################
+# test link extraction
+
+
+class TestLinkExtractor(unittest.TestCase):
+    # Note: Test cases are taken from https://pandoc.org/MANUAL.html#links
+    # and https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
+
+    def make_comparison(self, inputs, outputs, test_name):
+        for i, in_string in enumerate(inputs):  # take all inputs
+            result = mp.find_links_in_markdown(in_string)
+            # first test, if the number of results is as expected
+            self.assertTrue(
+                len(outputs[i]) == len(result),
+                "{}: Returned list for string \"{}\" contains "
+                "({}) triple(s), but ({}) expected.".format(
+                    test_name, inputs[i], len(result), len(outputs[i])))
+            self.assertEqual(result, outputs[i])
+
+    def test_parsing_inline_links(self):
+        test_inputs = [
+            "\nThis is an [inline link](/url), \n and here's [one with \n a "
+            "title](http://fsf.org \"click here for a good time!\").",
+            "[Write me!](mailto:sam@green.eggs.ham)",
+            "[I'm an inline-style link](https://www.google.com)",
+            "[I'm an inline-style link with title](https://www.google.com"
+            " \"Google's Homepage\")"]
+        test_outputs = [
+            [(2, "inline", (False, "inline link", "/url")),
+             (3, "inline", (False, "one with \n a title", "http://fsf.org"))],
+            [(1, "inline", (False, "Write me!", "mailto:sam@green.eggs.ham"))],
+            [(1, "inline", (False, "I'm an inline-style link",
+                            "https://www.google.com"))],
+            [(1, "inline", (False, "I'm an inline-style link with title",
+                            "https://www.google.com"))]
+            ]
+        self.make_comparison(test_inputs, test_outputs, "Inline links")
+
+    def test_labeled_links(self):
+        test_inputs = [
+            "[I'm a reference-style link][Arbitrary case-insensitive text]",
+            "![You can use numbers for reference - style link definitions][1]"]
+        test_outputs = [
+            [(1, "labeled", (False, "I'm a reference-style link",
+                             "Arbitrary case-insensitive text"))],
+            [(1, "labeled", (True, "You can use numbers for reference - style "
+                                   "link definitions", "1"))]
+        ]
+        self.make_comparison(test_inputs, test_outputs, "Labeled links")
+
+    def test_reference_links(self):
+        test_inputs = [
+            "[my label 1]: /foo/bar.html  \"My title, optional\"",
+            "[my label 2]: /foo",
+            "[my label 3]: http://fsf.org (The free software foundation)",
+            "[my label 4]: /bar#Special  'A title in single quotes'",
+            "[my label 5]: <http://foo.bar.baz>",
+            "\n[my label 6]: http://fsf.org \n\t\"The free sw foundation\""]
+        test_outputs = [
+            [(1, "reference", (False, "my label 1", "/foo/bar.html"))],
+            [(1, "reference", (False, "my label 2", "/foo"))],
+            [(1, "reference", (False, "my label 3", "http://fsf.org"))],
+            [(1, "reference", (False, "my label 4", "/bar#Special"))],
+            [(1, "reference", (False, "my label 5", "http://foo.bar.baz"))],
+            [(2, "reference", (False, "my label 6", "http://fsf.org"))]
+        ]
+        self.make_comparison(test_inputs, test_outputs, "Reference links")
+
+    def test_standalone_links(self):
+        # standalone links are specific types of labeled links
+        test_inputs = [
+            "See [my website][].",
+            "[1]\n\![test][]\nabc ![test2] def"]
+        test_outputs = [
+            [(1, "labeled", (False, "my website", ""))],
+            [(1, "labeled", (False, "1", "")),
+             (2, "labeled", (False, "test", "")),
+             (3, "labeled", (True, "test2", ""))]]
+        self.make_comparison(test_inputs, test_outputs, "Standalone links")
+
+    def test_nested_inlines(self):
+        test_inputs = ["[![Bildbeschreibung](bilder/test.jpg)](bilder.html#"
+                       "title-of-the-graphic)",
+                       "[ ![Bildbeschreib](bilder/bild1.PNG) ]"
+                       "(bilder.html#bildb)\n\n|| - Seite 4 - \nabc"
+                       "[www.schattauer.de](www.schattauer.de)"]
+        test_outputs = [
+            [(1, "inline", (False, "![Bildbeschreibung](bilder/test.jpg)",
+                                   "bilder.html#title-of-the-graphic")),
+             (1, "inline", (True, "Bildbeschreibung", "bilder/test.jpg"))],
+            [(1, "inline", (False, " ![Bildbeschreib](bilder/bild1.PNG) ",
+                                   "bilder.html#bildb")),
+             (1, "inline", (True, "Bildbeschreib", "bilder/bild1.PNG")),
+             (4, "inline", (False, "www.schattauer.de", "www.schattauer.de")),
+             ]
+        ]
+        self.make_comparison(test_inputs, test_outputs, "Inline nested")
+
+    def test_other_links(self):
+        test_inputs = [
+            "- [x] Finish changes\n[ ] Push my commits to GitHub",
+            "<div><div id=\"my_ID\"/><span></span></div><span/>"
+            "<DiV><DIV id=\"my_id2\"><SPAN>[tEst](#TesT)</SPAN></DiV><SPAN/>",
+            "Seiten: [[15]](#seite-15--),\n [[20]](#seite-20--)",
+            " \[RT\], errors) or biological (electromyographic \[EMG\]",
+            "[a\[], [\]], [\[\]] and \n[](\])",
+            "[po\\\[abc\\\][d]kus\](normal)",
+            "\![image](google.jpg)",
+            r"\\[this\\\[this not\]\\]"
+            ]
+        test_outputs = [
+            [(1, "labeled", (False, "x", "")),
+             (2, "labeled", (False, " ", ""))],
+            [(1, "inline", (False, "tEst", "#TesT"))],
+            [(1, "inline", (False, "[15]", "#seite-15--")),
+             (1, "labeled", (False, "15", "")),
+             (2, "inline", (False, "[20]", "#seite-20--")),
+             (2, "labeled", (False, "20", ""))],
+            [],
+            [(1, "labeled", (False, "a\[", "")),
+             (1, "labeled", (False, "\]", "")),
+             (1, "labeled", (False, "\[\]", "")),
+             (2, "inline", (False, "", "\]"))],
+            [(1, 'labeled', (False, "po\\\\[abc\\\\][d]kus\\](normal", "")),
+             (1, 'labeled', (False, "abc\\\\", "d"))],
+            [(1, "inline", (False, "image", "google.jpg"))],
+            [(1, "labeled", (False, r"this\\\[this not\]\\", ""))]
+            ]
+        self.make_comparison(test_inputs, test_outputs, "Other links")
+
+    def test_line_nums(self):
+        test_inputs = [
+            "\n[second]\n![third][]\n\n[fif\nth](k01.md)\nab [second]: k07.md"]
+        test_outputs = [
+            [(2, "labeled", (False, "second", "")),
+             (3, "labeled", (True, "third", "")),
+             (5, "inline", (False, "fif\nth", "k01.md")),
+             (7, "reference", (False, "second", "k07.md"))]]
+        self.make_comparison(test_inputs, test_outputs, "Line numbers")
+
+    def test_reference_footnotes(self):
+        test_inputs = [
+            "[^1]: [k05025](k0502.html#head-1) asdsad\nasdsad\n\nabc",
+            "[^2]: not to be tested",
+            "[^3]: test\n",
+            "![^extended]: http://fsf.org \n(SW foundation)\n\nabc"]
+        test_outputs = [
+            [(1, "reference_footnote", (
+                 False, "^1", "[k05025](k0502.html#head-1) asdsad\nasdsad")),
+             (1, "inline", (False, "k05025", "k0502.html#head-1"))],
+            [(1, "reference_footnote", (False, "^2", "not to be tested"))],
+            [(1, "reference_footnote", (False, "^3", "test\n"))],
+            [(1, "reference_footnote", (
+                True, "^extended", "http://fsf.org \n(SW foundation)"))]
+        ]
+        self.make_comparison(test_inputs, test_outputs, "Reference links")
+
+    def test_formulas(self):
+        test_inputs = [
+            "Formula (e.g. $\sqrt[5]{8547799037)}$.",
+            "$$ blok formula [no] [detection](test) \n nor [ref]:abc.com $$",
+            "\$ there is [formula] \$",
+            "\$ not even in [link \$ test]: reference"
+        ]
+        test_outputs = [
+            [],
+            [],
+            [(1, "labeled", (False, "formula", ""))],
+            [(1, "reference", (False, "link \$ test", "reference"))]
+        ]
+        self.make_comparison(test_inputs, test_outputs, "Reference links")
+
+
+#  ###########################################################################
+# test id detection
+
+
+class TestElementsIdsExtractor(unittest.TestCase):
+
+    def out_msg(self, message):
+        return "Result is {}".format(message)
+
+    def test_long_entry(self):
+        res = mp.get_html_elements_ids_from_document(
+            "<div id=\"first\"></div><div id='second'>something <div>\n"
+            "<span id=\"3\">\n\n</span>")
+        self.assertEqual(res, {"first", "second", "3"}, msg=self.out_msg(res))
+
+    def test_short_entry(self):
+        res = mp.get_html_elements_ids_from_document(
+            "<div id=\"1\"/><span id='2_nd'/>")
+        self.assertEqual(res, {"1", "2_nd"}, msg=self.out_msg(res))
+
+    def test_no_id_entry(self):
+        res = mp.get_html_elements_ids_from_document(
+            "<div></div><div/><span></span></span><div id=\"\"/>"
+            "<span id=''></span>")
+        self.assertEqual(res, set(), msg=self.out_msg(res))
+
+    def test_more_attributes(self):
+        res = mp.get_html_elements_ids_from_document(
+            "<div class=\"test\" id=\"1\"/><span id='2_nd' test='test'/>"
+            "<span middle='2_nd' id=\"middle\" test='test'/>")
+        self.assertEqual(res, {"1", "2_nd", "middle"}, msg=self.out_msg(res))

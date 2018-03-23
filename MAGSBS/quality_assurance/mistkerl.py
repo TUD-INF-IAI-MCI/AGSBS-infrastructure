@@ -37,6 +37,7 @@ from .all_formats import *
 from .latex import *
 from .markdown import *
 from .meta import *
+from .linkchecker import LinkExtractor, LinkChecker
 
 class Mistkerl():
     """Wrapper which wraps different levels of errors."""
@@ -120,6 +121,8 @@ class Mistkerl():
                     self.__append_error(path, e)
                     continue
                 self.__run_filters_on_file(file_path, paragraphs)
+        # call linkchecker
+        self.__run_linkchecker(file_tree)
         # the last directory must be processed, even though there was no directory
         # change
         self.run_directory_filters(directoryname)
@@ -183,6 +186,16 @@ class Mistkerl():
         for issue in self.get_issues(MistakeType.formulas, file_path):
             self.__append_error(file_path, issue.run(formulas))
 
+    def __run_linkchecker(self, file_tree):
+        """This method runs the linkchecker. First, it extracts the links
+        using link extractor. Then it executes all checks of links and,
+        finally, add them as errors. """
+        links = LinkExtractor(file_tree)
+        link_check = LinkChecker(links.link_list, self.__cached_headings)
+        link_check.run_checks()
+        for err in link_check.errors:
+            self.__append_error(err.path, err)
+
     def run_directory_filters(self, dname):
         """Run all filters depending on the output of a directory."""
         if self.__cache_pnums:
@@ -220,4 +233,3 @@ class Mistkerl():
                     " maintain readability, the file should be split into files"
                     "with less than {count} lines by naming them like "
                     "kXXYY.md.").format(count=threshold), last_par, file_path)
-
