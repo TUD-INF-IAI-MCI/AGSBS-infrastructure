@@ -162,19 +162,19 @@ class LinkChecker:
 
     def find_label_for_link(self, link):
         """Labels (shortcut reference link) should be connected to the
-        "reference(_footnote)" link with []: syntax. Otherwise it cannot be
+        "reference(_footnote)" label with []: syntax. Otherwise it cannot be
         paired together. If this is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
-        link_ref = link.get("link").lower()
+        link_label = link.get("link").lower()
         for tested_link in self.link_list:
             if tested_link.get("link_type") in \
                     {"reference", "reference_footnote"} \
-                    and tested_link.get("link_text").lower() == link_ref:
+                    and tested_link.get("link_text").lower() == link_label:
                 return  # it is ok, reference has been found
         self.errors.append(
-            ErrorMessage(_("A reference to the link \"{}\" does not exist. "
-                           "Please write a reference in a form [{}]: link to "
-                           "the markdown file.").format(link_ref, link_ref),
+            ErrorMessage(_("A link with label \"{0}\" does not exist. "
+                           "Please write a link in a form [{0}]: link to "
+                           "the markdown file.").format(link_label),
                          link.get("line_no"), link.get("file_path")))
 
     def find_label_duplicates(self):
