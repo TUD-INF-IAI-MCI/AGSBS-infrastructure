@@ -64,7 +64,7 @@ class LinkExtractor:
         "link_type": type of the link - this should be as follows:
             "inline": basic inline link in square brackets, syntax;
             "labeled": labeled link that is referenced somewhere else
-                in the document;
+                in the document (shortcut reference link);
             "reference": reference to the labeled links.
                 References' titles are not detected as they are not
                 relevant to the link testing;
@@ -140,7 +140,7 @@ class LinkChecker:
     Parsed headings are taken from the mistkerl to avoid opening same files
     repeatedly.
     """
-    def __init__(self, links_list, headings={}):
+    def __init__(self, links_list, headings):
         self.errors = []  # generated errors
         self.link_list = links_list
         # following attributes are used for loading data from files, therefore

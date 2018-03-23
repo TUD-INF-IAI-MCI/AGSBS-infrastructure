@@ -100,14 +100,14 @@ class TestLinkChecker(unittest.TestCase):
             "file": "file.md", "file_path": "path", "link_type": "labeled",
             "line_no": 12, "is_image": False, "link": "incorrect_reference"}
 
-        checker = linkchecker.LinkChecker(test_links)
+        checker = linkchecker.LinkChecker(test_links, {})
         checker.find_link_for_reference(correct_ref)
         self.assertEqual(checker.errors, [])
         checker.find_link_for_reference(wrong_ref)
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 8)
 
-        checker = linkchecker.LinkChecker(test_links)
+        checker = linkchecker.LinkChecker(test_links, {})
         checker.find_label_for_link(correct_foot)
         self.assertEqual(checker.errors, [])
         checker.find_label_for_link(wrong_foot)
@@ -132,7 +132,7 @@ class TestLinkChecker(unittest.TestCase):
             "line_no": 3, "is_image": True, "link": "k01.md",
             "link_text": "1"}
 
-        checker = linkchecker.LinkChecker([])
+        checker = linkchecker.LinkChecker([], {})
         checker.is_correct_extension(self.get_path(correct_link), correct_link)
         self.assertEqual(checker.errors, [])
         checker.is_correct_extension(self.get_path(img_instead_html),
@@ -154,7 +154,7 @@ class TestLinkChecker(unittest.TestCase):
              "line_no": 2, "is_image": False, "link": "1",
              "link_text": "k01.html"}]
 
-        checker = linkchecker.LinkChecker(test_links)
+        checker = linkchecker.LinkChecker(test_links, {})
         checker.find_label_duplicates()
         self.assertEqual(checker.errors, [])
 
@@ -167,7 +167,7 @@ class TestLinkChecker(unittest.TestCase):
              "line_no": 4, "is_image": False, "link": "1",
              "link_text": "k01.html"})
 
-        checker = linkchecker.LinkChecker(test_links)
+        checker = linkchecker.LinkChecker(test_links, {})
         checker.find_label_duplicates()
         self.assertEqual(len(checker.errors), 2)
         self.assertTrue(checker.errors[0].lineno, 1)
@@ -180,7 +180,7 @@ class TestLinkChecker(unittest.TestCase):
             "line_no": 1, "is_image": False, "link": "nonsenspath with space",
             "link_text": "my_reference"}
 
-        checker = linkchecker.LinkChecker([])
+        checker = linkchecker.LinkChecker([], {})
         checker.target_exists(self.get_path(link), link,
                               "nonsenspath with space")
         self.assertEqual(len(checker.errors), 1)
@@ -196,7 +196,7 @@ class TestLinkChecker(unittest.TestCase):
              "link_text": "my_reference"}
         ]
 
-        checker = linkchecker.LinkChecker(links)
+        checker = linkchecker.LinkChecker(links, {})
         checker.run_checks()
 
         self.assertEqual(checker.errors, [])
