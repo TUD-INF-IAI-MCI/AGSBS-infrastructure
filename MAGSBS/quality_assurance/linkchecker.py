@@ -26,6 +26,8 @@ from urllib.parse import urlparse
 from .. import mparser
 from .meta import ErrorMessage
 from ..common import is_within_lecture
+from ..datastructures import Reference
+
 
 WEB_EXTENSIONS = ["html"]
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "svg"]
@@ -55,91 +57,53 @@ def get_list_of_md_files(file_tree):
 
 
 class LinkExtractor:
-    """Parses all links, images and footnote references in the .md files.
-    Each entry is stored in the dictionary that has following structure:
+    """Parses all links, images and footnotes (i.e. all references in the .md
+    files. Each entry is stored in the dictionary that has following structure:
         "file": name of the file, where the link is stored;
         "file_path": full path to the file, where the link is stored;
-        "link_type": type of the link - this should be as follows:
-            "inline": basic inline link in square brackets, syntax;
-            "labeled": labeled link that is referenced somewhere else
-                in the document (shortcut reference link);
-            "reference": reference to the labeled links.
-                References' titles are not detected as they are not
-                relevant to the link testing;
-            "reference_footnote": reference that has ^ as a first character
-                in label. This contains longer text;
-        "line_no": number of line on which link is matched;
-        "is_image": 'True' if the link is a picture, 'False' otherwise
-        "link": link;
-        "link_text": link description, if exists.
-        All dictionaries are added to the link_list attribute.
+        "reference": instance of the class Reference.
+    All dictionaries are added to the reference_list attribute.
     Note: This class assumes that markdown links are correctly structured
         according to the rules specified by pandoc manual, available at
         https://pandoc.org/MANUAL.html#links """
     def __init__(self, file_tree):
-        self.link_list = []  # dicts of links generated in the examined files
+        self.reference_list = []  # dicts of references in the examined files
 
         for file_path, file_name in get_list_of_md_files(file_tree):
             # encoding of the file should be already checked
             with open(file_path, encoding="utf-8") as file_data:
                 # call the function for finding links
                 data = mparser.find_links_in_markdown(file_data.read())
-                for line_no, link_type, link in data:
-                    new_dct = self.create_dct(file_name, file_path, line_no,
-                                              link_type, link)
-                    if self.check_dict_integrity(new_dct):  # correct data
-                        self.link_list.append(new_dct)
+                for reference in data:
+                    new_dct = self.create_dct(file_name, file_path, reference)
+                    self.reference_list.append(new_dct)
 
     @staticmethod
-    def create_dct(file_name, file_path, line_no, link_type, link):
+    def create_dct(file_name, file_path, reference):
         """This method generates the dictionary that contains all the
         important data for the link examination. """
-        if not isinstance(link, tuple) or len(link) != 3:
+        if not isinstance(reference, Reference):
             raise TypeError(
-                "The processed link part of data tuple given by parser does "
-                "not have correct type {} (should be tuple) or correct "
-                "length {} (should be 3).".format(type(link), len(link)))
+                "The data given by the parser does not have correct "
+                "type Reference, but {}.".format(type(reference)))
 
         link_dict = dict()
         link_dict["file"] = file_name
         link_dict["file_path"] = file_path
-        link_dict["link_type"] = link_type
-        link_dict["line_no"] = line_no
-        link_dict["is_image"] = link[0]
-
-        if not link[2]:  # standalone - type "text [link] text text"
-            link_dict["link"] = link[1]
-        else:  # other labeled links, references and inline links"
-            link_dict["link_text"] = link[1]
-            link_dict["link"] = link[2]
+        link_dict["reference"] = reference
 
         return link_dict
 
-    @staticmethod
-    def check_dict_integrity(dct):
-        """This method checks the data in the dictionary and returns True,
-        if they are correct, False otherwise. This is needed to ensure, that
-        LinkChecker class gets the correct data and, therefore, no additional
-        data structure testing is needed. """
-        if not isinstance(dct, dict):
-            return False
-        if not all(key in dct for key in ("file", "file_path", "link_type",
-                                          "line_no", "is_image", "link")):
-            return False
-        if dct.get("link_type") == "reference" and "link_text" not in dct:
-            return False
-        return True
-
 
 class LinkChecker:
-    """This class is checking the extracted links. It allows system to check
-    their structure as well as the internal files, where links are pointing.
-    All errors are saved in the public attribute self.errors.
+    """This class is checking the extracted references. It allows system to
+    check their structure as well as the internal files, where links are
+    pointing. All errors are saved in the public attribute self.errors.
     Parsed headings are taken from the mistkerl to avoid opening same files
     repeatedly. """
-    def __init__(self, links_list, headings):
+    def __init__(self, reference_list, headings):
         self.errors = []  # generated errors
-        self.link_list = links_list
+        self.reference_list = reference_list
         # following attributes are used for loading data from files, therefore
         # it is not necessary to load and parse them repeatedly
         # dictionary with headings
@@ -150,32 +114,34 @@ class LinkChecker:
     def run_checks(self):
         """This methods runs all available checks within this class. """
         self.find_label_duplicates()  # check duplicate labels
-        for link in self.link_list:
-            if link.get("link_type") == "labeled":
+        for reference_dict in self.reference_list:
+            reference = reference_dict.get("reference")
+            if reference.get_type() == "labeled":
                 # links should be connected somewhere
-                self.find_label_for_link(link)
-            if link.get("link_type") == {"reference", "reference_footnote"}:
+                self.find_label_for_link(reference_dict)
+            if reference.get_type() == {"reference"}:
                 # reference should be called
-                self.find_link_for_reference(link)
-            if link.get("link_type") in {"reference", "inline"}:
-                self.check_target_availability(link)
+                self.find_link_for_reference(reference_dict)
+            if reference.get_type() in {"reference", "inline"}:
+                self.check_target_availability(reference_dict)
 
-    def find_label_for_link(self, link):
+    def find_label_for_link(self, reference_dct):
         """Labels (shortcut reference link) should be connected to the
         "reference(_footnote)" label with []: syntax. Otherwise it cannot be
         paired together. If this is not satisfied, an error message is created.
         Note: Links are not case sensitive. """
-        link_label = link.get("link").lower()
-        for tested_link in self.link_list:
-            if tested_link.get("link_type") in \
-                    {"reference", "reference_footnote"} \
-                    and tested_link.get("link_text").lower() == link_label:
+        reference_id = reference_dct.get("reference").get_link().lower()
+        for tested_reference_dct in self.reference_list:
+            tested_reference = tested_reference_dct.get("reference")
+            if tested_reference.get_type() == "reference" \
+                    and tested_reference.get_id().lower() == reference_id:
                 return  # it is ok, reference has been found
         self.errors.append(
             ErrorMessage(_("A link with label \"{0}\" does not exist. "
                            "Please write a link in a form [{0}]: link to "
-                           "the markdown file.").format(link_label),
-                         link.get("line_no"), link.get("file_path")))
+                           "the markdown file.").format(reference_id),
+                         reference_dct.get("line_no"),
+                         reference_dct.get("file_path")))
 
     def find_label_duplicates(self):
         """Labels for reference links should not be duplicated in the file,
@@ -183,7 +149,7 @@ class LinkChecker:
         Note: If the links with same label are completely the same then they
         are not reported. """
         # check only references
-        list_of_labels = [link for link in self.link_list if
+        list_of_labels = [link for link in self.reference_list if
                           link.get("link_type") == "reference"]
         seen = set()  # set of link_texts (labels) that were already checked
         for link in list_of_labels:
@@ -207,7 +173,7 @@ class LinkChecker:
         an error message is created.
         Note: Links are not case sensitive. """
         link_txt = link.get("link_text").lower()
-        for tested_link in self.link_list:
+        for tested_link in self.reference_list:
             if tested_link.get("link_type") == "labeled" \
                     and tested_link.get("link").lower() == link_txt:
                 return  # it is ok, link has been found
