@@ -270,3 +270,47 @@ class PageNumber:
         Note: this is one of the MAGSBS-syntax extensions."""
         return '|| - %s %s -' % (self.identifier, str(self))
 
+
+class Reference:
+    """This class represents a reference to ease handling of the references."""
+    def __init__(self, ref_type, is_image, identifier=None, link=None,
+                 is_footnote=False, line_number=None):
+        self.__type = ref_type
+        self.__is_image = is_image
+        self.__is_footnote = is_footnote
+        self.__id = identifier
+        self.__link = self.clear_link(link)
+        self.__line_number = line_number
+
+    def get_line_number(self):
+        return self.__line_number
+
+    def get_type(self):
+        return self.__type
+
+    def get_is_image(self):
+        return self.__is_image
+
+    def get_is_footnote(self):
+        return self.__is_footnote
+
+    def get_id(self):
+        return self.__id
+
+    def get_link(self):
+        return self.__link
+
+    def set_line_number(self, line_number):
+        self.__line_number = line_number
+
+    def clear_link(self, link):
+        """This function removes the opening angle bracket from the beginning
+        of the link and closing angle bracket from the link end. """
+        if not link or len(link) < 2:
+            return None
+
+        if link[0] == "<":
+            link = link[1:]
+        if link[len(link) - 1] == ">":
+            link = link[:len(link) - 1]
+        return link

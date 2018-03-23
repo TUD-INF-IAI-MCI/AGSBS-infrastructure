@@ -14,16 +14,16 @@ Note: This parser expects the file with correct markdown links (e.g. no spaces
 
 import re
 
+from ..datastructures import Reference
+
 # Regexp for finding ids within div and span html elements
 IDS_REGEX = re.compile(r"<(?:div|span).*?id=[\"'](\S+?)[\"']")
 
 
 def find_links_in_markdown(text, init_lineno=1):
     """This function parses the text written in markdown and creates the list
-    of triples about the links. Each triple has following structure:
-      (line number of link, type of link, (link triple), where link triple is:
-      (True if ! is before [, False otherwise, link or link text, link or
-      empty string). Last two parts are based on link structure. """
+    of instances of Reference class. It contains all information about the
+    reference: reference_type, line_number, id, link, is_image, is_footnote."""
     output = []
     lineno = init_lineno  # number of lines that were examined
     processed = 0  # specify the number of chars that were already processed
@@ -42,18 +42,22 @@ def find_links_in_markdown(text, init_lineno=1):
         # find the potential beginning of link (ignore the masked bracket and
         # cases when [ is within formula)
         if text[processed] == "[" and not escape_next and not is_in_formula:
-            res = extract_link(text[max(0, processed - 2):])
-            if res:  # result processing
-                link = clear_link(res[4])  # remove redundant chars like < or >
-                output.append((lineno, res[1], (res[2], res[3], link)))
-                # there should be some inner links within line text
-                for inner_link in find_links_in_markdown(res[3], lineno):
-                    output.append(inner_link)
-                # there should be some inner links in link itself
-                for inner_link in find_links_in_markdown(link, lineno):
-                    output.append(inner_link)
+            lines, reference = extract_link(text[max(0, processed - 2):])
+            if reference:  # result processing
+                reference.set_line_number(lineno)
+                output.append(reference)
+                # there should be some inner references within line text
+                if reference.get_id():
+                    for inner_reference in find_links_in_markdown(
+                            reference.get_id(), lineno):
+                        output.append(inner_reference)
+                # there should be some inner references in link itself
+                if reference.get_link():
+                    for inner_reference in find_links_in_markdown(
+                            reference.get_link(), lineno):
+                        output.append(inner_reference)
                 # need to recalculate the processed char and number of lines
-                for _ in range(processed, processed + res[0] - 1):
+                for _ in range(processed, processed + lines - 1):
                     processed += 1
                     if processed < len(text) and text[processed] == "\n":
                         lineno += 1
@@ -65,9 +69,9 @@ def find_links_in_markdown(text, init_lineno=1):
 
 
 def extract_link(text):
-    """This function extract the link itself from the input text. Parameter
-    text should contain opening square bracket. Then it is resolved and
-    the link triple is returned.
+    """This function extract the reference itself from the input
+    text. Parameter text should contain opening square bracket.
+    Then it is resolved and the instance of Reference class is returned.
     """
     procs = text.find("[")
     image_char, is_footnote = detect_image_footnote(text[:procs + 2], procs)
@@ -76,31 +80,35 @@ def extract_link(text):
     first_part = get_text_inside_brackets(text[procs:])
     procs += first_part[0]
 
-    if procs < len(text) and text[procs] == "[":  # solve labeled
+    # solve labeled
+    if procs < len(text) - 1 and text[procs] == "[" and text[procs + 1] != "]":
         second_part = get_text_inside_brackets(text[procs:])
-        return procs + second_part[0], "labeled", image_char, first_part[1], \
-            second_part[1]
-    elif procs < len(text) and text[procs] == "(":  # solve inline
+        return procs + second_part[0], Reference("labeled", image_char,
+                                            identifier=second_part[1])
+    elif procs < len(text) and text[procs] == "(":  # solve inline links
         second_part = get_text_inside_brackets(text[procs:])
         second_part_str = second_part[1]
         if second_part_str.find(" ") != -1:
             second_part_str = second_part_str[:second_part_str.find(" ")]
-        return procs, "inline", image_char, first_part[1], second_part_str
-    elif procs < len(text) and text[procs] == ":":  # solve reference
-        if is_footnote:
+        return procs, Reference("inline", image_char, identifier=first_part[1],
+                           link=second_part_str)
+    elif procs < len(text) and text[procs] == ":":  # solve reference links
+        if is_footnote:  # footnote reference link
             end_index = text[procs:].find("\n\n")
             # no two newlines there till end of string
             end_index = len(text) if end_index < 0 else end_index + procs
 
-            return procs + end_index, "reference_footnote", image_char, \
-                first_part[1], text[procs + 2:end_index]
-        # normal reference, search for space after ": "
+            return procs + end_index, Reference("reference", image_char,
+                                                identifier=first_part[1],
+                                                link=text[procs + 2:end_index],
+                                                is_footnote=True)
+        # normal reference link, search for space after ": "
         end_index = text[procs:].find(" ", 2)
         end_index = len(text) if end_index < 0 else end_index + procs
-        return end_index, "reference", image_char, first_part[1], \
-            text[procs + 2:end_index]
+        return end_index, Reference("reference", image_char, first_part[1],
+                               text[procs + 2:end_index])
     # nothing from previous
-    return procs, "labeled", image_char, first_part[1], ""
+    return procs, Reference("labeled", image_char, identifier=first_part[1])
 
 
 def detect_image_footnote(text, index):
@@ -151,20 +159,6 @@ def get_text_inside_brackets(text):
         procs += 1
 
     return procs, output[:-1]
-
-
-def clear_link(string):
-    """This function removes the opening angle bracket from the beginning of
-     the string and closing angle bracket from the strings end. """
-    if len(string) < 2:
-        return string
-
-    output = string
-    if output[0] == "<":
-        output = output[1:]
-    if output[len(output) - 1] == ">":
-        output = output[:len(output) - 1]
-    return output
 
 
 def get_html_elements_ids_from_document(document):

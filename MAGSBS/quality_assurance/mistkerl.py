@@ -190,10 +190,11 @@ class Mistkerl():
         """This method runs the linkchecker. First, it extracts the links
         using link extractor. Then it executes all checks of links and,
         finally, add them as errors. """
-        links = LinkExtractor(file_tree)
-        link_check = LinkChecker(links.link_list, self.__cached_headings)
-        link_check.run_checks()
-        for err in link_check.errors:
+        references = LinkExtractor(file_tree)
+        reference_check = LinkChecker(references.reference_list,
+                                 self.__cached_headings)
+        reference_check.run_checks()
+        for err in reference_check.errors:
             self.__append_error(err.path, err)
 
     def run_directory_filters(self, dname):
