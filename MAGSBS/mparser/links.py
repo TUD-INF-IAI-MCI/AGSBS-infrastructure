@@ -16,14 +16,20 @@ import re
 
 from ..datastructures import Reference
 
+
 # Regexp for finding ids within div and span html elements
 IDS_REGEX = re.compile(r"<(?:div|span).*?id=[\"'](\S+?)[\"']")
 
 
 def find_links_in_markdown(text, init_lineno=1):
     """This function parses the text written in markdown and creates the list
-    of instances of Reference class. It contains all information about the
-    reference: reference_type, line_number, id, link, is_image, is_footnote."""
+    of instances of class Reference that contain following information:
+    reference_type, line_number, id, link, is_image, is_footnote, file_name,
+    file_path. Note, that some pieces of information are not filled by this
+    function.
+    Note: This function assumes that markdown links are correctly structured
+    according to the rules specified by pandoc manual, available at
+    https://pandoc.org/MANUAL.html#links """
     output = []
     lineno = init_lineno  # number of lines that were examined
     processed = 0  # specify the number of chars that were already processed
@@ -83,32 +89,33 @@ def extract_link(text):
     # solve labeled
     if procs < len(text) - 1 and text[procs] == "[" and text[procs + 1] != "]":
         second_part = get_text_inside_brackets(text[procs:])
-        return procs + second_part[0], Reference("labeled", image_char,
-                                            identifier=second_part[1])
-    elif procs < len(text) and text[procs] == "(":  # solve inline links
+        return procs + second_part[0], Reference(
+            Reference.Type.IMPLICIT, image_char, identifier=second_part[1])
+    elif procs < len(text) and text[procs] == "(":  # inline links
         second_part = get_text_inside_brackets(text[procs:])
         second_part_str = second_part[1]
         if second_part_str.find(" ") != -1:
             second_part_str = second_part_str[:second_part_str.find(" ")]
-        return procs, Reference("inline", image_char, identifier=first_part[1],
-                           link=second_part_str)
-    elif procs < len(text) and text[procs] == ":":  # solve reference links
-        if is_footnote:  # footnote reference link
+        return procs, Reference(Reference.Type.INLINE, image_char,
+                                identifier=first_part[1], link=second_part_str)
+    elif procs < len(text) and text[procs] == ":":  # explicit reference links
+        if is_footnote:  # explicit reference to footnote
             end_index = text[procs:].find("\n\n")
             # no two newlines there till end of string
             end_index = len(text) if end_index < 0 else end_index + procs
 
-            return procs + end_index, Reference("reference", image_char,
-                                                identifier=first_part[1],
-                                                link=text[procs + 2:end_index],
-                                                is_footnote=True)
-        # normal reference link, search for space after ": "
+            return procs + end_index, \
+                Reference(Reference.Type.EXPLICIT, image_char,
+                          identifier=first_part[1],
+                          link=text[procs + 2:end_index], is_footnote=True)
+        # explicit reference, ends with first space after ": "
         end_index = text[procs:].find(" ", 2)
         end_index = len(text) if end_index < 0 else end_index + procs
-        return end_index, Reference("reference", image_char, first_part[1],
-                               text[procs + 2:end_index])
-    # nothing from previous
-    return procs, Reference("labeled", image_char, identifier=first_part[1])
+        return end_index, Reference(Reference.Type.EXPLICIT, image_char,
+                                    first_part[1], text[procs + 2:end_index])
+    # nothing from previous = implicit reference link
+    return procs, Reference(Reference.Type.IMPLICIT, image_char,
+                            identifier=first_part[1])
 
 
 def detect_image_footnote(text, index):
@@ -134,7 +141,8 @@ def detect_image_footnote(text, index):
 def get_text_inside_brackets(text):
     """Function extracts the text inside brackets. Note that same brackets
     can be content of the text, however the number of opening and closing
-    brackets should be same. Escaped brackets are ignored. """
+    brackets should be same. Escaped brackets are ignored. Only square brackets
+    and parentheses are allowed. """
     if not text or text[0] not in {"(", "["}:
         return None
 
@@ -155,7 +163,6 @@ def get_text_inside_brackets(text):
         escape_next = True if text[procs] == "\\" and not escape_next \
             else False
         output += text[procs]
-
         procs += 1
 
     return procs, output[:-1]

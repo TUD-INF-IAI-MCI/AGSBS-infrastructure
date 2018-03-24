@@ -56,43 +56,20 @@ def get_list_of_md_files(file_tree):
     return md_file_list
 
 
-class LinkExtractor:
+def extract_links(file_tree):
     """Parses all links, images and footnotes (i.e. all references in the .md
-    files. Each entry is stored in the dictionary that has following structure:
-        "file": name of the file, where the link is stored;
-        "file_path": full path to the file, where the link is stored;
-        "reference": instance of the class Reference.
-    All dictionaries are added to the reference_list attribute.
-    Note: This class assumes that markdown links are correctly structured
-        according to the rules specified by pandoc manual, available at
-        https://pandoc.org/MANUAL.html#links """
-    def __init__(self, file_tree):
-        self.reference_list = []  # dicts of references in the examined files
-
-        for file_path, file_name in get_list_of_md_files(file_tree):
-            # encoding of the file should be already checked
-            with open(file_path, encoding="utf-8") as file_data:
-                # call the function for finding links
-                data = mparser.find_links_in_markdown(file_data.read())
-                for reference in data:
-                    new_dct = self.create_dct(file_name, file_path, reference)
-                    self.reference_list.append(new_dct)
-
-    @staticmethod
-    def create_dct(file_name, file_path, reference):
-        """This method generates the dictionary that contains all the
-        important data for the link examination. """
-        if not isinstance(reference, Reference):
-            raise TypeError(
-                "The data given by the parser does not have correct "
-                "type Reference, but {}.".format(type(reference)))
-
-        link_dict = dict()
-        link_dict["file"] = file_name
-        link_dict["file_path"] = file_path
-        link_dict["reference"] = reference
-
-        return link_dict
+    files. It return the list of References. """
+    reference_list = []  # list of references in the examined files
+    for file_path, file_name in get_list_of_md_files(file_tree):
+        # encoding of the file should be already checked
+        with open(file_path, encoding="utf-8") as file_data:
+            # call the function for finding links
+            data = mparser.find_links_in_markdown(file_data.read())
+            for reference in data:
+                reference.set_file_name(file_name)
+                reference.set_file_path(file_path)
+                reference_list.append(reference)
+    return reference_list
 
 
 class LinkChecker:
