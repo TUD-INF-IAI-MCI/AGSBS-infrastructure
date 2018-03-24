@@ -314,7 +314,7 @@ class Reference:
         return self.__file_name
 
     def get_file_path(self):
-        return self.__file_path()
+        return self.__file_path
 
     def set_line_number(self, new_line_number):
         self.__line_number = new_line_number
