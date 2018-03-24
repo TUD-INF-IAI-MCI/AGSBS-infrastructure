@@ -272,15 +272,25 @@ class PageNumber:
 
 
 class Reference:
-    """This class represents a reference to ease handling of the references."""
+    """This class represents a reference to ease handling of the references.
+    For specifying type of reference Reference.Type is used, which is an enum.
+    """
+    class Type(enum.Enum):
+        INLINE = 0  # inline link in form [text](link)
+        EXPLICIT = 1  # explicit reference link in form [label]:
+        IMPLICIT = 2
+        # ^ implicit reference link: [label][], [label] or [text][label]
+
     def __init__(self, ref_type, is_image, identifier=None, link=None,
                  is_footnote=False, line_number=None):
-        self.__type = ref_type
-        self.__is_image = is_image
-        self.__is_footnote = is_footnote
-        self.__id = identifier
-        self.__link = self.clear_link(link)
-        self.__line_number = line_number
+        self.__type = ref_type  # type of reference
+        self.__is_image = is_image  # True if reference represents an image
+        self.__is_footnote = is_footnote  # True if ref is a footnote
+        self.__id = identifier  # identifier of the link
+        self.__link = self.clear_link(link)  # link itself
+        self.__line_number = line_number  # line number where ref occurs
+        self.__file_name = None  # file where reference occurs
+        self.__file_path = None  # full path of the file where ref occurs
 
     def get_line_number(self):
         return self.__line_number
@@ -300,12 +310,25 @@ class Reference:
     def get_link(self):
         return self.__link
 
-    def set_line_number(self, line_number):
-        self.__line_number = line_number
+    def get_file_name(self):
+        return self.__file_name
 
-    def clear_link(self, link):
+    def get_file_path(self):
+        return self.__file_path()
+
+    def set_line_number(self, new_line_number):
+        self.__line_number = new_line_number
+
+    def set_file_name(self, new_file_name):
+        self.__file_name = new_file_name
+
+    def set_file_path(self, new_file_path):
+        self.__file_path = new_file_path
+
+    @staticmethod
+    def clear_link(link):
         """This function removes the opening angle bracket from the beginning
-        of the link and closing angle bracket from the link end. """
+        of the link and closing angle bracket from the link end."""
         if not link or len(link) < 2:
             return None
 
