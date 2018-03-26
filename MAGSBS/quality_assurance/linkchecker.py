@@ -109,9 +109,10 @@ class LinkChecker:
         an error message is created.
         Note: Identifiers are not case sensitive. """
         ref_id = reference.get_id().lower()
-        for tested_reference in self.reference_list:
-            if tested_reference.get_type() == Reference.Type.EXPLICIT \
-                    and tested_reference.get_id().lower() == ref_id:
+        for tested_ref in self.reference_list:
+            if tested_ref.get_type() == Reference.Type.EXPLICIT \
+                    and tested_ref.get_id().lower() == ref_id and \
+                    tested_ref.get_file_path() == reference.get_file_path():
                 return  # it is ok, identifier has been found
         self.errors.append(
             ErrorMessage(_("An explicit reference with identifier \"{0}\" does"
@@ -155,13 +156,14 @@ class LinkChecker:
         ref_id = reference.get_id().lower()
         for tested_ref in self.reference_list:
             if tested_ref.get_type() == Reference.Type.IMPLICIT \
-                    and tested_ref.get_id().lower() == ref_id:
+                    and tested_ref.get_id().lower() == ref_id and \
+                    tested_ref.get_file_path() == reference.get_file_path():
                 return  # it is ok, same identifier has been found
         self.errors.append(
             ErrorMessage(_("Implicit reference with the identifier \"{0}\" "
                            "does not exist. Please write a reference in a form"
                            " [{0}] in the markdown file or remove the explicit"
-                           "reference [{0}]: {1}.")
+                           " reference [{0}]: {1}.")
                          .format(ref_id, reference.get_link()),
                          reference.get_line_number(),
                          reference.get_file_path()))
@@ -304,4 +306,4 @@ class LinkChecker:
         """
         with open(path, encoding="utf-8") as file:
             self.__cashed_html_ids[path] = \
-                mparser.get_html_elements_ids_from_document(file.read())
+                mparser.get_html_elements_identifiers(file.read())

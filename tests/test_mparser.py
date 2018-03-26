@@ -573,24 +573,24 @@ class TestElementsIdsExtractor(unittest.TestCase):
         return "Result is {}".format(message)
 
     def test_long_entry(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div id=\"first\"></div><div id='second'>something <div>\n"
             "<span id=\"3\">\n\n</span>")
         self.assertEqual(res, {"first", "second", "3"}, msg=self.out_msg(res))
 
     def test_short_entry(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div id=\"1\"/><span id='2_nd'/>")
         self.assertEqual(res, {"1", "2_nd"}, msg=self.out_msg(res))
 
     def test_no_id_entry(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div></div><div/><span></span></span><div id=\"\"/>"
             "<span id=''></span>")
         self.assertEqual(res, set(), msg=self.out_msg(res))
 
     def test_more_attributes(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div class=\"test\" id=\"1\"/><span id='2_nd' test='test'/>"
             "<span middle='2_nd' id=\"middle\" test='test'/>")
         self.assertEqual(res, {"1", "2_nd", "middle"}, msg=self.out_msg(res))

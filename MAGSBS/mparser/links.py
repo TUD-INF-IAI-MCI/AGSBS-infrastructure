@@ -48,7 +48,10 @@ def find_links_in_markdown(text, init_lineno=1):
         # find the potential beginning of link (ignore the masked bracket and
         # cases when [ is within formula)
         if text[processed] == "[" and not escape_next and not is_in_formula:
-            lines, reference = extract_link(text[max(0, processed - 2):])
+            beginning = processed - max(0, processed - 2)
+            chars, reference = extract_link(text[processed - beginning:])
+            # chars recalculation - beginning should not be counted twice
+            chars = chars - beginning
             # result processing, but not when it is a to-do list
             if reference and not is_todo_or_empty(reference):
                 reference.set_line_number(lineno)
@@ -64,7 +67,7 @@ def find_links_in_markdown(text, init_lineno=1):
                             reference.get_link(), lineno):
                         output.append(inner_reference)
                 # need to recalculate the processed char and number of lines
-                for _ in range(processed, processed + lines - 1):
+                for _ in range(processed, processed + chars):
                     processed += 1
                     if processed < len(text) and text[processed] == "\n":
                         lineno += 1
@@ -90,14 +93,16 @@ def extract_link(text):
     if procs < len(text) - 1 and text[procs] == "[" and text[procs + 1] != "]":
         second_part = get_text_inside_brackets(text[procs:])
         return procs + second_part[0], Reference(
-            Reference.Type.IMPLICIT, image_char, identifier=second_part[1])
+            Reference.Type.IMPLICIT, image_char, identifier=second_part[1],
+            is_footnote=is_footnote)
     elif procs < len(text) and text[procs] == "(":  # inline links
         second_part = get_text_inside_brackets(text[procs:])
         second_part_str = second_part[1]
         if second_part_str.find(" ") != -1:
             second_part_str = second_part_str[:second_part_str.find(" ")]
-        return procs, Reference(Reference.Type.INLINE, image_char,
-                                identifier=first_part[1], link=second_part_str)
+        return procs + second_part[0], Reference(
+            Reference.Type.INLINE, image_char, identifier=first_part[1],
+            link=second_part_str)
     elif procs < len(text) and text[procs] == ":":  # explicit reference links
         if is_footnote:  # explicit reference to footnote
             end_index = text[procs:].find("\n\n")
@@ -108,14 +113,13 @@ def extract_link(text):
                 Reference(Reference.Type.EXPLICIT, image_char,
                           identifier=first_part[1],
                           link=text[procs + 2:end_index], is_footnote=True)
-        # explicit reference, ends with first space after ": "
-        end_index = text[procs:].find(" ", 2)
-        end_index = len(text) if end_index < 0 else end_index + procs
-        return end_index, Reference(Reference.Type.EXPLICIT, image_char,
-                                    first_part[1], text[procs + 2:end_index])
+        # explicit reference link, is ended by first whitespace after ": "
+        link = text[procs + 1:].split(None, 1)[0]
+        return procs + len(link), Reference(Reference.Type.EXPLICIT,
+                                                image_char, first_part[1], link)
     # nothing from previous = implicit reference link
     return procs, Reference(Reference.Type.IMPLICIT, image_char,
-                            identifier=first_part[1])
+                            identifier=first_part[1], is_footnote=is_footnote)
 
 
 def detect_image_footnote(text, index):
@@ -142,7 +146,9 @@ def get_text_inside_brackets(text):
     """Function extracts the text inside brackets. Note that same brackets
     can be content of the text, however the number of opening and closing
     brackets should be same. Escaped brackets are ignored. Only opening square
-    brackets or parentheses are allowed as a opening character. """
+    brackets or parentheses are allowed as a opening character. Function
+    returns double - first part contains number of processed characters,
+    the second one contains extracted text. """
     if not text or text[0] not in {"(", "["}:
         return None
 
@@ -177,7 +183,7 @@ def is_todo_or_empty(reference):
         and reference.get_id().lower() in (" ", "x", "")
 
 
-def get_html_elements_ids_from_document(document):
+def get_html_elements_identifiers(document):
     """Returns a set of ids (of html elements) in a markdown document. Only
     elements allowed in matuc are processed (currently div and span elements).
     Note: When other type of element(s) are allowed, the IDS_REGEX constant
