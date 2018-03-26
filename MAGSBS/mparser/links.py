@@ -25,10 +25,10 @@ def find_links_in_markdown(text, init_lineno=1):
     """This function parses the text written in markdown and creates the list
     of instances of class Reference that contain following information:
     reference_type, line_number, id, link, is_image, is_footnote, file_name,
-    file_path. Note, that some pieces of information are not filled by this
-    function.
-    Note: This function assumes that markdown links are correctly structured
-    according to the rules specified by pandoc manual, available at
+    file_path. Note, that some pieces of information should not be filled by
+    this function.
+    Note: This function assumes that markdown references are correctly
+    structured according to the rules specified in pandoc manual, available at
     https://pandoc.org/MANUAL.html#links """
     output = []
     lineno = init_lineno  # number of lines that were examined
@@ -76,10 +76,9 @@ def find_links_in_markdown(text, init_lineno=1):
 
 
 def extract_link(text):
-    """This function extract the reference itself from the input
-    text. Parameter text should contain opening square bracket.
-    Then it is resolved and the instance of Reference class is returned.
-    """
+    """This function extracts the reference itself from the input text.
+    Parameter text should contain opening square bracket.
+    Then it is resolved and new instance of Reference class is returned. """
     procs = text.find("[")
     image_char, is_footnote = detect_image_footnote(text[:procs + 2], procs)
 
@@ -122,10 +121,10 @@ def extract_link(text):
 def detect_image_footnote(text, index):
     """Function detects whether the text in brackets represents an image or
     footnote. Images have the not escaped exclamation mark before opening
-    square brackets. Footnote has the "^" sign right after opening square
-    brackets. Function returns a tuple of two boolean values, first is True
-    if text in brackets represent image (False otherwise), second is True
-    if it represents footnote (False otherwise). """
+    square bracket. Footnote has the "^" sign right after opening square
+    bracket. Function returns a tuple of two boolean values, first is True
+    if text in brackets represents an image (False otherwise), second is True
+    if it represents a footnote (False otherwise). """
     if index > 1:
         is_image = text[0] != "\\" and text[1] == "!"
     elif index > 0:
@@ -142,8 +141,8 @@ def detect_image_footnote(text, index):
 def get_text_inside_brackets(text):
     """Function extracts the text inside brackets. Note that same brackets
     can be content of the text, however the number of opening and closing
-    brackets should be same. Escaped brackets are ignored. Only square brackets
-    and parentheses are allowed. """
+    brackets should be same. Escaped brackets are ignored. Only opening square
+    brackets or parentheses are allowed as a opening character. """
     if not text or text[0] not in {"(", "["}:
         return None
 
@@ -170,6 +169,8 @@ def get_text_inside_brackets(text):
 
 
 def is_todo_list(reference):
+    """This methods returns True if the reference represents todo list in
+    markdown format (i.e. in format [ ] or [x]), False otherwise."""
     if reference.get_type() != Reference.Type.IMPLICIT:
         return False
     return reference.get_type() == Reference.Type.IMPLICIT and \

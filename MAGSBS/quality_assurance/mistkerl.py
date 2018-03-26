@@ -189,8 +189,8 @@ class Mistkerl():
     def __run_linkchecker(self, file_tree):
         """This method runs the linkchecker. First, it extracts the references
         using extract_references function. Then it executes all checks of
-        links in references. Detected errors are reported using
-        append_error method. """
+        links in references and their identifiers. Detected errors are
+        reported using append_error method. """
         reference_list = extract_links(file_tree)
         reference_check = LinkChecker(reference_list, self.__cached_headings)
         reference_check.run_checks()
