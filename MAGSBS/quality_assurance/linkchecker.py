@@ -98,8 +98,8 @@ class LinkChecker:
             if reference.get_type() == Reference.Type.EXPLICIT:
                 # identifier should exist for it
                 self.find_link_for_identifier(reference)
-            if reference.get_type() in {Reference.Type.EXPLICIT,
-                                        Reference.Type.INLINE}:
+            if not reference.get_is_footnote() and reference.get_type() \
+                    in {Reference.Type.EXPLICIT, Reference.Type.INLINE}:
                 self.check_target_availability(reference)
 
     def find_label_for_link(self, reference):
@@ -115,8 +115,8 @@ class LinkChecker:
                 return  # it is ok, identifier has been found
         self.errors.append(
             ErrorMessage(_("An explicit reference with identifier \"{0}\" does"
-                           "not exist. Please write an explicit reference in a"
-                           " form [{0}]: link to the markdown file.")
+                           " not exist. Please write an explicit reference in"
+                           " a form \"[{0}]: link\" to the markdown file.")
                          .format(ref_id), reference.get_line_number(),
                          reference.get_file_path()))
 
@@ -140,8 +140,8 @@ class LinkChecker:
                         self.errors.append(ErrorMessage(
                             _("Identifier \"{}\" for reference is duplicated "
                               "on lines {} and {}.")
-                                .format(ref_id, ref.get_line_number(),
-                                        tested_ref.get_line_number()),
+                            .format(ref_id, ref.get_line_number(),
+                                    tested_ref.get_line_number()),
                             ref.get_line_number,
                             ref.get_file_path))
 
@@ -260,6 +260,7 @@ class LinkChecker:
         path = self.get_files_full_path(parsed_url.path, reference)
         if path not in self.__cached_headings:
             self.load_headings(path)
+        if path not in self.__cashed_html_ids:
             self.load_ids(path)
 
         for heading in self.__cached_headings[path]:  # search in headings
