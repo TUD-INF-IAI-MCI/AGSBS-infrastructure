@@ -46,7 +46,7 @@ def format_extensions_list(extensions):
 
 def get_list_of_md_files(file_tree):
     """This method creates a list of tuples that contain paths and file
-    name of .md files which links should be tested. """
+    name of .md files which references should be extracted and tested. """
     md_file_list = []
     for directory_name, _, file_list in file_tree:
         for file in file_list:
@@ -58,7 +58,7 @@ def get_list_of_md_files(file_tree):
 
 def extract_links(file_tree):
     """Parses all links, images and footnotes (i.e. all references in the .md
-    files. It return the list of References. """
+    files). It return the list of instances of Reference class. """
     reference_list = []  # list of references in the examined files
     for file_path, file_name in get_list_of_md_files(file_tree):
         # encoding of the file should be already checked
@@ -74,10 +74,10 @@ def extract_links(file_tree):
 
 class LinkChecker:
     """This class is checking the extracted references. It allows system to
-    check their structure as well as the internal files, where links are
-    pointing. All errors are saved in the public attribute self.errors.
-    Parsed headings are taken from the mistkerl to avoid opening same files
-    repeatedly. """
+    check their identifiers as well as the existence of internal files,
+    where links are pointing. All errors are saved in the public attribute
+    self.errors. Parsed headings are taken from the mistkerl to avoid opening
+    same files repeatedly. """
     def __init__(self, reference_list, headings):
         self.errors = []  # generated errors
         self.reference_list = reference_list
@@ -107,7 +107,7 @@ class LinkChecker:
         "identifier of the explicit reference with syntax [identifier]: link.
         Otherwise it cannot be paired together. If this is not satisfied,
         an error message is created.
-        Note: Links are not case sensitive. """
+        Note: Identifiers are not case sensitive. """
         ref_id = reference.get_id().lower()
         for tested_reference in self.reference_list:
             if tested_reference.get_type() == Reference.Type.EXPLICIT \
@@ -146,9 +146,9 @@ class LinkChecker:
                             ref.get_file_path))
 
     def find_link_for_identifier(self, reference):
-        """Explicit links should be connected to the Implicit link with the
-        same identifier. Otherwise it should not be paired together. If this
-        is not satisfied, an error message is created.
+        """Explicit reference should be connected to the implicit reference
+        with the same identifier. Otherwise it should not be paired together.
+        If this is not satisfied, an error message is created.
         Note: Identifiers are not case sensitive. """
         ref_id = reference.get_id().lower()
         for tested_ref in self.reference_list:
@@ -165,11 +165,10 @@ class LinkChecker:
                          reference.get_file_path()))
 
     def check_target_availability(self, reference):
-        """Makes the checks according to the path given in the link within
-        reference. This method executes the checks based on the given reference
-        type, its structure and file, where link points. It takes only files
-        to be tested. Moreover, some tests are triggered only when they are
-        in a lecture structure. """
+        """Checks the links in the explicit (not footnote) or inline
+        references. This method executes the checks based on the given
+        reference type, its structure and file, where the link points.
+        Some tests are triggered only when they are in a lecture structure."""
         parsed_url = urlparse(reference.get_link())
         # True if it is a file in a file structure; excepted strings removes
         # false positives
@@ -255,12 +254,11 @@ class LinkChecker:
         return True
 
     def target_anchor_exists(self, parsed_url, reference):
-        """Detects if the anchored element within .md file exists. """
-        # open file, its existence should be already checked
+        """Detects whether the anchored element within .md file exists. """
         path = self.get_files_full_path(parsed_url.path, reference)
-        if path not in self.__cached_headings:
+        if path not in self.__cached_headings:  # if not in cache, load them
             self.load_headings(path)
-        if path not in self.__cashed_html_ids:
+        if path not in self.__cashed_html_ids:  # if not in cache, load them
             self.load_ids(path)
 
         for heading in self.__cached_headings[path]:  # search in headings
@@ -279,7 +277,7 @@ class LinkChecker:
     @staticmethod
     def get_files_full_path(path, reference):
         """This method returns the full path of the file that should be
-        investigated for the anchor."""
+        investigated to find the anchor."""
         if not path:
             return reference.get_file_path()
 
@@ -290,7 +288,7 @@ class LinkChecker:
     def load_headings(self, path):
         """This method loads headings into the __cached_headings attribute
         (dictionary). This dictionary prevents loading same files repeatedly
-        if links are pointing on the same files.
+        if links are pointing to the same files.
         """
         with open(path, encoding="utf-8") as file:
             paragraphs = mparser.file2paragraphs(file.read())
@@ -300,7 +298,7 @@ class LinkChecker:
     def load_ids(self, path):
         """This method loads ids of div and span elements into
         self.__cashed_html_ids attribute (dictionary). This dictionary prevents
-        loading same files repeatedly if links are pointing on the same files.
+        loading same files repeatedly if links are pointing to the same files.
         """
         with open(path, encoding="utf-8") as file:
             self.__cashed_html_ids[path] = \
