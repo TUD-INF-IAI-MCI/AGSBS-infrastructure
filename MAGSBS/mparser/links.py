@@ -50,7 +50,7 @@ def find_links_in_markdown(text, init_lineno=1):
         if text[processed] == "[" and not escape_next and not is_in_formula:
             lines, reference = extract_link(text[max(0, processed - 2):])
             # result processing, but not when it is a to-do list
-            if reference and not is_todo_list(reference):
+            if reference and not is_todo_or_empty(reference):
                 reference.set_line_number(lineno)
                 output.append(reference)
                 # there should be some inner references within line text
@@ -168,14 +168,13 @@ def get_text_inside_brackets(text):
     return procs, output[:-1]
 
 
-def is_todo_list(reference):
-    """This methods returns True if the reference represents todo list in
-    markdown format (i.e. in format [ ] or [x]), False otherwise."""
-    if reference.get_type() != Reference.Type.IMPLICIT:
-        return False
+def is_todo_or_empty(reference):
+    """This methods returns True if the implicit reference represents
+    todo list in markdown format (i.e. in format [ ] or [x]) or identifier
+    is empty, False otherwise."""
     return reference.get_type() == Reference.Type.IMPLICIT and \
         not reference.get_link() \
-        and reference.get_id().lower() in (" ", "x")
+        and reference.get_id().lower() in (" ", "x", "")
 
 
 def get_html_elements_ids_from_document(document):
