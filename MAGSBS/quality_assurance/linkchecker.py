@@ -135,15 +135,17 @@ class LinkChecker:
                 ref_id = ref.get_id().lower()
                 seen.add(ref_id)  # add as seen
                 for tested_ref in list_of_labels:
-                    if tested_ref.get_id().lower() == ref_id \
+                    # refs have to be in same file and have same identifier
+                    if tested_ref.get_file_path() == ref.get_file_path() \
+                            and tested_ref.get_id().lower() == ref_id \
                             and ref != tested_ref:  # ignore same dicts
                         self.errors.append(ErrorMessage(
                             _("Identifier \"{}\" for reference is duplicated "
                               "on lines {} and {}.")
                             .format(ref_id, ref.get_line_number(),
                                     tested_ref.get_line_number()),
-                            ref.get_line_number,
-                            ref.get_file_path))
+                            ref.get_line_number(),
+                            ref.get_file_path()))
 
     def find_link_for_identifier(self, reference):
         """Explicit reference should be connected to the implicit reference
