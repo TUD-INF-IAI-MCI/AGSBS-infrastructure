@@ -446,7 +446,8 @@ class TestLinkParser(unittest.TestCase):
                        "title-of-the-graphic)",
                        "[ ![Bildbeschreib](bilder/bild1.PNG) ]"
                        "(bilder.html#bildb)\n\n|| - Seite 4 - \nabc"
-                       "[www.schattauer.de](www.schatt.de)"]
+                       "[www.schattauer.de](www.schatt.de)",
+                       "[^1]: [k05025](bilder.html#heading-1) asdsad"]
         test_outputs = [
             [Reference(Reference.Type.INLINE, False,
                        "![Bildbeschreibung](bilder/test.jpg)",
@@ -459,8 +460,11 @@ class TestLinkParser(unittest.TestCase):
              Reference(Reference.Type.INLINE, True, "Bildbeschreib",
                        "bilder/bild1.PNG", False, 1),
              Reference(Reference.Type.INLINE, False, "www.schattauer.de",
-                       "www.schatt.de", False, 4)
-             ]
+                       "www.schatt.de", False, 4)],
+            [Reference(Reference.Type.EXPLICIT, False, "^1",
+                       "[k05025](bilder.html#heading-1) asdsad", True, 1),
+             Reference(Reference.Type.INLINE, False,
+                       "k05025", "bilder.html#heading-1", False, 1)]
         ]
         self.make_comparison(test_inputs, test_outputs, "Inline nested")
 
@@ -477,8 +481,7 @@ class TestLinkParser(unittest.TestCase):
             r"\\[this\\\[this not\]\\]"
             ]
         test_outputs = [
-            [Reference(Reference.Type.IMPLICIT, False, "x", None, False, 1),
-             Reference(Reference.Type.IMPLICIT, False, " ", None, False, 2)],
+            [],
             [Reference(Reference.Type.INLINE, False, "tEst", "#TesT", False,
                        1)],
             [Reference(Reference.Type.INLINE, False, "[15]", "#seite-15--",
@@ -532,7 +535,7 @@ class TestLinkParser(unittest.TestCase):
             [Reference(Reference.Type.EXPLICIT, True, "^extended",
                        "http://fsf.org \n(Foundation)", True, 1)]
         ]
-        self.make_comparison(test_inputs, test_outputs, "Reference links")
+        self.make_comparison(test_inputs, test_outputs, "Footnote links")
 
     def test_formulas(self):
         test_inputs = [
@@ -549,8 +552,15 @@ class TestLinkParser(unittest.TestCase):
             [Reference(Reference.Type.EXPLICIT, False, "link \$ test",
                        "reference", False, 1)]
         ]
-        self.make_comparison(test_inputs, test_outputs, "Reference links")
+        self.make_comparison(test_inputs, test_outputs, "Formula links")
 
+    def test_todolist(self):
+        test_inputs = [
+            "     [ ]",
+            "-  \t  [ ] First:\n\t-\t[ ] Second\n\t-  [x] Filled"]
+        test_outputs = [[], []]
+
+        self.make_comparison(test_inputs, test_outputs, "ToDo links")
 
 #  ###########################################################################
 # test id detection
@@ -558,7 +568,8 @@ class TestLinkParser(unittest.TestCase):
 
 class TestElementsIdsExtractor(unittest.TestCase):
 
-    def out_msg(self, message):
+    @staticmethod
+    def out_msg(message):
         return "Result is {}".format(message)
 
     def test_long_entry(self):
