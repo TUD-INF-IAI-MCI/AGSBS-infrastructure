@@ -273,8 +273,8 @@ class LinkChecker:
                 return  # anchor was found
 
         self.errors.append(
-            ErrorMessage(_("The anchor \"{}\" was not found in the \"{}\" "
-                         "file.").format(parsed_url.fragment, path),
+            ErrorMessage(_("The anchor \"{}\" was not found in the file "
+                           "\"{}\" ").format(parsed_url.fragment, path),
                          reference.get_line_number(),
                          reference.get_file_path()))
 

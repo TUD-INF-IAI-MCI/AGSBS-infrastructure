@@ -109,10 +109,9 @@ def extract_link(text):
             # no two newlines there till end of string
             end_index = len(text) if end_index < 0 else end_index + procs
 
-            return procs + end_index, \
-                Reference(Reference.Type.EXPLICIT, image_char,
-                          identifier=first_part[1],
-                          link=text[procs + 2:end_index], is_footnote=True)
+            return end_index, Reference(
+                Reference.Type.EXPLICIT, image_char, identifier=first_part[1],
+                link=text[procs + 2:end_index], is_footnote=True)
         # explicit reference link, is ended by first whitespace after ": "
         link = text[procs + 1:].split(None, 1)[0]
         return procs + len(link), Reference(Reference.Type.EXPLICIT,
