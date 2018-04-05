@@ -285,7 +285,6 @@ class Reference:
     #pylint: disable=too-many-arguments
     def __init__(self, ref_type, is_image, identifier=None, link=None,
                  is_footnote=False, line_number=None):
-
         self.type = ref_type  # type of reference
         self.is_image = is_image  # True if reference represents an image
         self.is_footnote = is_footnote  # True if ref is a footnote
