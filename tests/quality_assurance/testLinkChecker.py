@@ -3,6 +3,7 @@
 import unittest
 from urllib.parse import urlparse
 
+from MAGSBS.datastructures import Reference
 from MAGSBS.quality_assurance import linkchecker
 
 
@@ -17,186 +18,113 @@ class TestHelpingFunctions(unittest.TestCase):
             ["jpg", "bmp", "svg", "png"]), ".jpg, .bmp, .svg or .png")
 
 
-class TestLinkExtractor(unittest.TestCase):
-
-    def test_create_dct(self):
-        extractor = linkchecker.LinkExtractor([])
-        self.assertEqual(
-            extractor.create_dct("file.md", "path", 5, "reference",
-                                 (True, "text", "link")),
-            {"file": "file.md", "file_path": "path", "link_type": "reference",
-             "line_no": 5, "is_image": True, "link_text": "text",
-             "link": "link"})
-        self.assertEqual(
-            extractor.create_dct("file.md", "path", 5, "labeled",
-                                 (False, "link", "")),
-            {"file": "file.md", "file_path": "path", "link_type": "labeled",
-             "line_no": 5, "is_image": False, "link": "link"})
-
-    def test_check_dict_integrity(self):
-        correct_link = {
-            "file": "f", "file_path": "p", "link_type": "reference",
-            "line_no": 1, "is_image": False, "link": "l", "link_text": "text"}
-        string_not_dct = "I am a fake dictionary."
-        empty_dict = {}
-        missing_link = {
-            "file": "f", "file_path": "p", "link_type": "reference",
-            "line_no": 1, "is_image": False, "link_text": "text"}
-        missing_file = {"file_path": "p", "link_type": "labeled",
-                        "line_no": 5, "is_image": False, "link": "l"}
-        missing_path = {"file": "f", "link_type": "labeled",
-                        "line_no": 5, "is_image": False, "link": "l"}
-        missing_type = {"file_path": "p", "file": "f",
-                        "line_no": 5, "is_image": False, "link": "l"}
-        missing_lineno = {"file_path": "p", "file": "f", "link": "l",
-                          "link_type": "labeled", "is_image": False}
-        incorrect_lineno = {"file": "f", "file_path": "p", "is_image": False,
-                            "link_type": "reference", "line_no": "abc",
-                            "link": "l"}
-        no_link_text_in_ref = {
-            "file": "f", "file_path": "p", "link_type":
-            "reference", "line_no": 1, "is_image": False, "link": "l"}
-
-        extractor = linkchecker.LinkExtractor([])
-        self.assertTrue(extractor.check_dict_integrity(correct_link))
-        self.assertFalse(extractor.check_dict_integrity(string_not_dct))
-        self.assertFalse(extractor.check_dict_integrity(empty_dict))
-        self.assertFalse(extractor.check_dict_integrity(missing_link))
-        self.assertFalse(extractor.check_dict_integrity(missing_file))
-        self.assertFalse(extractor.check_dict_integrity(missing_path))
-        self.assertFalse(extractor.check_dict_integrity(missing_type))
-        self.assertFalse(extractor.check_dict_integrity(missing_lineno))
-        self.assertFalse(extractor.check_dict_integrity(incorrect_lineno))
-        self.assertFalse(extractor.check_dict_integrity(no_link_text_in_ref))
-
-
 class TestLinkChecker(unittest.TestCase):
 
     @staticmethod
-    def get_path(link):
-        parsed = urlparse(link.get("link"))
+    def get_path(reference):
+        parsed = urlparse(reference.get_link())
         return parsed.path
 
     def test_coupling_references(self):
-        test_links = [
-            {"file": "file.md", "file_path": "path", "line_no": 1,
-             "link_type": "reference_footnote", "is_image": False,
-             "link": "k01.html", "link_text": "my_reference"},
-            {"file": "file.md", "file_path": "path", "link_type": "labeled",
-             "line_no": 3, "is_image": False, "link": "1"}]
+        reference_1 = Reference(Reference.Type.EXPLICIT, False,
+                                link="k01.html", identifier="1", line_number=1)
+        reference_2 = Reference(Reference.Type.IMPLICIT, False, identifier="2",
+                                line_number=2)
 
-        correct_ref = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 6, "is_image": False, "link": "k01.html",
-            "link_text": "1"}
-        wrong_ref = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 8, "is_image": False, "link": "k01.html",
-            "link_text": "non-existing link"}
-        correct_foot = {
-            "file": "file.md", "file_path": "path", "link_type": "labeled",
-            "line_no": 10, "is_image": False, "link": "my_reference"}
-        wrong_foot = {
-            "file": "file.md", "file_path": "path", "link_type": "labeled",
-            "line_no": 12, "is_image": False, "link": "incorrect_reference"}
+        reference_expl_ok = Reference(Reference.Type.EXPLICIT, False,
+                                      identifier="2", link="k01.html")
+        reference_expl_nok = Reference(Reference.Type.EXPLICIT, False,
+                                       identifier="non-existing-link",
+                                       link="k01.html", line_number=8)
+        reference_impl_ok = Reference(Reference.Type.IMPLICIT, False,
+                                      identifier="1", link="k01.html",
+                                      line_number=10)
+        reference_impl_nok = Reference(Reference.Type.IMPLICIT, False,
+                                      identifier="incorrect", line_number=12)
 
-        checker = linkchecker.LinkChecker(test_links, {})
-        checker.find_link_for_reference(correct_ref)
+        checker = linkchecker.LinkChecker([reference_2], {})
+        checker.find_link_for_identifier(reference_expl_ok)
         self.assertEqual(checker.errors, [])
-        checker.find_link_for_reference(wrong_ref)
+        checker.find_link_for_identifier(reference_expl_nok)
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 8)
 
-        checker = linkchecker.LinkChecker(test_links, {})
-        checker.find_label_for_link(correct_foot)
+        checker = linkchecker.LinkChecker([reference_1], {})
+        checker.find_label_for_link(reference_impl_ok)
         self.assertEqual(checker.errors, [])
-        checker.find_label_for_link(wrong_foot)
+        checker.find_label_for_link(reference_impl_nok)
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 12)
 
     def test_correct_extension(self):
-        correct_link = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 10, "is_image": False, "link": "k01.html",
-            "link_text": "1"}
-        img_instead_html = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 1, "is_image": True, "link": "k01.html",
-            "link_text": "1"}
-        html_instead_img = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 2, "is_image": False, "link": "k01.jpg",
-            "link_text": "1"}
-        incorrect_link = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 3, "is_image": True, "link": "k01.md",
-            "link_text": "1"}
+        correct_ref = Reference(Reference.Type.EXPLICIT, False,
+                                link="k01.html", line_number=10)
+        html_instead_img = Reference(Reference.Type.EXPLICIT, True,
+                                link="k01.html", line_number=1)
+        jpq_instead_html = Reference(Reference.Type.EXPLICIT, False,
+                                     link="k01.jpg", line_number=2)
+        md_instead_html = Reference(Reference.Type.EXPLICIT, False,
+                                    link="k01.md", line_number=3)
 
         checker = linkchecker.LinkChecker([], {})
-        checker.is_correct_extension(self.get_path(correct_link), correct_link)
+        checker.is_correct_extension(self.get_path(correct_ref), correct_ref)
         self.assertEqual(checker.errors, [])
-        checker.is_correct_extension(self.get_path(img_instead_html),
-                                img_instead_html)
         checker.is_correct_extension(self.get_path(html_instead_img),
-                                html_instead_img)
-        checker.is_correct_extension(self.get_path(incorrect_link),
-                                incorrect_link)
+                                     html_instead_img)
+        checker.is_correct_extension(self.get_path(jpq_instead_html),
+                                     jpq_instead_html)
+        checker.is_correct_extension(self.get_path(md_instead_html),
+                                     md_instead_html)
         self.assertEqual(len(checker.errors), 3)
         for i in range(len(checker.errors)):
             self.assertEqual(checker.errors[i].lineno, i + 1)
 
     def test_duplicities(self):
-        test_links = [
-            {"file": "file.md", "file_path": "path", "link_type": "reference",
-             "line_no": 1, "is_image": False, "link": "k01.html",
-             "link_text": "my_reference"},
-            {"file": "file.md", "file_path": "path", "link_type": "reference",
-             "line_no": 2, "is_image": False, "link": "1",
-             "link_text": "k01.html"}]
+        ref_1 = Reference(Reference.Type.EXPLICIT, False, identifier="link_1",
+                          link="k01.html", line_number=1)
+        ref_2 = Reference(Reference.Type.EXPLICIT, False, identifier="link_2",
+                          link="k01.html", line_number=2)
 
-        checker = linkchecker.LinkChecker(test_links, {})
+        checker = linkchecker.LinkChecker([ref_1, ref_2], {})
         checker.find_label_duplicates()
         self.assertEqual(checker.errors, [])
 
-        test_links.append(
-            {"file": "file.md", "file_path": "path", "link_type": "reference",
-             "line_no": 3, "is_image": False, "link": "k01.html",
-             "link_text": "my_reference"})
-        test_links.append(
-            {"file": "file.md", "file_path": "path", "link_type": "reference",
-             "line_no": 4, "is_image": False, "link": "1",
-             "link_text": "k01.html"})
+        ref_3 = Reference(Reference.Type.EXPLICIT, False, identifier="link_1",
+                          link="k01.html", line_number=1)
+        ref_4 = Reference(Reference.Type.EXPLICIT, False, identifier="link_2",
+                          link="k01.html", line_number=2)
 
-        checker = linkchecker.LinkChecker(test_links, {})
+        checker = linkchecker.LinkChecker([ref_1, ref_2, ref_3], {})
         checker.find_label_duplicates()
-        self.assertEqual(len(checker.errors), 2)
+        self.assertEqual(len(checker.errors), 1)
+        self.assertTrue(checker.errors[0].lineno, 1)
+
+        checker = linkchecker.LinkChecker([ref_1, ref_2, ref_3, ref_4], {})
+        checker.find_label_duplicates()
         self.assertTrue(checker.errors[0].lineno, 1)
         self.assertTrue(checker.errors[1].lineno, 2)
 
     def test_target_exist(self):
         # add testing of hand-made temp file existence
-        link = {
-            "file": "file.md", "file_path": "path", "link_type": "reference",
-            "line_no": 1, "is_image": False, "link": "nonsenspath with space",
-            "link_text": "my_reference"}
+        ref_1 = Reference(Reference.Type.EXPLICIT, False, identifier="link_1",
+                          link="nonsense path with space", line_number=1)
 
         checker = linkchecker.LinkChecker([], {})
-        checker.target_exists(self.get_path(link), link,
+        checker.target_exists(self.get_path(ref_1), ref_1,
                               "nonsenspath with space")
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 1)
 
     def test_www_unchecked(self):
-        links = [
-            {"file": "file.md", "file_path": "path", "link_type": "inline",
-             "line_no": 1, "is_image": False, "link": "WWW.google.de",
-             "link_text": "my_reference"},
-            {"file": "file.md", "file_path": "path", "link_type": "inline",
-             "line_no": 2, "is_image": False, "link": "www.google.cz",
-             "link_text": "my_reference"}
-        ]
+        ref_1 = Reference(Reference.Type.INLINE, False, identifier="link_1",
+                          link="WWW.google.de", line_number=1)
+        ref_2 = Reference(Reference.Type.INLINE, False, identifier="link_2",
+                          link="www.google.cz", line_number=2)
+        for ref in [ref_1, ref_2]:
+            ref.set_file_path("path")
+            ref.set_file_name("file_name.md")
 
-        checker = linkchecker.LinkChecker(links, {})
+        checker = linkchecker.LinkChecker([ref_1, ref_2], {})
         checker.run_checks()
 
         self.assertEqual(checker.errors, [])

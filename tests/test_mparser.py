@@ -3,6 +3,7 @@ import unittest, sys, collections, os, itertools
 sys.path.insert(0, '.') # just in case
 import MAGSBS.errors as errors
 import MAGSBS.mparser as mp
+from MAGSBS.datastructures import Reference
 
 def parse_formulas(doc):
     """Tiny helper to call mp.parse_formulas."""
@@ -339,7 +340,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
 # test link extraction
 
 
-class TestLinkExtractor(unittest.TestCase):
+class TestLinkParser(unittest.TestCase):
     # Note: Test cases are taken from https://pandoc.org/MANUAL.html#links
     # and https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
 
@@ -350,38 +351,52 @@ class TestLinkExtractor(unittest.TestCase):
             self.assertTrue(
                 len(outputs[i]) == len(result),
                 "{}: Returned list for string \"{}\" contains "
-                "({}) triple(s), but ({}) expected.".format(
+                "({}) reference(s), but ({}) expected.".format(
                     test_name, inputs[i], len(result), len(outputs[i])))
-            self.assertEqual(result, outputs[i])
+            for j, reference in enumerate(result):
+                self.assertEqual(reference.get_type(),
+                                 outputs[i][j].get_type())
+                self.assertEqual(reference.get_is_image(),
+                                 outputs[i][j].get_is_image())
+                self.assertEqual(reference.get_is_footnote(),
+                                 outputs[i][j].get_is_footnote())
+                self.assertEqual(reference.get_id(), outputs[i][j].get_id())
+                self.assertEqual(reference.get_link(),
+                                 outputs[i][j].get_link())
+                self.assertEqual(reference.get_line_number(),
+                                 outputs[i][j].get_line_number())
 
     def test_parsing_inline_links(self):
         test_inputs = [
             "\nThis is an [inline link](/url), \n and here's [one with \n a "
             "title](http://fsf.org \"click here for a good time!\").",
             "[Write me!](mailto:sam@green.eggs.ham)",
-            "[I'm an inline-style link](https://www.google.com)",
-            "[I'm an inline-style link with title](https://www.google.com"
+            "[I'm an inline link](https://www.google.com)",
+            "[I'm inline with title](https://www.google.com"
             " \"Google's Homepage\")"]
         test_outputs = [
-            [(2, "inline", (False, "inline link", "/url")),
-             (3, "inline", (False, "one with \n a title", "http://fsf.org"))],
-            [(1, "inline", (False, "Write me!", "mailto:sam@green.eggs.ham"))],
-            [(1, "inline", (False, "I'm an inline-style link",
-                            "https://www.google.com"))],
-            [(1, "inline", (False, "I'm an inline-style link with title",
-                            "https://www.google.com"))]
+            [Reference(Reference.Type.INLINE, False, "inline link", "/url",
+                       False, 2),
+             Reference(Reference.Type.INLINE, False, "one with \n a title",
+                       "http://fsf.org", False, 3)],
+            [Reference(Reference.Type.INLINE, False, "Write me!",
+                       "mailto:sam@green.eggs.ham", False, 1)],
+            [Reference(Reference.Type.INLINE, False, "I'm an inline link",
+                       "https://www.google.com", False, 1)],
+            [Reference(Reference.Type.INLINE, False, "I'm inline with title",
+                       "https://www.google.com", False, 1)]
             ]
         self.make_comparison(test_inputs, test_outputs, "Inline links")
 
     def test_labeled_links(self):
         test_inputs = [
-            "[I'm a reference-style link][Arbitrary case-insensitive text]",
+            "[I'm a reference-style link][Case-insensitive text]",
             "![You can use numbers for reference - style link definitions][1]"]
         test_outputs = [
-            [(1, "labeled", (False, "I'm a reference-style link",
-                             "Arbitrary case-insensitive text"))],
-            [(1, "labeled", (True, "You can use numbers for reference - style "
-                                   "link definitions", "1"))]
+            [Reference(Reference.Type.IMPLICIT, False, "Case-insensitive text",
+                       is_footnote=False, line_number=1)],
+            [Reference(Reference.Type.IMPLICIT, True, "1", is_footnote=False,
+                       line_number=1)]
         ]
         self.make_comparison(test_inputs, test_outputs, "Labeled links")
 
@@ -394,12 +409,18 @@ class TestLinkExtractor(unittest.TestCase):
             "[my label 5]: <http://foo.bar.baz>",
             "\n[my label 6]: http://fsf.org \n\t\"The free sw foundation\""]
         test_outputs = [
-            [(1, "reference", (False, "my label 1", "/foo/bar.html"))],
-            [(1, "reference", (False, "my label 2", "/foo"))],
-            [(1, "reference", (False, "my label 3", "http://fsf.org"))],
-            [(1, "reference", (False, "my label 4", "/bar#Special"))],
-            [(1, "reference", (False, "my label 5", "http://foo.bar.baz"))],
-            [(2, "reference", (False, "my label 6", "http://fsf.org"))]
+            [Reference(Reference.Type.EXPLICIT, False, "my label 1",
+                       "/foo/bar.html", False, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "my label 2", "/foo",
+                       False, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "my label 3",
+                       "http://fsf.org", False, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "my label 4",
+                       "/bar#Special", False, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "my label 5",
+                       "http://foo.bar.baz", False, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "my label 6",
+                       "http://fsf.org", False, 2)]
         ]
         self.make_comparison(test_inputs, test_outputs, "Reference links")
 
@@ -409,27 +430,41 @@ class TestLinkExtractor(unittest.TestCase):
             "See [my website][].",
             "[1]\n\![test][]\nabc ![test2] def"]
         test_outputs = [
-            [(1, "labeled", (False, "my website", ""))],
-            [(1, "labeled", (False, "1", "")),
-             (2, "labeled", (False, "test", "")),
-             (3, "labeled", (True, "test2", ""))]]
+            [Reference(Reference.Type.IMPLICIT, False, "my website",
+                       is_footnote=False, line_number=1)],
+            [Reference(Reference.Type.IMPLICIT, False, "1", is_footnote=False,
+                       line_number=1),
+             Reference(Reference.Type.IMPLICIT, False, "test",
+                       is_footnote=False, line_number=2),
+             Reference(Reference.Type.IMPLICIT, True, "test2",
+                       is_footnote=False, line_number=3)]
+        ]
         self.make_comparison(test_inputs, test_outputs, "Standalone links")
 
     def test_nested_inlines(self):
-        test_inputs = ["[![Bildbeschreibung](bilder/test.jpg)](bilder.html#"
+        test_inputs = ["[![Bildbeschreibung](bilder/test.jpg)](bild.html#"
                        "title-of-the-graphic)",
                        "[ ![Bildbeschreib](bilder/bild1.PNG) ]"
                        "(bilder.html#bildb)\n\n|| - Seite 4 - \nabc"
-                       "[www.schattauer.de](www.schattauer.de)"]
+                       "[www.schattauer.de](www.schatt.de)",
+                       "[^1]: [k05025](bilder.html#heading-1) asdsad"]
         test_outputs = [
-            [(1, "inline", (False, "![Bildbeschreibung](bilder/test.jpg)",
-                                   "bilder.html#title-of-the-graphic")),
-             (1, "inline", (True, "Bildbeschreibung", "bilder/test.jpg"))],
-            [(1, "inline", (False, " ![Bildbeschreib](bilder/bild1.PNG) ",
-                                   "bilder.html#bildb")),
-             (1, "inline", (True, "Bildbeschreib", "bilder/bild1.PNG")),
-             (4, "inline", (False, "www.schattauer.de", "www.schattauer.de")),
-             ]
+            [Reference(Reference.Type.INLINE, False,
+                       "![Bildbeschreibung](bilder/test.jpg)",
+                       "bild.html#title-of-the-graphic", False, 1),
+             Reference(Reference.Type.INLINE, True, "Bildbeschreibung",
+                       "bilder/test.jpg", False, 1)],
+            [Reference(Reference.Type.INLINE, False,
+                       " ![Bildbeschreib](bilder/bild1.PNG) ",
+                       "bilder.html#bildb", False, 1),
+             Reference(Reference.Type.INLINE, True, "Bildbeschreib",
+                       "bilder/bild1.PNG", False, 1),
+             Reference(Reference.Type.INLINE, False, "www.schattauer.de",
+                       "www.schatt.de", False, 4)],
+            [Reference(Reference.Type.EXPLICIT, False, "^1",
+                       "[k05025](bilder.html#heading-1) asdsad", True, 1),
+             Reference(Reference.Type.INLINE, False,
+                       "k05025", "bilder.html#heading-1", False, 1)]
         ]
         self.make_comparison(test_inputs, test_outputs, "Inline nested")
 
@@ -446,22 +481,27 @@ class TestLinkExtractor(unittest.TestCase):
             r"\\[this\\\[this not\]\\]"
             ]
         test_outputs = [
-            [(1, "labeled", (False, "x", "")),
-             (2, "labeled", (False, " ", ""))],
-            [(1, "inline", (False, "tEst", "#TesT"))],
-            [(1, "inline", (False, "[15]", "#seite-15--")),
-             (1, "labeled", (False, "15", "")),
-             (2, "inline", (False, "[20]", "#seite-20--")),
-             (2, "labeled", (False, "20", ""))],
             [],
-            [(1, "labeled", (False, "a\[", "")),
-             (1, "labeled", (False, "\]", "")),
-             (1, "labeled", (False, "\[\]", "")),
-             (2, "inline", (False, "", "\]"))],
-            [(1, 'labeled', (False, "po\\\\[abc\\\\][d]kus\\](normal", "")),
-             (1, 'labeled', (False, "abc\\\\", "d"))],
-            [(1, "inline", (False, "image", "google.jpg"))],
-            [(1, "labeled", (False, r"this\\\[this not\]\\", ""))]
+            [Reference(Reference.Type.INLINE, False, "tEst", "#TesT", False,
+                       1)],
+            [Reference(Reference.Type.INLINE, False, "[15]", "#seite-15--",
+                       False, 1),
+             Reference(Reference.Type.IMPLICIT, False, "15", None, False, 1),
+             Reference(Reference.Type.INLINE, False, "[20]", "#seite-20--",
+                       False, 2),
+             Reference(Reference.Type.IMPLICIT, False, "20", None, False, 2)],
+            [],
+            [Reference(Reference.Type.IMPLICIT, False, "a\[", None, False, 1),
+             Reference(Reference.Type.IMPLICIT, False, "\]", None, False, 1),
+             Reference(Reference.Type.IMPLICIT, False, "\[\]", None, False, 1),
+             Reference(Reference.Type.INLINE, False, "", "\]", False, 2)],
+            [Reference(Reference.Type.IMPLICIT, False,
+                       "po\\\\[abc\\\\][d]kus\\](normal", None, False, 1),
+             Reference(Reference.Type.IMPLICIT, False, "d", None, False, 1)],
+            [Reference(Reference.Type.INLINE, False, "image", "google.jpg",
+                       False, 1)],
+            [Reference(Reference.Type.IMPLICIT, False, r"this\\\[this not\]\\",
+                       None, False, 1)]
             ]
         self.make_comparison(test_inputs, test_outputs, "Other links")
 
@@ -469,10 +509,12 @@ class TestLinkExtractor(unittest.TestCase):
         test_inputs = [
             "\n[second]\n![third][]\n\n[fif\nth](k01.md)\nab [second]: k07.md"]
         test_outputs = [
-            [(2, "labeled", (False, "second", "")),
-             (3, "labeled", (True, "third", "")),
-             (5, "inline", (False, "fif\nth", "k01.md")),
-             (7, "reference", (False, "second", "k07.md"))]]
+            [Reference(Reference.Type.IMPLICIT, False, "second", "", False, 2),
+             Reference(Reference.Type.IMPLICIT, True, "third", "", False, 3),
+             Reference(Reference.Type.INLINE, False, "fif\nth", "k01.md",
+                       False, 5),
+             Reference(Reference.Type.EXPLICIT, False, "second", "k07.md",
+                       False, 7)]]
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
 
     def test_reference_footnotes(self):
@@ -480,17 +522,20 @@ class TestLinkExtractor(unittest.TestCase):
             "[^1]: [k05025](k0502.html#head-1) asdsad\nasdsad\n\nabc",
             "[^2]: not to be tested",
             "[^3]: test\n",
-            "![^extended]: http://fsf.org \n(SW foundation)\n\nabc"]
+            "![^extended]: http://fsf.org \n(Foundation)\n\nabc"]
         test_outputs = [
-            [(1, "reference_footnote", (
-                 False, "^1", "[k05025](k0502.html#head-1) asdsad\nasdsad")),
-             (1, "inline", (False, "k05025", "k0502.html#head-1"))],
-            [(1, "reference_footnote", (False, "^2", "not to be tested"))],
-            [(1, "reference_footnote", (False, "^3", "test\n"))],
-            [(1, "reference_footnote", (
-                True, "^extended", "http://fsf.org \n(SW foundation)"))]
+            [Reference(Reference.Type.EXPLICIT, False, "^1",
+                       "[k05025](k0502.html#head-1) asdsad\nasdsad", True, 1),
+             Reference(Reference.Type.INLINE, False, "k05025",
+                       "k0502.html#head-1", False, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "^2",
+                       "not to be tested", True, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "^3", "test\n", True,
+                       1)],
+            [Reference(Reference.Type.EXPLICIT, True, "^extended",
+                       "http://fsf.org \n(Foundation)", True, 1)]
         ]
-        self.make_comparison(test_inputs, test_outputs, "Reference links")
+        self.make_comparison(test_inputs, test_outputs, "Footnote links")
 
     def test_formulas(self):
         test_inputs = [
@@ -502,11 +547,20 @@ class TestLinkExtractor(unittest.TestCase):
         test_outputs = [
             [],
             [],
-            [(1, "labeled", (False, "formula", ""))],
-            [(1, "reference", (False, "link \$ test", "reference"))]
+            [Reference(Reference.Type.IMPLICIT, False, "formula", "",
+                       False, 1)],
+            [Reference(Reference.Type.EXPLICIT, False, "link \$ test",
+                       "reference", False, 1)]
         ]
-        self.make_comparison(test_inputs, test_outputs, "Reference links")
+        self.make_comparison(test_inputs, test_outputs, "Formula links")
 
+    def test_todolist(self):
+        test_inputs = [
+            "     [ ]",
+            "-  \t  [ ] First:\n\t-\t[ ] Second\n\t-  [x] Filled"]
+        test_outputs = [[], []]
+
+        self.make_comparison(test_inputs, test_outputs, "ToDo links")
 
 #  ###########################################################################
 # test id detection
@@ -514,28 +568,29 @@ class TestLinkExtractor(unittest.TestCase):
 
 class TestElementsIdsExtractor(unittest.TestCase):
 
-    def out_msg(self, message):
+    @staticmethod
+    def out_msg(message):
         return "Result is {}".format(message)
 
     def test_long_entry(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div id=\"first\"></div><div id='second'>something <div>\n"
             "<span id=\"3\">\n\n</span>")
         self.assertEqual(res, {"first", "second", "3"}, msg=self.out_msg(res))
 
     def test_short_entry(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div id=\"1\"/><span id='2_nd'/>")
         self.assertEqual(res, {"1", "2_nd"}, msg=self.out_msg(res))
 
     def test_no_id_entry(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div></div><div/><span></span></span><div id=\"\"/>"
             "<span id=''></span>")
         self.assertEqual(res, set(), msg=self.out_msg(res))
 
     def test_more_attributes(self):
-        res = mp.get_html_elements_ids_from_document(
+        res = mp.get_html_elements_identifiers(
             "<div class=\"test\" id=\"1\"/><span id='2_nd' test='test'/>"
             "<span middle='2_nd' id=\"middle\" test='test'/>")
         self.assertEqual(res, {"1", "2_nd", "middle"}, msg=self.out_msg(res))
