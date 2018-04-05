@@ -354,17 +354,17 @@ class TestLinkParser(unittest.TestCase):
                 "({}) reference(s), but ({}) expected.".format(
                     test_name, inputs[i], len(result), len(outputs[i])))
             for j, reference in enumerate(result):
-                self.assertEqual(reference.get_type(),
-                                 outputs[i][j].get_type())
-                self.assertEqual(reference.get_is_image(),
-                                 outputs[i][j].get_is_image())
-                self.assertEqual(reference.get_is_footnote(),
-                                 outputs[i][j].get_is_footnote())
-                self.assertEqual(reference.get_id(), outputs[i][j].get_id())
-                self.assertEqual(reference.get_link(),
-                                 outputs[i][j].get_link())
-                self.assertEqual(reference.get_line_number(),
-                                 outputs[i][j].get_line_number())
+                self.assertEqual(reference.type,
+                                 outputs[i][j].type)
+                self.assertEqual(reference.is_image,
+                                 outputs[i][j].is_image)
+                self.assertEqual(reference.is_footnote,
+                                 outputs[i][j].is_footnote)
+                self.assertEqual(reference.id, outputs[i][j].id)
+                self.assertEqual(reference.link,
+                                 outputs[i][j].link)
+                self.assertEqual(reference.line_number,
+                                 outputs[i][j].line_number)
 
     def test_parsing_inline_links(self):
         test_inputs = [

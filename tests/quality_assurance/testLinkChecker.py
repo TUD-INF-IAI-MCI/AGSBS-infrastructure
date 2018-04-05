@@ -22,7 +22,7 @@ class TestLinkChecker(unittest.TestCase):
 
     @staticmethod
     def get_path(reference):
-        parsed = urlparse(reference.get_link())
+        parsed = urlparse(reference.link)
         return parsed.path
 
     def test_coupling_references(self):
@@ -40,7 +40,7 @@ class TestLinkChecker(unittest.TestCase):
                                       identifier="1", link="k01.html",
                                       line_number=10)
         reference_impl_nok = Reference(Reference.Type.IMPLICIT, False,
-                                      identifier="incorrect", line_number=12)
+                                       identifier="incorrect", line_number=12)
 
         checker = linkchecker.LinkChecker([reference_2], {})
         checker.find_link_for_identifier(reference_expl_ok)
@@ -60,7 +60,7 @@ class TestLinkChecker(unittest.TestCase):
         correct_ref = Reference(Reference.Type.EXPLICIT, False,
                                 link="k01.html", line_number=10)
         html_instead_img = Reference(Reference.Type.EXPLICIT, True,
-                                link="k01.html", line_number=1)
+                                     link="k01.html", line_number=1)
         jpq_instead_html = Reference(Reference.Type.EXPLICIT, False,
                                      link="k01.jpg", line_number=2)
         md_instead_html = Reference(Reference.Type.EXPLICIT, False,
@@ -121,8 +121,7 @@ class TestLinkChecker(unittest.TestCase):
         ref_2 = Reference(Reference.Type.INLINE, False, identifier="link_2",
                           link="www.google.cz", line_number=2)
         for ref in [ref_1, ref_2]:
-            ref.set_file_path("path")
-            ref.set_file_name("file_name.md")
+            ref.file_path = "path"
 
         checker = linkchecker.LinkChecker([ref_1, ref_2], {})
         checker.run_checks()
