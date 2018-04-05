@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-03-21 21:44+CET\n"
+"POT-Creation-Date: 2018-03-23 12:40+CET\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -159,6 +159,42 @@ msgstr ""
 "Dollarzeichen um die Formel gesetzt werden, damit die Formel nicht auf "
 "Zeilenhöhe gestaucht wird."
 
+#: MAGSBS/quality_assurance/linkchecker.py:42
+msgid ".{} or .{}"
+msgstr ".{} oder .{}"
+
+#: MAGSBS/quality_assurance/linkchecker.py:175
+msgid ""
+"A reference to the link \"{}\" does not exist. Please write a reference in a "
+"form [{}]: link to the markdown file."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:197
+msgid "Reference \"{}\" is duplicated on lines {} and {}."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:215
+msgid ""
+"A link for the reference \"{}\" does not exist. Please write a link in a "
+"form [{}] link to the markdown file or remove the reference."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:275
+msgid "Link path \"{}\" has no extension, but it should be {}."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:282
+msgid "Link path \"{}\" has .{} extension, but it should be {}."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:294
+msgid "The file \"{}\" given by the reference \"{}\" does not exist."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:326
+msgid "The anchor \"{}\" was not found in the \"{}\" file."
+msgstr ""
+
 #: MAGSBS/quality_assurance/markdown.py:18
 msgid ""
 "Each line number has to have an empty line before and after it, that is, on "
@@ -215,16 +251,16 @@ msgstr ""
 "durch verringern der Überschriftentiefe für das Inhaltsverzeichnis, durch "
 "verringern des Wertes tocDepth umgangen werden."
 
-#: MAGSBS/quality_assurance/markdown.py:213
+#: MAGSBS/quality_assurance/markdown.py:208
 msgid ""
 "A page number was marked up, but the actual number has not been inserted."
 msgstr "Eine Seitenzahl wurde angegeben, doch die Zahl wurde vergessen."
 
-#: MAGSBS/quality_assurance/markdown.py:234
+#: MAGSBS/quality_assurance/markdown.py:229
 msgid "A \"-\" in the page number is missing, required: \"|| - Page xyz -\""
 msgstr "Es fehlt ein \"-\" in der Seitenzahl, Vorgabe: \"|| - Seite xyz -\""
 
-#: MAGSBS/quality_assurance/markdown.py:249
+#: MAGSBS/quality_assurance/markdown.py:244
 msgid ""
 "\"{tag}\" is not allowed, use a new paragraph or a \"\\\" at the end of a "
 "line."
@@ -232,23 +268,23 @@ msgstr ""
 "Unerlaubte Nutzung von \"{tag}\"; verwendne Sie einen neuen Absatz oder \"\\"
 "\" am Ende einer Zeile."
 
-#: MAGSBS/quality_assurance/markdown.py:253
+#: MAGSBS/quality_assurance/markdown.py:248
 msgid "It is not allowed to use HTML tags, except for div and span."
 msgstr "Es ist nicht erlaubt HTML-tags, außer div und span, zu verwenden."
 
-#: MAGSBS/quality_assurance/markdown.py:265
+#: MAGSBS/quality_assurance/markdown.py:260
 msgid ""
 "Comparison operators shouldn't be marked up in HTML, but with \\< and \\>."
 msgstr ""
 "Vergleichsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
 "mittels \\< und \\> erzeugt werden."
 
-#: MAGSBS/quality_assurance/markdown.py:274
+#: MAGSBS/quality_assurance/markdown.py:269
 msgid "The heading was underlined and also marked with #'s."
 msgstr ""
 "Die Überschrift wurde unterstrichen und gleichzeitig mit # gekennzeichnet."
 
-#: MAGSBS/quality_assurance/markdown.py:292
+#: MAGSBS/quality_assurance/markdown.py:287
 msgid ""
 "If a paragraph ends on a \\, the next empty line will become part of the "
 "paragraph and hence the next paragraph is formatted incorrectly."
@@ -256,7 +292,7 @@ msgstr ""
 "Wenn ein Absatz auf \\ endet, wird die folgende leere Zeile Teil des "
 "Absatzes und der darauf folgende Absatz falsch formatiert."
 
-#: MAGSBS/quality_assurance/markdown.py:312
+#: MAGSBS/quality_assurance/markdown.py:307
 msgid ""
 "Line contains uneven number of dollar signs. Either a formula wasn't closed "
 "or an embedded formula was stretched across multiple lines (try double "
@@ -267,7 +303,7 @@ msgstr ""
 "Zeilen gedehnt (versuchen Sie doppelte Dollars). Falls Sie tatsächlich ein "
 "Dollarzeichen schreiben wollten, fügen Sie einen \\ davor ein."
 
-#: MAGSBS/quality_assurance/markdown.py:354
+#: MAGSBS/quality_assurance/markdown.py:349
 msgid ""
 "In enumerations and lists, the enumeration character may not immediately be "
 "followed by another such character, because it will be recognised as a "
@@ -279,22 +315,21 @@ msgstr ""
 "wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt "
 "verhindert dies."
 
-#: MAGSBS/quality_assurance/markdown.py:375
-#, fuzzy
+#: MAGSBS/quality_assurance/markdown.py:370
 msgid ""
 "The image description is probably incomplete, since \"{marker}\" has been "
 "found."
 msgstr ""
 "Die Bildbeschreibung ist wahrscheinlich unvollständig, da eine Markierung "
-"wie \"{todo\" gefunden wurde."
+"\"{marker\" gefunden wurde."
 
-#: MAGSBS/quality_assurance/markdown.py:397
-msgid "An included image is using wrong syntax, the converter will ignore it."
+#: MAGSBS/quality_assurance/markdown.py:392
+msgid "The included image is using wrong syntax, the converter will ignore it."
 msgstr ""
-"Ein Bild wurde mit fehlerhafter Syntax eingebunden, wodurch das Bild vom "
-"Konverter ignoriert wird."
+"Das eingebundene Bild nutzt eine falsche Syntax, der Konverter wird das "
+"Bild ignorieren."
 
-#: MAGSBS/quality_assurance/markdown.py:426
+#: MAGSBS/quality_assurance/markdown.py:422
 msgid ""
 "A hyphen was found which possibly originates from copied justified text. "
 "This will be incorrectly formatted in the output."
@@ -302,22 +337,22 @@ msgstr ""
 "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit "
 "Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert werden."
 
-#: MAGSBS/quality_assurance/markdown.py:468
+#: MAGSBS/quality_assurance/markdown.py:464
 msgid "No image description provided."
 msgstr "Keine Bildbeschreibung vorhanden."
 
-#: MAGSBS/quality_assurance/mistkerl.py:117
+#: MAGSBS/quality_assurance/mistkerl.py:118
 msgid ""
 "File not encoded in UTF-8, please configure this encoding in your editor."
 msgstr ""
 "Datei nicht in UTF-8 gespeichert. Bitte wählen Sie diesen Zeichensatz in "
 "Ihrem Editor."
 
-#: MAGSBS/quality_assurance/mistkerl.py:208
+#: MAGSBS/quality_assurance/mistkerl.py:221
 msgid "The configuration could not be read: {reason}"
 msgstr "Die Konfiguration konnte nicht gelesen werden: {reason}"
 
-#: MAGSBS/quality_assurance/mistkerl.py:219
+#: MAGSBS/quality_assurance/mistkerl.py:232
 msgid ""
 "The file is too long. To ease navigation and maintain readability, the file "
 "should be split into fileswith less than {count} lines by naming them like "
@@ -370,14 +405,3 @@ msgstr "Urheberrechtshinweis"
 #: MAGSBS/toc.py:244
 msgid "remarks about the accessible version"
 msgstr "Hinweise zur barrierefreien Version"
-
-#~ msgid ""
-#~ "Headings with the same name make table of contents'hard to read and it "
-#~ "difficult to navigate. It is best to set the configuration value tocDepth "
-#~ "low enough to prevent these headings from appearing in the table of "
-#~ "contents."
-#~ msgstr ""
-#~ "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar "
-#~ "und erschweren die Navigation. Am Besten man setzt den Konfigurationswert "
-#~ "tocDepth klein genug, damit diese Überschriften nicht im "
-#~ "Inhaltsverzeichnis erscheinen."
