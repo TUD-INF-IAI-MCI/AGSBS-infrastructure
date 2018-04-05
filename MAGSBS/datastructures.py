@@ -290,7 +290,7 @@ class Reference:
         self.is_image = is_image  # True if reference represents an image
         self.is_footnote = is_footnote  # True if ref is a footnote
         self.id = identifier  # identifier of the link
-        self.link = self.clear_link(link)  # link itself
+        self.link = self.__clear_link(link)  # link itself
         self.line_number = line_number  # line number where ref occurs
         self.file_path = None  # full path of the file where ref occurs
 
@@ -304,7 +304,7 @@ class Reference:
         if not uri:
             return None
 
-        if uri.startswith('>'):
+        if uri.startswith('<'):
             uri = uri[1:]
         if uri.endswith('>'):
             uri = uri[:-1]
