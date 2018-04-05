@@ -275,19 +275,21 @@ class Reference:
     """This class represents a reference to ease handling of the references.
     For specifying type of reference Reference.Type is used, which is an enum.
     """
+    # Pandoc link reference names (valid for links and images)
     class Type(enum.Enum):
         INLINE = 0  # inline link in form [text](link)
         EXPLICIT = 1  # explicit reference link in form [label]:
         IMPLICIT = 2
         # ^ implicit reference link: [label][], [label] or [text][label]
 
+    #pylint: disable=too-many-arguments
     def __init__(self, ref_type, is_image, identifier=None, link=None,
                  is_footnote=False, line_number=None):
         self.__type = ref_type  # type of reference
         self.__is_image = is_image  # True if reference represents an image
         self.__is_footnote = is_footnote  # True if ref is a footnote
         self.__id = identifier  # identifier of the link
-        self.__link = self.clear_link(link)  # link itself
+        self.__link = self.__clear_link(link)  # link URI
         self.__line_number = line_number  # line number where ref occurs
         self.__file_name = None  # file where reference occurs
         self.__file_path = None  # full path of the file where ref occurs
@@ -326,14 +328,15 @@ class Reference:
         self.__file_path = new_file_path
 
     @staticmethod
-    def clear_link(link):
+    def __clear_link(uri):
         """This function removes the opening angle bracket from the beginning
         of the link and closing angle bracket from the link end."""
-        if not link or len(link) < 2:
+        if not uri:
             return None
 
-        if link[0] == "<":
-            link = link[1:]
-        if link[len(link) - 1] == ">":
-            link = link[:len(link) - 1]
-        return link
+        if uri.startswith('>'):
+            uri = uri[1:]
+        if uri.endswith('>'):
+            uri = uri[:-1]
+        return uri
+
