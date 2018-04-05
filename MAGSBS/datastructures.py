@@ -275,7 +275,7 @@ class Reference:
     """This class represents a reference to ease handling of the references.
     For specifying type of reference Reference.Type is used, which is an enum.
     """
-    # Pandoc link reference names (valid for links and images)
+    # Naming follows the pandoc user's guide at https://pandoc.org/MANUAL.html
     class Type(enum.Enum):
         INLINE = 0  # inline link in form [text](link)
         EXPLICIT = 1  # explicit reference link in form [label]:
@@ -285,47 +285,17 @@ class Reference:
     #pylint: disable=too-many-arguments
     def __init__(self, ref_type, is_image, identifier=None, link=None,
                  is_footnote=False, line_number=None):
-        self.__type = ref_type  # type of reference
-        self.__is_image = is_image  # True if reference represents an image
-        self.__is_footnote = is_footnote  # True if ref is a footnote
-        self.__id = identifier  # identifier of the link
-        self.__link = self.__clear_link(link)  # link URI
-        self.__line_number = line_number  # line number where ref occurs
-        self.__file_name = None  # file where reference occurs
-        self.__file_path = None  # full path of the file where ref occurs
 
-    def get_line_number(self):
-        return self.__line_number
-
-    def get_type(self):
-        return self.__type
-
-    def get_is_image(self):
-        return self.__is_image
-
-    def get_is_footnote(self):
-        return self.__is_footnote
-
-    def get_id(self):
-        return self.__id
-
-    def get_link(self):
-        return self.__link
+        self.type = ref_type  # type of reference
+        self.is_image = is_image  # True if reference represents an image
+        self.is_footnote = is_footnote  # True if ref is a footnote
+        self.id = identifier  # identifier of the link
+        self.link = self.clear_link(link)  # link itself
+        self.line_number = line_number  # line number where ref occurs
+        self.file_path = None  # full path of the file where ref occurs
 
     def get_file_name(self):
-        return self.__file_name
-
-    def get_file_path(self):
-        return self.__file_path
-
-    def set_line_number(self, new_line_number):
-        self.__line_number = new_line_number
-
-    def set_file_name(self, new_file_name):
-        self.__file_name = new_file_name
-
-    def set_file_path(self, new_file_path):
-        self.__file_path = new_file_path
+        return os.path.basename(self.file_path)
 
     @staticmethod
     def __clear_link(uri):
