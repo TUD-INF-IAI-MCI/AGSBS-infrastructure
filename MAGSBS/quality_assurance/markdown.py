@@ -389,7 +389,7 @@ class BrokenImageLinksAreDetected(OnelinerMistake):
             # check whether ! [ ] ( ) are all in the line, if so, it's a false positive
             for punct in ['(', ')', '[', ']', '!']:
                 if not punct in line:
-                    return self.error(_("An included image is using wrong "
+                    return self.error(_("The included image is using wrong "
                             "syntax, the converter will ignore it."), num)
 
 class HyphensFromJustifiedTextWereRemoved(Mistake):
@@ -401,7 +401,7 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
     def __init__(self):
         super().__init__()
 
-    def is_hyphenated_word(self, line):
+    def ends_with_hyphen(self, line):
         line = line.rstrip()
         if any(line.endswith(h) for h in self.HYPHENS) and len(line) > 1:
             if line[-2].isalpha(): # part of a word
@@ -414,7 +414,7 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
             # iterate over all lines
             for lnum, line in enumerate(lines):
                 # if hyphen and there's a next line
-                if self.is_hyphenated_word(line) and has_next_line(lnum, lines):
+                if self.ends_with_hyphen(line) and has_next_line(lnum, lines):
                     next_line = lines[lnum+1].lstrip()
                     # it was justified text, if next line starts with a word
                     if next_line and next_line[0].isalpha() and not \
