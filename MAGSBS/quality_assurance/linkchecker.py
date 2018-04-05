@@ -60,14 +60,13 @@ def extract_links(file_tree):
     """Parses all links, images and footnotes (i.e. all references in the .md
     files). It return the list of instances of Reference class. """
     reference_list = []  # list of references in the examined files
-    for file_path, file_name in get_list_of_md_files(file_tree):
+    for file_path, _ in get_list_of_md_files(file_tree):
         # encoding of the file should be already checked
         with open(file_path, encoding="utf-8") as file_data:
             # call the function for finding links
             data = mparser.find_links_in_markdown(file_data.read())
             for reference in data:
-                reference.set_file_name(file_name)
-                reference.set_file_path(file_path)
+                reference.file_path = file_path
                 reference_list.append(reference)
     return reference_list
 
@@ -92,13 +91,13 @@ class LinkChecker:
         """This methods runs all available checks within this class. """
         self.find_label_duplicates()  # check duplicate labels
         for reference in self.reference_list:
-            if reference.get_type() == Reference.Type.IMPLICIT:
+            if reference.type == Reference.Type.IMPLICIT:
                 # links should be connected somewhere
                 self.find_label_for_link(reference)
-            if reference.get_type() == Reference.Type.EXPLICIT:
+            if reference.type == Reference.Type.EXPLICIT:
                 # identifier should exist for it
                 self.find_link_for_identifier(reference)
-            if not reference.get_is_footnote() and reference.get_type() \
+            if not reference.is_footnote and reference.type \
                     in {Reference.Type.EXPLICIT, Reference.Type.INLINE}:
                 self.check_target_availability(reference)
 
@@ -108,18 +107,18 @@ class LinkChecker:
         Otherwise it cannot be paired together. If this is not satisfied,
         an error message is created.
         Note: Identifiers are not case sensitive. """
-        ref_id = reference.get_id().lower()
+        ref_id = reference.id.lower()
         for tested_ref in self.reference_list:
-            if tested_ref.get_type() == Reference.Type.EXPLICIT \
-                    and tested_ref.get_id().lower() == ref_id and \
-                    tested_ref.get_file_path() == reference.get_file_path():
+            if tested_ref.type == Reference.Type.EXPLICIT \
+                    and tested_ref.id.lower() == ref_id and \
+                    tested_ref.file_path == reference.file_path:
                 return  # it is ok, identifier has been found
         self.errors.append(
             ErrorMessage(_("An explicit reference with identifier \"{0}\" does"
                            " not exist. Please write an explicit reference in"
                            " a form \"[{0}]: link\" to the markdown file.")
-                         .format(ref_id), reference.get_line_number(),
-                         reference.get_file_path()))
+                         .format(ref_id), reference.line_number,
+                         reference.file_path))
 
     def find_label_duplicates(self):
         """Identifiers for explicit references should not be duplicated in
@@ -129,51 +128,49 @@ class LinkChecker:
         then they are not reported. """
         # check only explicit references
         list_of_labels = [ref for ref in self.reference_list if
-                          ref.get_type() == Reference.Type.EXPLICIT]
+                          ref.type == Reference.Type.EXPLICIT]
         seen = set()  # set of link_texts (labels) that were already checked
         for ref in list_of_labels:
-            if ref.get_id().lower() not in seen:
-                ref_id = ref.get_id().lower()
+            if ref.id.lower() not in seen:
+                ref_id = ref.id.lower()
                 seen.add(ref_id)  # add as seen
                 for tested_ref in list_of_labels:
                     # refs have to be in same file and have same identifier
-                    if tested_ref.get_file_path() == ref.get_file_path() \
-                            and tested_ref.get_id().lower() == ref_id \
+                    if tested_ref.file_path == ref.file_path \
+                            and tested_ref.id.lower() == ref_id \
                             and ref != tested_ref:  # ignore same dicts
                         self.errors.append(ErrorMessage(
                             _("Identifier \"{}\" for reference is duplicated "
                               "on lines {} and {}.")
-                            .format(ref_id, ref.get_line_number(),
-                                    tested_ref.get_line_number()),
-                            ref.get_line_number(),
-                            ref.get_file_path()))
+                            .format(ref_id, ref.line_number,
+                                    tested_ref.line_number),
+                            ref.line_number, ref.file_path))
 
     def find_link_for_identifier(self, reference):
         """Explicit reference should be connected to the implicit reference
         with the same identifier. Otherwise it should not be paired together.
         If this is not satisfied, an error message is created.
         Note: Identifiers are not case sensitive. """
-        ref_id = reference.get_id().lower()
+        ref_id = reference.id.lower()
         for tested_ref in self.reference_list:
-            if tested_ref.get_type() == Reference.Type.IMPLICIT \
-                    and tested_ref.get_id().lower() == ref_id and \
-                    tested_ref.get_file_path() == reference.get_file_path():
+            if tested_ref.type == Reference.Type.IMPLICIT \
+                    and tested_ref.id.lower() == ref_id and \
+                    tested_ref.file_path == reference.file_path:
                 return  # it is ok, same identifier has been found
         self.errors.append(
             ErrorMessage(_("Implicit reference with the identifier \"{0}\" "
                            "does not exist. Please write a reference in a form"
                            " [{0}] in the markdown file or remove the explicit"
                            " reference [{0}]: {1}.")
-                         .format(ref_id, reference.get_link()),
-                         reference.get_line_number(),
-                         reference.get_file_path()))
+                         .format(ref_id, reference.link),
+                         reference.line_number, reference.file_path))
 
     def check_target_availability(self, reference):
         """Checks the links in the explicit (not footnote) or inline
         references. This method executes the checks based on the given
         reference type, its structure and file, where the link points.
         Some tests are triggered only when they are in a lecture structure."""
-        parsed_url = urlparse(reference.get_link())
+        parsed_url = urlparse(reference.link)
         # True if it is a file in a file structure; excepted strings removes
         # false positives
         is_file = not parsed_url.netloc and not parsed_url.scheme and \
@@ -181,7 +178,7 @@ class LinkChecker:
         inspect_fragment = False  # specify if anchor should be inspected
         if parsed_url.path and is_file:  # if something is in path
             # prepare main paths
-            base_dir = os.path.dirname(reference.get_file_path())
+            base_dir = os.path.dirname(reference.file_path)
             file_path = os.path.join(base_dir, parsed_url.path)
             # check for existence of the file
             self.target_exists(parsed_url.path, reference, file_path)
@@ -189,7 +186,7 @@ class LinkChecker:
             if is_within_lecture(file_path):
                 if self.is_correct_extension(parsed_url.path, reference):
                     # checking .md existence and anchors only for non-images
-                    if not reference.get_is_image():
+                    if not reference.is_image:
                         if self.target_md_file_exists(parsed_url.path,
                                                       reference, file_path):
                             inspect_fragment = True
@@ -216,14 +213,14 @@ class LinkChecker:
         should exist and correspond to the allowed ones. Method returns True,
         if the file in the given path has correct extension, False otherwise.
         """
-        extensions = IMAGE_EXTENSIONS if reference.get_is_image() \
+        extensions = IMAGE_EXTENSIONS if reference.is_image \
             else WEB_EXTENSIONS  # choose the correct extension
 
         if path.rfind(".") < 0:  # no extension
             self.errors.append(ErrorMessage(
                 _("Link path \"{}\" has no extension, but it should be {}.")
                 .format(path, format_extensions_list(extensions)),
-                reference.get_line_number(), reference.get_file_path()))
+                reference.line_number, reference.file_path))
             return False
         # search fo last comma and extension is what follows it
         elif path[path.rfind(".") + 1:].lower() not in extensions:
@@ -231,7 +228,7 @@ class LinkChecker:
                 _("Link path \"{}\" has .{} extension, but it should be {}.")
                 .format(path, path[path.rfind(".") + 1:],
                         format_extensions_list(extensions)),
-                reference.get_line_number(), reference.get_file_path()))
+                reference.line_number, reference.file_path))
             return False
         return True  # everything OK
 
@@ -241,8 +238,8 @@ class LinkChecker:
             self.errors.append(
                 ErrorMessage(
                     _("The file \"{}\" given by the reference \"{}\" does not"
-                      " exist.").format(parsed_path, reference.get_id()),
-                    reference.get_line_number(), reference.get_file_path()))
+                      " exist.").format(parsed_path, reference.id),
+                    reference.line_number, reference.file_path))
 
     def target_md_file_exists(self, parsed_path, reference, file_path):
         """Within the lecture structure, hypertext files are generated from
@@ -252,8 +249,8 @@ class LinkChecker:
             error_message = _("The source .md file for hypertext file \"{}\" "
                               "does not exist.".format(parsed_path))
             self.errors.append(ErrorMessage(
-                error_message, reference.get_line_number(),
-                               reference.get_file_path()))
+                error_message, reference.line_number,
+                               reference.file_path))
             return False
         return True
 
@@ -272,21 +269,28 @@ class LinkChecker:
             if html_id == parsed_url.fragment:
                 return  # anchor was found
 
-        self.errors.append(
-            ErrorMessage(_("The anchor \"{}\" was not found in the file "
-                           "\"{}\" ").format(parsed_url.fragment, path),
-                         reference.get_line_number(),
-                         reference.get_file_path()))
+        if not parsed_url.path:
+            self.errors.append(
+                ErrorMessage(_("A link is referencing to the anchor \"#{}\" "
+                               "which does not exist.").format(
+                    parsed_url.fragment, path),
+                    reference.line_number, reference.file_path))
+        else:
+            self.errors.append(
+                ErrorMessage(_("A link referencing to anchor \"#{}\" which "
+                               "does not exist in the file {}.").format(
+                    parsed_url.fragment, parsed_url.path),
+                    reference.line_number, reference.file_path))
 
     @staticmethod
     def get_files_full_path(path, reference):
         """This method returns the full path of the file that should be
         investigated to find the anchor."""
         if not path:
-            return reference.get_file_path()
+            return reference.file_path
 
         full_path = os.path.realpath(os.path.join(os.path.dirname(
-            reference.get_file_path()), path))
+            reference.file_path), path))
         return "{}.{}".format(os.path.splitext(full_path)[0], 'md')
 
     def load_headings(self, path):

@@ -32,49 +32,49 @@ def find_links_in_markdown(text, init_lineno=1):
     https://pandoc.org/MANUAL.html#links """
     output = []
     lineno = init_lineno  # number of lines that were examined
-    processed = 0  # specify the number of chars that were already processed
+    index = 0  # specify the number of chars that were already processed
     escape_next = False  # specify if next char should be escaped
     is_in_formula = False  # specify, if the character is within formula
 
-    while processed < len(text):
-        if text[processed] == "\n":  # count lines
+    while index < len(text):
+        if text[index] == "\n":  # count lines
             lineno += 1
-        if text[processed] == "$" and not escape_next:
+        if text[index] == "$" and not escape_next:
             is_in_formula = not is_in_formula
             # handle block formulas
-            if processed + 1 < len(text) and text[processed + 1] == "$":
-                processed += 1
+            if index + 1 < len(text) and text[index + 1] == "$":
+                index += 1
 
         # find the potential beginning of link (ignore the masked bracket and
         # cases when [ is within formula)
-        if text[processed] == "[" and not escape_next and not is_in_formula:
-            beginning = processed - max(0, processed - 2)
-            chars, reference = extract_link(text[processed - beginning:])
+        if text[index] == "[" and not escape_next and not is_in_formula:
+            beginning = index - max(0, index - 2)
+            chars, reference = extract_link(text[index - beginning:])
             # chars recalculation - beginning should not be counted twice
             chars = chars - beginning
             # result processing, but not when it is a to-do list
             if reference and not is_todo_or_empty(reference):
-                reference.set_line_number(lineno)
+                reference.line_number = lineno
                 output.append(reference)
                 # there should be some inner references within line text
-                if reference.get_id():
+                if reference.id:
                     for inner_reference in find_links_in_markdown(
-                            reference.get_id(), lineno):
+                            reference.id, lineno):
                         output.append(inner_reference)
                 # there should be some inner references in link itself
-                if reference.get_link():
+                if reference.link:
                     for inner_reference in find_links_in_markdown(
-                            reference.get_link(), lineno):
+                            reference.link, lineno):
                         output.append(inner_reference)
-                # need to recalculate the processed char and number of lines
-                for _ in range(processed, processed + chars):
-                    processed += 1
-                    if processed < len(text) and text[processed] == "\n":
+                # need to recalculate the index char and number of lines
+                for _ in range(index, index + chars):
+                    index += 1
+                    if index < len(text) and text[index] == "\n":
                         lineno += 1
 
-        escape_next = True if processed < len(text) and \
-            text[processed] == "\\" and not escape_next else False
-        processed += 1
+        escape_next = True if index < len(text) and \
+            text[index] == "\\" and not escape_next else False
+        index += 1
     return output
 
 
@@ -82,42 +82,44 @@ def extract_link(text):
     """This function extracts the reference itself from the input text.
     Parameter text should contain opening square bracket.
     Then it is resolved and new instance of Reference class is returned. """
-    procs = text.find("[")
-    image_char, is_footnote = detect_image_footnote(text[:procs + 2], procs)
+    if "[" not in text:
+        raise ValueError("Text for extracting link must contain \"[\".")
+    index = text.find("[")
+    image_char, is_footnote = detect_image_footnote(text[:index + 2], index)
 
     # [ ... whatever ... ] part
-    first_part = get_text_inside_brackets(text[procs:])
-    procs += first_part[0]
+    first_part = get_text_inside_brackets(text[index:])
+    index += first_part[0]
 
     # solve labeled
-    if procs < len(text) - 1 and text[procs] == "[" and text[procs + 1] != "]":
-        second_part = get_text_inside_brackets(text[procs:])
-        return procs + second_part[0], Reference(
+    if index < len(text) - 1 and text[index] == "[" and text[index + 1] != "]":
+        second_part = get_text_inside_brackets(text[index:])
+        return index + second_part[0], Reference(
             Reference.Type.IMPLICIT, image_char, identifier=second_part[1],
             is_footnote=is_footnote)
-    elif procs < len(text) and text[procs] == "(":  # inline links
-        second_part = get_text_inside_brackets(text[procs:])
+    elif index < len(text) and text[index] == "(":  # inline links
+        second_part = get_text_inside_brackets(text[index:])
         second_part_str = second_part[1]
         if second_part_str.find(" ") != -1:
             second_part_str = second_part_str[:second_part_str.find(" ")]
-        return procs + second_part[0], Reference(
+        return index + second_part[0], Reference(
             Reference.Type.INLINE, image_char, identifier=first_part[1],
             link=second_part_str)
-    elif procs < len(text) and text[procs] == ":":  # explicit reference links
+    elif index < len(text) and text[index] == ":":  # explicit reference links
         if is_footnote:  # explicit reference to footnote
-            end_index = text[procs:].find("\n\n")
+            end_index = text[index:].find("\n\n")
             # no two newlines there till end of string
-            end_index = len(text) if end_index < 0 else end_index + procs
+            end_index = len(text) if end_index < 0 else end_index + index
 
             return end_index, Reference(
                 Reference.Type.EXPLICIT, image_char, identifier=first_part[1],
-                link=text[procs + 2:end_index], is_footnote=True)
+                link=text[index + 2:end_index], is_footnote=True)
         # explicit reference link, is ended by first whitespace after ": "
-        link = text[procs + 1:].split(None, 1)[0]
-        return procs + len(link), Reference(Reference.Type.EXPLICIT,
-                                                image_char, first_part[1], link)
+        link = text[index + 1:].split(None, 1)[0]
+        return index + len(link), Reference(Reference.Type.EXPLICIT,
+                                            image_char, first_part[1], link)
     # nothing from previous = implicit reference link
-    return procs, Reference(Reference.Type.IMPLICIT, image_char,
+    return index, Reference(Reference.Type.IMPLICIT, image_char,
                             identifier=first_part[1], is_footnote=is_footnote)
 
 
@@ -177,9 +179,8 @@ def is_todo_or_empty(reference):
     """This methods returns True if the implicit reference represents
     todo list in markdown format (i.e. in format [ ] or [x]) or identifier
     is empty, False otherwise."""
-    return reference.get_type() == Reference.Type.IMPLICIT and \
-        not reference.get_link() \
-        and reference.get_id().lower() in (" ", "x", "")
+    return reference.type == Reference.Type.IMPLICIT and \
+        not reference.link and reference.id.lower() in (" ", "x", "")
 
 
 def get_html_elements_identifiers(document):
