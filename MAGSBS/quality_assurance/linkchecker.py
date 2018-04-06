@@ -284,7 +284,7 @@ class LinkChecker:
                 return  # anchor was found
 
         if not parsed_url.path:
-            e = ErrorMessage(_("A link is referencing to the anchor \"#{}\" "
+            e = ErrorMessage(_("A link is referencing the anchor \"#{}\" "
                                "which does not exist.").format(
                     parsed_url.fragment, path),
                     reference.line_number, reference.file_path)
@@ -292,7 +292,7 @@ class LinkChecker:
             self.errors.append(e)
 
         else:
-            e = ErrorMessage(_("A link referencing to anchor \"#{}\" which "
+            e = ErrorMessage(_("A link references the anchor \"#{}\" which "
                                "does not exist in the file {}.").format(
                     parsed_url.fragment, parsed_url.path),
                     reference.line_number, reference.file_path)
