@@ -17,6 +17,10 @@ This link checker also checks for broken image references.
 
 This link checker does not touch the file system. It requires a list of files
 (as produced by os.walk()) and all links and images provided by LinkExtractor.
+
+Note: Checking of spaces between close square bracket and open parenthesis
+(e.g. [label] (link)) should not be detected by the LinkChecker, because it
+would cause many false positives.
 """
 
 import os
