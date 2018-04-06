@@ -21,7 +21,7 @@ from ..datastructures import Reference
 IDS_REGEX = re.compile(r"<(?:div|span).*?id=[\"'](\S+?)[\"']")
 
 
-def find_links_in_markdown(text, init_lineno=1):
+def find_links_in_markdown(text, init_lineno=1, init_position=1):
     """This function parses the text written in markdown and creates the list
     of instances of class Reference that contain following information:
     reference_type, line_number, id, link, is_image, is_footnote, file_name,
@@ -32,6 +32,7 @@ def find_links_in_markdown(text, init_lineno=1):
     https://pandoc.org/MANUAL.html#links """
     output = []
     lineno = init_lineno  # number of lines that were examined
+    position = init_position  # position on line
     index = 0  # specify the number of chars that were already processed
     escape_next = False  # specify if next char should be escaped
     is_in_formula = False  # specify, if the character is within formula
@@ -39,6 +40,7 @@ def find_links_in_markdown(text, init_lineno=1):
     while index < len(text):
         if text[index] == "\n":  # count lines
             lineno += 1
+            position = 1
         if text[index] == "$" and not escape_next:
             is_in_formula = not is_in_formula
             # handle block formulas
@@ -55,26 +57,30 @@ def find_links_in_markdown(text, init_lineno=1):
             # result processing, but not when it is a to-do list
             if reference and not is_todo_or_empty(reference):
                 reference.line_number = lineno
+                reference.pos_on_line = position
                 output.append(reference)
                 # there should be some inner references within line text
                 if reference.id:
                     for inner_reference in find_links_in_markdown(
-                            reference.id, lineno):
+                            reference.id, lineno, position):
                         output.append(inner_reference)
                 # there should be some inner references in link itself
                 if reference.link:
                     for inner_reference in find_links_in_markdown(
-                            reference.link, lineno):
+                            reference.link, lineno, position):
                         output.append(inner_reference)
-                # need to recalculate the index char and number of lines
+                # recalculate the index char, number of lines and position
                 for _ in range(index, index + chars):
                     index += 1
+                    position += 1
                     if index < len(text) and text[index] == "\n":
                         lineno += 1
+                        position = 1
 
         escape_next = True if index < len(text) and \
             text[index] == "\\" and not escape_next else False
         index += 1
+        position += 1
     return output
 
 
@@ -100,8 +106,8 @@ def extract_link(text):
     elif index < len(text) and text[index] == "(":  # inline links
         second_part = get_text_inside_brackets(text[index:])
         second_part_str = second_part[1]
-        if second_part_str.find(r"\u0020") != -1:
-            second_part_str = second_part_str[:second_part_str.find(r"\u0020")]
+        if second_part_str.find(r" ") != -1:
+            second_part_str = second_part_str[:second_part_str.find(r" ")]
         return index + second_part[0], Reference(
             Reference.Type.INLINE, image_char, identifier=first_part[1],
             link=second_part_str)
@@ -169,15 +175,8 @@ def get_text_inside_brackets(text):
             count_brackets -= 1
         escape_next = True if text[index] == "\\" and not escape_next \
             else False
-        # simulate the pandoc behaviour for \\n
-        if escape_next and index < len(text) - 1 and text[index + 1] == "\n":
-            output += " "  # \\n is changed to space char
-            index += 1  # compensate the removed \n
-            escape_next = False
-        elif text[index] == "\n":
-            output += " "  # replace \n with space char
-        else:
-            output += text[index]
+
+        output += text[index]
         index += 1
 
     return index, output[:-1]

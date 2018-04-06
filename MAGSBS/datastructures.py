@@ -293,13 +293,14 @@ class Reference:
         self.link = self.__clear_link(link)  # link itself
         self.line_number = line_number  # line number where ref occurs
         self.file_path = None  # full path of the file where ref occurs
+        self.pos_on_line = None  # position on line where ref occurs
 
     def get_file_name(self):
         return os.path.basename(self.file_path)
 
     @staticmethod
     def __clear_link(uri):
-        """This function removes the opening angle bracket from the beginning
+        """This method removes the opening angle bracket from the beginning
         of the link and closing angle bracket from the link end."""
         if not uri:
             return None
@@ -308,5 +309,27 @@ class Reference:
             uri = uri[1:]
         if uri.endswith('>'):
             uri = uri[:-1]
-        return uri
 
+        return Reference.__replace_end_of_lines(uri)
+
+    @staticmethod
+    def __replace_end_of_lines(uri):
+        """This method replaces the \n and \\n with spaces.
+        Note: This simulates the pandoc behavior for generating href attribute
+        for references."""
+        output = ""
+        i = 0
+        escape_next = False
+        while i < len(uri):
+            escape_next = True if uri[i] == "\\" and not escape_next else False
+            if escape_next and i < len(uri) - 1 and uri[i + 1] == "\n":
+                output += " "  # \\n is changed to space char
+                i += 1  # compensate the removed \n
+                escape_next = False
+            elif uri[i] == "\n":
+                output += " "  # replace \n with space char
+            else:
+                output += uri[i]  # every other character
+            i += 1
+
+        return output
