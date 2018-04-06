@@ -157,21 +157,21 @@ def get_text_inside_brackets(text):
     bracket_char = text[0]
     closing_bracket_char = brackets_dict[bracket_char]
 
-    procs = 1  # processed characters (bracket is already processed)
+    index = 1  # processed characters (bracket is already processed)
     count_brackets = 1  # counting brackets
     output = ""
     escape_next = False
 
-    while count_brackets > 0 and procs < len(text):
-        if text[procs] == bracket_char and not escape_next:
+    while count_brackets > 0 and index < len(text):
+        if text[index] == bracket_char and not escape_next:
             count_brackets += 1
-        if text[procs] == closing_bracket_char and not escape_next:
+        if text[index] == closing_bracket_char and not escape_next:
             count_brackets -= 1
-        escape_next = True if text[procs] == "\\" and not escape_next \
+        escape_next = True if text[index] == "\\" and not escape_next \
             else False
         if not escape_next:
-            output += text[procs]
-        procs += 1
+            output += text[index]
+        index += 1
 
     return procs, output[:-1]
 
