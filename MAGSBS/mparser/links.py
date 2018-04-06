@@ -100,8 +100,8 @@ def extract_link(text):
     elif index < len(text) and text[index] == "(":  # inline links
         second_part = get_text_inside_brackets(text[index:])
         second_part_str = second_part[1]
-        if second_part_str.find(" ") != -1:
-            second_part_str = second_part_str[:second_part_str.find(" ")]
+        if second_part_str.find(r"\u0020") != -1:
+            second_part_str = second_part_str[:second_part_str.find(r"\u0020")]
         return index + second_part[0], Reference(
             Reference.Type.INLINE, image_char, identifier=first_part[1],
             link=second_part_str)
@@ -169,11 +169,18 @@ def get_text_inside_brackets(text):
             count_brackets -= 1
         escape_next = True if text[index] == "\\" and not escape_next \
             else False
-        if not escape_next:
+        # simulate the pandoc behaviour for \\n
+        if escape_next and index < len(text) - 1 and text[index + 1] == "\n":
+            output += " "  # \\n is changed to space char
+            index += 1  # compensate the removed \n
+            escape_next = False
+        elif text[index] == "\n":
+            output += " "  # replace \n with space char
+        else:
             output += text[index]
         index += 1
 
-    return procs, output[:-1]
+    return index, output[:-1]
 
 
 def is_todo_or_empty(reference):
