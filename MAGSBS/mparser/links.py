@@ -169,7 +169,8 @@ def get_text_inside_brackets(text):
             count_brackets -= 1
         escape_next = True if text[procs] == "\\" and not escape_next \
             else False
-        output += text[procs]
+        if not escape_next:
+            output += text[procs]
         procs += 1
 
     return procs, output[:-1]
