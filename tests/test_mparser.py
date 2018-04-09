@@ -594,3 +594,33 @@ class TestElementsIdsExtractor(unittest.TestCase):
             "<div class=\"test\" id=\"1\"/><span id='2_nd' test='test'/>"
             "<span middle='2_nd' id=\"middle\" test='test'/>")
         self.assertEqual(res, {"1", "2_nd", "middle"}, msg=self.out_msg(res))
+
+#  ###########################################################################
+
+
+class TestUnnumberedHeadings(unittest.TestCase):
+
+    @staticmethod
+    def out_msg(heading):
+        return "Unnumbered detection failed for heading {}".format(heading)
+
+    @staticmethod
+    def get_res(string):
+        pars = mp.file2paragraphs([string])
+        heading = mp.extract_headings_from_par(pars)[0]
+        return heading.get_is_numbered()
+
+    def test_numbered(self):
+        for case in ["# Heading 1", "# Heading 1 {#id}, ## Heading 2\t\t{#2}"]:
+            self.assertTrue(self.get_res(case), self.out_msg(case))
+
+    def test_unnumbered(self):
+        test_cases = ["# Heading 1 {.unnumbered}",
+                      "# Heading 1 {#id .unnumbered}",
+                      "## Heading 2\t\t{-}",
+                      "# Heading {-}",
+                      "### Heading {} {-}",
+                      "# Heading {#id .unnumbered .differentclass}",
+                      "# Heading {#id .differentclass .unnumbered }"]
+        for case in test_cases:
+            self.assertFalse(self.get_res(case), self.out_msg(case))
