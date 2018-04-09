@@ -3,7 +3,7 @@ import unittest, sys, collections, os, itertools
 sys.path.insert(0, '.') # just in case
 import MAGSBS.errors as errors
 import MAGSBS.mparser as mp
-from MAGSBS.datastructures import Reference
+from MAGSBS.datastructures import Reference, Heading
 
 def parse_formulas(doc):
     """Tiny helper to call mp.parse_formulas."""
@@ -609,6 +609,27 @@ class TestUnnumberedHeadings(unittest.TestCase):
         pars = mp.file2paragraphs([string])
         heading = mp.extract_headings_from_par(pars)[0]
         return heading.get_is_numbered()
+
+    def test_head_label(self):
+        test_cases = ["# H 1 {.unnumbered}",
+                      "## H2\t\t\\\{-}",
+                      "# H3  {-",
+                      "### H4 {-}",  # "### Heading {} {-}"
+                      "# H5 {.class .unnumbered .differentclass}",
+                      "# H6 {# .differentclass .unnumbered}",
+                      # "# H6 {# .differentclass .unnumbered }",
+                      "# H7 {unnumbered}",
+                      "# H8 {# .different .unnumbered}"
+                      # r"# H9 \\{#id .unnumbered key=value\\}"]
+                      ]
+        outputs = ["h-1", "h2-", "h3--", "h4",
+                   "h5", "h6-.differentclass-.unnumbered",
+                   "h7-unnumbered", "h8-.different-.unnumbered"]
+                   # ,"id"]
+
+        for i, case in enumerate(test_cases):
+            heading = Heading(case, 0)
+            self.assertEqual(outputs[i], heading.get_id())
 
     def test_numbered(self):
         for case in ["# Heading 1", "# Heading 1 {#id}, ## Heading 2\t\t{#2}"]:

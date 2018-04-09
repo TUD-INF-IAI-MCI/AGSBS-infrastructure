@@ -67,27 +67,91 @@ def decode(in_bytes):
         return output
 
 
+def is_attributes_repr(text):
+    """This function takes the text and determines, whether it represents
+    the attributes given by the PHP Markdown Extra syntax, available at
+    https://michelf.ca/projects/php-markdown/extra/#spe-attr.
+    Note: Shortcut {-} allowed by pandoc is also considered as correct
+    representation of attributes. """
+    if text == "-":
+        return True  # shortcut for unnumbered given by pandoc
+    regex = re.compile("^(#\w+\s*|\.\w+\s*|\w+=\w+\s*)+$")
+    return re.match(regex, text)
+
+
+def extract_label_and_attributes(text):
+    """This function extracts the final heading label and heading attributes
+    from the text. The extraction works in the same way as pandoc's:
+    - only last open curly bracket is taken into account;
+    - detected curly bracket should not be escaped by backslash;
+    - no text after close curly bracket (or there is no close curly bracket
+        at all);
+    - syntax is compatible with PHP Markdown Extra:
+        - https://michelf.ca/projects/php-markdown/extra/#spe-attr
+        - e.g. {#identifier .class .class key=value key=value}.
+    It returns the tuple. First part represents a label for heading (i.e.
+    original text without extracted part that contains attributes). Second part
+    ot the tuple is a list of attributes (whitespaces are used as a
+    separators)."""
+    attributes = []  # parsed attributes
+    label = text.lstrip().rstrip()  # remove redundant whitespaces
+    start_index = label.rfind("{")  # find last opening curly bracket
+    # return same string in case, that text do not contain curly brackets or
+    # if the last curly bracket is escaped by backslash
+    if start_index in {-1, 0}:
+        # curly bracket not find, is the fist non-whitespace char
+        return label, attributes
+
+    # count number of backslashes
+    backslash_counter = 0
+    backslash_index = start_index - 1
+    while backslash_index >= 0 and label[backslash_index] == "\\":
+        backslash_counter += 1
+        backslash_index -= 1
+    if backslash_counter % 2 == 1:  # odd number means escape bracket
+        return label, attributes
+
+    end_index = label.find("}", start_index + 1)
+    if end_index == -1 or end_index != len(label) - 1 or \
+            not is_attributes_repr(label[start_index + 1: end_index]):
+        return label, attributes
+
+    attributes = label[start_index + 1: end_index].split()
+
+    return (label[:start_index] + label[end_index + 1:]).rstrip(), attributes
+
+
+def detect_is_numbered(attributes):
+    """Returns True when attributes do not contain either "-" or ".unnumbered.
+    False otherwise. """
+    return "-" not in attributes and ".unnumbered" not in attributes
+
 
 class Heading:
     """heading(text, level)
-
 This class represents a heading to ease the handling of headings.
-
 For specifying the type of a heading, Heading.Type is used, which is an enum.
 """
     class Type(enum.Enum):
         NORMAL = 0 # most headings are of that type
         APPENDIX = 1
         PREFACE = 2
+
     def __init__(self, text, level):
         self.__line_number = None
-        self.__text = text
-        self.__id = gen_id(text)
+        # removes attributes from the text
+        self.__text, attributes = extract_label_and_attributes(text)
+        # detect if heading is numbered
+        self.__is_numbered = detect_is_numbered(attributes)
+        # id is generated from the parsed text
+        self.__id = gen_id(self.__text)
         self.__level = level
         self.__chapter_number = None
         self.__type = Heading.Type.NORMAL
         self.__chapter_number = None
 
+    def get_is_numbered(self):
+        return self.__is_numbered
 
     def get_chapter_number(self):
         return self.__chapter_number
@@ -129,6 +193,7 @@ For specifying the type of a heading, Heading.Type is used, which is an enum.
 
     def get_line_number(self):
         return self.__line_number
+
 
 def extract_chapter_number(path):
     """extract_chapter_number(path) -> return chapter number
