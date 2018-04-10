@@ -277,7 +277,7 @@ the TOC corrrectly."""
 
         if heading.get_is_numbered():
             # when heading is numbered return it with number
-            return "[{}{}. {}]({}#{})".format(prefix,
+            return "[{}{} {}]({}#{})".format(prefix,
                 ".".join(map(str, chapter_number)), # (int, int...) -> str
                 heading.get_text(), path, heading.get_id())
 
