@@ -14,9 +14,16 @@ from . import roman
 
 CHAPTERNUM = re.compile(r'^[a-z|A-Z]+(\d\d).*\.md')
 
-def gen_id(text):
+def gen_id(text, attributes=None):
     """gen_id(text) -> an text for generating links.
-This function tries to generate the same text's as pandoc."""
+This function tries to generate the same text's as pandoc.
+If id is presented within list of attributes (in a form "#id"), than it is
+used for generation."""
+    if attributes: # generation of id if it is in the list of attributes
+        for attr in attributes:
+            if attr.startswith("#"):
+                return attr[1:]
+
     allowed_characters = ['.', '-', '_']
     text = text.lower()
     res_id = [] # does not contain double dash
@@ -146,7 +153,7 @@ label "Heading" and attributes "{#id .class key=value}".
         # detect if heading is numbered
         self.__is_numbered = detect_is_numbered(attributes)
         # id is generated from the parsed text
-        self.__id = gen_id(self.__text)
+        self.__id = gen_id(self.__text, attributes)
         self.__level = level
         self.__chapter_number = None
         self.__type = Heading.Type.NORMAL

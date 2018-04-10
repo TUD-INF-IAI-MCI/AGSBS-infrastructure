@@ -611,21 +611,26 @@ class TestUnnumberedHeadings(unittest.TestCase):
         return heading.get_is_numbered()
 
     def test_head_label(self):
-        test_cases = ["# H 1 {.unnumbered}",
-                      "## H2\t\t\\\{-}",
-                      "# H3  {-",
-                      "### H4 {-}",  # "### Heading {} {-}"
-                      "# H5 {.class .unnumbered .differentclass}",
-                      "# H6 {# .differentclass .unnumbered}",
-                      # "# H6 {# .differentclass .unnumbered }",
-                      "# H7 {unnumbered}",
-                      "# H8 {# .different .unnumbered}"
-                      # r"# H9 \\{#id .unnumbered key=value\\}"]
-                      ]
+        test_cases = [
+            "H 1 {.unnumbered}", "H2\t\t\\\{-}", "H3  {-", "H4 {-}",
+            "H5 {.class .unnumbered .different}",
+            "H6 {# .differentclass .unnumbered}", "H7 {unnumbered}",
+            "H8 {# .different .unnumbered}", r"H9 \\{#id .unnumbered key=val}",
+            "H12 identifiers in HTML", "[HTML], [S5], or [RTF]?",
+            "3. Applications"]
+        # cases, which generate different identificators than pandoc
+        # format: test_case -> result (expected result)
+        # "H10  {}  {-}" -> "h10-" ("h10")
+        # "H12  {}  {-}" -> "h12-" ("h12")
+        # "H11 {# .class .unnumbered }" -> "h11-.class-.unnumbered-"
+        #       ("h11-.class-.unnumbered")
+        # "*Dogs*?--in *my* house?" -> "dogs--in-my-house" ("dogsin-my-house")
+
         outputs = ["h-1", "h2-", "h3--", "h4",
                    "h5", "h6-.differentclass-.unnumbered",
-                   "h7-unnumbered", "h8-.different-.unnumbered"]
-                   # ,"id"]
+                   "h7-unnumbered", "h8-.different-.unnumbered", "id",
+                   "h12-identifiers-in-html",
+                   "html-s5-or-rtf", "applications"]
 
         for i, case in enumerate(test_cases):
             heading = Heading(case, 0)
