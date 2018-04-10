@@ -72,7 +72,7 @@ def is_attributes_repr(text):
     the attributes given by the PHP Markdown Extra syntax, available at
     https://michelf.ca/projects/php-markdown/extra/#spe-attr.
     Note: Shortcut {-} allowed by pandoc is also considered as correct
-    representation of attributes. """
+    representation of attribute. """
     if text == "-":
         return True  # shortcut for unnumbered given by pandoc
     regex = re.compile("^(#\w+\s*|\.\w+\s*|\w+=\w+\s*)+$")
@@ -117,7 +117,6 @@ def extract_label_and_attributes(text):
         return label, attributes
 
     attributes = label[start_index + 1: end_index].split()
-
     return (label[:start_index] + label[end_index + 1:]).rstrip(), attributes
 
 
@@ -131,6 +130,9 @@ class Heading:
     """heading(text, level)
 This class represents a heading to ease the handling of headings.
 For specifying the type of a heading, Heading.Type is used, which is an enum.
+Given text is parsed in the constructor - it is divided to the label of
+the heading and attributes. E.g. "Heading {#id .class key=value}" is parsed to
+label "Heading" and attributes "{#id .class key=value}".
 """
     class Type(enum.Enum):
         NORMAL = 0 # most headings are of that type
