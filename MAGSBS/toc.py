@@ -190,7 +190,6 @@ the TOC corrrectly."""
                 if heading.get_is_numbered():
                     # only numbered headings are registered for numbering
                     enumerators[h_type].register(heading)
-                enumerators[h_type].register(heading)
                 self.__headings[h_type].append((enumerators[h_type].get_heading_enumeration(),
                     heading, os.path.join(directory_above, file)))
 
