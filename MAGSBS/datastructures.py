@@ -19,7 +19,7 @@ def gen_id(text, attributes=None):
 This function tries to generate the same text's as pandoc.
 If id is presented within list of attributes (in a form "#id"), than it is
 used for generation."""
-    if attributes: # generation of id if it is in the list of attributes
+    if attributes:  # generation of id if it is in the list of attributes
         for attr in attributes:
             if attr.startswith("#"):
                 return attr[1:]
@@ -98,18 +98,18 @@ def extract_label_and_attributes(text):
         - e.g. {#identifier .class .class key=value key=value}.
     It returns the tuple. First part represents a label for heading (i.e.
     original text without extracted part that contains attributes). Second part
-    ot the tuple is a list of attributes (whitespaces are used as a
+    of the tuple is a list of attributes (whitespaces are used as a
     separators)."""
     attributes = []  # parsed attributes
     label = text.lstrip().rstrip()  # remove redundant whitespaces
     start_index = label.rfind("{")  # find last opening curly bracket
     # return same string in case, that text do not contain curly brackets or
     # if the last curly bracket is escaped by backslash
-    if start_index in {-1, 0}:
+    if start_index < 1:
         # curly bracket not find, is the fist non-whitespace char
         return label, attributes
 
-    # count number of backslashes
+    # count number of preceding backslashes
     backslash_counter = 0
     backslash_index = start_index - 1
     while backslash_index >= 0 and label[backslash_index] == "\\":
