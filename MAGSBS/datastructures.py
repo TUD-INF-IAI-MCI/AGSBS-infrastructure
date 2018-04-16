@@ -16,10 +16,10 @@ CHAPTERNUM = re.compile(r'^[a-z|A-Z]+(\d\d).*\.md')
 HEADING_ATTRIBUTES = re.compile("^(#\w+\s*|\.\w+\s*|\w+=\w+\s*)+$")
 
 def gen_id(text, attributes=None):
-    """gen_id(text) -> an text for generating links.
-This function tries to generate the same text's as pandoc.
+    """gen_id(text) -> label
+This function tries to generate the same labels as pandoc for anchors.
 If id is presented within list of attributes (in a form "#id"), than it is
-used for generation."""
+used for generation and the text itself is ignored."""
     if attributes:  # generation of id if it is in the list of attributes
         for attr in attributes:
             if attr.startswith("#"):
@@ -89,10 +89,10 @@ def is_attributes(text):
 
 def extract_label_and_attributes(text):
     """This function extracts the final heading label and heading attributes
-    of the text. The extraction works in the same way as pandoc's:
-    - only the last open curly bracket is taken into account;
+    of the heading text. The extraction works in the same way as pandoc's:
+    - only the last opening curly bracket is taken into account;
     - the detected curly bracket should not be escaped by backslash;
-    - no text after close curly bracket (or there is no close curly bracket
+    - no text after closing curly bracket (or there is no closing curly bracket
         at all);
     - the syntax is compatible with PHP Markdown Extra:
         - https://michelf.ca/projects/php-markdown/extra/#spe-attr
@@ -136,6 +136,7 @@ def detect_is_numbered(attributes):
 
 class Heading:
     """heading(text, level)
+
 This class represents a heading to ease the handling of headings.
 For specifying the type of a heading, Heading.Type is used, which is an enum.
 Given text is parsed in the constructor - it is divided to the label of
