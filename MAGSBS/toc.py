@@ -187,7 +187,7 @@ the TOC corrrectly."""
                     raise TypeError(("Internal error: Heading %s has incorrect"
                             " heading type %s\nFile: %s") % (heading.get_text(),
                                 repr(type(h_type)), os.path.join(directory_above, file)))
-                if heading.get_is_numbered():
+                if heading.is_numbered():
                     # only numbered headings are registered for numbering
                     enumerators[h_type].register(heading)
                 self.__headings[h_type].append((enumerators[h_type].get_heading_enumeration(),
@@ -274,7 +274,7 @@ the TOC corrrectly."""
         if '\\' in path:
             path = path.replace('\\', '/')
 
-        if heading.get_is_numbered():
+        if heading.is_numbered():
             # when heading is numbered return it with number
             return "[{}{} {}]({}#{})".format(prefix,
                 ".".join(map(str, chapter_number)), # (int, int...) -> str

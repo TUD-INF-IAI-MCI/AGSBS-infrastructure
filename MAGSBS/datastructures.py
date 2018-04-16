@@ -160,7 +160,7 @@ label "Heading" and attributes "{#id .class key=value}".
         self.__type = Heading.Type.NORMAL
         self.__chapter_number = None
 
-    def get_is_numbered(self):
+    def is_numbered(self):
         return self.__is_numbered
 
     def get_chapter_number(self):

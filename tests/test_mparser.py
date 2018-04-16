@@ -608,7 +608,7 @@ class TestUnnumberedHeadings(unittest.TestCase):
     def get_res(string):
         pars = mp.file2paragraphs([string])
         heading = mp.extract_headings_from_par(pars)[0]
-        return heading.get_is_numbered()
+        return heading.is_numbered()
 
     def test_head_label(self):
         test_cases = [
