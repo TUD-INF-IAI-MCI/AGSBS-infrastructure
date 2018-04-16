@@ -13,6 +13,7 @@ from . import common
 from . import roman
 
 CHAPTERNUM = re.compile(r'^[a-z|A-Z]+(\d\d).*\.md')
+HEADING_ATTRIBUTES = re.compile("^(#\w+\s*|\.\w+\s*|\w+=\w+\s*)+$")
 
 def gen_id(text, attributes=None):
     """gen_id(text) -> an text for generating links.
@@ -74,39 +75,39 @@ def decode(in_bytes):
         return output
 
 
-def is_attributes_repr(text):
+def is_attributes(text):
     """This function takes the text and determines, whether it represents
     the attributes given by the PHP Markdown Extra syntax, available at
-    https://michelf.ca/projects/php-markdown/extra/#spe-attr.
+    https://michelf.ca/projects/php-markdown/extra/#spe-attr. This syntax
+    is used by pandoc, see https://pandoc.org/MANUAL.html#header-identifiers.
     Note: Shortcut {-} allowed by pandoc is also considered as correct
     representation of attribute. """
     if text == "-":
         return True  # shortcut for unnumbered given by pandoc
-    regex = re.compile("^(#\w+\s*|\.\w+\s*|\w+=\w+\s*)+$")
-    return re.match(regex, text)
+    return re.match(HEADING_ATTRIBUTES, text)
 
 
 def extract_label_and_attributes(text):
     """This function extracts the final heading label and heading attributes
-    from the text. The extraction works in the same way as pandoc's:
-    - only last open curly bracket is taken into account;
-    - detected curly bracket should not be escaped by backslash;
+    of the text. The extraction works in the same way as pandoc's:
+    - only the last open curly bracket is taken into account;
+    - the detected curly bracket should not be escaped by backslash;
     - no text after close curly bracket (or there is no close curly bracket
         at all);
-    - syntax is compatible with PHP Markdown Extra:
+    - the syntax is compatible with PHP Markdown Extra:
         - https://michelf.ca/projects/php-markdown/extra/#spe-attr
         - e.g. {#identifier .class .class key=value key=value}.
     It returns the tuple. First part represents a label for heading (i.e.
-    original text without extracted part that contains attributes). Second part
-    of the tuple is a list of attributes (whitespaces are used as a
-    separators)."""
+    original text without extracting part that contains attributes). Second
+    part of the tuple is a list of attributes (whitespaces are used as a
+    separator)."""
     attributes = []  # parsed attributes
-    label = text.lstrip().rstrip()  # remove redundant whitespaces
+    label = text.strip()  # remove redundant whitespaces
     start_index = label.rfind("{")  # find last opening curly bracket
-    # return same string in case, that text do not contain curly brackets or
-    # if the last curly bracket is escaped by backslash
+    # returns same string in case, that text do not contain curly brackets or
+    # if the last curly bracket is escaped by a backslash
     if start_index < 1:
-        # curly bracket not find, is the fist non-whitespace char
+        # The curly bracket is not found, is the first non-whitespace char
         return label, attributes
 
     # count number of preceding backslashes
@@ -120,7 +121,7 @@ def extract_label_and_attributes(text):
 
     end_index = label.find("}", start_index + 1)
     if end_index == -1 or end_index != len(label) - 1 or \
-            not is_attributes_repr(label[start_index + 1: end_index]):
+            not is_attributes(label[start_index + 1: end_index]):
         return label, attributes
 
     attributes = label[start_index + 1: end_index].split()
