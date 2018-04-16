@@ -40,7 +40,7 @@ By calling the function, the actual index is build."""
         conf = config.ConfFactory().get_conf_instance_safe(self.__dir)
         if conf[MetaInfo.GenerateToc] == 0:
             return # don't generate a TOC
-        for directory, directories, files in fs.get_markdown_files(self.__dir):
+        for directory, _, files in fs.get_markdown_files(self.__dir):
             for file in files:
                 path = os.path.join(directory, file)
                 headings = self.__retrieve_headings_from(path)
@@ -59,8 +59,8 @@ By calling the function, the actual index is build."""
     def __retrieve_headings_from(self, path):
         """Retrieve headings from path and annotate them with 'unedited' if the
         file was not edited yet."""
-        with open(path, 'r', encoding='utf-8') as f:
-            paragraphs = mparser.file2paragraphs(f.read())
+        with open(path, 'r', encoding='utf-8') as cnt:
+            paragraphs = mparser.file2paragraphs(cnt.read())
         headings = mparser.extract_headings(path, paragraphs)
         heading_lines = [h.get_line_number() for h in headings]
 
@@ -135,8 +135,8 @@ class ChapterNumberEnumerator:
         # increment received level
         if heading.get_level() > 1:
             self.__registered[heading.get_level()-1] += 1
-            # all headings below level must be reset to 0 (e.g. 2.1.1 is followed by
-            # 2.2 not 2.2.1)
+            # all headings below level must be reset to 0 (e.g. 2.1.1 is
+            # followed by 2.2 not 2.2.1)
             for index in range(heading.get_level(), len(self.__registered)):
                 self.__registered[index] = 0
 
@@ -148,7 +148,7 @@ class ChapterNumberEnumerator:
         while chapter_number and chapter_number[-1] == 0:
             chapter_number = chapter_number[:-1]
         # if chapter_number is empty, probably chapter 0, so insert the 0 back
-        return (chapter_number if chapter_number  else [0])
+        return chapter_number if chapter_number  else [0]
 
 
 class TocFormatter:
@@ -178,7 +178,8 @@ the TOC corrrectly."""
                 HeadingType.PREFACE: ChapterNumberEnumerator()}
         for path, headings in self.__index.items():
             path, file = os.path.split(path)
-            directory_above = os.path.split(path)[-1] # necessary for relative link
+            # necessary for relative link
+            directory_above = os.path.split(path)[-1]
             for heading in headings:
                 if heading.get_level() > self.conf[MetaInfo.TocDepth]:
                     continue # skip headings above configured threshold
@@ -186,12 +187,14 @@ the TOC corrrectly."""
                 if not isinstance(h_type, HeadingType):
                     raise TypeError(("Internal error: Heading %s has incorrect"
                             " heading type %s\nFile: %s") % (heading.get_text(),
-                                repr(type(h_type)), os.path.join(directory_above, file)))
+                                type(h_type), os.path.join(directory_above, file)))
                 if heading.is_numbered():
-                    # only numbered headings are registered for numbering
+                    # only numbered headings are registered for numbering and
+                    # included in the TOC
                     enumerators[h_type].register(heading)
-                self.__headings[h_type].append((enumerators[h_type].get_heading_enumeration(),
-                    heading, os.path.join(directory_above, file)))
+                    self.__headings[h_type].append((
+                            enumerators[h_type].get_heading_enumeration(),
+                            heading, os.path.join(directory_above, file)))
 
 
 

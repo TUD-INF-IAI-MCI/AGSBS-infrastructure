@@ -10,6 +10,7 @@
 	- slide shows might reuse heading texts multiple times subsequently, remove
 	  duplicates from table of contents; remove Mistkerl checker for this
 	  behaviour as well.
+* correctly handle unnumbered headings
 * allow page number ranges: `|| - page 9-11 -`
 
 0.7 
