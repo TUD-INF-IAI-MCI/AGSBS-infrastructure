@@ -164,14 +164,14 @@ class LinkChecker:
                     and tested_ref.id.lower() == ref_id and \
                     tested_ref.file_path == reference.file_path:
                 return  # it is ok, same identifier has been found
-            e = ErrorMessage(_("Implicit reference with the identifier "
-                                "\"{0}\" does not exist. Please write a "
-                                "reference in a form [{0}] in the markdown "
-                                "file or remove the explicit reference [{0}]:"
-                                " {1}.").format(ref_id, reference.link),
-                              reference.line_number, reference.file_path)
-            e.pos_on_line = reference.pos_on_line
-            self.errors.append(e)
+        e = ErrorMessage(_("Implicit reference with the identifier "
+                            "\"{0}\" does not exist. Please write a "
+                            "reference in a form [{0}] in the markdown "
+                            "file or remove the explicit reference [{0}]:"
+                            " {1}.").format(ref_id, reference.link),
+                          reference.line_number, reference.file_path)
+        e.pos_on_line = reference.pos_on_line
+        self.errors.append(e)
 
     def check_target_availability(self, reference):
         """Checks the links in the explicit (not footnote) or inline
