@@ -3,13 +3,13 @@
 * change from distutils to setuptools, easy installation using pip
 * introduce gettext localisation, localise Mistkerl messages properly
 * Mistkerl:
-	* show correct formula sign for min/max mistkerl checker
-	* accept a file name as input, too
+    * show correct formula sign for min/max mistkerl checker
+    * accept a file name as input, too
 * bug fix: recognise headings with non-letter characters as first character
 * automatically deduplicate headings
-	- slide shows might reuse heading texts multiple times subsequently, remove
-	  duplicates from table of contents; remove Mistkerl checker for this
-	  behaviour as well.
+    - slide shows might reuse heading texts multiple times subsequently, remove
+      duplicates from table of contents; remove Mistkerl checker for this
+      behaviour as well.
 * correctly handle unnumbered headings
 * allow page number ranges: `|| - page 9-11 -`
 

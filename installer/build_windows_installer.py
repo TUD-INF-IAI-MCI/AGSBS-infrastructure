@@ -199,7 +199,7 @@ def compile_scripts(python_command):
     """Compile matuc using py2exe. Cross-compilation is determined by
     `python_command` (either 'python' or 'wine python')."""
     origin = os.getcwd()
-    os.chdir(os.path.join('..', 'matuc')) # change to matuc script source directory
+    os.chdir('..') # change to matuc script source directory
     ret = os.system('%s -m py2exe -b 3 matuc.py' % python_command )
     if ret: # error
         print("Stop installer creation.")
@@ -210,8 +210,7 @@ def compile_scripts(python_command):
         sys.exit(9)
     # move compiled binary files
     for file in os.listdir('dist'):
-        dest = os.path.join('..', # still in matuc/
-                os.path.basename(origin), BUILD_DIRECTORY, file)
+        dest = os.path.join(os.path.basename(origin), BUILD_DIRECTORY, file)
         if not os.path.exists(dest):
             os.rename(os.path.join('dist', file), dest)
     os.chdir(origin)
@@ -221,7 +220,7 @@ def build_installer():
     # move a few files like e.g. README to distribution; MAGSBS and matuc_impl are
     # required, since py2exe doesn't include them properly
     target = lambda x: os.path.join(BUILD_DIRECTORY, x)
-    shutil.copytree(os.path.join('..', 'matuc', 'matuc_impl'), target('matuc_impl'))
+    shutil.copytree(os.path.join('..', 'matuc_impl'), target('matuc_impl'))
     shutil.copytree(os.path.join('..', 'MAGSBS'), target('MAGSBS'))
     shutil.copyfile(os.path.join('..', 'COPYING'), target('COPYING.txt'))
     shutil.copyfile(os.path.join('..', 'README.md'), target('README.md'))
