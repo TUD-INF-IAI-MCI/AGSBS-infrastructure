@@ -164,8 +164,7 @@ The parameter `format` can be supplied to override the configured output format.
             for filter in Pandoc.CONTENT_FILTERS:
                 json_ast = pandocfilters.walk(json_ast, filter,
                         conf[MetaInfo.Format], [])
-            converter.convert(json_ast,
-                contentfilter.get_title(json_ast), path)
+            converter.convert(json_ast, path)
         except KeyError as e: # API clash(?)
             raise errors.StructuralError(("Incompatible Pandoc API found, while "
                 "applying filter %s (ABI clash?).\nKeyError: %s") % \
@@ -233,5 +232,3 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     # navigation bar at end of page
     nav_end = '\n\n* * * *\n\n{0}\n\n{1}\n'.format(navbar, chapternav)
     return (nav_start, nav_end)
-
-

@@ -102,7 +102,7 @@ General usage:
 # convert json of document and write it to basefilename + '.' + format; may
 # raises SubprocessError; the json is the Pandoc AST (intermediate file format)
 >>> if gen.needs_update(path):
-'''    ast = gen.convert(ast, title, path)
+'''    ast = gen.convert(ast, path)
 # clean up, e.g. deletion of templates. Should be executed even if gen.convert()
 # threw an error
 gen.cleanup()."""
@@ -126,10 +126,9 @@ gen.cleanup()."""
         """Set up converter."""
         pass
 
-    def convert(self, json_str, title, base_fn):
+    def convert(self, json_str, base_fn):
         """Read from JSON and return JSON, too.
         json_str: json representation of the documented, encoded as string
-        title: title of document
         path: path to file"""
         pass
 
@@ -218,13 +217,14 @@ class HtmlConverter(OutputGenerator):
                 _('You need to have Pandoc installed.'))
 
 
-    def convert(self, json_ast, title, path):
+    def convert(self, json_ast, path):
         """See super class documentation."""
         self.check_for_pandoc()
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + '.' + self.FILE_EXTENSION
         pandoc_args = ['-s', '--template=%s' % self.template_path]
         # set title
+        title = contentfilter.get_title(json_ast)
         if title: # if not None
             pandoc_args += ['-V', 'pagetitle:' + title, '-V', 'title:' + title]
         # instruct pandoc to enumerate headings
@@ -349,5 +349,3 @@ def remove_temp(fn):
         except OSError:
             common.WarningRegistry().register_warning(
             "Couldn't remove tempfile", path=fn)
-
-
