@@ -16,8 +16,8 @@ setup(
     zip_safe = False,
     entry_points = {
        "console_scripts": [
-            "matuc = matuc:main",
-            "matuc_js = matuc_js:main",
+           "matuc = matuc.matuc:main",
+            "matuc_js = matuc.matuc_js:main",
         ],
     },
     install_requires = [

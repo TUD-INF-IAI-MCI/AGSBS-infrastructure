@@ -18,7 +18,7 @@ from . import contentfilter
 from .. import config, common, datastructures, errors, mparser
 
 
-HTML_template = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+HTML_TEMPLATE = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -95,8 +95,9 @@ class OutputGenerator():
     """Base class for document output generators. The actual conversion doesn't
 take place in this class. The conversion method receives a Pandoc (JSON) AST and
 transforms it, as required. The transformed AST is returned.
-Each child class should have constants called FILE_EXTENSION and PANDOC_FORMAT_NAME
-(used for the file extension and the -t pandoc command line flag).
+Each child class should have constants called FILE_EXTENSION and
+PANDOC_FORMAT_NAME (used for the file extension and the -t pandoc command line
+flag).
 
 General usage:
 >>> gen = MyGenerator(pandoc_ast, language)
@@ -112,8 +113,7 @@ gen.cleanup()."""
     FILE_EXTENSION = 'None'
     PANDOC_FORMAT_NAME = 'plain'
     # json content filters:
-    CONTENT_FILTERS = [contentfilter.page_number_extractor,
-                    contentfilter.suppress_captions]
+    CONTENT_FILTERS = []
     # recognize chapter prefixes in paths, e.g. "anh01" for appendix chapter one
     IS_CHAPTER = re.compile(r'^%s\d+\.md$' % '|'.join(common.VALID_FILE_BGN))
 
@@ -132,7 +132,7 @@ gen.cleanup()."""
         return self.__meta
 
     def setup(self):
-        """Set up converter."""
+        """Set up the converter."""
         pass
 
     def convert(self, files, **kwargs):
@@ -156,21 +156,21 @@ gen.cleanup()."""
     def get_profile(self):
         return self.__conversion_profile
 
-    @staticmethod
-    def load_json(document):
-        """Load JSon input from ''inputf`` and return a reference to the loaded
-        json document tree."""
-        return contentfilter.text2json_ast(document)
-
 class HtmlConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
     PANDOC_FORMAT_NAME = 'html'
     FILE_EXTENSION = 'html'
+    CONTENT_FILTERS = [contentfilter.page_number_extractor,
+                    contentfilter.suppress_captions]
 
     def __init__(self, meta, language):
+        if not shutil.which('pandoc'):
+            raise errors.SubprocessError(['pandoc'],
+                _('You need to have Pandoc installed.'))
+
         super().__init__(meta, language)
         self.template_path = None
-        self.template_copy = HTML_template[:] # in-memory copy of current template to be written when required
+        self.template_copy = HTML_TEMPLATE[:] # full copy
 
     def setup(self):
         """Set up the HtmlConverter. Prepare the template for later use."""
@@ -182,7 +182,7 @@ class HtmlConverter(OutputGenerator):
     def get_template(self):
         """Construct template."""
         start_with_caps = lambda content: content[0].upper() + content[1:]
-        data = HTML_template[:]
+        data = HTML_TEMPLATE[:]
         meta = self.get_meta_data()
         if 'title' in meta:
             meta.pop('title') # title should not be replaced
@@ -228,15 +228,15 @@ class HtmlConverter(OutputGenerator):
 
     def convert(self, files, **kwargs):
         """See super class documentation."""
+        if 'cache' not in kwargs:
+            raise ValueError('cache must be passed to converter')
+        cache = kwargs['cache']
         try:
-            if not 'cache' in kwargs:
-                raise ValueError('cache must be passed to converter')
-            cache = kwargs['cache']
-            c = config.ConfFactory()
+            factory = config.ConfFactory()
             conf = None
             for file_name in files:
                 # get correct configuration for each file
-                newconf = c.get_conf_instance(os.path.dirname(file_name))
+                newconf = factory.get_conf_instance(os.path.dirname(file_name))
                 # get new converter (and template) if config changes
                 if not newconf is conf:
                     conf = newconf
@@ -256,7 +256,7 @@ class HtmlConverter(OutputGenerator):
         build navigation links.
         This function also inserts a page navigation bar to navigate between
         chapters and the table of contents."""
-        # if output file name exists and is newer than the original, it doesn need to be converted again
+        # only convert if output file is newer than input file
         if not self.needs_update(path):
             return
         with open(path, 'r', encoding='utf-8') as f:
@@ -266,26 +266,14 @@ class HtmlConverter(OutputGenerator):
         if OutputGenerator.IS_CHAPTER.search(os.path.basename(path)):
             try:
                 nav_start, nav_end = generate_page_navigation(path, file_cache,
-                    mparser.extract_page_numbers_from_par(mparser.file2paragraphs(document)))
+                    mparser.extract_page_numbers_from_par(
+                            mparser.file2paragraphs(document)))
             except errors.FormattingError as e:
                 e.path = path
                 raise e
             document = '{}\n\n{}\n\n{}\n'.format(nav_start, document, nav_end)
-        json_ast = OutputGenerator.load_json(document)
-        # add MarkDown extensions with Pandoc filters
-        try:
-            filter = None
-            for filter in OutputGenerator.CONTENT_FILTERS:
-                json_ast = pandocfilters.walk(json_ast, filter,
-                        conf[MetaInfo.Format], [])
-            self.__apply_filter(json_ast, path)
-        except KeyError as e: # API clash(?)
-            raise errors.StructuralError(("Incompatible Pandoc API found, while "
-                "applying filter %s (ABI clash?).\nKeyError: %s") % \
-                        (filter.__name__, str(e)), path)
-
-    def __apply_filter(self, json_ast, path):
-        check_for_pandoc()
+        json_ast = contentfilter.load_pandoc_ast(document)
+        self.__apply_filters(json_ast, path, conf[MetaInfo.Format])
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + '.' + self.FILE_EXTENSION
         pandoc_args = ['-s', '--template=%s' % self.template_path]
@@ -299,25 +287,29 @@ class HtmlConverter(OutputGenerator):
                 str(datastructures.extract_chapter_number(path) - 1)]
         except errors.StructuralError:
             pass # no enumeration of headings if not chapter
-        # check whether "Math" occurs and therefore if GladTeX needs to be run
-        use_gladtex = True in contentfilter.json_ast_filter(json_ast,
-                contentfilter.has_math)
-        if use_gladtex and self.get_profile() is ConversionProfile.Blind:
-            outputf = os.path.splitext(filename)[0] + '.htex'
-            pandoc_args.append('--gladtex')
+        # handle maths depending on the conversion profile
+        if self.get_profile() is ConversionProfile.Blind:
+            # this alters the Pandoc document AST -- no return required
+            base_path = os.path.join(dirname, 'bilder')
+            contentfilter.convert_formulas(base_path, json_ast)
         if self.get_profile() is ConversionProfile.VisuallyImpairedDefault:
             pandoc_args.append('--mathjax')
-        execute(['pandoc'] + pandoc_args + ['-t', self.PANDOC_FORMAT_NAME, '-f','json',
-            '+RTS', '-K25000000', '-RTS', # increase stack size
+        execute(['pandoc'] + pandoc_args + ['-t', self.PANDOC_FORMAT_NAME,
+            '-f', 'json', '+RTS', '-K25000000', '-RTS', # increase stack size
             '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
-        if use_gladtex and self.get_profile() is ConversionProfile.Blind:
-            try:
-                execute(["gladtex", "-R", "-n", "-m", "-a", "-d", "bilder",
-                    outputf], cwd=dirname)
-            except errors.SubprocessError as e:
-                raise __handle_gladtex_error(e, filename, dirname)
-            else: # remove GladTeX .htex file
-                remove_temp(os.path.join(dirname, outputf))
+
+
+    def __apply_filters(self, json_ast, path, fmt):
+        """add MarkDown extensions with Pandoc filters"""
+        try:
+            filter = None
+            for filter in self.CONTENT_FILTERS:
+                json_ast = pandocfilters.walk(json_ast, filter, fmt, [])
+        except KeyError as e: # API clash(?)
+            raise errors.StructuralError(("Incompatible Pandoc API found, while "
+                "applying filter %s (ABI clash?).\nKeyError: %s") % \
+                        (filter.__name__, str(e)), path)
+
     def cleanup(self):
         remove_temp(self.template_path)
 
@@ -373,11 +365,6 @@ def remove_temp(fn):
             common.WarningRegistry().register_warning(
             "Couldn't remove tempfile", path=fn)
 
-def check_for_pandoc():
-    if not shutil.which('pandoc'):
-        raise errors.SubprocessError(['pandoc'],
-            _('You need to have Pandoc installed.'))
-
 def __handle_gladtex_error(error, file_path, dirname):
     """Retrieve formula position from GladTeX' error output, match it
     against the formula of the Markdown document and report it to the
@@ -428,28 +415,29 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     page numbers must have the format of mparser.extract_page_numbers_from.
     `conf=` should not be used, it is intended for testing purposes.
     Returned is a tuple with the start and the end navigation bar. The
-    navigation bar itself is a string.
-    """
+    navigation bar itself is a string."""
     if not os.path.exists(file_path):
         raise errors.StructuralError("File doesn't exist", file_path)
     if not file_cache:
         raise ValueError("Cache with values may not be None")
     if not conf:
-        conf = config.ConfFactory().get_conf_instance(os.path.split(file_path)[0])
+        conf = config.ConfFactory().get_conf_instance(os.path.dirname(file_path))
     trans = config.Translate()
     trans.set_language(conf[MetaInfo.Language])
     relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
-    previous, next = file_cache.get_neighbours_for(relative_path)
+    previous, nxt = file_cache.get_neighbours_for(relative_path)
     make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
         '.' + conf[MetaInfo.Format]))
     if previous:
         previous = '[{}]({})'.format(trans.get_translation('previous').title(),
                 make_path(previous))
-    if next:
-        next = '[{}]({})'.format(trans.get_translation('next').title(), make_path(next))
+    if nxt:
+        nxt = '[{}]({})'.format(trans.get_translation('next').title(),
+                make_path(nxt))
     navbar = []
+    # take each pnumgapth element
     page_numbers = [pnum for pnum in page_numbers
-        if (pnum.number % conf[MetaInfo.PageNumberingGap]) == 0] # take each pnumgapth element
+        if (pnum.number % conf[MetaInfo.PageNumberingGap]) == 0]
     if page_numbers:
         navbar.append(trans.get_translation('pages').title() + ': ')
         navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
@@ -460,10 +448,11 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
 
     if previous:
         chapternav = previous + '  ' + chapternav
-    if next:
-        chapternav += "  " + next
+    if nxt:
+        chapternav += "  " + nxt
     # navigation at start of page
     nav_start = '{0}\n\n{1}\n\n* * * *\n\n\n'.format(chapternav, navbar)
     # navigation bar at end of page
     nav_end = '\n\n* * * *\n\n{0}\n\n{1}\n'.format(navbar, chapternav)
     return (nav_start, nav_end)
+

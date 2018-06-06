@@ -14,6 +14,7 @@ import subprocess
 import sys
 
 import gleetex
+import gleetex.pandoc
 import pandocfilters
 
 from .. import config
@@ -67,10 +68,10 @@ def heading_extractor(key, value, fmt, meta, modify_ast=False):
 def file2json_ast(file_name):
     """Read in specified file and return a JSON AST."""
     with open(file_name, encoding='utf-8') as file:
-        return text2json_ast(file.read())
+        return load_pandoc_ast(file.read())
 
-def text2json_ast(text):
-    """Run pandoc and return parsed JSON AST."""
+def load_pandoc_ast(text):
+    """Run pandoc on given document and return parsed JSON AST."""
     command = ['pandoc', '-f', 'markdown', '-t', 'json']
     proc = subprocess.Popen(command, stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -139,7 +140,7 @@ def convert_formulas(base_path, ast):
     conv = gleetex.cachedconverter.CachedConverter(base_path, True,
             encoding="UTF-8")
     conv.set_replace_nonascii(True)
-    conv.convert_all(formulas)
+    conv.convert_all(base_path, formulas)
     # an converted image has information like image depth and height and hence
     # the data structure is different
     formulas = [conv.get_data_for(eqn, style) for _p, style, eqn in formulas]
