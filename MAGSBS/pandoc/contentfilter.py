@@ -22,18 +22,6 @@ from ..errors import SubprocessError
 
 html = lambda text: pandocfilters.RawBlock('html', text)
 
-def join_para(chunks):
-    """join_para(chunks)
-Pandoc's json is recursively nested. To search for a particular string (like we
-do for page numbers), all text chunks have to be joined."""
-    string = ''
-    for chunk in chunks:
-        if isinstance(chunk['c'], list) and chunk['t'] == 'Space':
-            string += ' '
-        else:
-            string += chunk['c']
-    return string
-
 def page_number_extractor(key, value, fmt, meta):
     """Scan all paragraphs for those starting with || to parse it for page
 numbering information."""
