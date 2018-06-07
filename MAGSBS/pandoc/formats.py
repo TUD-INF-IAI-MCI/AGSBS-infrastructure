@@ -8,9 +8,12 @@
 import enum
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
+import pandocfilters
+from ..config import MetaInfo
 from . import contentfilter
 from .. import config, common, datastructures, errors, mparser
 
@@ -108,6 +111,12 @@ General usage:
 gen.cleanup()."""
     FILE_EXTENSION = 'None'
     PANDOC_FORMAT_NAME = 'plain'
+    # json content filters:
+    CONTENT_FILTERS = [contentfilter.page_number_extractor,
+                    contentfilter.suppress_captions]
+    # recognize chapter prefixes in paths, e.g. "anh01" for appendix chapter one
+    IS_CHAPTER = re.compile(r'^%s\d+\.md$' % '|'.join(common.VALID_FILE_BGN))
+
     def __init__(self, meta, language):
         self.__meta = meta
         self.__language = language
@@ -116,8 +125,8 @@ gen.cleanup()."""
     def get_language(self):
         return self.__language
 
-    def set_meta_data(self, data):
-        self.__meta = data
+    def set_meta_data(self, meta):
+        self.__meta = meta
 
     def get_meta_data(self):
         return self.__meta
@@ -126,10 +135,10 @@ gen.cleanup()."""
         """Set up converter."""
         pass
 
-    def convert(self, json_str, base_fn):
+    def convert(self, files, **kwargs):
         """Read from JSON and return JSON, too.
-        json_str: json representation of the documented, encoded as string
-        path: path to file"""
+        files: files to be converted
+        kwargs: filter specific arguments"""
         pass
 
     def cleanup(self):
@@ -146,6 +155,12 @@ gen.cleanup()."""
 
     def get_profile(self):
         return self.__conversion_profile
+
+    @staticmethod
+    def load_json(document):
+        """Load JSon input from ''inputf`` and return a reference to the loaded
+        json document tree."""
+        return contentfilter.text2json_ast(document)
 
 class HtmlConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
@@ -198,9 +213,9 @@ class HtmlConverter(OutputGenerator):
 
         try:
             return data.format(annotation=annotation,
-                    frames = '\n    '.join(frames),
-                    boxes = '\n    '.join(boxes),
-                    title = trans.get_translation("title"),
+                    frames='\n    '.join(frames),
+                    boxes='\n    '.join(boxes),
+                    title=trans.get_translation("title"),
                     **meta)
         except KeyError as e:
             raise errors.ConfigurationError(("The key %s is missing in the "
@@ -211,15 +226,66 @@ class HtmlConverter(OutputGenerator):
         super().set_meta_data(meta)
         self.setup()
 
-    def check_for_pandoc(self):
-        if not shutil.which('pandoc'):
-            raise errors.SubprocessError(['pandoc'],
-                _('You need to have Pandoc installed.'))
-
-
-    def convert(self, json_ast, path):
+    def convert(self, files, **kwargs):
         """See super class documentation."""
-        self.check_for_pandoc()
+        try:
+            if not 'cache' in kwargs:
+                raise ValueError('cache must be passed to converter')
+            cache = kwargs['cache']
+            c = config.ConfFactory()
+            conf = None
+            for file_name in files:
+                # get correct configuration for each file
+                newconf = c.get_conf_instance(os.path.dirname(file_name))
+                # get new converter (and template) if config changes
+                if not newconf is conf:
+                    conf = newconf
+                self.__convert_document(file_name, cache, conf)
+        except errors.MAGSBS_error as e:
+            # set path for error
+            if not e.path:
+                e.path = os.path.abspath(file_name)
+            raise e
+        finally:
+            self.cleanup()
+
+    def __convert_document(self, path, file_cache, conf):
+        """Convert a document by a given path. It takes a converter which takes
+        actual care of the underlying format. The filecache caches the list of
+        files in the lecture. The list of files within a lecture is required to
+        build navigation links.
+        This function also inserts a page navigation bar to navigate between
+        chapters and the table of contents."""
+        # if output file name exists and is newer than the original, it doesn need to be converted again
+        if not self.needs_update(path):
+            return
+        with open(path, 'r', encoding='utf-8') as f:
+            document = f.read()
+        if not document:
+            return # skip empty documents
+        if OutputGenerator.IS_CHAPTER.search(os.path.basename(path)):
+            try:
+                nav_start, nav_end = generate_page_navigation(path, file_cache,
+                    mparser.extract_page_numbers_from_par(mparser.file2paragraphs(document)))
+            except errors.FormattingError as e:
+                e.path = path
+                raise e
+            document = '{}\n\n{}\n\n{}\n'.format(nav_start, document, nav_end)
+        json_ast = OutputGenerator.load_json(document)
+        # add MarkDown extensions with Pandoc filters
+        try:
+            filter = None
+            for filter in OutputGenerator.CONTENT_FILTERS:
+                json_ast = pandocfilters.walk(json_ast, filter,
+                        conf[MetaInfo.Format], [])
+            self.__apply_filter(json_ast, path)
+        except KeyError as e: # API clash(?)
+            raise errors.StructuralError(("Incompatible Pandoc API found, while "
+                "applying filter %s (ABI clash?).\nKeyError: %s") % \
+                        (filter.__name__, str(e)), path)
+
+    def __apply_filter(self, json_ast, path):
+        check_for_pandoc()
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + '.' + self.FILE_EXTENSION
         pandoc_args = ['-s', '--template=%s' % self.template_path]
@@ -249,54 +315,11 @@ class HtmlConverter(OutputGenerator):
                 execute(["gladtex", "-R", "-n", "-m", "-a", "-d", "bilder",
                     outputf], cwd=dirname)
             except errors.SubprocessError as e:
-                raise self.__handle_gladtex_error(e, filename, dirname)
+                raise __handle_gladtex_error(e, filename, dirname)
             else: # remove GladTeX .htex file
                 remove_temp(os.path.join(dirname, outputf))
     def cleanup(self):
         remove_temp(self.template_path)
-
-    def __handle_gladtex_error(self, error, file_path, dirname):
-        """Retrieve formula position from GladTeX' error output, match it
-        against the formula of the Markdown document and report it to the
-        user.
-        Note: file_path is relative to dirname, so both is required."""
-        file_path = os.path.join(dirname, file_path) # full path is better
-        try:
-            details = dict(line.split(': ', 1) for line in error.message.split('\n')
-                if ': ' in line)
-        except ValueError as e:
-            # output was not formatted as expected, report that
-            msg = "couldn't parse GladTeX output: %s\noutput: %s" % \
-                (str(e), error.message)
-            return errors.SubprocessError(error.command, msg, path=dirname)
-        if details and 'Number' in details and 'Message' in details:
-            number = int(details['Number'])
-            with open(file_path, 'r', encoding='utf-8') as f:
-                paragraphs = mparser.rm_codeblocks(mparser.file2paragraphs(
-                    f.read().split('\n')))
-                formulas = mparser.parse_formulas(paragraphs)
-            try:
-                pos = list(formulas.keys())[number-1]
-            except IndexError:
-                # if improperly closed maths environments eixst, formulas cannot
-                # be counted; although there's somewhere a LaTeX error which
-                # we're trying to report, the improper maths environments HAVE
-                # to reported and fixed first
-                raise errors.SubprocessError(error.command, _(
-                        "LaTeX reported an error while converting a fomrula. "
-                        "Unfortunately, improperly closed formula environments "
-                        "exist, therefore it cannot be determined which formula "
-                        "was errorneous. Please re-read the document and fix "
-                        "any unclosed formula environments."), file_path)
-
-            # get LaTeX error output
-            msg = details['Message'].rstrip().lstrip()
-            msg = 'formula: {}\n{}'.format(list(formulas.values())[number-1], msg)
-            e = errors.SubprocessError(error.command, msg, path=file_path)
-            e.line = '{}, {}'.format(*pos)
-            return e
-        else:
-            return error
 
     def needs_update(self, path):
         # if file exists and input is newer than output, needs to be converted
@@ -349,3 +372,98 @@ def remove_temp(fn):
         except OSError:
             common.WarningRegistry().register_warning(
             "Couldn't remove tempfile", path=fn)
+
+def check_for_pandoc():
+    if not shutil.which('pandoc'):
+        raise errors.SubprocessError(['pandoc'],
+            _('You need to have Pandoc installed.'))
+
+def __handle_gladtex_error(error, file_path, dirname):
+    """Retrieve formula position from GladTeX' error output, match it
+    against the formula of the Markdown document and report it to the
+    user.
+    Note: file_path is relative to dirname, so both is required."""
+    file_path = os.path.join(dirname, file_path) # full path is better
+    try:
+        details = dict(line.split(': ', 1) for line in error.message.split('\n')
+            if ': ' in line)
+    except ValueError as e:
+        # output was not formatted as expected, report that
+        msg = "couldn't parse GladTeX output: %s\noutput: %s" % \
+            (str(e), error.message)
+        return errors.SubprocessError(error.command, msg, path=dirname)
+    if details and 'Number' in details and 'Message' in details:
+        number = int(details['Number'])
+        with open(file_path, 'r', encoding='utf-8') as f:
+            paragraphs = mparser.rm_codeblocks(mparser.file2paragraphs(
+                f.read().split('\n')))
+            formulas = mparser.parse_formulas(paragraphs)
+        try:
+            pos = list(formulas.keys())[number-1]
+        except IndexError:
+            # if improperly closed maths environments eixst, formulas cannot
+            # be counted; although there's somewhere a LaTeX error which
+            # we're trying to report, the improper maths environments HAVE
+            # to reported and fixed first
+            raise errors.SubprocessError(error.command, _(
+                    "LaTeX reported an error while converting a fomrula. "
+                    "Unfortunately, improperly closed formula environments "
+                    "exist, therefore it cannot be determined which formula "
+                    "was errorneous. Please re-read the document and fix "
+                    "any unclosed formula environments."), file_path)
+
+        # get LaTeX error output
+        msg = details['Message'].rstrip().lstrip()
+        msg = 'formula: {}\n{}'.format(list(formulas.values())[number-1], msg)
+        e = errors.SubprocessError(error.command, msg, path=file_path)
+        e.line = '{}, {}'.format(*pos)
+        return e
+    return error
+
+#pylint: disable=redefined-variable-type,too-many-locals
+def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
+    """generate_page_navigation(path, file_cache, page_numbers, conf=None)
+    Generate the page navigation for a page. The file path must be relative to
+    the lecture root. The file cache must be the datastructures.FileCache, the
+    page numbers must have the format of mparser.extract_page_numbers_from.
+    `conf=` should not be used, it is intended for testing purposes.
+    Returned is a tuple with the start and the end navigation bar. The
+    navigation bar itself is a string.
+    """
+    if not os.path.exists(file_path):
+        raise errors.StructuralError("File doesn't exist", file_path)
+    if not file_cache:
+        raise ValueError("Cache with values may not be None")
+    if not conf:
+        conf = config.ConfFactory().get_conf_instance(os.path.split(file_path)[0])
+    trans = config.Translate()
+    trans.set_language(conf[MetaInfo.Language])
+    relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
+    previous, next = file_cache.get_neighbours_for(relative_path)
+    make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
+        '.' + conf[MetaInfo.Format]))
+    if previous:
+        previous = '[{}]({})'.format(trans.get_translation('previous').title(),
+                make_path(previous))
+    if next:
+        next = '[{}]({})'.format(trans.get_translation('next').title(), make_path(next))
+    navbar = []
+    page_numbers = [pnum for pnum in page_numbers
+        if (pnum.number % conf[MetaInfo.PageNumberingGap]) == 0] # take each pnumgapth element
+    if page_numbers:
+        navbar.append(trans.get_translation('pages').title() + ': ')
+        navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
+        navbar[-1] = navbar[-1][:-2] # strip ", " from last chunk
+    navbar = ''.join(navbar)
+    chapternav = '[{}](../inhalt.{})'.format(trans.get_translation(
+            'table of contents').title(), conf[MetaInfo.Format])
+
+    if previous:
+        chapternav = previous + '  ' + chapternav
+    if next:
+        chapternav += "  " + next
+    # navigation at start of page
+    nav_start = '{0}\n\n{1}\n\n* * * *\n\n\n'.format(chapternav, navbar)
+    # navigation bar at end of page
+    nav_end = '\n\n* * * *\n\n{0}\n\n{1}\n'.format(navbar, chapternav)
+    return (nav_start, nav_end)

@@ -641,4 +641,3 @@ def insert_line(lines, line_number, line):
         if lines[line_number+1].strip(): # no newline at end
             lines = lines[:line_number+1] + [''] + lines[line_number+1:]
     return lines
-

@@ -112,4 +112,3 @@ files are converted."""
             conv.set_conversion_profile(self._profile)
             conv.convert_files(files_to_convert)
             os.chdir(orig_cwd)
-
