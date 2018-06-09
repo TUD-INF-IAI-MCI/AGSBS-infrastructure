@@ -95,15 +95,15 @@ class OutputGenerator():
     """Base class for document output generators. The actual conversion doesn't
 take place in this class. The conversion method receives a Pandoc (JSON) AST and
 transforms it, as required. The transformed AST is returned.
-Each child should have constants called FILE_EXTENSION and PANDOC_FORMAT_NAME
+Each child class should have constants called FILE_EXTENSION and PANDOC_FORMAT_NAME
 (used for the file extension and the -t pandoc command line flag).
 
 General usage:
->>> gen = MyGenerator(a_dictionary, language)
-# method for children to implement (optional) things like template creation
->>> gen.setup() # needs to be called anyway
+>>> gen = MyGenerator(pandoc_ast, language)
+# method for child classes to implement (optional) things like template creation
+>>> gen.setup() # set up, if required (always called)
 # convert json of document and write it to basefilename + '.' + format; may
-# raises SubprocessError; the json is the Pandoc AST (intermediate file format)
+# raise SubprocessError; the JSON is the Pandoc AST (intermediate file format)
 >>> if gen.needs_update(path):
 '''    ast = gen.convert(ast, path)
 # clean up, e.g. deletion of templates. Should be executed even if gen.convert()
@@ -136,8 +136,8 @@ gen.cleanup()."""
         pass
 
     def convert(self, files, **kwargs):
-        """Read from JSON and return JSON, too.
-        files: files to be converted
+        """Convert given files using Pandoc.
+        files: Pandoc JSON AST (dictionaries)
         kwargs: filter specific arguments"""
         pass
 
