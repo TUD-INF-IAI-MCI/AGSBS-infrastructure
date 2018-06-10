@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """
 This file contains a parser parsing certain syntactical structures of MarkDown
 to be used for further post-processing. It is not a full MarkDown parser, but a
@@ -18,7 +18,7 @@ from .headings import extract_headings_from_par, extract_headings
 from .remove_codeblocks import rm_codeblocks
 from .links import get_html_elements_identifiers, find_links_in_markdown
 
-# this must be in mparser, because otherwise there will be a cyclic dependency
+# this has to be in mparser, because otherwise there will be a cyclic dependency
 # between mparser and filesystem
 def joined_line_iterator(lines):
     """joined_line_iterator(iterable)
@@ -273,6 +273,6 @@ def parse_formulas(paragraphs):
         formulas.update(parse_single_dollar_formulas(''.join(parsed_paragraph),
             start_line=start_lnum))
     ordered = collections.OrderedDict()
-    for key in sorted(formulas):
-        ordered[key] = formulas[key]
+    for position in sorted(formulas):
+        ordered[position] = formulas[position]
     return ordered

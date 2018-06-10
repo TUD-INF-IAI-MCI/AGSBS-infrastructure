@@ -3,7 +3,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2016-2018 Sebastian Humenda <shumenda@gmx.de>
 #
 # This file contains the command-line frontend for the MAGSBS module, with a
 # user-friendly text interface. Most of the functionality is implemented in

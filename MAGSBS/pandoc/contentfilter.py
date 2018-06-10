@@ -18,7 +18,7 @@ import gleetex.pandoc
 import pandocfilters
 
 from .. import config
-from ..errors import SubprocessError
+from ..errors import MathError, SubprocessError
 
 
 html = lambda text: pandocfilters.RawBlock('html', text)
@@ -140,7 +140,13 @@ def convert_formulas(base_path, ast):
     conv = gleetex.cachedconverter.CachedConverter(base_path, True,
             encoding="UTF-8")
     conv.set_replace_nonascii(True)
-    conv.convert_all(base_path, formulas)
+    try:
+        conv.convert_all(base_path, formulas)
+    except gleetex.cachedconverter.ConversionException as gle:
+        raise MathError(_('Incorrect formula: {reason}').format(
+                reason=gle.cause), gle.formula,
+                formula_count=gle.formula_count) from None
+
     # an converted image has information like image depth and height and hence
     # the data structure is different
     formulas = [conv.get_data_for(eqn, style) for _p, style, eqn in formulas]

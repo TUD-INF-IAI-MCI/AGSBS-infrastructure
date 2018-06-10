@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 import pandocfilters
 from ..config import MetaInfo
+from ..errors import MathError
 from . import contentfilter
 from .. import config, common, datastructures, errors, mparser
 
@@ -231,9 +232,9 @@ class HtmlConverter(OutputGenerator):
         if 'cache' not in kwargs:
             raise ValueError('cache must be passed to converter')
         cache = kwargs['cache']
+        factory = config.ConfFactory()
+        conf = None
         try:
-            factory = config.ConfFactory()
-            conf = None
             for file_name in files:
                 # get correct configuration for each file
                 newconf = factory.get_conf_instance(os.path.dirname(file_name))
@@ -241,13 +242,26 @@ class HtmlConverter(OutputGenerator):
                 if not newconf is conf:
                     conf = newconf
                 self.__convert_document(file_name, cache, conf)
-        except errors.MAGSBS_error as e:
-            # set path for error
-            if not e.path:
-                e.path = os.path.abspath(file_name)
-            raise e
+        except errors.MAGSBS_error as err:
+            if not err.path:
+                err.path = file_name
+            raise err
         finally:
             self.cleanup()
+
+    def __handle_error(self, file_name, err):
+        # set path for error
+        if not err.path:
+            err.path = os.path.abspath(file_name).replace(os.getcwd(), '').\
+                    lstrip(os.sep)
+        if not isinstance(err, MathError):
+            raise err
+        # recover line and pos of formula
+        eqns = mparser.parse_formulas(mparser.file2paragraphs(open(file_name)))
+        line, pos = list(eqns.keys())[err.formula_count - 1]
+        err.line = line
+        err.pos = pos
+        raise err from None # no TB here
 
     def __convert_document(self, path, file_cache, conf):
         """Convert a document by a given path. It takes a converter which takes
@@ -259,8 +273,8 @@ class HtmlConverter(OutputGenerator):
         # only convert if output file is newer than input file
         if not self.needs_update(path):
             return
-        with open(path, 'r', encoding='utf-8') as f:
-            document = f.read()
+        with open(path, 'r', encoding='utf-8') as file:
+            document = file.read()
         if not document:
             return # skip empty documents
         if OutputGenerator.IS_CHAPTER.search(os.path.basename(path)):
@@ -270,7 +284,7 @@ class HtmlConverter(OutputGenerator):
                             mparser.file2paragraphs(document)))
             except errors.FormattingError as e:
                 e.path = path
-                raise e
+                raise e from None
             document = '{}\n\n{}\n\n{}\n'.format(nav_start, document, nav_end)
         json_ast = contentfilter.load_pandoc_ast(document)
         self.__apply_filters(json_ast, path, conf[MetaInfo.Format])
@@ -287,11 +301,7 @@ class HtmlConverter(OutputGenerator):
                 str(datastructures.extract_chapter_number(path) - 1)]
         except errors.StructuralError:
             pass # no enumeration of headings if not chapter
-        # handle maths depending on the conversion profile
-        if self.get_profile() is ConversionProfile.Blind:
-            # this alters the Pandoc document AST -- no return required
-            base_path = os.path.join(dirname, 'bilder')
-            contentfilter.convert_formulas(base_path, json_ast)
+        # for 'blind' see __apply_filters, doesn't need a Pandoc argument
         if self.get_profile() is ConversionProfile.VisuallyImpairedDefault:
             pandoc_args.append('--mathjax')
         execute(['pandoc'] + pandoc_args + ['-t', self.PANDOC_FORMAT_NAME,
@@ -309,6 +319,14 @@ class HtmlConverter(OutputGenerator):
             raise errors.StructuralError(("Incompatible Pandoc API found, while "
                 "applying filter %s (ABI clash?).\nKeyError: %s") % \
                         (filter.__name__, str(e)), path)
+        # use GleeTeX if configured
+        if self.get_profile() is ConversionProfile.Blind:
+            try:
+                # this alters the Pandoc document AST -- no return required
+                base_path = os.path.join(os.path.dirname(path), 'bilder')
+                contentfilter.convert_formulas(base_path, json_ast)
+            except MathError as err:
+                self.__handle_error(path, err)
 
     def cleanup(self):
         remove_temp(self.template_path)
@@ -381,9 +399,9 @@ def __handle_gladtex_error(error, file_path, dirname):
         return errors.SubprocessError(error.command, msg, path=dirname)
     if details and 'Number' in details and 'Message' in details:
         number = int(details['Number'])
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, 'r', encoding='utf-8') as file:
             paragraphs = mparser.rm_codeblocks(mparser.file2paragraphs(
-                f.read().split('\n')))
+                file.read().split('\n')))
             formulas = mparser.parse_formulas(paragraphs)
         try:
             pos = list(formulas.keys())[number-1]
