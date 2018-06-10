@@ -1,5 +1,4 @@
-"""
-Error classes to be used in the whole MAGSBS module. Ideally 90 % of all
+"""Error classes to be used in the whole MAGSBS module. Ideally 90 % of all
 exceptions would be caught and re-raised (if applicable) with sensible
 contextual information."""
 
@@ -9,11 +8,12 @@ import shlex
 
 class MAGSBS_error(Exception):
     """Just a parent."""
-    def __init__(self, message):
-        super().__init__(message)
+    def __init__(self, message, path=None, line=None, pos=None):
         self.message = message
-        self.path = None
-        self.line = None
+        self.path = path
+        self.line = line
+        self.pos = pos
+        super().__init__(str(self))
 
     def to_json(self, **kwargs):
         """Convert error object to json with attributes message, line and path
@@ -24,10 +24,17 @@ class MAGSBS_error(Exception):
             data['path'] = self.path
         if self.line:
             data['line'] = self.line
+        if self.pos: # position on line
+            data['position'] = self.pos
         data['message'] = self.message
         if kwargs:
             data.update(kwargs)
         return data
+    def __str__(self):
+        fmt = lambda b, pre: ('' if not b else '%s%s' % (pre, b))
+        pathlinepos = '%s%s%s' % (fmt(self.path, ''), fmt(self.line, ', '),
+                fmt(self.pos, ':'))
+        return '%s: %s' % (fmt(pathlinepos, ''), self.message)
 
 
 class SubprocessError(MAGSBS_error):
@@ -65,7 +72,7 @@ class ConfigurationError(MAGSBS_error):
             prefix += 'from'
         return '{} {}: {}'.format(prefix, self.path, self.message)
 
-   
+
 class StructuralError(MAGSBS_error):
     """StructuralError(msg, path)
     Structural errors like wrong file name endings, wrong directory structures,
@@ -83,7 +90,7 @@ class StructuralError(MAGSBS_error):
 class FormattingError(MAGSBS_error):
     """FormattingError(msg, excerpt, path=None)
     Report formatting error. It is adviced to provide a path, but it is not
-    mandatory. the `excerpt` is used to show an example of where the formatting
+    mandatory. The `excerpt` is used to show an example of where the formatting
     error occurred."""
     def __init__(self, msg, excerpt, path=None, line=None):
         self.excerpt = excerpt
@@ -101,4 +108,15 @@ class FormattingError(MAGSBS_error):
         return '%s%s%s\nExcerpt: %s' % (prefix, (': ' if prefix else ''),
                 self.message, self.excerpt)
 
+class MathError(MAGSBS_error):
+    #pylint: disable=too-many-arguments
+    def __init__(self, msg, formula, path=None, line=None, pos=None,
+            formula_count=None):
+        self.formula = formula
+        msg = '%s\n  %s' % (msg, formula)
+        super().__init__(msg, path=path, line=line, pos=pos)
+        self.formula_count = formula_count
+
+    def __str__(self):
+        return super().__str__()
 
