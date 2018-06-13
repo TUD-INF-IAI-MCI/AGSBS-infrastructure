@@ -20,11 +20,8 @@ from .. import config
 from ..errors import SubprocessError
 
 
-def html(x):
-    """html(x)
-The string x is transformed into an RawBlock for Pandoc's usage."""
-    assert isinstance(x, str)
-    return pandocfilters.RawBlock('html', x)
+html = lambda text: pandocfilters.RawBlock('html', text)
+
 
 def join_para(chunks):
     """join_para(chunks)
@@ -38,17 +35,10 @@ Pandoc's json is recursively nested. To search for a particular string (like we
             str += chunk['c']
     return str
 
-
-def has_math(key, value, format, meta, modify_ast=False):
-    """Return True, if a math environment has been found."""
-    if key.lower() == "math":
-        return True
-
-
-def page_number_extractor(key, value, format, meta):
+def page_number_extractor(key, value, fmt, meta):
     """Scan all paragraphs for those starting with || to parse it for page
 numbering information."""
-    if not (format == 'html' or format == 'html5'):
+    if not (fmt == 'html' or fmt == 'html5'):
         return
     if key == 'Para' and value:
         # find first obj with content (line breaks don't have this)
@@ -70,9 +60,9 @@ numbering information."""
                         pnum.groups()[1], text))
 
 
-def suppress_captions(key, value, format, meta, modify_ast=True):
+def suppress_captions(key, value, fmt, meta, modify_ast=True):
     """Images on a paragraph of its own get a caption, suppress that."""
-    if modify_ast and not format in ['html', 'html5']:
+    if modify_ast and not fmt in ['html', 'html5']:
         return
     if key == 'Image':
         # value consists of a list with the last item being a list again; this
