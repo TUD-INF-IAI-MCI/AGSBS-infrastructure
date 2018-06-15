@@ -13,19 +13,21 @@ import json
 import subprocess
 import sys
 
+import pandocfilters
+
 import gleetex
 import gleetex.pandoc
-import pandocfilters
 
 from .. import config
 from ..errors import MathError, SubprocessError
 
 
-html = lambda text: pandocfilters.RawBlock('html', text)
+HTML = lambda text: pandocfilters.RawBlock('html', text)
 
+#pylint: disable=inconsistent-return-statements
 def page_number_extractor(key, value, fmt, meta):
     """Scan all paragraphs for those starting with || to parse it for page
-numbering information."""
+    numbering information."""
     if not (fmt == 'html' or fmt == 'html5'):
         return
     if key == 'Para' and value:
@@ -44,7 +46,7 @@ numbering information."""
             if pnum:
                 # strip the first ||
                 text = text[2:].lstrip().rstrip()
-                return html('<p><span id="p{0}">{1}</span></p>'.format(
+                return HTML('<p><span id="p{0}">{1}</span></p>'.format(
                         pnum.groups()[1], text))
 
 
@@ -93,6 +95,7 @@ def json_ast_filter(doc, action):
     if not isinstance(doc, (dict, list)):
         raise TypeError("A JSON AST is required, got %s" % type(doc))
     result = []
+    #pylint: disable=invalid-name
     def go(key, value, fmt, meta):
         res = action(key, value, fmt, meta, modify_ast=False)
         if res:
@@ -156,4 +159,3 @@ def convert_formulas(base_path, ast):
         # this alters the AST reference, so no return value required
         gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast['blocks'],
                 formulas)
-

@@ -18,7 +18,7 @@ from ..errors import MathError
 from . import contentfilter
 from .. import config, common, datastructures, errors, mparser
 
-
+#pylint: disable=line-too-long
 HTML_TEMPLATE = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
 <head>
@@ -249,7 +249,8 @@ class HtmlConverter(OutputGenerator):
         finally:
             self.cleanup()
 
-    def __handle_error(self, file_name, err):
+    @staticmethod
+    def __handle_error(file_name, err):
         # set path for error
         if not err.path:
             err.path = os.path.abspath(file_name).replace(os.getcwd(), '').\
@@ -263,6 +264,7 @@ class HtmlConverter(OutputGenerator):
         err.pos = pos
         raise err from None # no TB here
 
+    #pylint: disable=too-many-locals
     def __convert_document(self, path, file_cache, conf):
         """Convert a document by a given path. It takes a converter which takes
         actual care of the underlying format. The filecache caches the list of
@@ -312,9 +314,9 @@ class HtmlConverter(OutputGenerator):
     def __apply_filters(self, json_ast, path, fmt):
         """add MarkDown extensions with Pandoc filters"""
         try:
-            filter = None
-            for filter in self.CONTENT_FILTERS:
-                json_ast = pandocfilters.walk(json_ast, filter, fmt, [])
+            filter_ = None
+            for filter_ in self.CONTENT_FILTERS:
+                json_ast = pandocfilters.walk(json_ast, filter_, fmt, [])
         except KeyError as e: # API clash(?)
             raise errors.StructuralError(("Incompatible Pandoc API found, while "
                 "applying filter %s (ABI clash?).\nKeyError: %s") % \
@@ -326,7 +328,7 @@ class HtmlConverter(OutputGenerator):
                 base_path = os.path.join(os.path.dirname(path), 'bilder')
                 contentfilter.convert_formulas(base_path, json_ast)
             except MathError as err:
-                self.__handle_error(path, err)
+                HtmlConverter.__handle_error(path, err)
 
     def cleanup(self):
         remove_temp(self.template_path)
@@ -353,7 +355,6 @@ def execute(args, stdin=None, cwd=None):
     text = ''
     try:
         if stdin:
-            #pylint: disable=redefined-variable-type
             proc = subprocess.Popen(args, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, stdin=subprocess.PIPE, cwd=cwd)
             text = proc.communicate(stdin.encode(datastructures.get_encoding()))
@@ -425,7 +426,7 @@ def __handle_gladtex_error(error, file_path, dirname):
         return e
     return error
 
-#pylint: disable=redefined-variable-type,too-many-locals
+#pylint: disable=too-many-locals
 def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     """generate_page_navigation(path, file_cache, page_numbers, conf=None)
     Generate the page navigation for a page. The file path must be relative to
@@ -473,4 +474,3 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     # navigation bar at end of page
     nav_end = '\n\n* * * *\n\n{0}\n\n{1}\n'.format(navbar, chapternav)
     return (nav_start, nav_end)
-

@@ -54,12 +54,15 @@ The parameter `format` can be supplied to override the configured output format.
         self.__meta_data['path'] = None
         self.__conv_profile = ConversionProfile.Blind
 
-    def get_formatter_for_format(self, format):
+    def get_formatter_for_format(self, format_):
         """Get converter object."""
         try: # get new instance
             return next(filter(lambda converter: \
-                    converter.PANDOC_FORMAT_NAME == format,
-                    ACTIVE_CONVERTERS))(self.__meta_data, self.__conf[MetaInfo.Language])
+                    converter.PANDOC_FORMAT_NAME == format_,
+                    ACTIVE_CONVERTERS))(
+                        self.__meta_data,
+                        self.__conf[MetaInfo.Language]
+                    )
         except StopIteration:
             supported_formats = ', '.join(map(lambda c: c.PANDOC_FORMAT_NAME, \
                 self.converters))
@@ -72,7 +75,8 @@ The parameter `format` can be supplied to override the configured output format.
         self.__meta_data = {key.name: val  for key, val in conf.items()}
         self.__meta_data['path'] = conf.get_path()
 
-    def __get_cache(self, files):
+    @staticmethod
+    def __get_cache(files):
         """See convert() for documentation."""
         if isinstance(files, datastructures.FileCache):
             cache = files
@@ -80,14 +84,14 @@ The parameter `format` can be supplied to override the configured output format.
         elif isinstance(files, (list, tuple)):
             try:
                 lecture_root = get_lecture_root(files[0])
-                fw = filesystem.FileWalker(lecture_root)
+                file_walker = filesystem.FileWalker(lecture_root)
             except errors.StructuralError as e:
                 # a single file doesn't need to be in a lecture
                 if len(files) == 1:
-                    fw = filesystem.FileWalker(os.path.abspath("."))
+                    file_walker = filesystem.FileWalker(os.path.abspath("."))
                 else:
                     raise e from None
-            cache = datastructures.FileCache(fw.walk())
+            cache = datastructures.FileCache(file_walker.walk())
         else:
             raise TypeError(("files argument must be either a list or tuple of "
                 "file names or a FileCache object"))
@@ -97,7 +101,7 @@ The parameter `format` can be supplied to override the configured output format.
         """converts a list of files. They should share all the meta data, except
         for the title. All files must be part of one lecture.
         `files` can be either a cache object or a list of files to convert."""
-        cache, files = self.__get_cache(files)
+        cache, files = Pandoc.__get_cache(files)
         converter = None # declare in outer scope for finally
         converter = self.get_formatter_for_format(self.__conf[MetaInfo.Format])
         converter.set_meta_data(self.__meta_data)
