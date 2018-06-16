@@ -323,12 +323,20 @@ class HtmlConverter(OutputGenerator):
                         (filter.__name__, str(e)), path)
         # use GleeTeX if configured
         if self.get_profile() is ConversionProfile.Blind:
+            cwd = os.getcwd()
             try:
+                # GladTeX will take the full base_path for linking the image;
+                # since the link needs to be relative to the HTML file, we need
+                # to change to the corresponding chapter for image creation,
+                # because each image folder is relative to the chapter
+                # directory
+                os.chdir(os.path.dirname(path))
                 # this alters the Pandoc document AST -- no return required
-                base_path = os.path.join(os.path.dirname(path), 'bilder')
-                contentfilter.convert_formulas(base_path, json_ast)
+                contentfilter.convert_formulas('bilder', json_ast)
             except MathError as err:
                 HtmlConverter.__handle_error(path, err)
+            finally:
+                os.chdir(cwd)
 
     def cleanup(self):
         remove_temp(self.template_path)
