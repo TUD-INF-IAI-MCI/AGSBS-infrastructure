@@ -22,7 +22,7 @@ from .. import config
 from ..errors import MathError, SubprocessError
 
 
-HTML = lambda text: pandocfilters.RawBlock('html', text)
+html = lambda text: pandocfilters.RawBlock('html', text)
 
 #pylint: disable=inconsistent-return-statements
 def page_number_extractor(key, value, fmt, meta):
@@ -46,7 +46,7 @@ def page_number_extractor(key, value, fmt, meta):
             if pnum:
                 # strip the first ||
                 text = text[2:].lstrip().rstrip()
-                return HTML('<p><span id="p{0}">{1}</span></p>'.format(
+                return html('<p><span id="p{0}">{1}</span></p>'.format(
                         pnum.groups()[1], text))
 
 
@@ -86,22 +86,6 @@ def load_pandoc_ast(text):
         "Pandoc gave error status %s: %s" % (ret, error))
     text = data[0].decode(sys.getdefaultencoding())
     return json.loads(text)
-
-
-def json_ast_filter(doc, action):
-    """Walk the specified JSon tree and apply the supplied action. Return all
-    values for which "action" returned something (so effictively filter for
-    None)"""
-    if not isinstance(doc, (dict, list)):
-        raise TypeError("A JSON AST is required, got %s" % type(doc))
-    result = []
-    #pylint: disable=invalid-name
-    def go(key, value, fmt, meta):
-        res = action(key, value, fmt, meta, modify_ast=False)
-        if res:
-            result.append(res)
-    pandocfilters.walk(doc, go, "", doc['blocks'])
-    return result
 
 
 #pylint: disable=too-few-public-methods
