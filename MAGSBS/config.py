@@ -64,7 +64,7 @@ def _get_localedir():
             if any(locpattern.search(f) for f in os.listdir(directory)):
                 return directory
     common.WarningRegistry().register_warning(
-            "Error, couldn't find locales directory.") # → None
+            "Couldn't find locales directory.") # → None
 
 def setup_i18n():
     """Set up internationalisation support in MAGSBS/matuc."""
