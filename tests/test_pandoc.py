@@ -1,11 +1,10 @@
 # This file does NOT test pandoc, but MAGSBS.pandoc ;)
-#pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
+#pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports,invalid-name
 import os, shutil, tempfile, unittest, json
 from MAGSBS.config import MetaInfo
 import MAGSBS.datastructures as datastructures
 import MAGSBS.errors as errors
 import MAGSBS.pandoc as pandoc
-from MAGSBS.pandoc.formats import ConversionProfile
 
 # these are the already normalized keys of the MetaInfo enum
 META_DATA = {'Editor': 'unique1',
@@ -26,6 +25,23 @@ def get_html_converter(meta_data=META_DATA, template=None):
     return h
 
 
+def mkcache(file):
+    return datastructures.FileCache([('.', [os.path.dirname(file)], []),
+        (os.path.dirname(file), [], [os.path.basename(file)])])
+
+class CleverTmpDir(tempfile.TemporaryDirectory):
+    def __init__(self):
+        self.cwd = os.getcwd()
+        super().__init__()
+
+    def __enter__(self):
+        super().__enter__()
+        os.chdir(self.name)
+
+    def __exit__(self, a, b, c):
+        os.chdir(self.cwd)
+        super().__exit__(a, b, c)
+        
 class test_HTMLConverter(unittest.TestCase):
     def setUp(self):
         self.original_directory = os.getcwd()
@@ -66,14 +82,16 @@ class test_HTMLConverter(unittest.TestCase):
         self.assertTrue(os.path.exists(h.template_path))
 
     def test_title_is_contained_in_document(self):
-        # example json document; title is "It works!"
-        json_document = json.loads('{"blocks":[{"t":"Header","c":[1,["it-works",[],[]],[{"t":"Str","c":"It"},{"t":"Space"},{"t":"Str","c":"works!"}]]},{"t":"Para","c":[{"t":"Str","c":"blub"}]}],"pandoc-api-version":[1,17,0,4],"meta":{}}')
-
-        h = get_html_converter()
-        h.convert(json_document, 'It works!', 'k99.md')
-        with open('k99.html') as f:
-            data = f.read()
-        self.assertTrue('<title>It works!</title>' in data)
+        with CleverTmpDir():
+            path = os.path.join('k99', 'k99.md')
+            os.mkdir(os.path.dirname(path))
+            with open(path, 'w', encoding='utf-8') as file:
+                file.write("It works!\n=======\n\nbla\nblub\n")
+            h = get_html_converter()
+            h.convert([path], cache=mkcache(path))
+            with open(path.replace('.md', '.html')) as f:
+                data = f.read()
+            self.assertTrue('<title>It works!</title>' in data)
 
     def test_that_missing_key_raises_conf_error(self):
         meta = dict(META_DATA)
@@ -83,14 +101,17 @@ class test_HTMLConverter(unittest.TestCase):
     def test_that_language_is_set_in_body(self):
         meta = META_DATA.copy()
         meta['Language'] = 'fr'
-        # example json document; title is "It works!"
-        json_document = json.loads('{"blocks":[{"t":"Header","c":[1,["it-works",[],[]],[{"t":"Str","c":"It"},{"t":"Space"},{"t":"Str","c":"works!"}]]},{"t":"Para","c":[{"t":"Str","c":"blub"}]}],"pandoc-api-version":[1,17,0,4],"meta":{}}')
-        h = get_html_converter(meta)
-        h.convert(json_document, 'It works!', 'k99.md')
-        with open('k99.html') as f:
-            data = f.read()
-        bodypos = data.find('<body')
-        self.assertTrue('<body lang="fr"' in data or "<body lang='fr'" in data,
+        with CleverTmpDir():
+            path = os.path.join('k99', 'k99.md') # path within lecture
+            os.mkdir(os.path.dirname(path))
+            with open(path, 'w') as file:
+                file.write('It works!\n=========\n\nblah\nblub\n')
+            h = get_html_converter(meta)
+            h.convert([path], cache=mkcache(path))
+            with open(path.replace('.md', '.html')) as f:
+                data = f.read()
+            bodypos = data.find('<body')
+            self.assertTrue('<body lang="fr"' in data or "<body lang='fr'" in data,
                 repr(data[bodypos:bodypos+250]))
 
 
@@ -127,7 +148,7 @@ class TestNavbarGeneration(unittest.TestCase):
 
     def gen_nav(self, path, cache=None, pnums=None, conf=None):
         pnums = (pnums if pnums else self.pagenumbers)
-        return pandoc.converter.generate_page_navigation(path,
+        return pandoc.formats.generate_page_navigation(path,
                 (cache if cache else self.cache),
                 pnums,
                 conf=conf)
@@ -152,7 +173,7 @@ class TestNavbarGeneration(unittest.TestCase):
         conf = {MetaInfo.Language : 'de', MetaInfo.PageNumberingGap: 5,
         MetaInfo.Format: 'html'}
         path = 'k01/k01.md' # that has been initilized in the setup method
-        start, end = pandoc.converter.generate_page_navigation(path, self.cache, pnums, conf=conf)
+        start, end = pandoc.formats.generate_page_navigation(path, self.cache, pnums, conf=conf)
         self.assertTrue('[V]' in start+end,
             "Expected page number V in output, but couldn't be found: " + repr(start))
 

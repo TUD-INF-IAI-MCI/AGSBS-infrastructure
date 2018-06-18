@@ -272,7 +272,7 @@ class FileCache:
     def __presort(self, file_list):
         """Presort chapters into preface, main and appendix."""
         for directory, _, files in file_list:
-            relative_dirname = os.path.split(directory)[1]
+            relative_dirname = os.path.basename(directory)
             for file in files:
                 if not file.endswith('.md'):
                     continue
@@ -309,7 +309,7 @@ class FileCache:
             ('k02/k02.md', None) # has no next chapter
             """
         directory, file_name = os.path.split(os.path.abspath(path))
-        _, directory = os.path.split(directory)
+        directory = os.path.basename(directory)
         file_path = (directory, file_name)
         files = self.__preface + self.__main + self.__appendix
         for index, other_path in enumerate(files):
