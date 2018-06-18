@@ -48,24 +48,38 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         re.VERBOSE)
 
 
+def _get_localedir():
+    """Make Gettext more flexible to work  on more platforms."""
+    localedirs = [
+            "locale", # current directory
+            # one level above this file (for development)
+            os.path.join(dirname(dirname(os.path.realpath(__file__))),
+                "locale"),
+            # Python  default location
+            gettext._default_localedir
+        ]
+    locpattern = re.compile(r'[a-z|A-Z]{2}_?(?:[A-Z|a-z]{2})?\.?.*')
+    for directory in localedirs:
+        if os.path.exists(directory):
+            if any(locpattern.search(f) for f in os.listdir(directory)):
+                return directory
+    common.WarningRegistry().register_warning(
+            "Error, couldn't find locales directory.") # → None
+
 def setup_i18n():
     """Set up internationalisation support in MAGSBS/matuc."""
     # ignore country suffix for now, we are lucky if we find localisation for
     # German or Spanish and we do not care too much about the rather small
     # differences between these, for *now*
     lang = None
-    # ToDo: use a more clever algorithm for autodiscovery + manual creation for
-    # development usage
-    CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
-            "locale")
+    localedir = _get_localedir()
+    trans = None
+    try:
+        trans = gettext.translation("matuc", localedir=localedir,
+            languages=[locale.getdefaultlocale()[0][:2]])
+    except (FileNotFoundError, AttributeError):
+        trans = gettext.translation("matuc", localedir=localedir, fallback=True)
 
-    trans = gettext.translation("matuc", localedir=CONFIG_DIR, fallback=True)
-    if locale.getdefaultlocale()[0] and len(locale.getdefaultlocale()[0]) > 2:
-        try:
-            trans = gettext.translation("matuc", localedir=CONFIG_DIR,
-                languages=[locale.getdefaultlocale()[0][:2]])
-        except FileNotFoundError:
-            pass # use English without noise
     trans.install()
 
 
@@ -425,4 +439,5 @@ class Translate:
         s = self.get_translation(origin)
         return s[:1].upper() + s[1:] if s else ''
 
-setup_i18n()
+if __name__ != '__test__':
+    setup_i18n()
