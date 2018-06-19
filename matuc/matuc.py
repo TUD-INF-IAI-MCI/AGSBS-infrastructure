@@ -16,7 +16,10 @@ import shutil
 import sys
 import textwrap
 import MAGSBS
-from . import matuc_impl
+try:
+    from . import matuc_impl
+except SystemError: # usually happens when executing from source
+    import matuc_impl
 
 def get_terminal_size():
     """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""

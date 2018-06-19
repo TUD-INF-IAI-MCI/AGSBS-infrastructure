@@ -4,12 +4,15 @@ matuc and alters the OutputFormatter to print JSON."""
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2016-2018 Sebastian Humenda <shumenda@gmx.de>
 
 import json
 import os
 import sys
-from . import matuc_impl
+try:
+    from . import matuc_impl
+except SystemError: # usually happens when executing from source
+    import matuc_impl
 
 # enable debugging for matuc_js, since it is an API internface and it is
 # useful to report errors when they occur
