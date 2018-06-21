@@ -16,7 +16,7 @@ from .config import MetaInfo
 #pylint: disable=too-many-instance-attributes
 class ImageDescription():
     """
-ImageDescription(image_path)
+ImageDescription(image_path, file_extension)
 
 
 Store and format a picture description. It is important here to read all the
@@ -38,7 +38,7 @@ data is either a dictionary with keys 'internal' and 'external', where
 edited text, i.e. into the chapter, 'external' is meant to be included in the
 file containing outsourced image descriptions.
 """
-    def __init__(self, image_path):
+    def __init__(self, image_path, file_extension):
         self.__conf = config.ConfFactory().get_conf_instance( \
                 os.path.split(image_path)[0])
         l10N = config.Translate()
@@ -53,7 +53,7 @@ file containing outsourced image descriptions.
         self.__outsource_descriptions = False
         # maximum length of image description before outsourcing it
         self.img_maxlength = 100
-        self.__outsource_path = _('images') + '.' + self.__conf[MetaInfo.Format]
+        self.__outsource_path = _('images') + '.' + file_extension
 
     def set_description(self, desc):
         """Set alternative image description."""
@@ -119,4 +119,3 @@ file containing outsourced image descriptions.
                 title, '-' * len(title), self.__description)
         return {'internal': self.get_outsourcing_link(),
                 'external': external_text}
-

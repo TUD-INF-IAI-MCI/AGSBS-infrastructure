@@ -188,6 +188,9 @@ class main():
                   metavar="FILENAME", default='stdout')
         parser.add_argument('directory',
                 help='Input directory where search for headings is performed.')
+        parser.add_argument("-f", dest="format",
+                  help="select output format",
+                  metavar="FMT", default=None)
         options = parser.parse_args(args)
 
         file = None
@@ -204,8 +207,11 @@ class main():
             c = MAGSBS.toc.HeadingIndexer(directory)
             c.walk()
             if not c.is_empty():
+                from MAGSBS.pandoc.formats import OutputFormat
                 fmt = MAGSBS.toc.TocFormatter(c.get_index(),
-                        directory)
+                        directory,
+                        (OutputFormat.Html if not options.format
+                            else OutputFormat.from_string(options.format)))
                 file.write(fmt.format())
                 if isinstance(file, io.StringIO):
                     file.seek(0)
@@ -230,9 +236,6 @@ sub-directory configurations or initialization of a new project."""
                   action="store_true", default=False)
         parser.add_argument("-A", dest="SourceAuthor",
                   help="set author of source document", default=None)
-        parser.add_argument("-f", dest="Format",
-                  help="select output format",
-                  metavar="FMT", default=None)
         parser.add_argument("-e", dest="Editor",
                   help="set editor",
                   metavar="NAME", default=None)
@@ -297,6 +300,9 @@ sub-directory configurations or initialization of a new project."""
         """Convert files."""
         parser = HelpfulParser(cmd, self.output_formatter, "Convert a file from MarkDown "
                     "to HTML.")
+        parser.add_argument("-f", dest="format",
+                  help="select output format",
+                  metavar="FMT", default=None)
         parser.add_argument("-p", dest="profile",
                 help=('profile for conversion; valid profiles are blind or '
                     'vid (default profile for visually impaired), default is blind'))
@@ -313,6 +319,8 @@ sub-directory configurations or initialization of a new project."""
             p = MAGSBS.pandoc.converter.Pandoc()
             if args.profile:
                 p.set_conversion_profile(MAGSBS.pandoc.formats.ConversionProfile.from_string(args.profile))
+            if args.format:
+                p.set_output_format(MAGSBS.pandoc.formats.OutputFormat.from_string(args.format))
             p.convert_files((args.file,))
 
 
@@ -330,6 +338,9 @@ sub-directory configurations or initialization of a new project."""
         parser.add_argument("-t", "--title", dest="title",
                 default=None,
                 help="set title for outsourced images (mandatory if outsourced)")
+        parser.add_argument("-f", dest="format",
+                  help="select output format",
+                  metavar="FMT", default=None)
         parser.add_argument('path', nargs="?", help="path to image file")
         options = parser.parse_args(args)
         if not options.path:
@@ -339,7 +350,8 @@ sub-directory configurations or initialization of a new project."""
             desc = sys.stdin.read()
         else:
             desc = options.description
-        img = MAGSBS.factories.ImageDescription(options.path)
+        img = MAGSBS.factories.ImageDescription(options.path,
+            MAGSBS.pandoc.formats.OutputFormat.from_string(options.format))
         img.set_description(desc)
         img.set_outsource_descriptions(options.outsource)
         if options.title:
@@ -482,6 +494,9 @@ sub-directory configurations or initialization of a new project."""
         parser.add_argument("-p", dest="profile",
                 help=('profile for conversion; valid  profiles are blind or '
                     'vid (default profile for visually impaired), default is blind'))
+        parser.add_argument("-f", dest="format",
+                  help="select output format",
+                  metavar="FMT", default=None)
         parser.add_argument("directory", help="input file or directory")
         args = parser.parse_args(args)
         if not os.path.exists(args.directory):
@@ -492,10 +507,12 @@ sub-directory configurations or initialization of a new project."""
                     + args.directory)
             sys.exit(98)
         with ErrorHandler(self.output_formatter):
-            from MAGSBS.pandoc.formats import ConversionProfile
+            from MAGSBS.pandoc.formats import ConversionProfile, OutputFormat
             m = MAGSBS.master.Master(args.directory,
                     (ConversionProfile.Blind if not args.profile
-                        else ConversionProfile.from_string(args.profile)))
+                        else ConversionProfile.from_string(args.profile)),
+                    (OutputFormat.Html if not args.format
+                        else OutputFormat.from_string(args.format)))
             m.run()
 
     def handle_addpnum(self, cmd, args):

@@ -26,7 +26,7 @@ file so that we actually have multiple roots (a forest). This is necessary for
 lectures containing e.g. lecture and exercise material.  For each root the
 navigation bar and the table of contents is generated; afterwards all MarkDown
 files are converted."""
-    def __init__(self, path, profile):
+    def __init__(self, path, profile, output_format):
         if os.path.exists(path):
             if os.path.isfile(path):
                 raise OSError("Operation can only be applied to directories.")
@@ -35,6 +35,7 @@ files are converted."""
                     "on a whole lecture, not on particular chapters."), path)
         self._roots = self.__findroot(path)
         self._profile = profile
+        self._output_format = output_format
 
     def get_roots(self):
         return self._roots
@@ -101,7 +102,10 @@ files are converted."""
                 c.walk()
                 if not c.is_empty():
                     index = c.get_index()
-                    md_creator = toc.TocFormatter(index, ".")
+                    file_extension = pandoc.converter.get_file_extension(
+                        self._output_format.value
+                    )
+                    md_creator = toc.TocFormatter(index, ".", file_extension)
                     with open("inhalt.md", 'w', encoding="utf-8") as file:
                         file.write(md_creator.format())
 
@@ -110,5 +114,6 @@ files are converted."""
                     for dir, _, flist in filesystem.get_markdown_files(".", True)
                     for f in flist]
             conv.set_conversion_profile(self._profile)
+            conv.set_output_format(self._output_format)
             conv.convert_files(files_to_convert)
             os.chdir(orig_cwd)

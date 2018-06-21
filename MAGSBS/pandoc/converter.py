@@ -13,7 +13,7 @@ the field converters of the pandoc class.
 #pylint: disable=multiple-imports
 
 import os
-from .formats import ConversionProfile, HtmlConverter
+from .formats import ConversionProfile, HtmlConverter, OutputFormat
 from .. import config
 from ..config import MetaInfo
 from .. import common
@@ -21,6 +21,8 @@ from .. import datastructures
 from .. import errors
 from .. import filesystem
 
+
+ACTIVE_CONVERTERS = [HtmlConverter]
 
 def get_lecture_root(some_file):
     """Return lecture root for a file or raise exception if it cannot be
@@ -39,20 +41,32 @@ def get_lecture_root(some_file):
             "for this file"), path)
 
 
-ACTIVE_CONVERTERS = [HtmlConverter]
+def get_file_extension(format_):
+    """Get converter file extension for a specific format."""
+    try: # get new instance
+        return next(filter(lambda converter: \
+                converter.PANDOC_FORMAT_NAME == format_,
+                ACTIVE_CONVERTERS)).FILE_EXTENSION
+    except StopIteration:
+        supported_formats = ', '.join(map(lambda c: c.PANDOC_FORMAT_NAME, \
+            ACTIVE_CONVERTERS))
+        raise NotImplementedError(("The configured format {} is not "
+            "supported at the moment. Supported formats: {}").format(
+            format, supported_formats))
+
 
 class Pandoc:
     """Abstract the translation by pandoc into a class which add meta-information
 to the output, handles errors and checks for the correct encoding.
-The parameter `format` can be supplied to override the configured output format.
 """
     def __init__(self, conf=None):
-        self.converters = [HtmlConverter]
+        self.converters = ACTIVE_CONVERTERS
         self.__conf = (config.ConfFactory().get_conf_instance(os.getcwd())
                 if not conf else conf)
         self.__meta_data = {k.name: v  for k, v in self.__conf.items()}
         self.__meta_data['path'] = None
         self.__conv_profile = ConversionProfile.Blind
+        self.__output_format = OutputFormat.Html
 
     def get_formatter_for_format(self, format_):
         """Get converter object."""
@@ -103,7 +117,7 @@ The parameter `format` can be supplied to override the configured output format.
         `files` can be either a cache object or a list of files to convert."""
         cache, files = Pandoc.__get_cache(files)
         converter = None # declare in outer scope for finally
-        converter = self.get_formatter_for_format(self.__conf[MetaInfo.Format])
+        converter = self.get_formatter_for_format(self.__output_format.value)
         converter.set_meta_data(self.__meta_data)
         converter.setup()
         converter.set_profile(self.__conv_profile)
@@ -115,6 +129,8 @@ The parameter `format` can be supplied to override the configured output format.
                     type(ConversionProfile))
         self.__conv_profile = profile
 
-    def get_convert_profile(self):
-        """Return profile for conversion"""
-        return self.__conv_profile
+    def set_output_format(self, format_):
+        if not isinstance(format_, OutputFormat):
+            raise TypeError("Expected format of type " + \
+                    type(OutputFormat))
+        self.__output_format = format_

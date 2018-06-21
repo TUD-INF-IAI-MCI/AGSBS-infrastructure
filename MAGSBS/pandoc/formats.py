@@ -92,6 +92,18 @@ class ConversionProfile(enum.Enum):
         known = ', '.join(x.value for x in ConversionProfile)
         raise ValueError("Unknown profile, known profiles: " + known)
 
+class OutputFormat(enum.Enum):
+    """Defines the enums for the output format."""
+    Html = 'html'
+
+    @staticmethod
+    def from_string(string):
+        for format_ in OutputFormat:
+            if format_.value == string:
+                return format_
+        known = ', '.join(x.value for x in OutputFormat)
+        raise ValueError("Unknown output format, known formats: " + known)
+
 class OutputGenerator():
     """Base class for document output generators. The actual conversion doesn't
 take place in this class. The conversion method receives a Pandoc (JSON) AST and
@@ -156,6 +168,7 @@ gen.cleanup()."""
 
     def get_profile(self):
         return self.__conversion_profile
+
 
 class HtmlConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
@@ -232,16 +245,9 @@ class HtmlConverter(OutputGenerator):
         if 'cache' not in kwargs:
             raise ValueError('cache must be passed to converter')
         cache = kwargs['cache']
-        factory = config.ConfFactory()
-        conf = None
         try:
             for file_name in files:
-                # get correct configuration for each file
-                newconf = factory.get_conf_instance(os.path.dirname(file_name))
-                # get new converter (and template) if config changes
-                if not newconf is conf:
-                    conf = newconf
-                self.__convert_document(file_name, cache, conf)
+                self.__convert_document(file_name, cache)
         except errors.MAGSBS_error as err:
             if not err.path:
                 err.path = file_name
@@ -265,7 +271,7 @@ class HtmlConverter(OutputGenerator):
         raise err from None # no TB here
 
     #pylint: disable=too-many-locals
-    def __convert_document(self, path, file_cache, conf):
+    def __convert_document(self, path, file_cache):
         """Convert a document by a given path. It takes a converter which takes
         actual care of the underlying format. The filecache caches the list of
         files in the lecture. The list of files within a lecture is required to
@@ -283,13 +289,14 @@ class HtmlConverter(OutputGenerator):
             try:
                 nav_start, nav_end = generate_page_navigation(path, file_cache,
                     mparser.extract_page_numbers_from_par(
-                            mparser.file2paragraphs(document)))
+                            mparser.file2paragraphs(document)),
+                    self.PANDOC_FORMAT_NAME)
             except errors.FormattingError as e:
                 e.path = path
                 raise e from None
             document = '{}\n\n{}\n\n{}\n'.format(nav_start, document, nav_end)
         json_ast = contentfilter.load_pandoc_ast(document)
-        self.__apply_filters(json_ast, path, conf[MetaInfo.Format])
+        self.__apply_filters(json_ast, path)
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + '.' + self.FILE_EXTENSION
         pandoc_args = ['-s', '--template=%s' % self.template_path]
@@ -311,10 +318,11 @@ class HtmlConverter(OutputGenerator):
             '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
 
 
-    def __apply_filters(self, json_ast, path, fmt):
+    def __apply_filters(self, json_ast, path):
         """add MarkDown extensions with Pandoc filters"""
         try:
             filter_ = None
+            fmt = self.PANDOC_FORMAT_NAME
             for filter_ in self.CONTENT_FILTERS:
                 json_ast = pandocfilters.walk(json_ast, filter_, fmt, [])
         except KeyError as e: # API clash(?)
@@ -435,7 +443,7 @@ def __handle_gladtex_error(error, file_path, dirname):
     return error
 
 #pylint: disable=too-many-locals
-def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
+def generate_page_navigation(file_path, file_cache, page_numbers, file_extension, conf=None):
     """generate_page_navigation(path, file_cache, page_numbers, conf=None)
     Generate the page navigation for a page. The file path must be relative to
     the lecture root. The file cache must be the datastructures.FileCache, the
@@ -454,7 +462,7 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
     relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
     previous, nxt = file_cache.get_neighbours_for(relative_path)
     make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
-        '.' + conf[MetaInfo.Format]))
+        '.' + file_extension))
     if previous:
         previous = '[{}]({})'.format(trans.get_translation('previous').title(),
                 make_path(previous))
@@ -471,7 +479,7 @@ def generate_page_navigation(file_path, file_cache, page_numbers, conf=None):
         navbar[-1] = navbar[-1][:-2] # strip ", " from last chunk
     navbar = ''.join(navbar)
     chapternav = '[{}](../inhalt.{})'.format(trans.get_translation(
-            'table of contents').title(), conf[MetaInfo.Format])
+            'table of contents').title(), file_extension)
 
     if previous:
         chapternav = previous + '  ' + chapternav

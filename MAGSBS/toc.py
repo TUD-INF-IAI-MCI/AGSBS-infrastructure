@@ -157,7 +157,7 @@ Take the ordered dict produced by HeadingIndexer() and transform it
 to a markdown file containing the formatted table of contents. With the
 specified path, the TocFormatter is able to fetch the configuration to format
 the TOC corrrectly."""
-    def __init__(self, index, path):
+    def __init__(self, index, path, file_extension):
         self.__index = index
         self.__path = path
         c = config.ConfFactory()
@@ -167,6 +167,7 @@ the TOC corrrectly."""
                 HeadingType.PREFACE: []}
         if self.conf[MetaInfo.GenerateToc] == 1:
             self.build_index()
+        self.__file_extension = file_extension
 
     def build_index(self):
         """Walk through dictionary of file names and headings and create cache
@@ -214,7 +215,7 @@ the TOC corrrectly."""
 
         # if manual title page exists, link to it
         add_entry("titel.md", '[%s](titel.%s\n\n' % (_('title page').title(),
-                self.conf[MetaInfo.Format]))
+                self.__file_extension))
 
         if self.__headings[HeadingType.PREFACE]:
             output += self.format_section(_('preface').title(),
@@ -231,15 +232,15 @@ the TOC corrrectly."""
 
         add_entry('glossar.md',
                 '[{}](glossar.{})\\\n'.format(_('glossary').capitalize(),
-            self.conf[MetaInfo.Format]))
+            self.__file_extension))
         add_entry('index.md', '[{}](index.{})\\\n'.format(_('index').title(),
-            self.conf[MetaInfo.Format]))
+            self.__file_extension))
         add_entry('kurz.md', '[{}](kurz.{})\\\n'.format(
-                _('list of abbreviations').capitalize(), self.conf[MetaInfo.Format]))
+                _('list of abbreviations').capitalize(), self.__file_extension))
         add_entry('taktil.md', '[{}](taktil.{})\\\n'.format(
-                _('list of tactile graphics').capitalize(), self.conf[MetaInfo.Format]))
+                _('list of tactile graphics').capitalize(), self.__file_extension))
         add_entry('copyright.md', '[{}](copyright.{})\\\n'.format(
-                _('copyright notice').capitalize(), self.conf[MetaInfo.Format]))
+                _('copyright notice').capitalize(), self.__file_extension))
 
         if output[-1].endswith('\\\n'): # strip \\ from last line
             output[-1] = output[-1][:-2] + '\n'
@@ -247,7 +248,7 @@ the TOC corrrectly."""
         # include info.md, if it exists
         add_entry("info.md", ('\n\n* * * * *\n\n[{}](info.{})\n').format(
                 _("remarks about the accessible version").capitalize(),
-                self.conf[MetaInfo.Format]))
+                self.__file_extension))
         return ''.join(output) + '\n'
 
     def format_section(self, title, headings):
@@ -272,7 +273,7 @@ the TOC corrrectly."""
         prefix = ''
         if self.__use_appendix_prefix and heading.get_type() == HeadingType.APPENDIX:
             prefix = 'A.'
-        path = path.replace('.md', '.' + self.conf[MetaInfo.Format])
+        path = path.replace('.md', '.' + self.__file_extension)
         # replace \ through / on windows:
         if '\\' in path:
             path = path.replace('\\', '/')
@@ -288,4 +289,3 @@ the TOC corrrectly."""
         space = " " if prefix else ""
         return "[{}{}{}]({}#{})".format(prefix, space, heading.get_text(),
                                         path, heading.get_id())
-

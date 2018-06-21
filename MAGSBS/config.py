@@ -95,7 +95,6 @@ def get_lnum_of_tag(path, tag):
 class MetaInfo(enum.Enum):
     AppendixPrefix = 'MAGSBS:appendixPrefix'
     Editor = 'dc:creator'
-    Format = 'dc:format'
     GenerateToc = 'MAGSBS:generateToc'
     Institution = 'dc:publisher'
     Language = 'dc:language'
@@ -133,9 +132,8 @@ instead.
     DEFAULTS = { MetaInfo.WorkingGroup: 'AG SBS', MetaInfo.Language: 'de',
             MetaInfo.Institution: 'TU Dresden',
             MetaInfo.Rights: 'Access limited to members',
-            MetaInfo.Format: 'html', MetaInfo.TocDepth: 5,
-            MetaInfo.AppendixPrefix: 0, MetaInfo.PageNumberingGap: 5,
-            MetaInfo.GenerateToc: 1}
+            MetaInfo.TocDepth: 5, MetaInfo.AppendixPrefix: 0,
+            MetaInfo.PageNumberingGap: 5, MetaInfo.GenerateToc: 1}
     NUMERICAL = (MetaInfo.TocDepth, MetaInfo.AppendixPrefix,
                 MetaInfo.PageNumberingGap, MetaInfo.GenerateToc)
 

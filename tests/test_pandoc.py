@@ -41,7 +41,7 @@ class CleverTmpDir(tempfile.TemporaryDirectory):
     def __exit__(self, a, b, c):
         os.chdir(self.cwd)
         super().__exit__(a, b, c)
-        
+
 class test_HTMLConverter(unittest.TestCase):
     def setUp(self):
         self.original_directory = os.getcwd()
@@ -151,6 +151,7 @@ class TestNavbarGeneration(unittest.TestCase):
         return pandoc.formats.generate_page_navigation(path,
                 (cache if cache else self.cache),
                 pnums,
+                'html',
                 conf=conf)
 
 
@@ -160,8 +161,7 @@ class TestNavbarGeneration(unittest.TestCase):
         self.assertTrue(isinstance(start, str) and isinstance(end, str))
 
     def test_that_pnum_gap_is_used(self):
-        conf = {MetaInfo.Language: 'de', MetaInfo.PageNumberingGap: 10,
-        MetaInfo.Format: 'html'}
+        conf = {MetaInfo.Language: 'de', MetaInfo.PageNumberingGap: 10}
         start, end = self.gen_nav('k01/k01.md', conf=conf)
         self.assertTrue('[5]' not in start+end) # links to page 5 don't exist
         self.assertTrue('[10]' in start+end, # links to page 10 do exist
@@ -170,16 +170,15 @@ class TestNavbarGeneration(unittest.TestCase):
     def test_that_roman_numbers_work(self):
         pnums = [datastructures.PageNumber('page', i, is_arabic=False) for i in
                 range(1, 20)]
-        conf = {MetaInfo.Language : 'de', MetaInfo.PageNumberingGap: 5,
-        MetaInfo.Format: 'html'}
+        conf = {MetaInfo.Language : 'de', MetaInfo.PageNumberingGap: 5}
         path = 'k01/k01.md' # that has been initilized in the setup method
-        start, end = pandoc.formats.generate_page_navigation(path, self.cache, pnums, conf=conf)
+        start, end = pandoc.formats.generate_page_navigation(path, self.cache,
+            pnums, 'html', conf=conf)
         self.assertTrue('[V]' in start+end,
             "Expected page number V in output, but couldn't be found: " + repr(start))
 
     def test_that_language_is_used(self):
-        conf = {MetaInfo.Language: 'en', MetaInfo.PageNumberingGap: 5,
-        MetaInfo.Format: 'html'}
+        conf = {MetaInfo.Language: 'en', MetaInfo.PageNumberingGap: 5}
         start, end = map(str.lower, self.gen_nav('k01/k01.md', conf=conf))
         self.assertTrue('nhalt]' not in start+end)
         self.assertTrue('table of contents]' in start+end)
@@ -197,4 +196,3 @@ class TestNavbarGeneration(unittest.TestCase):
                 "none. However something makes this test believe that there is "
                 "actually another link. Here's the navigation bar: ") +
                 repr(start))
-
