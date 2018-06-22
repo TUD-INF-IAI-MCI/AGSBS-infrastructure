@@ -29,6 +29,7 @@ class ConversionProfile(enum.Enum):
 class OutputFormat(enum.Enum):
     """Defines the enums for the output format."""
     Html = 'html'
+    Epub = 'epub'
 
     @staticmethod
     def from_string(string):

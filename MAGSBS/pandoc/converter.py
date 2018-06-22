@@ -15,6 +15,7 @@ the field converters of the pandoc class.
 import os
 from .formats import ConversionProfile, OutputFormat
 from .output_formats.html import HtmlConverter
+from .output_formats.epub import EpubConverter
 from .. import config
 from ..config import MetaInfo
 from .. import common
@@ -23,7 +24,7 @@ from .. import errors
 from .. import filesystem
 
 
-ACTIVE_CONVERTERS = [HtmlConverter]
+ACTIVE_CONVERTERS = [HtmlConverter, EpubConverter]
 
 def get_lecture_root(some_file):
     """Return lecture root for a file or raise exception if it cannot be
