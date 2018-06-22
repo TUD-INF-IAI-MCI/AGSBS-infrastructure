@@ -13,7 +13,8 @@ the field converters of the pandoc class.
 #pylint: disable=multiple-imports
 
 import os
-from .formats import ConversionProfile, HtmlConverter, OutputFormat
+from .formats import ConversionProfile, OutputFormat
+from .output_formats.html import HtmlConverter
 from .. import config
 from ..config import MetaInfo
 from .. import common
