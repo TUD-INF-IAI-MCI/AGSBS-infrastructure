@@ -50,6 +50,32 @@ def page_number_extractor(key, value, fmt, meta):
                         pnum.groups()[1], text))
 
 
+#pylint: disable=inconsistent-return-statements
+def epub_page_number_extractor(key, value, fmt, meta):
+    """Scan all paragraphs for those starting with || to parse it for page
+    numbering information."""
+    if not (fmt == 'epub'):
+        return
+    if key == 'Para' and value:
+        # find first obj with content (line breaks don't have this)
+        text = None
+        for obj in value:
+            if 'c' in obj:
+                text = obj['c']
+                break
+        if text is None:
+            return # no content in Paragraph - ignore
+        # first chunk of paragraph must be str and contain '||'
+        if isinstance(text, str) and text.startswith('||'):
+            text = pandocfilters.stringify(value) # get whole text of page number
+            pnum = config.PAGENUMBERING_PATTERN.search(text)
+            if pnum:
+                # strip the first ||
+                text = text[2:].lstrip().rstrip()
+                return html('<p class="pagebreak"><span id="p{0}">{1}</span></p>'.format(
+                        pnum.groups()[1], text))
+
+
 def suppress_captions(key, value, fmt, meta, modify_ast=True):
     """Images on a paragraph of its own get a caption, suppress that."""
     if modify_ast and not fmt in ['html', 'html5']:
