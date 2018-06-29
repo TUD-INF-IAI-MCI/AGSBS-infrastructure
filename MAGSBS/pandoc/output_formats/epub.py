@@ -7,11 +7,9 @@
 import json
 import os
 import shutil
-import tempfile
-import pandocfilters
-from ... import config, datastructures, errors, mparser
+from ... import errors, mparser
 from .. import contentfilter
-from ..formats import execute, generate_page_navigation, remove_temp, ConversionProfile, OutputGenerator
+from ..formats import execute, ConversionProfile, OutputGenerator
 
 
 class EpubConverter(OutputGenerator):

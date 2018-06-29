@@ -43,20 +43,6 @@ def get_lecture_root(some_file):
             "for this file"), path)
 
 
-def get_file_extension(format_):
-    """Get converter file extension for a specific format."""
-    try: # get new instance
-        return next(filter(lambda converter: \
-                converter.PANDOC_FORMAT_NAME == format_,
-                ACTIVE_CONVERTERS)).FILE_EXTENSION
-    except StopIteration:
-        supported_formats = ', '.join(map(lambda c: c.PANDOC_FORMAT_NAME, \
-            ACTIVE_CONVERTERS))
-        raise NotImplementedError(("The configured format {} is not "
-            "supported at the moment. Supported formats: {}").format(
-            format, supported_formats))
-
-
 class Pandoc:
     """Abstract the translation by pandoc into a class which add meta-information
 to the output, handles errors and checks for the correct encoding.

@@ -188,9 +188,6 @@ class main():
                   metavar="FILENAME", default='stdout')
         parser.add_argument('directory',
                 help='Input directory where search for headings is performed.')
-        parser.add_argument("-f", dest="format",
-                  help="select output format",
-                  metavar="FMT", default=None)
         options = parser.parse_args(args)
 
         file = None
@@ -207,11 +204,7 @@ class main():
             c = MAGSBS.toc.HeadingIndexer(directory)
             c.walk()
             if not c.is_empty():
-                from MAGSBS.pandoc.formats import OutputFormat
-                fmt = MAGSBS.toc.TocFormatter(c.get_index(),
-                        directory,
-                        (OutputFormat.Html if not options.format
-                            else OutputFormat.from_string(options.format)))
+                fmt = MAGSBS.toc.TocFormatter(c.get_index(), directory)
                 file.write(fmt.format())
                 if isinstance(file, io.StringIO):
                     file.seek(0)
@@ -338,9 +331,6 @@ sub-directory configurations or initialization of a new project."""
         parser.add_argument("-t", "--title", dest="title",
                 default=None,
                 help="set title for outsourced images (mandatory if outsourced)")
-        parser.add_argument("-f", dest="format",
-                  help="select output format",
-                  metavar="FMT", default=None)
         parser.add_argument('path', nargs="?", help="path to image file")
         options = parser.parse_args(args)
         if not options.path:
@@ -350,8 +340,7 @@ sub-directory configurations or initialization of a new project."""
             desc = sys.stdin.read()
         else:
             desc = options.description
-        img = MAGSBS.factories.ImageDescription(options.path,
-            MAGSBS.pandoc.formats.OutputFormat.from_string(options.format))
+        img = MAGSBS.factories.ImageDescription(options.path)
         img.set_description(desc)
         img.set_outsource_descriptions(options.outsource)
         if options.title:
