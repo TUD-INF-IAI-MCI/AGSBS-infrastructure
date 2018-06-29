@@ -107,7 +107,7 @@ files are converted."""
                         with open("inhalt.md", 'w', encoding="utf-8") as file:
                             file.write(md_creator.format())
 
-            conv = pandoc.converter.Pandoc()
+            conv = pandoc.converter.Pandoc(root_path=orig_cwd)
             files_to_convert = [os.path.join(dir, f)
                     for dir, _, flist in filesystem.get_markdown_files(".", True)
                     for f in flist]

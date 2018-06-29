@@ -309,7 +309,7 @@ sub-directory configurations or initialization of a new project."""
             sys.exit(98)
 
         with ErrorHandler(self.output_formatter):
-            p = MAGSBS.pandoc.converter.Pandoc()
+            p = MAGSBS.pandoc.converter.Pandoc(root_path=os.getcwd())
             if args.profile:
                 p.set_conversion_profile(MAGSBS.pandoc.formats.ConversionProfile.from_string(args.profile))
             if args.format:

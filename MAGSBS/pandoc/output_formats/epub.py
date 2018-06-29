@@ -32,13 +32,13 @@ class EpubConverter(OutputGenerator):
 
     def convert(self, files, **kwargs):
         """See super class documentation."""
+        if 'path' not in kwargs:
+            raise ValueError('path needs to be specified to save epub.')
         if not files:
             return
         try:
-            from ..converter import get_lecture_root
-            path = get_lecture_root(files[0])
             document = EpubConverter.__concat_files(files)
-            self.__convert_document(document, path)
+            self.__convert_document(document, kwargs['path'])
         except errors.MAGSBS_error as err:
             raise err
         finally:
@@ -75,7 +75,6 @@ class EpubConverter(OutputGenerator):
         if not document:
             return # skip empty documents
         json_ast = contentfilter.load_pandoc_ast(document)
-        dirname = os.path.split(path)[0]
         outputf = self.get_meta_data()['LectureTitle'] + \
                   '.' + self.FILE_EXTENSION
         pandoc_args = ['-s']
@@ -86,4 +85,4 @@ class EpubConverter(OutputGenerator):
             '-t', self.PANDOC_FORMAT_NAME,
             '-f', 'json', '+RTS', '-K25000000', '-RTS', # increase stack size
             '-o', outputf
-        ], stdin=json.dumps(json_ast), cwd=dirname)
+        ], stdin=json.dumps(json_ast), cwd=path)

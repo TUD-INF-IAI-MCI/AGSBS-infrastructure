@@ -148,9 +148,8 @@ class HtmlConverter(OutputGenerator):
 
     def convert(self, files, **kwargs):
         """See super class documentation."""
-        if 'cache' not in kwargs:
-            raise ValueError('cache must be passed to converter')
-        cache = kwargs['cache']
+        from ..converter import Pandoc
+        cache, files = Pandoc.get_cache(files)
         try:
             for file_name in files:
                 self.__convert_document(file_name, cache)
