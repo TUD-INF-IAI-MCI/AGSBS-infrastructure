@@ -147,11 +147,11 @@ class TestNavbarGeneration(unittest.TestCase):
 
 
     def gen_nav(self, path, cache=None, pnums=None, conf=None):
+        h = get_html_converter()
         pnums = (pnums if pnums else self.pagenumbers)
-        return pandoc.formats.generate_page_navigation(path,
+        return h.generate_page_navigation(path,
                 (cache if cache else self.cache),
                 pnums,
-                'html',
                 conf=conf)
 
 
@@ -168,12 +168,13 @@ class TestNavbarGeneration(unittest.TestCase):
                 "page number 10 doesn't exist; got: " + repr(start))
 
     def test_that_roman_numbers_work(self):
+        h = get_html_converter()
         pnums = [datastructures.PageNumber('page', i, is_arabic=False) for i in
                 range(1, 20)]
         conf = {MetaInfo.Language : 'de', MetaInfo.PageNumberingGap: 5}
         path = 'k01/k01.md' # that has been initilized in the setup method
-        start, end = pandoc.formats.generate_page_navigation(path, self.cache,
-            pnums, 'html', conf=conf)
+        start, end = h.generate_page_navigation(path, self.cache,
+            pnums, conf=conf)
         self.assertTrue('[V]' in start+end,
             "Expected page number V in output, but couldn't be found: " + repr(start))
 

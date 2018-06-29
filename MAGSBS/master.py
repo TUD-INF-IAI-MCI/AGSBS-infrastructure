@@ -95,19 +95,17 @@ files are converted."""
         orig_cwd = os.getcwd()
         for root in self.get_roots():
             os.chdir(root)
-            conf = config.ConfFactory().get_conf_instance(".")
-            if conf[MetaInfo.GenerateToc]:
-                # create table of contents
-                c = toc.HeadingIndexer(".")
-                c.walk()
-                if not c.is_empty():
-                    index = c.get_index()
-                    file_extension = pandoc.converter.get_file_extension(
-                        self._output_format.value
-                    )
-                    md_creator = toc.TocFormatter(index, ".", file_extension)
-                    with open("inhalt.md", 'w', encoding="utf-8") as file:
-                        file.write(md_creator.format())
+            if self._output_format == pandoc.formats.OutputFormat.Html:
+                conf = config.ConfFactory().get_conf_instance(".")
+                if conf[MetaInfo.GenerateToc]:
+                    # create table of contents
+                    c = toc.HeadingIndexer(".")
+                    c.walk()
+                    if not c.is_empty():
+                        index = c.get_index()
+                        md_creator = toc.TocFormatter(index, ".")
+                        with open("inhalt.md", 'w', encoding="utf-8") as file:
+                            file.write(md_creator.format())
 
             conv = pandoc.converter.Pandoc()
             files_to_convert = [os.path.join(dir, f)

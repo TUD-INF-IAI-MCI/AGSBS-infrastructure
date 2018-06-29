@@ -157,7 +157,7 @@ Take the ordered dict produced by HeadingIndexer() and transform it
 to a markdown file containing the formatted table of contents. With the
 specified path, the TocFormatter is able to fetch the configuration to format
 the TOC corrrectly."""
-    def __init__(self, index, path, file_extension):
+    def __init__(self, index, path, file_extension='html'):
         self.__index = index
         self.__path = path
         c = config.ConfFactory()

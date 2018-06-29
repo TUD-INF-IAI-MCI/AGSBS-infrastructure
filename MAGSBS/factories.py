@@ -16,7 +16,7 @@ from .config import MetaInfo
 #pylint: disable=too-many-instance-attributes
 class ImageDescription():
     """
-ImageDescription(image_path, file_extension)
+ImageDescription(image_path)
 
 
 Store and format a picture description. It is important here to read all the
@@ -38,7 +38,7 @@ data is either a dictionary with keys 'internal' and 'external', where
 edited text, i.e. into the chapter, 'external' is meant to be included in the
 file containing outsourced image descriptions.
 """
-    def __init__(self, image_path, file_extension):
+    def __init__(self, image_path, file_extension='html'):
         self.__conf = config.ConfFactory().get_conf_instance( \
                 os.path.split(image_path)[0])
         l10N = config.Translate()

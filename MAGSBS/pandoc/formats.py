@@ -104,6 +104,12 @@ class OutputFormat(enum.Enum):
         known = ', '.join(x.value for x in OutputFormat)
         raise ValueError("Unknown output format, known formats: " + known)
 
+    def get_file_extension(self):
+        """Get file extension for format.
+        For current formats it is the value."""
+        return self.value
+
+
 class OutputGenerator():
     """Base class for document output generators. The actual conversion doesn't
 take place in this class. The conversion method receives a Pandoc (JSON) AST and
@@ -287,10 +293,11 @@ class HtmlConverter(OutputGenerator):
             return # skip empty documents
         if OutputGenerator.IS_CHAPTER.search(os.path.basename(path)):
             try:
-                nav_start, nav_end = generate_page_navigation(path, file_cache,
+                nav_start, nav_end = self.generate_page_navigation(
+                    path, file_cache,
                     mparser.extract_page_numbers_from_par(
-                            mparser.file2paragraphs(document)),
-                    self.PANDOC_FORMAT_NAME)
+                        mparser.file2paragraphs(document))
+                    )
             except errors.FormattingError as e:
                 e.path = path
                 raise e from None
@@ -316,7 +323,6 @@ class HtmlConverter(OutputGenerator):
         execute(['pandoc'] + pandoc_args + ['-t', self.PANDOC_FORMAT_NAME,
             '-f', 'json', '+RTS', '-K25000000', '-RTS', # increase stack size
             '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
-
 
     def __apply_filters(self, json_ast, path):
         """add MarkDown extensions with Pandoc filters"""
@@ -345,6 +351,55 @@ class HtmlConverter(OutputGenerator):
                 HtmlConverter.__handle_error(path, err)
             finally:
                 os.chdir(cwd)
+
+    def generate_page_navigation(self, file_path, file_cache, page_numbers, conf=None):
+        """generate_page_navigation(path, file_cache, page_numbers, conf=None)
+        Generate the page navigation for a page. The file path must be relative to
+        the lecture root. The file cache must be the datastructures.FileCache, the
+        page numbers must have the format of mparser.extract_page_numbers_from.
+        `conf=` should not be used, it is intended for testing purposes.
+        Returned is a tuple with the start and the end navigation bar. The
+        navigation bar itself is a string."""
+        if not os.path.exists(file_path):
+            raise errors.StructuralError("File doesn't exist", file_path)
+        if not file_cache:
+            raise ValueError("Cache with values may not be None")
+        if not conf:
+            conf = config.ConfFactory().get_conf_instance(os.path.dirname(file_path))
+        trans = config.Translate()
+        trans.set_language(conf[MetaInfo.Language])
+        relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
+        previous, nxt = file_cache.get_neighbours_for(relative_path)
+        make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
+            '.' + self.FILE_EXTENSION))
+        if previous:
+            previous = '[{}]({})'.format(trans.get_translation('previous').title(),
+                    make_path(previous))
+        if nxt:
+            nxt = '[{}]({})'.format(trans.get_translation('next').title(),
+                    make_path(nxt))
+        navbar = []
+        # take each pnumgapth element
+        page_numbers = [pnum for pnum in page_numbers
+            if (pnum.number % conf[MetaInfo.PageNumberingGap]) == 0]
+        if page_numbers:
+            navbar.append(trans.get_translation('pages').title() + ': ')
+            navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
+            navbar[-1] = navbar[-1][:-2] # strip ", " from last chunk
+        navbar = ''.join(navbar)
+        chapternav = '[{}](../inhalt.{})'.format(trans.get_translation(
+                'table of contents').title(), self.FILE_EXTENSION)
+
+        if previous:
+            chapternav = previous + '  ' + chapternav
+        if nxt:
+            chapternav += "  " + nxt
+        # navigation at start of page
+        nav_start = '{0}\n\n{1}\n\n* * * *\n\n\n'.format(chapternav, navbar)
+        # navigation bar at end of page
+        nav_end = '\n\n* * * *\n\n{0}\n\n{1}\n'.format(navbar, chapternav)
+        return (nav_start, nav_end)
+
 
     def cleanup(self):
         remove_temp(self.template_path)
@@ -441,52 +496,3 @@ def __handle_gladtex_error(error, file_path, dirname):
         e.line = '{}, {}'.format(*pos)
         return e
     return error
-
-#pylint: disable=too-many-locals
-def generate_page_navigation(file_path, file_cache, page_numbers, file_extension, conf=None):
-    """generate_page_navigation(path, file_cache, page_numbers, conf=None)
-    Generate the page navigation for a page. The file path must be relative to
-    the lecture root. The file cache must be the datastructures.FileCache, the
-    page numbers must have the format of mparser.extract_page_numbers_from.
-    `conf=` should not be used, it is intended for testing purposes.
-    Returned is a tuple with the start and the end navigation bar. The
-    navigation bar itself is a string."""
-    if not os.path.exists(file_path):
-        raise errors.StructuralError("File doesn't exist", file_path)
-    if not file_cache:
-        raise ValueError("Cache with values may not be None")
-    if not conf:
-        conf = config.ConfFactory().get_conf_instance(os.path.dirname(file_path))
-    trans = config.Translate()
-    trans.set_language(conf[MetaInfo.Language])
-    relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
-    previous, nxt = file_cache.get_neighbours_for(relative_path)
-    make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
-        '.' + file_extension))
-    if previous:
-        previous = '[{}]({})'.format(trans.get_translation('previous').title(),
-                make_path(previous))
-    if nxt:
-        nxt = '[{}]({})'.format(trans.get_translation('next').title(),
-                make_path(nxt))
-    navbar = []
-    # take each pnumgapth element
-    page_numbers = [pnum for pnum in page_numbers
-        if (pnum.number % conf[MetaInfo.PageNumberingGap]) == 0]
-    if page_numbers:
-        navbar.append(trans.get_translation('pages').title() + ': ')
-        navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
-        navbar[-1] = navbar[-1][:-2] # strip ", " from last chunk
-    navbar = ''.join(navbar)
-    chapternav = '[{}](../inhalt.{})'.format(trans.get_translation(
-            'table of contents').title(), file_extension)
-
-    if previous:
-        chapternav = previous + '  ' + chapternav
-    if nxt:
-        chapternav += "  " + nxt
-    # navigation at start of page
-    nav_start = '{0}\n\n{1}\n\n* * * *\n\n\n'.format(chapternav, navbar)
-    # navigation bar at end of page
-    nav_end = '\n\n* * * *\n\n{0}\n\n{1}\n'.format(navbar, chapternav)
-    return (nav_start, nav_end)
