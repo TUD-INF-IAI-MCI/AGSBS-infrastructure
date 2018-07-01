@@ -11,6 +11,8 @@
       duplicates from table of contents; remove Mistkerl checker for this
       behaviour as well.
 * correctly handle unnumbered headings
+* remove format from the lecture configuration, because it is a property of the
+  conversion itself, not of the lecture source
 * allow page number ranges: `|| - page 9-11 -`
 
 0.7 
