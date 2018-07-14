@@ -17,12 +17,12 @@ from ..formats import execute, ConversionProfile, OutputGenerator
 CSS_TEMPLATE = """/* This defines styles and classes used in the book */
 body { margin: 5%; text-align: justify; font-size: medium; }
 code { font-family: monospace; }
-h1 { text-align: left; }
-h2 { text-align: left; }
-h3 { text-align: left; }
-h4 { text-align: left; }
-h5 { text-align: left; }
-h6 { text-align: left; }
+h1 { text-align: left; font-size: 2em; }
+h2 { text-align: left; font-size: 1.5em; }
+h3 { text-align: left; font-size: 1.17em; }
+h4 { text-align: left; font-size: 1.12em; }
+h5 { text-align: left; font-size: .83em; }
+h6 { text-align: left; font-size: .75em; }
 h1.title { }
 h2.author { }
 h3.date { }
@@ -33,6 +33,13 @@ em, em em em, em em em em em { font-style: italic;}
 em em, em em em em { font-style: normal; }
 p.pagebreak { page-break-before: always; }
 h1 + p.pagebreak { page-break-before: avoid; }
+p.header { font-weight: bold; }
+p.header[data-level="1"] { font-size: 2em; }
+p.header[data-level="2"] { font-size: 1.5em; }
+p.header[data-level="3"] { font-size: 1.17em; }
+p.header[data-level="4"] { font-size: 1.12em; }
+p.header[data-level="5"] { font-size: .83em; }
+p.header[data-level="6"] { font-size: .75em; }
 """
 
 class EpubConverter(OutputGenerator):
@@ -40,6 +47,7 @@ class EpubConverter(OutputGenerator):
     PANDOC_FORMAT_NAME = 'epub'
     FILE_EXTENSION = 'epub'
     CONTENT_FILTERS = [contentfilter.epub_page_number_extractor]
+    IMAGE_CONTENT_FILTERS = [contentfilter.epub_remove_images_from_toc]
 
     def __init__(self, meta, language):
         if not shutil.which('pandoc'):
@@ -66,9 +74,10 @@ class EpubConverter(OutputGenerator):
             raise ValueError('path needs to be specified to save epub.')
         if not files:
             return
+        file_info = EpubConverter.__generate_file_structure(files)
         try:
-            document = EpubConverter.__concat_files(files)
-            self.__convert_document(document, kwargs['path'])
+            ast = self.__generate_ast(file_info, kwargs['path'])
+            self.__convert_document(ast, kwargs['path'])
         except errors.MAGSBS_error as err:
             raise err
         finally:
@@ -90,25 +99,50 @@ class EpubConverter(OutputGenerator):
         raise err from None # no TB here
 
     @staticmethod
-    def __concat_files(files):
-        """reads all files and return all of them as one string"""
-        document = ''
+    def __generate_file_structure(files):
+        """generates a structure which makes it possible to convert everything
+        in order"""
+        file_info = {'chapters': [], 'images': []}
         for file_name in files:
-            with open(file_name, 'r', encoding='utf-8') as file:
-                document += file.read()
-        return document
+            name = os.path.splitext(os.path.basename(file_name))[0]
+            chapter = os.path.basename(os.path.split(file_name)[0])
+            if name == 'bilder':
+                file_info['images'].append({'chapter': chapter, 'path': file_name})
+            elif name == 'inhalt':
+                continue  # ignore toc!
+            else:
+                file_info['chapters'].append({'chapter': chapter, 'path': file_name})
+        return file_info
+
+    def __generate_ast(self, file_info, path):
+        """reads all files and generate one ast in correct order."""
+        ast = {}
+        for key in ['chapters', 'images']:
+            for entry in file_info[key]:
+                with open(entry['path'], 'r', encoding='utf-8') as file:
+                    json_ast = contentfilter.load_pandoc_ast(file.read())
+                    if key == 'images':
+                        self.__apply_filters(json_ast,
+                                             self.IMAGE_CONTENT_FILTERS,
+                                             path)
+                    if ast:
+                        ast['blocks'].extend(json_ast['blocks'])
+                    else:
+                        ast = json_ast
+        return ast
 
     #pylint: disable=too-many-locals
-    def __convert_document(self, document, path):
-        """Convert a document. It takes a converter which takes
+    def __convert_document(self, json_ast, path):
+        """Convert an ast. It takes a converter which takes
         actual care of the underlying format."""
-        if not document:
-            return # skip empty documents
-        json_ast = contentfilter.load_pandoc_ast(document)
-        self.__apply_filters(json_ast, path)
+        if not json_ast:
+            return # skip empty asts
+        self.__apply_filters(json_ast, self.CONTENT_FILTERS, path)
         outputf = self.get_meta_data()['LectureTitle'] + \
                   '.' + self.FILE_EXTENSION
-        pandoc_args = ['-s', '--css=%s' % self.css_path]
+        pandoc_args = ['-s',
+                       '--css={}'.format(self.css_path),
+                       '--toc-depth={}'.format(self.get_meta_data()['TocDepth'])]
         # for 'blind' see __apply_filters, doesn't need a Pandoc argument
         if self.get_profile() is ConversionProfile.VisuallyImpairedDefault:
             pandoc_args.append('--mathjax')
@@ -118,12 +152,12 @@ class EpubConverter(OutputGenerator):
             '-o', outputf
         ], stdin=json.dumps(json_ast), cwd=path)
 
-    def __apply_filters(self, json_ast, path):
+    def __apply_filters(self, json_ast, filters, path):
         """add MarkDown extensions with Pandoc filters"""
         try:
             filter_ = None
             fmt = self.PANDOC_FORMAT_NAME
-            for filter_ in self.CONTENT_FILTERS:
+            for filter_ in filters:
                 json_ast = pandocfilters.walk(json_ast, filter_, fmt, [])
         except KeyError as e: # API clash(?)
             raise errors.StructuralError((

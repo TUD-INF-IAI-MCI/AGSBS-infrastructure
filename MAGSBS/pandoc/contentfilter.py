@@ -76,6 +76,40 @@ def epub_page_number_extractor(key, value, fmt, meta):
                         pnum.groups()[1], text))
 
 
+def epub_remove_images_from_toc(key, value, fmt, meta):
+    """Scan all paragraphs for those starting with || to parse it for page
+    numbering information."""
+    if fmt != 'epub':
+        return
+    if key == 'Header' and value:
+        # find first obj with content (line breaks don't have this)
+        text = None
+        header_level = 0
+        _id = ''
+        for obj in value:
+            if isinstance(obj, int):
+                header_level = obj
+            elif isinstance(obj, list):
+                for inner_obj in obj:
+                    if isinstance(inner_obj, str):
+                        _id = inner_obj
+                    elif isinstance(inner_obj, dict):
+                        if 'c' in inner_obj:
+                            text = inner_obj['c']
+        if text is None or header_level == 0 or _id == '':
+            return # no valid content
+        if isinstance(text, str):
+            text = pandocfilters.stringify(value)
+            return html(
+                '<p id="{0}" class="{1}" data-level="{2}">{3}</p>'.format(
+                    _id,
+                    'header pagebreak' if header_level == 1 else 'header',
+                    header_level,
+                    text
+                )
+            )
+ 
+
 def suppress_captions(key, value, fmt, meta, modify_ast=True):
     """Images on a paragraph of its own get a caption, suppress that."""
     if modify_ast and not fmt in ['html', 'html5']:
