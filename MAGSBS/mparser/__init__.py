@@ -65,7 +65,6 @@ def joined_line_iterator(lines):
             for _ in range(0, lines_to_insert):
                 yield ''
             lines_to_insert = 0
-    raise StopIteration()
 
 def file2paragraphs(lines, join_lines=False):
     """
