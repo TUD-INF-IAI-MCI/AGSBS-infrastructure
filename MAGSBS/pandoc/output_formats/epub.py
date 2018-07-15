@@ -46,7 +46,7 @@ class EpubConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
     PANDOC_FORMAT_NAME = 'epub'
     FILE_EXTENSION = 'epub'
-    CONTENT_FILTERS = [contentfilter.epub_page_number_extractor]
+    CONTENT_FILTERS = [contentfilter.epub_page_number_extractor, contentfilter.epub_link_converter]
     IMAGE_CONTENT_FILTERS = [contentfilter.epub_remove_images_from_toc]
     CHAPTER_CONTENT_FILTERS = [contentfilter.epub_update_image_location]
 
@@ -146,10 +146,9 @@ class EpubConverter(OutputGenerator):
         actual care of the underlying format."""
         if not json_ast:
             return # skip empty asts
-        self.__apply_filters(json_ast, self.CONTENT_FILTERS, path)
+        self.__apply_filters(json_ast, self.CONTENT_FILTERS, path, {'chapter': 1})
         outputf = self.get_meta_data()['LectureTitle'] + \
                   '.' + self.FILE_EXTENSION
-        print("path", os.getcwd())
         pandoc_args = ['-s',
                        '--css={}'.format(self.css_path),
                        '--toc-depth={}'.format(self.get_meta_data()['TocDepth']),

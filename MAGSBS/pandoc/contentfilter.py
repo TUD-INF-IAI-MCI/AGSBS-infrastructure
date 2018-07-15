@@ -96,6 +96,26 @@ def html_link_converter(key, value, fmt, meta, modify_ast=True):
             value[-1][0] = '#'.join(link_parts)
 
 
+def epub_link_converter(key, value, fmt, meta, modify_ast=True):
+    """Scan all links and append change to .html for all relative links."""
+    if not 'epub':
+        return
+    if key == 'Header' and value:
+        if value[0] == 1:
+            meta['chapter'] +=1
+            return
+    if key == 'Link' and value:
+        link = value[-1][0]
+        if not link or LINK_REGEX.match(link):
+            return
+        if isinstance(link, str):
+            link_parts = link.split('#', 1)  # split in # once
+            if not link_parts[0]:
+                return
+            link_parts[0] = 'ch{:03d}.xhtml'.format(meta['chapter'])
+            value[-1][0] = '#'.join(link_parts)
+
+
 def epub_remove_images_from_toc(key, value, fmt, meta):
     """Scan all paragraphs for those starting with || to parse it for page
     numbering information."""
