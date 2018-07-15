@@ -80,7 +80,7 @@ def epub_page_number_extractor(key, value, fmt, meta):
                         pnum.groups()[1], text))
 
 
-def html_link_converter(key, value, fmt, meta):
+def html_link_converter(key, value, fmt, meta, modify_ast=True):
     """Scan all links and append change to .html for all relative links."""
     if not (fmt == 'html' or fmt == 'html5'):
         return
@@ -94,7 +94,6 @@ def html_link_converter(key, value, fmt, meta):
                 return
             link_parts[0] = os.path.splitext(link_parts[0])[0] + '.html'
             value[-1][0] = '#'.join(link_parts)
-            return pandocfilters.Link(value[0], value[1], value[2])
 
 
 def epub_remove_images_from_toc(key, value, fmt, meta):
