@@ -81,7 +81,8 @@ class HtmlConverter(OutputGenerator):
     PANDOC_FORMAT_NAME = 'html'
     FILE_EXTENSION = 'html'
     CONTENT_FILTERS = [contentfilter.page_number_extractor,
-                       contentfilter.suppress_captions]
+                       contentfilter.suppress_captions,
+                       contentfilter.html_link_converter]
 
     def __init__(self, meta, language):
         if not shutil.which('pandoc'):

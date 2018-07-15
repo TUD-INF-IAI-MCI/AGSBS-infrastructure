@@ -10,6 +10,8 @@ filters have been written, stored in this module. A content filter is a function
 document and extracting, removing or alterint the AST."""
 
 import json
+import os
+import re
 import subprocess
 import sys
 
@@ -23,6 +25,8 @@ from ..errors import MathError, SubprocessError
 
 
 html = lambda text: pandocfilters.RawBlock('html', text)
+
+LINK_REGEX = re.compile(r'.*:.*')  # if link contains ":" it is no relative link
 
 #pylint: disable=inconsistent-return-statements
 def page_number_extractor(key, value, fmt, meta):
@@ -74,6 +78,23 @@ def epub_page_number_extractor(key, value, fmt, meta):
                 text = text[2:].lstrip().rstrip()
                 return html('<p class="pagebreak"><span id="p{0}">{1}</span></p>'.format(
                         pnum.groups()[1], text))
+
+
+def html_link_converter(key, value, fmt, meta):
+    """Scan all links and append change to .html for all relative links."""
+    if not (fmt == 'html' or fmt == 'html5'):
+        return
+    if key == 'Link' and value:
+        link = value[-1][0]
+        if not link or LINK_REGEX.match(link):
+            return
+        if isinstance(link, str):
+            link_parts = link.split('#', 1)  # split in # once
+            if not link_parts[0]:
+                return
+            link_parts[0] = os.path.splitext(link_parts[0])[0] + '.html'
+            value[-1][0] = '#'.join(link_parts)
+            return pandocfilters.Link(value[0], value[1], value[2])
 
 
 def epub_remove_images_from_toc(key, value, fmt, meta):
