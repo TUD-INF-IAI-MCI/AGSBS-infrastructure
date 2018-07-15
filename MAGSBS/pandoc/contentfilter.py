@@ -131,6 +131,18 @@ def epub_remove_images_from_toc(key, value, fmt, meta):
             )
  
 
+def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
+    """Updates all image locations so that pandoc can find and add them
+    correctly for epub."""
+    if fmt != 'epub':
+        return
+    if key == 'Image' and value:
+        image_url = value[-1][0]
+        if not image_url or image_url[0] == '/' or LINK_REGEX.match(image_url):
+            return
+        value[-1][0] = os.path.join(url_prefix, image_url)
+
+
 def suppress_captions(key, value, fmt, meta, modify_ast=True):
     """Images on a paragraph of its own get a caption, suppress that."""
     if modify_ast and not fmt in ['html', 'html5']:

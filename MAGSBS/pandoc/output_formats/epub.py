@@ -48,6 +48,7 @@ class EpubConverter(OutputGenerator):
     FILE_EXTENSION = 'epub'
     CONTENT_FILTERS = [contentfilter.epub_page_number_extractor]
     IMAGE_CONTENT_FILTERS = [contentfilter.epub_remove_images_from_toc]
+    CHAPTER_CONTENT_FILTERS = [contentfilter.epub_update_image_location]
 
     def __init__(self, meta, language):
         if not shutil.which('pandoc'):
@@ -121,6 +122,14 @@ class EpubConverter(OutputGenerator):
             for entry in file_info[key]:
                 with open(entry['path'], 'r', encoding='utf-8') as file:
                     json_ast = contentfilter.load_pandoc_ast(file.read())
+                    contentfilter.convert_formulas(
+                        os.path.join(os.path.split(entry['path'])[0], 'bilder'),
+                        json_ast
+                    )
+                    self.__apply_filters(json_ast,
+                                         self.CHAPTER_CONTENT_FILTERS,
+                                         path,
+                                         os.path.split(entry['path'])[0])
                     if key == 'images':
                         self.__apply_filters(json_ast,
                                              self.IMAGE_CONTENT_FILTERS,
@@ -140,9 +149,11 @@ class EpubConverter(OutputGenerator):
         self.__apply_filters(json_ast, self.CONTENT_FILTERS, path)
         outputf = self.get_meta_data()['LectureTitle'] + \
                   '.' + self.FILE_EXTENSION
+        print("path", os.getcwd())
         pandoc_args = ['-s',
                        '--css={}'.format(self.css_path),
-                       '--toc-depth={}'.format(self.get_meta_data()['TocDepth'])]
+                       '--toc-depth={}'.format(self.get_meta_data()['TocDepth']),
+                       '--resource-path="{}"'.format(os.getcwd())]
         # for 'blind' see __apply_filters, doesn't need a Pandoc argument
         if self.get_profile() is ConversionProfile.VisuallyImpairedDefault:
             pandoc_args.append('--mathjax')
@@ -152,13 +163,15 @@ class EpubConverter(OutputGenerator):
             '-o', outputf
         ], stdin=json.dumps(json_ast), cwd=path)
 
-    def __apply_filters(self, json_ast, filters, path):
+    def __apply_filters(self, json_ast, filters, path, meta=None):
         """add MarkDown extensions with Pandoc filters"""
+        if meta is None:
+            meta = []
         try:
             filter_ = None
             fmt = self.PANDOC_FORMAT_NAME
             for filter_ in filters:
-                json_ast = pandocfilters.walk(json_ast, filter_, fmt, [])
+                json_ast = pandocfilters.walk(json_ast, filter_, fmt, meta)
         except KeyError as e: # API clash(?)
             raise errors.StructuralError((
                 "Incompatible Pandoc API found, while "
