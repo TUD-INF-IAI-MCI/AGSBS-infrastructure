@@ -18,7 +18,7 @@ META_DATA = {'Editor': 'unique1',
         'path': 'None'}
 
 def get_html_converter(meta_data=META_DATA, template=None):
-    h = pandoc.formats.HtmlConverter(meta_data, language='de')
+    h = pandoc.output_formats.html.HtmlConverter(meta_data, language='de')
     if template:
         h.template_copy = template
     h.setup()
