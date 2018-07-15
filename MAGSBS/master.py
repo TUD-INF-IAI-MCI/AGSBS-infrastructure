@@ -31,8 +31,10 @@ files are converted."""
             if os.path.isfile(path):
                 raise OSError("Operation can only be applied to directories.")
             if common.is_valid_file(os.path.abspath(path)):
-                raise errors.StructuralError(("The master command can only be called "
-                    "on a whole lecture, not on particular chapters."), path)
+                raise errors.StructuralError(
+                        ("The master command can only be called "
+                        "on a whole lecture, not on particular chapters."),
+                    path)
         self._roots = self.__findroot(path)
         self._profile = profile
         self._output_format = output_format
@@ -55,14 +57,10 @@ files are converted."""
                     dirs += [os.path.join(directory, e) \
                             for e in os.listdir(directory) \
                             if os.path.isdir(os.path.join(directory, e))]
-        found_md = False
-        for directory, _, flist in os.walk(path):
-            for f in flist:
-                if f.endswith(".md"):
-                    found_md = True
-                    break
-        if roots == [] and found_md:
-            # this is markdown stuff without configuration!
+        found_md = any(fname.endswith(".md")
+            for directory, _, flist in os.walk(path)  for fname in flist)
+        if not roots and found_md:
+            # no root and markdown files present → lecture without configuration
             raise errors.ConfigurationError(("no configuration found, but it "
                 "is required"), path)
         return roots
@@ -88,7 +86,7 @@ files are converted."""
             self._run()
         except errors.ConfigurationError as e:
             if not e.path:
-                e.path = path
+                e.path = self._roots[0]
             raise
 
     def _run(self):
