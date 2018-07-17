@@ -133,7 +133,6 @@ def epub_convert_header_ids(key, value, fmt, url_prefix, modify_ast=True):
             if (isinstance(value[1][0], dict) and value[1][0]['t']
                     and value[1][0]['t'] == 'Image'):
                 link_parts[1] = 'image_{}'.format(link_parts[1])
-                print("image anchor", link_parts[1])
             value[-1][0] = '#'.join(link_parts)
 
 

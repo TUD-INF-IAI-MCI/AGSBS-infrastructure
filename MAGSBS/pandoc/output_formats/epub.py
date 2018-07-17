@@ -42,6 +42,20 @@ p.header[data-level="5"] { font-size: .83em; }
 p.header[data-level="6"] { font-size: .75em; }
 """
 
+YAML_TEMPLATE = """---
+title: '{LectureTitle}'
+creator:
+- role: author
+  text: {SourceAuthor}
+- role: editor
+  text: {Editor}
+contributor: {WorkingGroup}
+rights: {Rights}
+publisher: {Institution}
+lang: {Language}
+...
+"""
+
 class EpubConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
     PANDOC_FORMAT_NAME = 'epub'
@@ -141,6 +155,9 @@ class EpubConverter(OutputGenerator):
                         ast['blocks'].extend(json_ast['blocks'])
                     else:
                         ast = json_ast
+        meta_ast = contentfilter.load_pandoc_ast(
+            YAML_TEMPLATE.format(**self.get_meta_data()))
+        ast['meta'] = meta_ast['meta']
         return ast
 
     #pylint: disable=too-many-locals
@@ -150,8 +167,8 @@ class EpubConverter(OutputGenerator):
         if not json_ast:
             return # skip empty asts
         self.__apply_filters(json_ast, self.CONTENT_FILTERS, path, {'chapter': 1})
-        outputf = self.get_meta_data()['LectureTitle'] + \
-                  '.' + self.FILE_EXTENSION
+        outputf = EpubConverter.__format_filename(self.get_meta_data()['LectureTitle'] + \
+                  '.' + self.FILE_EXTENSION)
         pandoc_args = ['-s',
                        '--css={}'.format(self.css_path),
                        '--toc-depth={}'.format(self.get_meta_data()['TocDepth']),
@@ -179,3 +196,21 @@ class EpubConverter(OutputGenerator):
                 "Incompatible Pandoc API found, while "
                 "applying filter %s (ABI clash?).\nKeyError: %s"
             ) % (filter.__name__, str(e)), path)
+
+    @staticmethod
+    def __format_filename(str_):
+        """Take a string and return a valid filename constructed from the string.
+        Uses a whitelist approach: any characters not present in valid_chars are
+        removed. Also spaces are replaced with underscores.
+         
+        Note: this method may produce invalid filenames such as ``, `.` or `..`
+        When I use this method I prepend a date string like '2009_01_15_19_46_32_'
+        and append a file extension like '.txt', so I avoid the potential of using
+        an invalid filename.
+         
+        """
+        import string
+        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+        filename = ''.join(c for c in str_ if c in valid_chars)
+        filename = filename.replace(' ', '_') # I don't like spaces in filenames.
+        return filename
