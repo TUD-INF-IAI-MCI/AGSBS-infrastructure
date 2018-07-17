@@ -46,9 +46,12 @@ class EpubConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
     PANDOC_FORMAT_NAME = 'epub'
     FILE_EXTENSION = 'epub'
-    CONTENT_FILTERS = [contentfilter.epub_page_number_extractor, contentfilter.epub_link_converter]
-    IMAGE_CONTENT_FILTERS = [contentfilter.epub_remove_images_from_toc]
-    CHAPTER_CONTENT_FILTERS = [contentfilter.epub_update_image_location]
+    CONTENT_FILTERS = [contentfilter.epub_page_number_extractor,
+                       contentfilter.epub_link_converter]
+    IMAGE_CONTENT_FILTERS = [contentfilter.epub_convert_image_header_ids,
+                             contentfilter.epub_remove_images_from_toc]
+    CHAPTER_CONTENT_FILTERS = [contentfilter.epub_convert_header_ids,
+                               contentfilter.epub_update_image_location]
 
     def __init__(self, meta, language):
         if not shutil.which('pandoc'):

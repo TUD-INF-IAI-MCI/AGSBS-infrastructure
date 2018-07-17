@@ -116,6 +116,33 @@ def epub_link_converter(key, value, fmt, meta, modify_ast=True):
             value[-1][0] = '#'.join(link_parts)
 
 
+def epub_convert_header_ids(key, value, fmt, url_prefix, modify_ast=True):
+    """Prepends all header IDs with the chapter and updates all links to images
+    with the image_ prefix."""
+    if key == 'Header' and value:
+        value[1][0] = '_'.join([url_prefix, value[1][0]])
+    if key == 'Link' and value:
+        link = value[-1][0]
+        if not link or LINK_REGEX.match(link):
+            return
+        if isinstance(link, str):
+            link_parts = link.split('#', 1)  # split in # once
+            if not link_parts[1]:
+                return
+            link_parts[1] = '_'.join([url_prefix, link_parts[1]])
+            if (isinstance(value[1][0], dict) and value[1][0]['t']
+                    and value[1][0]['t'] == 'Image'):
+                link_parts[1] = 'image_{}'.format(link_parts[1])
+                print("image anchor", link_parts[1])
+            value[-1][0] = '#'.join(link_parts)
+
+
+def epub_convert_image_header_ids(key, value, fmt, meta, modify_ast=True):
+    """prepends all image header IDs with 'image_'"""
+    if key == 'Header' and value:
+        value[1][0] = 'image_{}'.format(value[1][0])
+
+
 def epub_remove_images_from_toc(key, value, fmt, meta):
     """Scan all paragraphs for those starting with || to parse it for page
     numbering information."""
