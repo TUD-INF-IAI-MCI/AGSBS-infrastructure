@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import sys
+from xml.dom import minidom
 
 import pandocfilters
 
@@ -185,7 +186,52 @@ def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
         image_url = value[-1][0]
         if not image_url or image_url[0] == '/' or LINK_REGEX.match(image_url):
             return
-        value[-1][0] = os.path.join(url_prefix, image_url)
+        value[-1][0] = '/'.join([url_prefix, image_url])  # dont use os.path
+
+
+def epub_collect_link_targets(key, value, fmt, meta, modify_ast=True):
+    """Collects all links via meta and appends an id to be used as anchor for
+    back buttons."""
+    if not 'epub':
+        return
+    if key == 'Header' and value:
+        if value[0] == 1:
+            meta['chapter'] +=1
+            return
+    if key == 'Link' and value:
+        link = value[-1][0]
+        if not link or LINK_REGEX.match(link):
+            return
+        if isinstance(link, str):
+            link_parts = link.split('#', 1)  # split in # once
+            if not link_parts[1]:
+                return
+            meta['ids'][link_parts[1]] = meta['chapter']
+            value[0][0] = '{}_back'.format(link_parts[1])
+
+
+def epub_create_back_links(key, value, fmt, meta):
+    """creates back links for previously collected links."""
+    if not 'epub':
+        return
+    if key == 'RawBlock' and value[0] == 'html':
+        xml = minidom.parseString(value[1])
+        content = xml.getElementsByTagName("p")
+        if not content:
+            return
+        content = content[0]
+        if not all(x in content.attributes for x in ['id', 'class']):
+            return
+        if not content.attributes['id'].value in meta['ids']:
+            return
+        anchor_id = content.attributes['id'].value
+        link = xml.createElement('a')
+        link.setAttribute('href', 'ch{:03d}.xhtml#{}_back'.format(
+            meta['ids'][anchor_id], anchor_id))
+        text = xml.createTextNode(content.firstChild.toxml())
+        link.appendChild(text)
+        content.replaceChild(link, content.firstChild)
+        return html(content.toxml())
 
 
 def suppress_captions(key, value, fmt, meta, modify_ast=True):

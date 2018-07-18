@@ -61,7 +61,9 @@ class EpubConverter(OutputGenerator):
     PANDOC_FORMAT_NAME = 'epub'
     FILE_EXTENSION = 'epub'
     CONTENT_FILTERS = [contentfilter.epub_page_number_extractor,
-                       contentfilter.epub_link_converter]
+                       contentfilter.epub_link_converter,
+                       contentfilter.epub_collect_link_targets,
+                       contentfilter.epub_create_back_links]
     IMAGE_CONTENT_FILTERS = [contentfilter.epub_convert_image_header_ids,
                              contentfilter.epub_remove_images_from_toc]
     CHAPTER_CONTENT_FILTERS = [contentfilter.epub_convert_header_ids,
@@ -166,7 +168,8 @@ class EpubConverter(OutputGenerator):
         actual care of the underlying format."""
         if not json_ast:
             return # skip empty asts
-        self.__apply_filters(json_ast, self.CONTENT_FILTERS, path, {'chapter': 1})
+        filter_meta = {'chapter': 1, 'ids': {}}
+        self.__apply_filters(json_ast, self.CONTENT_FILTERS, path, filter_meta)
         outputf = EpubConverter.__format_filename(self.get_meta_data()['LectureTitle'] + \
                   '.' + self.FILE_EXTENSION)
         pandoc_args = ['-s',
@@ -190,6 +193,10 @@ class EpubConverter(OutputGenerator):
             filter_ = None
             fmt = self.PANDOC_FORMAT_NAME
             for filter_ in filters:
+                # reset chapter count for next filter which may count chapters
+                if isinstance(meta, dict):
+                    if 'chapter' in meta:
+                        meta['chapter'] = 1
                 json_ast = pandocfilters.walk(json_ast, filter_, fmt, meta)
         except KeyError as e: # API clash(?)
             raise errors.StructuralError((
