@@ -209,16 +209,11 @@ class EpubConverter(OutputGenerator):
     def __format_filename(str_):
         """Take a string and return a valid filename constructed from the string.
         Uses a whitelist approach: any characters not present in valid_chars are
-        removed. Also spaces are replaced with underscores.
+        removed.
          
         Note: this method may produce invalid filenames such as ``, `.` or `..`
-        When I use this method I prepend a date string like '2009_01_15_19_46_32_'
-        and append a file extension like '.txt', so I avoid the potential of using
-        an invalid filename.
-         
         """
-        import string
-        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-        filename = ''.join(c for c in str_ if c in valid_chars)
-        filename = filename.replace(' ', '_') # I don't like spaces in filenames.
+        filename = ''.join(c for c in str_
+                           if c.isalpha() or c.isdigit() or c in ' _()-.')
+        filename = filename.replace(' ', '_')
         return filename
