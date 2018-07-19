@@ -125,7 +125,7 @@ class EpubConverter(OutputGenerator):
         file_info = {'chapters': [], 'images': []}
         for file_name in files:
             name = os.path.splitext(os.path.basename(file_name))[0]
-            chapter = os.path.basename(os.path.split(file_name)[0])
+            chapter = os.path.basename(os.path.dirname(file_name))
             if name == 'bilder':
                 file_info['images'].append({'chapter': chapter, 'path': file_name})
             elif name == 'inhalt':
@@ -142,13 +142,13 @@ class EpubConverter(OutputGenerator):
                 with open(entry['path'], 'r', encoding='utf-8') as file:
                     json_ast = contentfilter.load_pandoc_ast(file.read())
                     contentfilter.convert_formulas(
-                        os.path.join(os.path.split(entry['path'])[0], 'bilder'),
+                        os.path.join(os.path.dirname(entry['path']), 'bilder'),
                         json_ast
                     )
                     self.__apply_filters(json_ast,
                                          self.CHAPTER_CONTENT_FILTERS,
                                          path,
-                                         os.path.split(entry['path'])[0])
+                                         os.path.dirname(entry['path']))
                     if key == 'images':
                         self.__apply_filters(json_ast,
                                              self.IMAGE_CONTENT_FILTERS,
@@ -168,6 +168,7 @@ class EpubConverter(OutputGenerator):
         actual care of the underlying format."""
         if not json_ast:
             return # skip empty asts
+        # meta data which is used in more than one filter
         filter_meta = {'chapter': 1, 'ids': {}}
         self.__apply_filters(json_ast, self.CONTENT_FILTERS, path, filter_meta)
         outputf = EpubConverter.__format_filename(self.get_meta_data()['LectureTitle'] + \

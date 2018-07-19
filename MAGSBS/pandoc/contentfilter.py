@@ -52,14 +52,14 @@ def page_number_extractor(key, value, fmt, meta):
                 # strip the first ||
                 text = text[2:].lstrip().rstrip()
                 return html('<p><span id="p{0}">{1}</span></p>'.format(
-                        pnum.groups()[1], text))
+                    pnum.groups()[1], text))
 
 
 #pylint: disable=inconsistent-return-statements
 def epub_page_number_extractor(key, value, fmt, meta):
     """Scan all paragraphs for those starting with || to parse it for page
     numbering information."""
-    if not (fmt == 'epub'):
+    if fmt != 'epub':
         return
     if key == 'Para' and value:
         # find first obj with content (line breaks don't have this)
@@ -78,16 +78,16 @@ def epub_page_number_extractor(key, value, fmt, meta):
                 # strip the first ||
                 text = text[2:].lstrip().rstrip()
                 return html('<p class="pagebreak"><span id="p{0}">{1}</span></p>'.format(
-                        pnum.groups()[1], text))
+                    pnum.groups()[1], text))
 
 
 def html_link_converter(key, value, fmt, meta, modify_ast=True):
-    """Change file extension of links from .md to .html to make the linking more
-    format-independent."""
+    """Scan all links and append change to .html for all relative links."""
     if not (fmt == 'html' or fmt == 'html5'):
         return
     if key == 'Link' and value:
-        link = value[-1][0]
+        link = value[-1][0]  # last element contains the actual link
+        # filter out all absolute links
         if not link or LINK_REGEX.match(link):
             return
         if isinstance(link, str):
@@ -99,13 +99,17 @@ def html_link_converter(key, value, fmt, meta, modify_ast=True):
 
 
 def epub_link_converter(key, value, fmt, meta, modify_ast=True):
-    if not fmt == 'epub':
+    """Scan all links and append change to .html for all relative links."""
+    if fmt != 'epub' or not value:
         return
-    if key == 'Header' and value:
-        if value[0] == 1:
-            meta['chapter'] +=1
-    elif key == 'Link' and value:
-        link = value[-1][0]
+    # if header level is 1 a new chapter is created for epub. It is needed
+    # to count the chapters to create correct links.
+    if key == 'Header':
+        if value[0] == 1:  # first element contains header level (1 == <h1>)
+            meta['chapter'] += 1
+    elif key == 'Link':
+        link = value[-1][0]  # last element contains the actual link
+        # filter out all absolute links
         if not link or LINK_REGEX.match(link):
             return
         if isinstance(link, str):
@@ -117,21 +121,28 @@ def epub_link_converter(key, value, fmt, meta, modify_ast=True):
 
 
 def epub_convert_header_ids(key, value, fmt, url_prefix, modify_ast=True):
-    """Prepends all header IDs with the chapter number and updates all links to images
-    with the image_ prefix."""
-    if key == 'Header' and value:
+    """Prepends all header IDs with the chapter and updates all links to images
+    with the image_ prefix.
+    Header: e.g. 'header_id' -> 'k02_header_id'
+    Image: e.g. 'image_id' -> 'image_k02_image_id'"""
+    if fmt != 'epub' or not value:
+        return
+    # prepend all header IDs with the chapter
+    if key == 'Header':
         value[1][0] = '_'.join([url_prefix, value[1][0]])
-    elif key == 'Link' and value:
-        link = value[-1][0]
+    elif key == 'Link':
+        link = value[-1][0]  # last element contains the actual link
+        # filter out all absolute links
         if not link or LINK_REGEX.match(link):
             return
         if isinstance(link, str):
             link_parts = link.split('#', 1)  # split in # once
-            if not link_parts[1]:
+            if not link_parts[1]: # return if there is no anchor
                 return
             link_parts[1] = '_'.join([url_prefix, link_parts[1]])
-            if isinstance(value[1][0], dict) and value[1][0]['t']
-                    and value[1][0]['t'] == 'Image':
+            # check if link is attached to an image and update it
+            if (isinstance(value[1][0], dict) and value[1][0]['t']
+                    and value[1][0]['t'] == 'Image'):
                 link_parts[1] = 'image_{}'.format(link_parts[1])
             value[-1][0] = '#'.join(link_parts)
 
@@ -143,15 +154,22 @@ def epub_convert_image_header_ids(key, value, fmt, meta, modify_ast=True):
 
 
 def epub_remove_images_from_toc(key, value, fmt, meta):
-    """Scan all paragraphs for those starting with || to parse it for page
-    numbering information."""
+    """Converts all headers to be just paragraphs so that images are not
+    added to toc."""
     if fmt != 'epub':
         return
+    # convert all headres to raw blocks
+    # paragrapf contains 3 attributes:
+    # id: image id
+    # class: "header" or "header pagebrak" for correct display
+    # data-level: header level from original header
+    # <p id="image_id" class="header" data-level="2">Image</p>
     if key == 'Header' and value:
         # find first obj with content (line breaks don't have this)
         text = None
         header_level = 0
         _id = ''
+        # extract all relevant values
         for obj in value:
             if isinstance(obj, int):
                 header_level = obj
@@ -162,8 +180,10 @@ def epub_remove_images_from_toc(key, value, fmt, meta):
                     elif isinstance(inner_obj, dict):
                         if 'c' in inner_obj:
                             text = inner_obj['c']
+        # check if everything is there
         if text is None or header_level == 0 or _id == '':
             return # no valid content
+        # create raw block
         if isinstance(text, str):
             text = pandocfilters.stringify(value)
             return html(
@@ -177,9 +197,11 @@ def epub_remove_images_from_toc(key, value, fmt, meta):
  
 
 def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
-    """Updates all image references (referenced relative to the lecture root) so
-    that pandoc can find and add them
-    correctly for epub."""
+    """Updates all image locations so that pandoc can find and add them
+    correctly for epub.
+    E.g:
+    before: ilder/image.png
+    after: k02/bilder/image.png"""
     if fmt != 'epub':
         return
     if key == 'Image' and value:
@@ -191,18 +213,28 @@ def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
 
 def epub_collect_link_targets(key, value, fmt, meta, modify_ast=True):
     """Collects all links via meta and appends an id to be used as anchor for
-    back buttons."""
-    if not 'epub':
+    back buttons.
+    meta stores all link IDs so it's possible to add the back links correctly.
+    meta structure: { 'chapter': int, 'ids': dict }
+    the 'ids' dict contains the ids of the links as key and the chapter as key"""
+    if fmt != 'epub' and not value:
         return
-    if key == 'Header' and value:
-        if value[0] == 1:
-            meta['chapter'] +=1
-            return
-    if key == 'Link' and value:
-        link = value[-1][0]
+    # if header level is 1 a new chapter is created for epub. It is needed
+    # to count the chapters to create correct links.
+    if key == 'Header':
+        if value[0] == 1:  # first element contains header level (1 == <h1>)
+            meta['chapter'] += 1
+    # add an id to all relative links to jump back to
+    elif key == 'Link':
+        link = value[-1][0]  # last element contains the actual link
+        # filter out all absolute links
         if not link or LINK_REGEX.match(link):
             return
         if isinstance(link, str):
+            # get target and use it as id for the link
+            # the virst element of value contains the link id which is empty
+            # by default. It is just needed to add the id there.
+            # e.g.: <a id="target_id_back" href="target_id">Target</a>
             link_parts = link.split('#', 1)  # split in # once
             if not link_parts[1]:
                 return
@@ -211,19 +243,35 @@ def epub_collect_link_targets(key, value, fmt, meta, modify_ast=True):
 
 
 def epub_create_back_links(key, value, fmt, meta):
-    """creates back links for previously collected links."""
-    if not 'epub':
+    """creates back links for previously collected links.
+    meta stores all link IDs so it's possible to add the back links correctly.
+    meta structure: { 'chapter': int, 'ids': dict }
+    the 'ids' dict contains the ids of the links as key and the chapter as key"""
+    if fmt != 'epub':
         return
+    # header from image descriptions are within a RawBlock 
+    # due to a previous filter
+    # before: <p id="image_id", class="header" data-level="2">Image Id</p>
+    # after:
+    # <p id="image_id", class="header" data-level="2">
+    #   <a href="image_id_back">Image Id</a>
+    # </p>
     if key == 'RawBlock' and value[0] == 'html':
+        # get the html code from the raw block and parse it
         xml = minidom.parseString(value[1])
+        # get the element to be updated
         content = xml.getElementsByTagName("p")
         if not content:
             return
         content = content[0]
+        # check if the html code meets the requirements to be an image header
         if not all(x in content.attributes for x in ['id', 'class']):
             return
         if not content.attributes['id'].value in meta['ids']:
             return
+        # get the id to put it later in the link to go back
+        # the original link will have a matching id
+        # id: 'image_id' -> back link: '#image_id_back'
         anchor_id = content.attributes['id'].value
         link = xml.createElement('a')
         link.setAttribute('href', 'ch{:03d}.xhtml#{}_back'.format(
@@ -260,14 +308,14 @@ def load_pandoc_ast(text):
     """Run pandoc on given document and return parsed JSON AST."""
     command = ['pandoc', '-f', 'markdown', '-t', 'json']
     proc = subprocess.Popen(command, stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     data = proc.communicate(text.encode(sys.getdefaultencoding()))
     ret = proc.wait()
     if ret:
         error = '\n'.join([e.decode(sys.getdefaultencoding())
-                for e in data])
+                           for e in data])
         raise SubprocessError(' '.join(command),
-        "Pandoc gave error status %s: %s" % (ret, error))
+                              "Pandoc gave error status %s: %s" % (ret, error))
     text = data[0].decode(sys.getdefaultencoding())
     return json.loads(text)
 
@@ -294,6 +342,7 @@ class Formula:
 
 
 def get_title(json_ast):
+    """Get title from AST"""
     nodes_to_visit = json_ast['blocks'] # content of document without meta info
     for node in nodes_to_visit:
         if isinstance(node, list):
@@ -309,14 +358,14 @@ def convert_formulas(base_path, ast):
     them and replaces their original occurrences with RAW inline HTML."""
     formulas = gleetex.pandoc.extract_formulas(ast)
     conv = gleetex.cachedconverter.CachedConverter(base_path, True,
-            encoding="UTF-8")
+                                                   encoding="UTF-8")
     conv.set_replace_nonascii(True)
     try:
         conv.convert_all(base_path, formulas)
     except gleetex.cachedconverter.ConversionException as gle:
         raise MathError(_('Incorrect formula: {reason}').format(
-                reason=gle.cause), gle.formula,
-                formula_count=gle.formula_count) from None
+            reason=gle.cause), gle.formula,
+                        formula_count=gle.formula_count) from None
 
     # an converted image has information like image depth and height and hence
     # the data structure is different
@@ -326,4 +375,4 @@ def convert_formulas(base_path, ast):
         img_fmt.set_replace_nonascii(True)
         # this alters the AST reference, so no return value required
         gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast['blocks'],
-                formulas)
+                                               formulas)
