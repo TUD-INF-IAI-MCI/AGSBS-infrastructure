@@ -215,5 +215,4 @@ class EpubConverter(OutputGenerator):
         """
         filename = ''.join(c for c in str_
                            if c.isalpha() or c.isdigit() or c in ' _()-.')
-        filename = filename.replace(' ', '_')
         return filename
