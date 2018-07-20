@@ -82,7 +82,8 @@ def epub_page_number_extractor(key, value, fmt, meta):
 
 
 def html_link_converter(key, value, fmt, meta, modify_ast=True):
-    """Scan all links and append change to .html for all relative links."""
+    """Change file extension of links from .md to .html to make the linking more
+    format-independent."""
     if not (fmt == 'html' or fmt == 'html5'):
         return
     if key == 'Link' and value:
@@ -121,8 +122,8 @@ def epub_link_converter(key, value, fmt, meta, modify_ast=True):
 
 
 def epub_convert_header_ids(key, value, fmt, url_prefix, modify_ast=True):
-    """Prepends all header IDs with the chapter and updates all links to images
-    with the image_ prefix.
+    """Prepends all header IDs with the chapter number and updates all links
+    to images with the image_ prefix.
     Header: e.g. 'header_id' -> 'k02_header_id'
     Image: e.g. 'image_id' -> 'image_k02_image_id'"""
     if fmt != 'epub' or not value:
@@ -197,8 +198,8 @@ def epub_remove_images_from_toc(key, value, fmt, meta):
  
 
 def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
-    """Updates all image locations so that pandoc can find and add them
-    correctly for epub.
+    """Updates all image references (referenced relative to the lecture root) so
+    that pandoc can find and add them correctly for epub.
     E.g:
     before: ilder/image.png
     after: k02/bilder/image.png"""
