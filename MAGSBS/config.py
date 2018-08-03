@@ -20,7 +20,7 @@ import locale
 from os.path import dirname
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-
+import platform
 from . import common
 from .errors import ConfigurationError
 from . import roman
@@ -58,11 +58,22 @@ def _get_localedir():
             # Python  default location
             gettext._default_localedir
         ]
+    if platform.system() is "Linux":
+        pass
+    if platform.system() is "Windows":
+        # cause that matuc is installed via installer
+        directory = os.path.join(os.getenv('ProgramData'), "matuc", "locale")
+
+    if platform.system() is "Darwin":
+        pass
+    print("gettext._default_localedir", gettext._default_localedir)
+
     locpattern = re.compile(r'[a-z|A-Z]{2}_?(?:[A-Z|a-z]{2})?\.?.*')
-    for directory in localedirs:
-        if os.path.exists(directory):
-            if any(locpattern.search(f) for f in os.listdir(directory)):
-                return directory
+    if os.path.exists(directory):
+        if any(locpattern.search(f) for f in os.listdir(directory)):
+            return directory
+
+
     common.WarningRegistry().register_warning(
             "Couldn't find locales directory.") # → None
 
