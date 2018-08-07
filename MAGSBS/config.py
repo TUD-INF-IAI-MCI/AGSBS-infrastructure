@@ -50,29 +50,27 @@ PAGENUMBERING_PATTERN = re.compile(r'''
 
 def _get_localedir():
     """Make Gettext more flexible to work  on more platforms."""
-    localedirs = [
-            "locale", # current directory
-            # one level above this file (for development)
-            os.path.join(dirname(dirname(os.path.realpath(__file__))),
-                "locale"),
-            # Python  default location
-            gettext._default_localedir
-        ]
-    if platform.system() is "Linux":
+    loc_dir = []
+    loc_dir.append(gettext._default_localedir)
+    if os.uname().sysname == "Linux":
+        loc_dir = [gettext._default_localedir]
         pass
-    if platform.system() is "Windows":
+    elif os.uname().sysname == "Windows":
         # cause that matuc is installed via installer
-        directory = os.path.join(os.getenv('ProgramData'), "matuc", "locale")
-
-    if platform.system() is "Darwin":
-        pass
-    print("gettext._default_localedir", gettext._default_localedir)
-
-    locpattern = re.compile(r'[a-z|A-Z]{2}_?(?:[A-Z|a-z]{2})?\.?.*')
-    if os.path.exists(directory):
-        if any(locpattern.search(f) for f in os.listdir(directory)):
-            return directory
-
+        loc_dir = [os.path.join(os.getenv('ProgramData'), "matuc", "locale")]
+    elif os.uname().sysname == "Darwin":
+        # gettext._default_localedir return
+        # /Library/Frameworks/Python.framework/Versions/3.5/share/locale
+        # and this dir does not exist
+        loc_dir.append('/usr/share/locales')
+        # add ../bin/share/locale
+        loc_dir.append(os.path.join(os.path.dirname(
+                        os.path.abspath(sys.argv[0])), 'share', 'locale'))
+        locpattern = re.compile(r'[a-z|A-Z]{2}_?(?:[A-Z|a-z]{2})?\.?.*')
+    for directory in loc_dir:
+        if os.path.exists(directory):
+            if any(locpattern.search(f) for f in os.listdir(directory)):
+                return directory
 
     common.WarningRegistry().register_warning(
             "Couldn't find locales directory.") # → None

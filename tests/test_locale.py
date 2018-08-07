@@ -2,6 +2,7 @@
 import os
 import unittest
 import tempfile
+import sys
 
 from MAGSBS.config import _get_localedir
 
@@ -18,12 +19,22 @@ def touch(path):
 
 class test_locale(unittest.TestCase):
     def test_that_locale_is_in_programData(self):
-        self.assertEqual(_get_localedir(), 'C:\ProgramData\matuc\locale')
+        if os.uname().sysname == "Linux":
+            pass
+        elif os.uname().sysname == "Windows":
+            self.assertEqual(_get_localedir(), 'C:\ProgramData\matuc\locale')
+        elif os.uname().sysname == "Darwin":
+            loc_dir = _get_localedir()
+
+            self.assertTrue(loc_dir == '/usr/share/locale' or
+                            loc_dir == os.path.join(os.path.dirname(
+                            os.path.abspath(sys.argv[0])), 'share', 'locale'))
 
     def test_that_locale_not_exists_in_programData(self):
-        programDataPath = os.path.join(os.getenv('ProgramData'), "matuc", "locale")
-        tempName = os.path.join(os.getenv('ProgramData'), "matuc", "_locale")
-        if os.path.exists(programDataPath):
-            os.rename(programDataPath, tempName)
-        self.assertEqual(_get_localedir(), None)
-        os.rename(tempName, programDataPath)
+        if os.uname().sysname == "Windows":
+            programDataPath = os.path.join(os.getenv('ProgramData'), "matuc", "locale")
+            tempName = os.path.join(os.getenv('ProgramData'), "matuc", "_locale")
+            if os.path.exists(programDataPath):
+                os.rename(programDataPath, tempName)
+            self.assertEqual(_get_localedir(), None)
+            os.rename(tempName, programDataPath)
