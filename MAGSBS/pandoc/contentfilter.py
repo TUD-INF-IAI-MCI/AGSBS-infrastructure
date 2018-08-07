@@ -218,7 +218,7 @@ def epub_collect_link_targets(key, value, fmt, meta, modify_ast=True):
     meta stores all link IDs so it's possible to add the back links correctly.
     meta structure: { 'chapter': int, 'ids': dict }
     the 'ids' dict contains the ids of the links as key and the chapter as key"""
-    if fmt != 'epub' and not value:
+    if fmt != 'epub' or not value:
         return
     # if header level is 1 a new chapter is created for epub. It is needed
     # to count the chapters to create correct links.
@@ -282,6 +282,12 @@ def epub_create_back_links(key, value, fmt, meta):
         content.replaceChild(link, content.firstChild)
         return html(content.toxml())
 
+def epub_unnumbered_appendix_toc(key, value, fmt, meta, modify_ast=True):
+    """marks all headlines of appendix to be unnumbered in toc."""
+    if fmt != 'epub' or not value:
+        return
+    if key == 'Header':
+        value[1][1].append("unnumbered")  # append unnumbered class to header
 
 def suppress_captions(key, value, fmt, meta, modify_ast=True):
     """Images on a paragraph of its own get a caption, suppress that."""

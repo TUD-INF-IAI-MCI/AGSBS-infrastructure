@@ -68,6 +68,7 @@ class EpubConverter(OutputGenerator):
                              contentfilter.epub_remove_images_from_toc]
     CHAPTER_CONTENT_FILTERS = [contentfilter.epub_convert_header_ids,
                                contentfilter.epub_update_image_location]
+    BACKMATTER_CONTENT_FILTERS = [contentfilter.epub_unnumbered_appendix_toc]
 
     def __init__(self, meta, language):
         if not shutil.which('pandoc'):
@@ -122,7 +123,7 @@ class EpubConverter(OutputGenerator):
     def __generate_file_structure(files):
         """generates a structure which makes it possible to convert everything
         in order"""
-        file_info = {'chapters': [], 'images': []}
+        file_info = {'chapters': [], 'backmatter': [], 'images': []}
         for file_name in files:
             name = os.path.splitext(os.path.basename(file_name))[0]
             chapter = os.path.basename(os.path.dirname(file_name))
@@ -130,6 +131,8 @@ class EpubConverter(OutputGenerator):
                 file_info['images'].append({'chapter': chapter, 'path': file_name})
             elif name == 'inhalt':
                 continue  # ignore toc!
+            elif name[:3] == 'anh':
+                file_info['backmatter'].append({'chapter': chapter, 'path': file_name})
             else:
                 file_info['chapters'].append({'chapter': chapter, 'path': file_name})
         return file_info
@@ -137,7 +140,7 @@ class EpubConverter(OutputGenerator):
     def __generate_ast(self, file_info, path):
         """reads all files and generate one ast in correct order."""
         ast = {}
-        for key in ['chapters', 'images']:
+        for key in ['chapters', 'backmatter', 'images']:
             for entry in file_info[key]:
                 with open(entry['path'], 'r', encoding='utf-8') as file:
                     json_ast = contentfilter.load_pandoc_ast(file.read())
@@ -152,6 +155,10 @@ class EpubConverter(OutputGenerator):
                     if key == 'images':
                         self.__apply_filters(json_ast,
                                              self.IMAGE_CONTENT_FILTERS,
+                                             path)
+                    elif key == 'backmatter':
+                        self.__apply_filters(json_ast,
+                                             self.BACKMATTER_CONTENT_FILTERS,
                                              path)
                     if ast:
                         ast['blocks'].extend(json_ast['blocks'])
@@ -173,7 +180,7 @@ class EpubConverter(OutputGenerator):
         self.__apply_filters(json_ast, self.CONTENT_FILTERS, path, filter_meta)
         outputf = EpubConverter.__format_filename(self.get_meta_data()['LectureTitle'] + \
                   '.' + self.FILE_EXTENSION)
-        pandoc_args = ['-s',
+        pandoc_args = ['-s', '-N',
                        '--css={}'.format(self.css_path),
                        '--toc-depth={}'.format(self.get_meta_data()['TocDepth']),
                        '--resource-path="{}"'.format(os.getcwd())]
