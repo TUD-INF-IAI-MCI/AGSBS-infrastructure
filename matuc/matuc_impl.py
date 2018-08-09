@@ -288,33 +288,50 @@ sub-directory configurations or initialization of a new project."""
             parser.print_help()
 
 
-
     def handle_conv(self, cmd, args):
         """Convert files."""
-        parser = HelpfulParser(cmd, self.output_formatter, "Convert a file from MarkDown "
-                    "to HTML.")
+        usage = ("Converts a file or directory containing a whole lecture.\n\n"
+                 "file:\n"
+                 "Convert a file from MarkDown to HTML.\n"
+                 "Other formats are not supported.\n\n"
+                 "directory:\n"
+                 "Perform all actions to automate lecture conversion\n"
+                 "-    generate a table of contents\n"
+                 "-    convert custom MarkDown extensions\n"
+                 "-    apply custom layout definition\n"
+                 "-    and do that for all MarkDown files within the specified "
+                 "directory")
+        parser = HelpfulParser(cmd, self.output_formatter, usage)
         parser.add_argument("-f", dest="format",
-                  help="select output format",
-                  metavar="FMT", default=None)
+                            help="Select output format (html or epub)",
+                            metavar="FMT", default=None)
         parser.add_argument("-p", dest="profile",
-                help=('profile for conversion; valid profiles are blind or '
-                    'vid (default profile for visually impaired), default is blind'))
-        parser.add_argument("file", help="path to input file")
+                            help=('profile for conversion; valid profiles are '
+                                  'blind or vid (default profile for visually '
+                                  'impaired), default is blind'))
+        parser.add_argument("path", help="path to input file or directory")
         args = parser.parse_args(args)
-        if not os.path.exists(args.file):
-            self.output_formatter.emit_error('file not found: ' + args.file)
+        if not os.path.exists(args.path):
+            self.output_formatter.emit_error('file or directory not found: ' + args.path)
             sys.exit(127)
-        if os.path.isdir(args.file):
-            self.output_formatter.emit_error('file required, directory found: ' + args.file)
-            sys.exit(98)
-
         with ErrorHandler(self.output_formatter):
-            p = MAGSBS.pandoc.converter.Pandoc(root_path=os.getcwd())
-            if args.profile:
-                p.set_conversion_profile(MAGSBS.pandoc.formats.ConversionProfile.from_string(args.profile))
-            if args.format:
-                p.set_output_format(MAGSBS.pandoc.formats.OutputFormat.from_string(args.format))
-            p.convert_files((args.file,))
+            if os.path.isdir(args.path):
+                from MAGSBS.pandoc.formats import ConversionProfile, OutputFormat
+                m = MAGSBS.master.Master(
+                    args.path,
+                    (ConversionProfile.Blind if not args.profile
+                     else ConversionProfile.from_string(args.profile)),
+                    (OutputFormat.Html if not args.format
+                     else OutputFormat.from_string(args.format)))
+                m.run()
+            else:
+                p = MAGSBS.pandoc.converter.Pandoc(root_path=os.getcwd())
+                if args.profile:
+                    p.set_conversion_profile(
+                        MAGSBS.pandoc.formats.ConversionProfile.from_string(args.profile))
+                # do not handle format argument as only html is supported for
+                # convcerting a single file.
+                p.convert_files((args.path,))
 
 
     def handle_imgdsc(self, cmd, args):
@@ -471,38 +488,6 @@ sub-directory configurations or initialization of a new project."""
         else:
             self.output_formatter.emit_result(format_errors())
 
-    def handle_master(self, cmd, args):
-        #pylint: disable=unused-argument
-        usage = ("Perform all actions to automate lecture conversion\n"
-                "-    generate a table of contents\n"
-                "-    convert custom MarkDown extensions\n"
-                "-    apply custom layout definition\n"
-                "-    and do that for all MarkDown files within the specified "
-                "directory")
-        parser = HelpfulParser(cmd, self.output_formatter, usage)
-        parser.add_argument("-p", dest="profile",
-                help=('profile for conversion; valid  profiles are blind or '
-                    'vid (default profile for visually impaired), default is blind'))
-        parser.add_argument("-f", dest="format",
-                  help="select output format",
-                  metavar="FMT", default=None)
-        parser.add_argument("directory", help="input file or directory")
-        args = parser.parse_args(args)
-        if not os.path.exists(args.directory):
-            self.output_formatter.emit_error('directory not found: ' + args.file)
-            sys.exit(127)
-        if not os.path.isdir(args.directory):
-            self.output_formatter.emit_error('directory required, file found: '\
-                    + args.directory)
-            sys.exit(98)
-        with ErrorHandler(self.output_formatter):
-            from MAGSBS.pandoc.formats import ConversionProfile, OutputFormat
-            m = MAGSBS.master.Master(args.directory,
-                    (ConversionProfile.Blind if not args.profile
-                        else ConversionProfile.from_string(args.profile)),
-                    (OutputFormat.Html if not args.format
-                        else OutputFormat.from_string(args.format)))
-            m.run()
 
     def handle_addpnum(self, cmd, args):
         """Return a new page number (roman and arabic supported).
