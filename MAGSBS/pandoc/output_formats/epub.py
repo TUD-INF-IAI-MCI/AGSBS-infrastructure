@@ -61,8 +61,9 @@ class EpubConverter(OutputGenerator):
     PANDOC_FORMAT_NAME = 'epub'
     FILE_EXTENSION = 'epub'
     CONTENT_FILTERS = [contentfilter.epub_page_number_extractor,
+                       contentfilter.epub_create_back_link_ids,
+                       contentfilter.epub_collect_ids,
                        contentfilter.epub_link_converter,
-                       contentfilter.epub_collect_link_targets,
                        contentfilter.epub_create_back_links]
     IMAGE_CONTENT_FILTERS = [contentfilter.epub_convert_image_header_ids,
                              contentfilter.epub_remove_images_from_toc]
