@@ -15,6 +15,7 @@ import re
 import subprocess
 import sys
 from xml.dom import minidom
+from xml.parsers.expat import ExpatError
 
 import pandocfilters
 
@@ -110,7 +111,7 @@ def epub_link_converter(key, value, fmt, meta, modify_ast=True):
             return
         if isinstance(link, str):
             link_parts = link.split('#', 1)  # split in # once
-            if not link_parts[0] or not link_parts[1]:
+            if len(link_parts) < 2 or not link_parts[0] or not link_parts[1]:
                 return
             # check if id is in meta
             if link_parts[1] in meta['ids']:
@@ -136,7 +137,7 @@ def epub_convert_header_ids(key, value, fmt, url_prefix, modify_ast=True):
             return
         if isinstance(link, str):
             link_parts = link.split('#', 1)  # split in # once
-            if not link_parts[1]: # return if there is no anchor
+            if len(link_parts) < 2 or not link_parts[1]: # return if there is no anchor
                 return
             link_parts[1] = '_'.join([url_prefix, link_parts[1]])
             # check if link is attached to an image and update it
@@ -227,7 +228,7 @@ def epub_create_back_link_ids(key, value, fmt, meta, modify_ast=True):
             # by default. It is just needed to add the id there.
             # e.g.: <a id="target_id_back" href="target_id">Target</a>
             link_parts = link.split('#', 1)  # split in # once
-            if not link_parts[1]:
+            if len(link_parts) < 2 or not link_parts[1]:
                 return
             value[0][0] = '{}_back'.format(link_parts[1])
 
@@ -249,7 +250,10 @@ def epub_create_back_links(key, value, fmt, meta):
     # </p>
     if key == 'RawBlock' and value[0] == 'html':
         # get the html code from the raw block and parse it
-        xml = minidom.parseString(value[1])
+        try:
+            xml = minidom.parseString(value[1])
+        except ExpatError:
+            return # no valid xml!
         # get the element to be updated
         content = xml.getElementsByTagName("p")
         if not content:
@@ -292,7 +296,10 @@ def epub_collect_ids(key, value, fmt, meta):
         meta['ids'][value[0][0]] = meta['chapter']
     elif key == 'RawBlock' and value[0] == 'html':
         # get the html code from the raw block and parse it
-        xml = minidom.parseString(value[1])
+        try:
+            xml = minidom.parseString(value[1])
+        except ExpatError:
+            return # no valid xml!
         # get the element to be updated
         content = xml.getElementsByTagName("p")
         if not content:

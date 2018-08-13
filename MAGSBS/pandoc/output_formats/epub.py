@@ -124,16 +124,18 @@ class EpubConverter(OutputGenerator):
     def __generate_file_structure(files):
         """generates a structure which makes it possible to convert everything
         in order"""
-        file_info = {'chapters': [], 'backmatter': [], 'images': []}
+        file_info = {'chapters': [], 'backmatter': [], 'frontmatter': [], 'images': []}
         for file_name in files:
             name = os.path.splitext(os.path.basename(file_name))[0]
             chapter = os.path.basename(os.path.dirname(file_name))
             if name == 'bilder':
                 file_info['images'].append({'chapter': chapter, 'path': file_name})
-            elif name == 'inhalt':
+            elif name == 'inhalt' or name == 'index':
                 continue  # ignore toc!
             elif name[:3] == 'anh':
                 file_info['backmatter'].append({'chapter': chapter, 'path': file_name})
+            elif name[:1] == 'v':
+                file_info['frontmatter'].append({'chapter': chapter, 'path': file_name})
             else:
                 file_info['chapters'].append({'chapter': chapter, 'path': file_name})
         return file_info
@@ -141,7 +143,7 @@ class EpubConverter(OutputGenerator):
     def __generate_ast(self, file_info, path):
         """reads all files and generate one ast in correct order."""
         ast = {}
-        for key in ['chapters', 'backmatter', 'images']:
+        for key in ['frontmatter', 'chapters', 'backmatter', 'images']:
             for entry in file_info[key]:
                 with open(entry['path'], 'r', encoding='utf-8') as file:
                     json_ast = contentfilter.load_pandoc_ast(file.read())
