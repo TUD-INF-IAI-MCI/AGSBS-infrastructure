@@ -3,6 +3,7 @@ import os
 import unittest
 import tempfile
 import sys
+import locale
 
 from MAGSBS.config import _get_localedir
 
@@ -18,14 +19,18 @@ def touch(path):
             f.write("\n")
 
 class test_locale(unittest.TestCase):
-    def test_that_locale_is_in_programData(self):
+    def test_that_locale_is_available(self):
         if os.uname().sysname == "Linux":
-            pass
+            loc_dir = _get_localedir()
+            self.assertTrue(loc_dir == '/usr/share/locale' or
+                            loc_dir == os.path.join(os.path.dirname(
+                            os.path.abspath(sys.argv[0])), 'share', 'locale')
+                            or os.path.join(os.path.dirname(os.path.dirname(os.environ['_'])),
+                            'share', 'locale'))
         elif os.uname().sysname == "Windows":
             self.assertEqual(_get_localedir(), 'C:\ProgramData\matuc\locale')
         elif os.uname().sysname == "Darwin":
             loc_dir = _get_localedir()
-
             self.assertTrue(loc_dir == '/usr/share/locale' or
                             loc_dir == os.path.join(os.path.dirname(
                             os.path.abspath(sys.argv[0])), 'share', 'locale'))
@@ -36,5 +41,6 @@ class test_locale(unittest.TestCase):
             tempName = os.path.join(os.getenv('ProgramData'), "matuc", "_locale")
             if os.path.exists(programDataPath):
                 os.rename(programDataPath, tempName)
+            # ToDo add case that magsbs is execute from source code
             self.assertEqual(_get_localedir(), None)
             os.rename(tempName, programDataPath)
