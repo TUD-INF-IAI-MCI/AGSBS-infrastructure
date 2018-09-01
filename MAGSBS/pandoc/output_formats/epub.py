@@ -60,7 +60,7 @@ class EpubConverter(OutputGenerator):
     """HTML output format generator. For documentation see super class;."""
     PANDOC_FORMAT_NAME = 'epub'
     FILE_EXTENSION = 'epub'
-    CONTENT_FILTERS = [contentfilter.epub_page_number_extractor,
+    CONTENT_FILTERS = [contentfilter.page_number_extractor,
                        contentfilter.epub_create_back_link_ids,
                        contentfilter.epub_collect_ids,
                        contentfilter.epub_link_converter,

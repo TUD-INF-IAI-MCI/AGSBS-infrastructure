@@ -28,13 +28,11 @@ from ..errors import MathError, SubprocessError
 
 html = lambda text: pandocfilters.RawBlock('html', text)
 
-LINK_REGEX = re.compile(r'.*:.*')  # if link contains ":" it is no relative link
-
 #pylint: disable=inconsistent-return-statements
 def page_number_extractor(key, value, fmt, meta):
     """Scan all paragraphs for those starting with || to parse it for page
     numbering information."""
-    if not (fmt == 'html' or fmt == 'html5'):
+    if not (fmt == 'html' or fmt == 'html5' or fmt == 'epub'):
         return
     if key == 'Para' and value:
         # find first obj with content (line breaks don't have this)
@@ -52,33 +50,10 @@ def page_number_extractor(key, value, fmt, meta):
             if pnum:
                 # strip the first ||
                 text = text[2:].lstrip().rstrip()
+                if fmt == 'epub':
+                    return html('<p class="pagebreak"><span id="p{0}">{1}</span></p>'.format(
+                        pnum.groups()[1], text))
                 return html('<p><span id="p{0}">{1}</span></p>'.format(
-                    pnum.groups()[1], text))
-
-
-#pylint: disable=inconsistent-return-statements
-def epub_page_number_extractor(key, value, fmt, meta):
-    """Scan all paragraphs for those starting with || to parse it for page
-    numbering information."""
-    if fmt != 'epub':
-        return
-    if key == 'Para' and value:
-        # find first obj with content (line breaks don't have this)
-        text = None
-        for obj in value:
-            if 'c' in obj:
-                text = obj['c']
-                break
-        if text is None:
-            return # no content in Paragraph - ignore
-        # first chunk of paragraph must be str and contain '||'
-        if isinstance(text, str) and text.startswith('||'):
-            text = pandocfilters.stringify(value) # get whole text of page number
-            pnum = config.PAGENUMBERING_PATTERN.search(text)
-            if pnum:
-                # strip the first ||
-                text = text[2:].lstrip().rstrip()
-                return html('<p class="pagebreak"><span id="p{0}">{1}</span></p>'.format(
                     pnum.groups()[1], text))
 
 
@@ -90,7 +65,7 @@ def html_link_converter(key, value, fmt, meta, modify_ast=True):
     if key == 'Link' and value:
         link = value[-1][0]  # last element contains the actual link
         # filter out all absolute links
-        if not link or LINK_REGEX.match(link):
+        if not link or ':' in link:
             return
         if isinstance(link, str):
             link_parts = link.split('#', 1)  # split in # once
@@ -101,19 +76,23 @@ def html_link_converter(key, value, fmt, meta, modify_ast=True):
 
 
 def epub_link_converter(key, value, fmt, meta, modify_ast=True):
-    """Scan all links and append change to .html for all relative links."""
+    """Scans all links and changes them according to the current chapter.
+    meta stores all link IDs so it's possible to add the back links correctly.
+    meta structure: { 'chapter': int, 'ids': dict }
+    the 'ids' dict contains the ids of the links as key and
+    the chapter as key"""
     if fmt != 'epub' or not value:
         return
     if key == 'Link':
         link = value[-1][0]  # last element contains the actual link
         # filter out all absolute links
-        if not link or LINK_REGEX.match(link):
+        if not link or ':' in link:
             return
         if isinstance(link, str):
             link_parts = link.split('#', 1)  # split in # once
             if len(link_parts) < 2 or not link_parts[0] or not link_parts[1]:
                 return
-            # check if id is in meta
+            # check if link id is within 'ids' dict of meta
             if link_parts[1] in meta['ids']:
                 # set chapter from meta
                 link_parts[0] = 'ch{:03d}.xhtml'.format(meta['ids'][link_parts[1]])
@@ -133,7 +112,7 @@ def epub_convert_header_ids(key, value, fmt, url_prefix, modify_ast=True):
     elif key == 'Link':
         link = value[-1][0]  # last element contains the actual link
         # filter out all absolute links
-        if not link or LINK_REGEX.match(link):
+        if not link or ':' in link:
             return
         if isinstance(link, str):
             link_parts = link.split('#', 1)  # split in # once
@@ -206,7 +185,7 @@ def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
         return
     if key == 'Image' and value:
         image_url = value[-1][0]
-        if not image_url or image_url[0] == '/' or LINK_REGEX.match(image_url):
+        if not image_url or image_url[0] == '/' or ':' in image_url:
             return
         value[-1][0] = '/'.join([url_prefix, image_url])  # dont use os.path
 
@@ -220,7 +199,7 @@ def epub_create_back_link_ids(key, value, fmt, meta, modify_ast=True):
     elif key == 'Link':
         link = value[-1][0]  # last element contains the actual link
         # filter out all absolute links
-        if not link or LINK_REGEX.match(link):
+        if not link or ':' in link:
             return
         if isinstance(link, str):
             # get target and use it as id for the link
