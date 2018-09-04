@@ -20,7 +20,6 @@ import locale
 from os.path import dirname
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-import platform
 from . import common
 from .errors import ConfigurationError
 from . import roman
@@ -49,29 +48,21 @@ PAGENUMBERING_PATTERN = re.compile(r'''
 
 
 def _get_localedir():
-    """Make Gettext more flexible to work  on more platforms."""
-    loc_dir = []
-    loc_dir.append(gettext._default_localedir)
-    if os.uname().sysname == "Linux":
-        loc_dir.append(os.path.join(os.path.dirname(os.path.dirname(
-                        os.path.abspath(sys.argv[0]))), 'share', 'locale'))
-        loc_dir.append("/usr/local/share/locale")
-    elif os.uname().sysname == "Windows":
-        # cause that matuc is installed via installer
-        loc_dir = [os.path.join(os.getenv('ProgramData'), "matuc", "locale")]
-    elif os.uname().sysname == "Darwin":
-        # gettext._default_localedir return
-        # /Library/Frameworks/Python.framework/Versions/3.5/share/locale
-        # and this dir does not exist
-        loc_dir.append('/usr/share/locales')
-        # add ../bin/share/locale
-        loc_dir.append(os.path.join(os.path.dirname(
-                        os.path.abspath(sys.argv[0])), 'share', 'locale'))
-    for directory in loc_dir:
+    """Get locale dirs depending on operating system."""
+    loc_dirs = [gettext._default_localedir]
+    loc_dirs.append(os.path.join(os.path.dirname(os.path.dirname(
+                    os.path.abspath(sys.argv[0]))), 'share', 'locale'))
+    if sys.platform == "linux":
+        loc_dirs.append("/usr/local/share/locale")
+    elif sys.platform == "win32":
+        # that matuc is installed via installer
+        loc_dirs.append(os.path.join(os.getenv('ProgramData'), "matuc", "locale"))
+    elif sys.platform == "darwin":
+        loc_dirs.append('/usr/share/locale')
+    for directory in loc_dirs:
         loc_dir_lang = os.path.join(directory, locale.getdefaultlocale()[0][:2])
-        if os.path.exists(loc_dir_lang):
-            if any(file == 'matuc.mo' for root, dirs, files in os.walk(loc_dir_lang) for file in files):
-                return directory
+        if any(file == 'matuc.mo' for root, dirs, files in os.walk(loc_dir_lang) for file in files):
+            return directory
     common.WarningRegistry().register_warning(
             "Couldn't find locales directory.") # → None
 
@@ -447,6 +438,3 @@ class Translate:
     def get_translation_and_upper_first(self, origin):
         s = self.get_translation(origin)
         return s[:1].upper() + s[1:] if s else ''
-
-if __name__ != '__test__':
-    setup_i18n()

@@ -3,7 +3,6 @@ import os
 import unittest
 import tempfile
 import sys
-import locale
 
 from MAGSBS.config import _get_localedir
 
@@ -20,24 +19,25 @@ def touch(path):
 
 class test_locale(unittest.TestCase):
     def test_that_locale_is_available(self):
-        if os.uname().sysname == "Linux":
+        if sys.platform == "linux":
             loc_dir = _get_localedir()
             self.assertTrue(loc_dir == '/usr/share/locale' or
-                            loc_dir == os.path.join(os.path.dirname(
-                            os.path.abspath(sys.argv[0])), 'share', 'locale')
-                            or os.path.join(os.path.dirname(os.path.dirname(os.environ['_'])),
-                            'share', 'locale'))
-        elif os.uname().sysname == "Windows":
-            self.assertEqual(_get_localedir(), 'C:\ProgramData\matuc\locale')
-        elif os.uname().sysname == "Darwin":
+                loc_dir == os.path.join(os.path.dirname(
+                os.path.abspath(sys.argv[0])), 'share', 'locale')
+                or os.path.join(os.path.dirname(os.path.dirname(os.environ['_'])),
+                'share', 'locale'))
+        elif sys.platform == "win32":
+            self.assertEqual(_get_localedir(),  "C:\ProgramData\matuc\locale")
+        elif sys.platform == "darwin":
             loc_dir = _get_localedir()
             self.assertTrue(loc_dir == '/usr/share/locale' or
                             loc_dir == os.path.join(os.path.dirname(
                             os.path.abspath(sys.argv[0])), 'share', 'locale'))
 
     def test_that_locale_not_exists_in_programData(self):
-        if os.uname().sysname == "Windows":
-            programDataPath = os.path.join(os.getenv('ProgramData'), "matuc", "locale")
+        if sys.platform == "win32":
+            programDataPath = os.path.join(os.getenv('ProgramData'),
+                                                    "matuc", "locale")
             tempName = os.path.join(os.getenv('ProgramData'), "matuc", "_locale")
             if os.path.exists(programDataPath):
                 os.rename(programDataPath, tempName)
