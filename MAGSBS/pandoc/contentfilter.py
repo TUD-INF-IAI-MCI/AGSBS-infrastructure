@@ -128,7 +128,7 @@ def convert_formulas(base_path, ast):
             encoding="UTF-8")
     conv.set_replace_nonascii(True)
     try:
-        conv.convert_all(base_path, formulas)
+        conv.convert_all(formulas)
     except gleetex.cachedconverter.ConversionException as gle:
         raise MathError(_('Incorrect formula: {reason}').format(
                 reason=gle.cause), gle.formula,

@@ -12,8 +12,6 @@ MAGSBS-specific extensions.
 import enum
 import datetime
 from distutils.version import StrictVersion
-import gettext
-import locale
 import os
 import re
 import sys
@@ -48,39 +46,6 @@ PAGENUMBERING_PATTERN = re.compile(r'''
 
 
 #pylint: disable=inconsistent-return-statements,protected-access
-def _get_localedir():
-    """Get locale dirs depending on operating system."""
-    loc_dirs = [gettext._default_localedir]
-    loc_dirs.append(os.path.join(os.path.dirname(os.path.dirname(
-                    os.path.abspath(sys.argv[0]))), 'share', 'locale'))
-    if sys.platform in ["linux", "darwin"]:
-        loc_dirs += ["/usr/share/locale", "/usr/local/share/locale"]
-    elif sys.platform == "win32":
-        # matuc is installed via installer
-        loc_dirs.append(os.path.join(os.getenv('ProgramData'), "matuc", "locale"))
-    for directory in loc_dirs:
-        loc_dir_lang = os.path.join(directory, locale.getdefaultlocale()[0][:2])
-        if any(file == 'matuc.mo' for root, dirs, files in os.walk(loc_dir_lang) for file in files):
-            return directory
-    common.WarningRegistry().register_warning(
-            "Couldn't find locales directory.") # → None
-
-def setup_i18n():
-    """Set up internationalisation support in MAGSBS/matuc."""
-    # ignore country suffix for now, we are lucky if we find localisation for
-    # German or Spanish and we do not care too much about the rather small
-    # differences between these, for *now*
-    localedir = _get_localedir()
-    trans = None
-    try:
-        trans = gettext.translation("matuc", localedir=localedir,
-            languages=[locale.getdefaultlocale()[0][:2]])
-    except (FileNotFoundError, AttributeError):
-        trans = gettext.translation("matuc", localedir=localedir, fallback=True)
-
-    trans.install()
-
-
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on
     the German university system."""

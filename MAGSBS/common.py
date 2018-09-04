@@ -3,11 +3,13 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2016-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 import atexit
+import gettext
 import itertools
+import locale
 import os
-from os.path import isfile, isdir
+import sys
 
 
 VALID_PREFACE_BGN = ['v']
@@ -22,8 +24,7 @@ VALID_FILE_BGN = VALID_PREFACE_BGN + VALID_MAIN_BGN + VALID_APPENDIX_BGN
 
 #pylint: disable=too-few-public-methods
 class Singleton:
-    """
-A non-thread-safe helper class to ease implementing singletons.
+    """A non-thread-safe helper class to ease implementing singletons.
 This should be used as a decorator -- not a metaclass -- to the class that
 should be a singleton.
 
@@ -50,10 +51,11 @@ subsequent calls, the already created instance is returned.  """
 
 def format_warning(warning):
     if not hasattr(warning, 'get') or not warning.get('message'):
-        raise TypeError("Expected a dictionary with at least a key called message.")
+        raise TypeError(("Expected a dictionary with at least a key called "
+            "message."))
     string = ['Warning: ', warning.pop('message'), '\n']
-    for k, v in warning.items():
-        string.append('  {}: {}\n'.format(k.title(), v))
+    for key, val in warning.items():
+        string.append('  {}: {}\n'.format(key.title(), val))
     return ''.join(string)
 
 @Singleton
@@ -82,11 +84,11 @@ class WarningRegistry:
 def flush_warnings():
     """Print all warnings to stderr which were gathered during execution and
     have not been retrieved since."""
-    import sys
     registry = WarningRegistry()
     for warning in registry.get_warnings():
         sys.stderr.write(format_warning(warning))
 
+#pylint: disable=invalid-name
 def pairwise(something):
     """Iterate pairwise over the given ocllection / iterator."""
     a, b = itertools.tee(something)
@@ -122,11 +124,11 @@ def is_lecture_root(directory):
     # if cwd starts with a chapter prefix, it is no lecture root
     if is_valid_file(directory):
         return False
-    subdirectories = (e for e in os.listdir(directory) \
+    subdir = (e for e in os.listdir(directory) \
             if os.path.isdir(os.path.join(directory, e)))
     # if any of the subdirectories is a valid file, it's a lecture root
-    if any(directory for directory in subdirectories if is_valid_file(directory)):
-        return True # any of the subdirectories seems to be a valid chapter, so it's a lecture root
+    if any(directory for directory in subdir if is_valid_file(directory)):
+        return True # at least one chapter, so this is a lecture root
     return False
 
 def is_within_lecture(path):
@@ -151,18 +153,12 @@ def is_within_lecture(path):
     parent = os.path.dirname
     if not os.path.exists(path):
         return False
-    elif isfile(path):
-        if is_valid_file(parent(path)) or is_valid_file(parent(parent(path))):
-            return True
-        elif is_lecture_root(parent(path)):
-            return True
-        else:
-            return False
-    else: # directories
-        if is_valid_file(path) or is_valid_file(parent(path)):
-            return True
-        else:
-            return False
+    elif os.path.isfile(path):
+        return is_valid_file(parent(path)) or \
+                is_valid_file(parent(parent(path))) or \
+                is_lecture_root(parent(path))
+    # directories:
+    return is_valid_file(path) or is_valid_file(parent(path))
 
 
 
@@ -170,4 +166,40 @@ def is_within_lecture(path):
 # register atexit hook to flush warnings, if they haven't been queried
 atexit.register(flush_warnings)
 
+#pylint: disable=protected-access
+def _get_localedir():
+    """Get locale dirs depending on operating system."""
+    loc_dirs = [gettext._default_localedir]
+    loc_dirs.append(os.path.join(os.path.dirname(os.path.dirname(
+                    os.path.abspath(sys.argv[0]))), 'share', 'locale'))
+    if sys.platform in ["linux", "darwin"]:
+        loc_dirs += ["/usr/share/locale", "/usr/local/share/locale"]
+    elif sys.platform == "win32":
+        # default installer place
+        loc_dirs.append(os.path.join(os.getenv('ProgramData'), "matuc",
+                "locale"))
+    for directory in loc_dirs:
+        loc_dir_lang = os.path.join(directory, locale.getdefaultlocale()[0][:2])
+        if any(file == 'matuc.mo' for _d, _ds, files in os.walk(loc_dir_lang)
+                for file in files):
+            return directory
+    print(loc_dirs)
+    WarningRegistry().register_warning(
+            "Couldn't find locales directory.") # → None
 
+def setup_i18n():
+    """Set up internationalisation support in MAGSBS/matuc."""
+    # ignore country suffix for now, we are lucky if we find localisation for
+    # German or Spanish and we do not care too much about the rather small
+    # differences between these, for *now*
+    localedir = _get_localedir()
+    trans = None
+    try:
+        trans = gettext.translation("matuc", localedir=localedir,
+            languages=[locale.getdefaultlocale()[0][:2]])
+    except (FileNotFoundError, AttributeError):
+        trans = gettext.translation("matuc", localedir=localedir, fallback=True)
+
+    trans.install()
+
+setup_i18n()

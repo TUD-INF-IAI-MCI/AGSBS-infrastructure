@@ -8,8 +8,9 @@ import enum
 import os
 import sys
 import re
-from . import errors
+
 from . import common
+from . import errors
 from . import roman
 
 CHAPTERNUM = re.compile(r'^[a-z|A-Z]+(\d\d).*\.md')
