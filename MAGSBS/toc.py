@@ -230,13 +230,6 @@ the TOC corrrectly."""
             output += self.format_section(title, self.__headings[HeadingType.APPENDIX])
         output.append('\n\n')
 
-        add_entry('glossar.md',
-                '[{}](glossar.{})\\\n'.format(_('glossary').capitalize(),
-            self.__file_extension))
-        add_entry('index.md', '[{}](index.{})\\\n'.format(_('index').title(),
-            self.__file_extension))
-        add_entry('kurz.md', '[{}](kurz.{})\\\n'.format(
-                _('list of abbreviations').capitalize(), self.__file_extension))
         add_entry('taktil.md', '[{}](taktil.{})\\\n'.format(
                 _('list of tactile graphics').capitalize(), self.__file_extension))
         add_entry('copyright.md', '[{}](copyright.{})\\\n'.format(

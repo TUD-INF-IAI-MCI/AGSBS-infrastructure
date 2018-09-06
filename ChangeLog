@@ -14,6 +14,8 @@
 * remove format from the lecture configuration, because it is a property of the
   conversion itself, not of the lecture source
 * allow page number ranges: `|| - page 9-11 -`
+*	do not include "glossar.md", "kurz.md" and "index.md" in lecture material
+	anymore, these can be put in "anhxx" (the appendix)
 
 0.7 
 
