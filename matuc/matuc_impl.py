@@ -45,12 +45,11 @@ Available commands are:
 
 addpnum         - generate new page number, relative to its predecessors
 conf            - set, init or update a configuration
-conv            - convert a markdown file using pandoc
+conv            - convert a lecture
 fixpnums        - fix incorrect page numbering of a document
 imgdsc          - generate image description (snippets)
 iswithinlecture - test, whether a certain path is part of a lecture
 new             - create new project structure
-master          - perform toc generation (see below) and call `conv` on every file
 mk              - invoke "mistkerl", a quality assurance helper
 toc             - generate table of contents
 version         - output program version
@@ -290,7 +289,7 @@ sub-directory configurations or initialization of a new project."""
 
     def handle_conv(self, cmd, args):
         """Convert files."""
-        usage = ("Converts a file or directory containing a whole lecture.\n\n"
+        usage = ("Converts a file or directory containing a lecture.\n\n"
                  "file:\n"
                  "Convert a file from MarkDown to HTML.\n"
                  "Other formats are not supported.\n\n"

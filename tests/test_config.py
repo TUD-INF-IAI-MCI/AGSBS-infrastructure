@@ -57,6 +57,8 @@ class Testconf(unittest.TestCase):
         conf('path', '0.9.5').read()
 
     def test_that_newer_bugfix_version_emits_warning(self):
+        c = common.WarningRegistry()
+        c._WarningRegistry__warnings = [] # get rid of gettext warning
         c = conf('path', '0.9.5')
         write(c)
         conf('path', '0.9').read() # this registers the warning

@@ -15,9 +15,6 @@ from distutils.version import StrictVersion
 import os
 import re
 import sys
-import gettext
-import locale
-from os.path import dirname
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
@@ -48,27 +45,7 @@ PAGENUMBERING_PATTERN = re.compile(r'''
         re.VERBOSE)
 
 
-def setup_i18n():
-    """Set up internationalisation support in MAGSBS/matuc."""
-    # ignore country suffix for now, we are lucky if we find localisation for
-    # German or Spanish and we do not care too much about the rather small
-    # differences between these, for *now*
-    lang = None
-    # ToDo: use a more clever algorithm for autodiscovery + manual creation for
-    # development usage
-    CONFIG_DIR = os.path.join(dirname(dirname(os.path.realpath(__file__))),
-            "locale")
-
-    trans = gettext.translation("matuc", localedir=CONFIG_DIR, fallback=True)
-    if locale.getdefaultlocale()[0] and len(locale.getdefaultlocale()[0]) > 2:
-        try:
-            trans = gettext.translation("matuc", localedir=CONFIG_DIR,
-                languages=[locale.getdefaultlocale()[0][:2]])
-        except FileNotFoundError:
-            pass # use English without noise
-    trans.install()
-
-
+#pylint: disable=inconsistent-return-statements,protected-access
 def get_semester():
     """Guess the current semester from the current time. Semesters are based on
     the German university system."""
@@ -77,8 +54,7 @@ def get_semester():
     if month < 3 or month >= 9:
         year = (year-1 if month < 3 else year) # WS starts at end of last year
         return 'WS {}/{}'.format(year, year+1)
-    else:
-        return 'SS {}'.format(year)
+    return 'SS {}'.format(year)
 
 
 def get_lnum_of_tag(path, tag):
@@ -129,7 +105,7 @@ Please note: you should not use this class, except if you can make sure that
 exactly one instance at a time exists for a given path. Use the ConfFactory
 instead.
 """
-    DEFAULTS = { MetaInfo.WorkingGroup: 'AG SBS', MetaInfo.Language: 'de',
+    DEFAULTS = {MetaInfo.WorkingGroup: 'AG SBS', MetaInfo.Language: 'de',
             MetaInfo.Institution: 'TU Dresden',
             MetaInfo.Rights: 'Access limited to members',
             MetaInfo.TocDepth: 5, MetaInfo.AppendixPrefix: 0,
@@ -216,7 +192,7 @@ instead.
                             value = int(value)
                         except ValueError:
                             raise ConfigurationError("Option " + tag +
-                                "has invalid,  non-numerical value of " +
+                                "has invalid, non-numerical value of " +
                                 value, self.__path)
                     try:
                         self[key] = value
@@ -344,13 +320,13 @@ class Translate:
     def __init__(self):
         self.en_fr = {
             "page": "page", "slide": "diapositive",
-            'preface':'introduction',   'appendix':'appendice',
+            'preface':'introduction', 'appendix':'appendice',
             'table of contents':'table des matières',
             'chapters':'chapitres',
             'description of image':"description à l'image",
             'pages':'pages',
             'external image description' : "description de l'image externe",
-            'next':'suivant',  'previous':'précédent',
+            'next':'suivant', 'previous':'précédent',
             'chapter':'chapitre', 'paper':'document',
             'remarks about the accessible version':'remarques concernant la version accessible',
             'note of editor': "Note de l'éditeur",
@@ -366,7 +342,7 @@ class Translate:
         }
         for colour, trans in {'black': ('noir', 'noire'),
                 'blue': ('bleu', 'bleue'), 'brown':('marron',)*2,
-                'grey': ('gris','grise'), 'green':('vert','verte'),
+                'grey': ('gris', 'grise'), 'green':('vert', 'verte'),
                 'orange':('orange',)*2, 'red':('rouge',)*2,
                 'violet':('violett', 'violette'), 'yellow':('jaune',)*2}.items():
             masc, fem = trans
@@ -381,7 +357,7 @@ class Translate:
             'description of image':'Beschreibung von Bild',
             'pages':'Seiten',
             'external image description':'Bildbeschreibung ausgelagert',
-            'next':'weiter',   'previous':'zurück',
+            'next':'weiter', 'previous':'zurück',
             'chapter':'kapitel', 'paper':'blatt',
             'remarks about the accessible version':'Hinweise zur barrierefreien Version',
             'note of editor': 'Anmerkung des Bearbeiters',
@@ -424,5 +400,3 @@ class Translate:
     def get_translation_and_upper_first(self, origin):
         s = self.get_translation(origin)
         return s[:1].upper() + s[1:] if s else ''
-
-setup_i18n()
