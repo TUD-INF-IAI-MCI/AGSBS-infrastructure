@@ -290,7 +290,7 @@ def epub_collect_ids(key, value, fmt, meta):
         meta['ids'][content.attributes['id'].value] = meta['chapter']
 
 
-def epub_unnumbered_appendix_toc(key, value, fmt, meta, modify_ast=True):
+def epub_unnumbered_toc(key, value, fmt, meta, modify_ast=True):
     """marks all headlines of appendix to be unnumbered in toc."""
     if fmt != 'epub' or not value:
         return
