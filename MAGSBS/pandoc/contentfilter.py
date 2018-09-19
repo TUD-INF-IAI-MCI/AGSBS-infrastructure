@@ -375,7 +375,6 @@ def convert_formulas(base_path, ast):
     conv = gleetex.cachedconverter.CachedConverter(base_path, True,
                                                    encoding="UTF-8")
     conv.set_replace_nonascii(True)
-    conv.set_option('svg', True)
     try:
         conv.convert_all(formulas)
     except gleetex.cachedconverter.ConversionException as gle:
