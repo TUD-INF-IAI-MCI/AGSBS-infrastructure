@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-03-23 12:40+CET\n"
+"POT-Creation-Date: 2018-09-25 13:49+CEST\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -15,9 +15,31 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: MAGSBS/datastructures.py:145
+#: MAGSBS/datastructures.py:222
 msgid "the file does not follow naming conventions"
 msgstr "der Dateiname folgt nicht den Namenskonventionen"
+
+#: MAGSBS/errors.py:60
+msgid ""
+"error while running: %s\n"
+"%s"
+msgstr "Fehler beim Ausführen von: %s\n%s"
+
+#: MAGSBS/errors.py:78
+msgid "in configuration from"
+msgstr "in Konfiguration unter"
+
+#: MAGSBS/errors.py:79
+msgid "in configuration"
+msgstr "in Konfiguration"
+
+#: MAGSBS/errors.py:93
+msgid "erroneous structure in %s: "
+msgstr "fehlerhafte Struktur in %s: "
+
+#: MAGSBS/errors.py:112
+msgid "error in {path}"
+msgstr "Fehler in {path}"
 
 #: MAGSBS/factories.py:56
 msgid "images"
@@ -43,11 +65,15 @@ msgstr "Papier"
 msgid "image descriptions"
 msgstr "Bildbeschreibungen"
 
-#: MAGSBS/pandoc/formats.py:218
+#: MAGSBS/pandoc/contentfilter.py:133
+msgid "Incorrect formula: {reason}"
+msgstr "fehlerhafte Formel: {reason}"
+
+#: MAGSBS/pandoc/formats.py:189
 msgid "You need to have Pandoc installed."
 msgstr "Sie müssen Pandoc installiert haben."
 
-#: MAGSBS/pandoc/formats.py:285
+#: MAGSBS/pandoc/formats.py:476
 msgid ""
 "LaTeX reported an error while converting a fomrula. Unfortunately, "
 "improperly closed formula environments exist, therefore it cannot be "
@@ -159,40 +185,52 @@ msgstr ""
 "Dollarzeichen um die Formel gesetzt werden, damit die Formel nicht auf "
 "Zeilenhöhe gestaucht wird."
 
-#: MAGSBS/quality_assurance/linkchecker.py:42
+#: MAGSBS/quality_assurance/linkchecker.py:48
 msgid ".{} or .{}"
 msgstr ".{} oder .{}"
 
-#: MAGSBS/quality_assurance/linkchecker.py:175
+#: MAGSBS/quality_assurance/linkchecker.py:120
 msgid ""
-"A reference to the link \"{}\" does not exist. Please write a reference in a "
-"form [{}]: link to the markdown file."
+"An explicit reference with identifier \"{0}\" does not exist. Please write "
+"an explicit reference in a form \"[{0}]: link\" to the markdown file."
 msgstr ""
+"Eine explizite Referenz mit Marker \"{0}\" existiert nicht. Bitte fügen "
+"Sie eineexplizite Referenz der Form \"[{0}]: link\" zur Datei hinzu."
 
-#: MAGSBS/quality_assurance/linkchecker.py:197
-msgid "Reference \"{}\" is duplicated on lines {} and {}."
-msgstr ""
+#: MAGSBS/quality_assurance/linkchecker.py:148
+msgid "Identifier \"{}\" for reference is duplicated on lines {} and {}."
+msgstr "Marker \"{}\" für eine Referenz wiederholt sich auf Zeile {} und {}."
 
-#: MAGSBS/quality_assurance/linkchecker.py:215
+#: MAGSBS/quality_assurance/linkchecker.py:167
 msgid ""
-"A link for the reference \"{}\" does not exist. Please write a link in a "
-"form [{}] link to the markdown file or remove the reference."
+"Implicit reference with the identifier \"{0}\" does not exist. Please write "
+"a reference in a form [{0}] in the markdown file or remove the explicit "
+"reference [{0}]: {1}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:275
+#: MAGSBS/quality_assurance/linkchecker.py:229
 msgid "Link path \"{}\" has no extension, but it should be {}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:282
+#: MAGSBS/quality_assurance/linkchecker.py:238
 msgid "Link path \"{}\" has .{} extension, but it should be {}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:294
+#: MAGSBS/quality_assurance/linkchecker.py:251
 msgid "The file \"{}\" given by the reference \"{}\" does not exist."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:326
-msgid "The anchor \"{}\" was not found in the \"{}\" file."
+#: MAGSBS/quality_assurance/linkchecker.py:262
+msgid "The source .md file for hypertext file \"{}\" does not exist."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:287
+msgid "A link is referencing the anchor \"#{}\" which does not exist."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:295
+msgid ""
+"A link references the anchor \"#{}\" which does not exist in the file {}."
 msgstr ""
 
 #: MAGSBS/quality_assurance/markdown.py:18
@@ -326,8 +364,8 @@ msgstr ""
 #: MAGSBS/quality_assurance/markdown.py:392
 msgid "The included image is using wrong syntax, the converter will ignore it."
 msgstr ""
-"Das eingebundene Bild nutzt eine falsche Syntax, der Konverter wird das "
-"Bild ignorieren."
+"Das eingebundene Bild nutzt eine falsche Syntax, der Konverter wird das Bild "
+"ignorieren."
 
 #: MAGSBS/quality_assurance/markdown.py:422
 msgid ""
@@ -348,11 +386,11 @@ msgstr ""
 "Datei nicht in UTF-8 gespeichert. Bitte wählen Sie diesen Zeichensatz in "
 "Ihrem Editor."
 
-#: MAGSBS/quality_assurance/mistkerl.py:221
+#: MAGSBS/quality_assurance/mistkerl.py:222
 msgid "The configuration could not be read: {reason}"
 msgstr "Die Konfiguration konnte nicht gelesen werden: {reason}"
 
-#: MAGSBS/quality_assurance/mistkerl.py:232
+#: MAGSBS/quality_assurance/mistkerl.py:233
 msgid ""
 "The file is too long. To ease navigation and maintain readability, the file "
 "should be split into fileswith less than {count} lines by naming them like "
@@ -362,46 +400,43 @@ msgstr ""
 "zu gewährleisten sollten lange Kapitel mit mehr als {count} Zeilen in "
 "mehrere Dateien mit einer Bennung wie kXXYY.md aufgeteilt werden."
 
-#: MAGSBS/toc.py:203
+#: MAGSBS/toc.py:209
 msgid "table of contents"
 msgstr "Inhaltsverzeichnis"
 
-#: MAGSBS/toc.py:211
+#: MAGSBS/toc.py:217
 msgid "title page"
 msgstr "Titelseite"
 
-#: MAGSBS/toc.py:215
+#: MAGSBS/toc.py:221
 msgid "preface"
 msgstr "Vorwort"
 
-#: MAGSBS/toc.py:220
+#: MAGSBS/toc.py:226
 msgid "chapters"
 msgstr "Kapitel"
 
-#: MAGSBS/toc.py:223
+#: MAGSBS/toc.py:229
 msgid "appendix"
 msgstr "Appendix"
 
-#: MAGSBS/toc.py:228
-msgid "glossary"
-msgstr "Glossar"
-
-#: MAGSBS/toc.py:230
-msgid "index"
-msgstr "Inhalt"
-
-#: MAGSBS/toc.py:233
-msgid "list of abbreviations"
-msgstr "Abkürzungsverzeichnis"
-
-#: MAGSBS/toc.py:235
+#: MAGSBS/toc.py:234
 msgid "list of tactile graphics"
 msgstr "Liste taktiler Grafiken"
 
-#: MAGSBS/toc.py:237
+#: MAGSBS/toc.py:236
 msgid "copyright notice"
 msgstr "Urheberrechtshinweis"
 
-#: MAGSBS/toc.py:244
+#: MAGSBS/toc.py:243
 msgid "remarks about the accessible version"
 msgstr "Hinweise zur barrierefreien Version"
+
+#~ msgid "list of abbreviations"
+#~ msgstr "Abkürzungsverzeichnis"
+
+#~ msgid "index"
+#~ msgstr "Inhalt"
+
+#~ msgid "glossary"
+#~ msgstr "Glossar"

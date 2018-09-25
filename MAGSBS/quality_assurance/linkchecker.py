@@ -260,7 +260,7 @@ class LinkChecker:
         file_path_md = "{}.{}".format(os.path.splitext(file_path)[0], 'md')
         if not os.path.exists(file_path_md):
             error_message = _("The source .md file for hypertext file \"{}\" "
-                              "does not exist.".format(parsed_path))
+                              "does not exist.").format(parsed_path)
             e = ErrorMessage(error_message, reference.line_number,
                              reference.file_path)
             e.pos_on_line = reference.pos_on_line
