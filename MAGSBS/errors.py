@@ -1,6 +1,11 @@
 """Error classes to be used in the whole MAGSBS module. Ideally 90 % of all
 exceptions would be caught and re-raised (if applicable) with sensible
 contextual information."""
+# vim: set expandtab sts=4 ts=4 sw=4:
+# This is free software, licensed under the LGPL v3. See the file "COPYING" for
+# details.
+#
+# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
 
 import collections
 import os
@@ -30,6 +35,7 @@ class MAGSBS_error(Exception):
         if kwargs:
             data.update(kwargs)
         return data
+
     def __str__(self):
         fmt = lambda b, pre: ('' if not b else '%s%s' % (pre, b))
         pathlinepos = '%s%s%s' % (fmt(self.path, ''), fmt(self.line, ', '),
@@ -51,7 +57,7 @@ class SubprocessError(MAGSBS_error):
     def __init__(self, command, message, path=os.getcwd(), line=None):
         self.command = (' '.join(map(shlex.quote, command))
                 if isinstance(command, list) else command)
-        self.message = 'error while running: %s\n%s' % (self.command, message)
+        self.message = _('error while running: %s\n%s') % (self.command, message)
         super().__init__(message)
         self.path = os.path.abspath(path)
         self.line = line
@@ -67,9 +73,10 @@ class ConfigurationError(MAGSBS_error):
         self.line = line
 
     def __str__(self):
-        prefix = 'in configuration'
-        if self.path and os.path.exists(self.path) and os.path.isdir(self.path):
-            prefix += 'from'
+        prefix = ''
+        if self.path and os.path.exists(self.path):
+            prefix = (_('in configuration from') if os.path.isdir(self.path)
+                    else _('in configuration')) + ' '
         return '{} {}: {}'.format(prefix, self.path, self.message)
 
 
@@ -83,7 +90,7 @@ class StructuralError(MAGSBS_error):
         self.path = path
 
     def __str__(self):
-        msg = 'Erroneous structure in %s: ' % self.path
+        msg = _('erroneous structure in %s: ') % self.path
         return msg + self.message
 
 
@@ -102,7 +109,7 @@ class FormattingError(MAGSBS_error):
     def __str__(self):
         prefix = ''
         if self.path:
-            prefix += 'error in ' + self.path
+            prefix += _('error in {path}').format(self.path)
         if self.line_no:
             prefix += (' ' if prefix else '') + str(self.line_no)
         return '%s%s%s\nExcerpt: %s' % (prefix, (': ' if prefix else ''),
@@ -116,7 +123,3 @@ class MathError(MAGSBS_error):
         msg = '%s\n  %s' % (msg, formula)
         super().__init__(msg, path=path, line=line, pos=pos)
         self.formula_count = formula_count
-
-    def __str__(self):
-        return super().__str__()
-
