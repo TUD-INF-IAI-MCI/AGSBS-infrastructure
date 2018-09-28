@@ -133,7 +133,8 @@ class EpubConverter(OutputGenerator):
     @staticmethod
     def __generate_file_structure(files):
         """generates a structure which makes it possible to convert everything
-        in order"""
+        in order.
+        The correct order is given by LECTURE_ORDER."""
         # generate dict to handle files in correct order later
         file_info = {}
         for key in EpubConverter.LECTURE_ORDER:
@@ -145,9 +146,9 @@ class EpubConverter(OutputGenerator):
                 file_info['images'].append({'chapter': chapter, 'path': file_name})
             elif name[:3] == 'anh':
                 file_info['backmatter'].append({'chapter': chapter, 'path': file_name})
-            elif name[:1] == 'v':
+            elif name.startswith('v'):
                 file_info['frontmatter'].append({'chapter': chapter, 'path': file_name})
-            elif name[:1] == 'k':
+            elif name.startswith('k'):
                 file_info['chapters'].append({'chapter': chapter, 'path': file_name})
             elif name in file_info:
                 # if it's not in the dict the file is ignored (e.g. inhalt)
