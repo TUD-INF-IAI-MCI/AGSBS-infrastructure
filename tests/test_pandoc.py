@@ -1,6 +1,6 @@
 # This file does NOT test pandoc, but MAGSBS.pandoc ;)
 #pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports,invalid-name
-import os, shutil, tempfile, unittest, json
+import os, shutil, tempfile, unittest, json, pandocfilters
 from MAGSBS.config import MetaInfo
 import MAGSBS.datastructures as datastructures
 import MAGSBS.errors as errors
@@ -21,6 +21,11 @@ def get_html_converter(meta_data=META_DATA, template=None):
     h = pandoc.output_formats.html.HtmlConverter(meta_data, language='de')
     if template:
         h.template_copy = template
+    h.setup()
+    return h
+
+def get_epub_converter(meta_data=META_DATA):
+    h = pandoc.output_formats.epub.EpubConverter(meta_data, language='de')
     h.setup()
     return h
 
@@ -113,6 +118,234 @@ class test_HTMLConverter(unittest.TestCase):
             bodypos = data.find('<body')
             self.assertTrue('<body lang="fr"' in data or "<body lang='fr'" in data,
                 repr(data[bodypos:bodypos+250]))
+
+    def test_conentfilter_link_converter(self):
+        """ast contains a link: 'target.md#target_id'.
+        It should get converted to 'target.html#target_id'.
+        """
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Link",
+                    "c": [["", [], []], [], ["target.md#target_id", ""]]
+                }
+            ]
+        }
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.html_link_converter, 'html', None)
+        self.assertTrue("target.html#target_id" in json.dumps(ast))
+
+
+################################################################################
+
+class test_EPUBConverter(unittest.TestCase):
+    def setUp(self):
+        self.original_directory = os.getcwd()
+        self.tmpdir = tempfile.mkdtemp()
+        os.chdir(self.tmpdir)
+        self.call_cleanup_on_me = None # used for the OutputFormatters
+
+    def tearDown(self):
+        os.chdir(self.original_directory)
+        shutil.rmtree(self.tmpdir, ignore_errors=True)
+        if self.call_cleanup_on_me:
+            self.call_cleanup_on_me.cleanup()
+
+    def test_that_setup_writes_css_template(self):
+        h = get_epub_converter()
+        self.call_cleanup_on_me = h
+        self.assertTrue(os.path.exists(h.css_path))
+
+    def test_conentfilter_link_converter(self):
+        """ast contains a link: 'target.html#target_id'.
+        It should get converted to 'ch003.xhtml#target_id'.
+        meta contains the key 'target_id' with the chapter number '3' as value."""
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Link",
+                    "c": [["", [], []], [], ["target.html#target_id", ""]]
+                }
+            ]
+        }
+        meta = {'ids': {'target_id': 3}}
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_link_converter, 'epub', meta)
+        self.assertTrue("ch003.xhtml#target_id" in json.dumps(ast))
+
+    def test_conentfilter_convert_header_ids(self):
+        """meta conatins 'k03' which is used as prefix for IDs.
+        ast contains a header with the id: 'header_id'.
+        It should get converted to 'k03_header_id'.
+        ast contains an image link with the id: 'image_id'.
+        It should get converted to 'image_k03_image_id'."""
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Link",
+                    "c": [
+                        ["", [], []],
+                        [
+                            {
+                                "t": "Image",
+                                "c": [["", [], []], [], ["k02/bilder/image.png", ""]]
+                            }
+                        ],
+                        ["image#image_id", ""]
+                    ]
+                },
+                {
+                    "t": "Header",
+                    "c": [1, ["header_id", [], []], []]
+                }
+            ]
+        }
+        meta = "k03"
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_convert_header_ids, 'epub', meta)
+        self.assertTrue("k03_header_id" in json.dumps(ast))
+        self.assertTrue("image#image_k03_image_id" in json.dumps(ast))
+
+    def test_conentfilter_convert_image_header_ids(self):
+        """ast contains a header with the id: 'image_id'.
+        It should get converted to 'image_image_id'.
+        """
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Header",
+                    "c": [1, ["image_id", [], []], []]
+                }
+            ]
+        }
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_convert_image_header_ids, 'epub', None)
+        self.assertTrue("image_image_id" in json.dumps(ast))
+
+    def test_conentfilter_remove_images_from_toc(self):
+        """ast contains a header with the id: 'header_id1', Level 1 and text 'Text'.
+        It should get converted to
+        '<p id=\\"header_id1\\" class=\\"header pagebreak\\" data-level=\\"1\\">Text</p>'.
+        ast contains a header with the id: 'header_id2', Level 2 and text 'Text'.
+        It should get converted to
+        '<p id=\\"header_id2\\" class=\\"header\\" data-level=\\"2\\">Text</p>'."""
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Header",
+                    "c": [1, ["header_id1", [], []], [{"t": "Str", "c": "Text"}]]
+                },
+                {
+                    "t": "Header",
+                    "c": [2, ["header_id2", [], []], [{"t": "Str", "c": "Text"}]]
+                },
+            ]
+        }
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_remove_images_from_toc, 'epub', None)
+        self.assertTrue('<p id=\\"header_id2\\" class=\\"header\\" data-level=\\"2\\">Text</p>' in json.dumps(ast))
+        self.assertTrue('<p id=\\"header_id1\\" class=\\"header pagebreak\\" data-level=\\"1\\">Text</p>' in json.dumps(ast))
+
+    def test_conentfilter_update_image_location(self):
+        """meta conatins 'k03' which is used as prefix for URI.
+        ast contains a image with path: 'image.png'.
+        It should get converted to 'k03/image.png'."""
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Image",
+                    "c": [["", [], []], [], ["image.png", ""]]
+                }
+            ]
+        }
+        meta = "k03"
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_update_image_location, 'epub', meta)
+        self.assertTrue("k03/image.png" in json.dumps(ast))
+
+    def test_conentfilter_create_back_link_ids(self):
+        """ast contains a link with the id: 'target_id'.
+        It should get converted to 'target_id_back'."""
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Link",
+                    "c": [["", [], []], [], ["target.html#target_id", ""]]
+                }
+            ]
+        }
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_create_back_link_ids, 'epub', None)
+        self.assertTrue("target_id_back" in json.dumps(ast))
+
+    def test_conentfilter_create_back_links(self):
+        """meta contains the key 'image_id_back' with the chapter number '3' as value.
+        ast contains a RawBlock which includes the id in a paragraph: 'image_id'.
+        The paragraph should contain the backlink with the target 'image_id_back'
+        after the filter."""
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "RawBlock",
+                    "c": [
+                        "html",
+                        "<p id=\"image_id\" class=\"header\" data-level=\"2\">Image</p>"
+                    ]
+                }
+            ]
+        }
+        meta = {'ids': {'image_id_back': 3}}
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_create_back_links, 'epub', meta)
+        self.assertTrue('<a href=\\"ch003.xhtml#image_id_back\\">Image</a>' in json.dumps(ast))
+
+    def test_conentfilter_collect_ids(self):
+        """meta contains '{'chapter': 1, 'ids': {}}'.
+        'chapter' in meta should be increased to 2.
+        'ids' should contain '{'image_id': 1, 'header_id': 2, 'target_id': 2}'
+        after the filter."""
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "RawBlock",
+                    "c": [
+                        "html",
+                        "<p id=\"image_id\" class=\"header\" data-level=\"2\">Image</p>"
+                    ]
+                },
+                {
+                    "t": "Header",
+                    "c": [1, ["header_id", [], []], []]
+                },
+                {
+                    "t": "Link",
+                    "c": [["target_id", [], []], [], ["target.html#target_id", ""]]
+                }
+            ]
+        }
+        meta = {'chapter': 1, 'ids': {}}
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_collect_ids, 'epub', meta)
+        self.assertTrue(meta['chapter'] == 2)
+        self.assertTrue('image_id' in meta['ids'] and meta['ids']['image_id'] == 1)
+        self.assertTrue('header_id' in meta['ids'] and meta['ids']['header_id'] == 2)
+        self.assertTrue('target_id' in meta['ids'] and meta['ids']['target_id'] == 2)
+
+    def test_conentfilter_unnumbered_toc(self):
+        """ast contains a header with the id: 'header_id'.
+        The class 'unnumbered' should be added to the ast.
+        """
+        ast = {
+            "blocks":
+            [
+                {
+                    "t": "Header",
+                    "c": [1, ["header_id", [], []], []]
+                }
+            ]
+        }
+        ast = pandocfilters.walk(ast, pandoc.contentfilter.epub_unnumbered_toc, 'epub', None)
+        self.assertTrue('["unnumbered"]' in json.dumps(ast))
 
 
 ################################################################################
