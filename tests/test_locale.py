@@ -13,7 +13,7 @@ def fake_mo(actual_path, desired=None):
     else:
         return [('./', (), ())]
 
-fake_usr_local = lambda x: fake_mo(x, desired="/usr/locales")
+fake_usr_local = lambda x: fake_mo(x, desired="/usr/share/locale")
 fake_c_program_files = lambda x: fake_mo(x, desired='C:\\ProgramData')
 fake_none = lambda x: fake_mo(x, ".")
 
@@ -23,21 +23,9 @@ def normalise_path(path):
 class test_locale(unittest.TestCase):
 
     @patch("os.walk", fake_usr_local)
+    @patch("sys.platform", "linux")
     def test_that_locale_is_available_Linux(self):
-        if sys.platform == "linux":
-            loc_dir = _get_localedir()
-            self.assertTrue(loc_dir == '/usr/share/locale' or
-                loc_dir == os.path.join(os.path.dirname(
-                os.path.abspath(sys.argv[0])), 'share', 'locale')
-                or os.path.join(os.path.dirname(os.path.dirname(os.environ['_'])),
-                'share', 'locale'))
-        elif sys.platform == "darwin":
-           loc_dir = normalise_path(_get_localedir())
-           # ToDo: niemals mehrere Bedingungen in einem asserteq, immer mehrere
-           # asserteq bzw. assertfalse bzw. asserttrue
-           self.assertTrue(loc_dir == '/usr/share/locale' or
-                           loc_dir == os.path.join(os.path.dirname(
-                           os.path.abspath(sys.argv[0])), 'share', 'locale'))
+        self.assertEqual(_get_localedir(), '/usr/share/locale')
 
     @patch("os.walk", fake_c_program_files)
     @patch("sys.platform", "win32")
