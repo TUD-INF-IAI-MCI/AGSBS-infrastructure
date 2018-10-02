@@ -27,6 +27,11 @@ class test_locale(unittest.TestCase):
     def test_that_locale_is_available_Linux(self):
         self.assertEqual(_get_localedir(), '/usr/share/locale')
 
+    @patch("os.walk", fake_usr_local)
+    @patch("sys.platform", "darwin")
+    def test_that_locale_is_available_OSX(self):
+        self.assertTrue(_get_localedir(), '/usr/share/locale')
+
     @patch("os.walk", fake_c_program_files)
     @patch("sys.platform", "win32")
     @patch("os.getenv", lambda x: r'c:\ProgramData')
