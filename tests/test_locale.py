@@ -15,6 +15,7 @@ def fake_mo(actual_path, desired=None):
 
 fake_usr_local = lambda x: fake_mo(x, desired="/usr/locales")
 fake_c_program_files = lambda x: fake_mo(x, desired='C:\\ProgramData')
+fake_none = lambda x: fake_mo(x, ".")
 
 def normalise_path(path):
     """Enable comparison of UNIX and Windows paths."""
@@ -48,12 +49,6 @@ class test_locale(unittest.TestCase):
 
         # ToDo: test name ergibt keinen sinn, Testaufbau schlecht. Daten aus
         # Code sammeln, assert* ausführen
-    def test_that_locale_not_exists_in_programData(self):
-        programDataPath = os.path.join(os.getenv('ProgramData'),
-                                                    "matuc", "locale")
-        tempName = os.path.join(os.getenv('ProgramData'), "matuc", "_locale")
-        if os.path.exists(programDataPath):
-            os.rename(programDataPath, tempName)
-        # ToDo add case that magsbs is execute from source code
+    @patch("os.walk", fake_none)
+    def test_install_locale_returns_none(self):
         self.assertEqual(_get_localedir(), None)
-        os.rename(tempName, programDataPath)
