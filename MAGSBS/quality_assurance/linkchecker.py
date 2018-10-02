@@ -39,10 +39,9 @@ EXCEPTED_STRING_STARTS = ["www."]
 
 
 def format_extensions_list(extensions):
-    """Format a list of extensions in a human-readable way."""
-    if not extensions:  # list should have at least one element
-        raise ValueError("No extension defined for link, yet required")
-
+    """Format a list of extensions in a human-readable way for error messages."""
+    if not extensions:
+        raise ValueError(_("Expected a file extension, got nothing"))
     if len(extensions) == 1:
         return ".{}".format(extensions[0])
     return _(".{} or .{}").format(', .'.join(extensions[:-1]), extensions[-1])
