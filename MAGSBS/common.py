@@ -201,5 +201,3 @@ def setup_i18n():
 
     trans.install()
 
-if __name__ != '__setup__':
-    setup_i18n()

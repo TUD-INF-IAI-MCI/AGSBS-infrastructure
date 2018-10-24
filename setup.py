@@ -84,9 +84,9 @@ class I18nInstall(install):
             destdir = os.path.join(locale_destdir(), lang, 'LC_MESSAGES')
             if not os.path.exists(destdir):
                 os.makedirs(destdir)
-            print("Installing %s to %s" % (os.path.join('build', 'mo',
-                    lang + '.mo'), destdir))
-            shutil.copy(os.path.join('build', 'mo', lang + '.mo'), destdir)
+            src_mo = os.path.join('build', 'mo', lang, 'matuc.mo')
+            print("Installing %s to %s" % (src_mo, destdir))
+            shutil.copy(src_mo, destdir)
 
 setuptools.setup(
     author="Sebastian Humenda, Jens Voegler",

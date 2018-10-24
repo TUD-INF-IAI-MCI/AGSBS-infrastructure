@@ -166,6 +166,7 @@ class main():
         self.output_formatter = output_formatter
 
     def run(self, args):
+        MAGSBS.common.setup_i18n()
         if len(args) < 2:
             self.output_formatter.emit_usage(MAIN_USAGE)
         else:

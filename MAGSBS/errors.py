@@ -63,7 +63,8 @@ class SubprocessError(MAGSBS_error):
         self.line = line
 
     def __str__(self):
-        return self.message.rstrip() + '\n  Path: ' + self.path
+        return self.message.rstrip() + ('' if not self.path
+                else '\n  Path: ' + self.path)
 
 class ConfigurationError(MAGSBS_error):
     def __init__(self, message, path, line=None):
