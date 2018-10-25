@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-09-25 13:49+CEST\n"
+"POT-Creation-Date: 2018-10-25 17:44+CEST\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -23,7 +23,9 @@ msgstr "der Dateiname folgt nicht den Namenskonventionen"
 msgid ""
 "error while running: %s\n"
 "%s"
-msgstr "Fehler beim Ausführen von: %s\n%s"
+msgstr ""
+"Fehler beim Ausführen von: %s\n"
+"%s"
 
 #: MAGSBS/errors.py:78
 msgid "in configuration from"
@@ -185,50 +187,54 @@ msgstr ""
 "Dollarzeichen um die Formel gesetzt werden, damit die Formel nicht auf "
 "Zeilenhöhe gestaucht wird."
 
-#: MAGSBS/quality_assurance/linkchecker.py:48
+#: MAGSBS/quality_assurance/linkchecker.py:44
+msgid "Expected a file extension, got nothing"
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:47
 msgid ".{} or .{}"
 msgstr ".{} oder .{}"
 
-#: MAGSBS/quality_assurance/linkchecker.py:120
+#: MAGSBS/quality_assurance/linkchecker.py:119
 msgid ""
 "An explicit reference with identifier \"{0}\" does not exist. Please write "
 "an explicit reference in a form \"[{0}]: link\" to the markdown file."
 msgstr ""
-"Eine explizite Referenz mit Marker \"{0}\" existiert nicht. Bitte fügen "
-"Sie eineexplizite Referenz der Form \"[{0}]: link\" zur Datei hinzu."
+"Eine explizite Referenz mit Marker \"{0}\" existiert nicht. Bitte fügen Sie "
+"eineexplizite Referenz der Form \"[{0}]: link\" zur Datei hinzu."
 
-#: MAGSBS/quality_assurance/linkchecker.py:148
+#: MAGSBS/quality_assurance/linkchecker.py:147
 msgid "Identifier \"{}\" for reference is duplicated on lines {} and {}."
 msgstr "Marker \"{}\" für eine Referenz wiederholt sich auf Zeile {} und {}."
 
-#: MAGSBS/quality_assurance/linkchecker.py:167
+#: MAGSBS/quality_assurance/linkchecker.py:166
 msgid ""
 "Implicit reference with the identifier \"{0}\" does not exist. Please write "
 "a reference in a form [{0}] in the markdown file or remove the explicit "
 "reference [{0}]: {1}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:229
+#: MAGSBS/quality_assurance/linkchecker.py:228
 msgid "Link path \"{}\" has no extension, but it should be {}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:238
+#: MAGSBS/quality_assurance/linkchecker.py:237
 msgid "Link path \"{}\" has .{} extension, but it should be {}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:251
+#: MAGSBS/quality_assurance/linkchecker.py:250
 msgid "The file \"{}\" given by the reference \"{}\" does not exist."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:262
+#: MAGSBS/quality_assurance/linkchecker.py:261
 msgid "The source .md file for hypertext file \"{}\" does not exist."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:287
+#: MAGSBS/quality_assurance/linkchecker.py:286
 msgid "A link is referencing the anchor \"#{}\" which does not exist."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:295
+#: MAGSBS/quality_assurance/linkchecker.py:294
 msgid ""
 "A link references the anchor \"#{}\" which does not exist in the file {}."
 msgstr ""
@@ -354,9 +360,10 @@ msgstr ""
 "verhindert dies."
 
 #: MAGSBS/quality_assurance/markdown.py:370
+#, fuzzy
 msgid ""
 "The image description is probably incomplete, since \"{marker}\" has been "
-"found."
+"found. "
 msgstr ""
 "Die Bildbeschreibung ist wahrscheinlich unvollständig, da eine Markierung "
 "\"{marker\" gefunden wurde."
@@ -432,11 +439,11 @@ msgstr "Urheberrechtshinweis"
 msgid "remarks about the accessible version"
 msgstr "Hinweise zur barrierefreien Version"
 
-#~ msgid "list of abbreviations"
-#~ msgstr "Abkürzungsverzeichnis"
+#~ msgid "glossary"
+#~ msgstr "Glossar"
 
 #~ msgid "index"
 #~ msgstr "Inhalt"
 
-#~ msgid "glossary"
-#~ msgstr "Glossar"
+#~ msgid "list of abbreviations"
+#~ msgstr "Abkürzungsverzeichnis"
