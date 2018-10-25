@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-10-25 17:44+CEST\n"
+"POT-Creation-Date: 2018-10-25 17:51+CEST\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -189,7 +189,7 @@ msgstr ""
 
 #: MAGSBS/quality_assurance/linkchecker.py:44
 msgid "Expected a file extension, got nothing"
-msgstr ""
+msgstr "Dateiendung erwartet, keine gefunden"
 
 #: MAGSBS/quality_assurance/linkchecker.py:47
 msgid ".{} or .{}"
@@ -210,21 +210,24 @@ msgstr "Marker \"{}\" für eine Referenz wiederholt sich auf Zeile {} und {}."
 #: MAGSBS/quality_assurance/linkchecker.py:166
 msgid ""
 "Implicit reference with the identifier \"{0}\" does not exist. Please write "
-"a reference in a form [{0}] in the markdown file or remove the explicit "
-"reference [{0}]: {1}."
+"a reference in a form [{0}] in the markdown file or remove the anchor [{0}]: "
+"{1}."
 msgstr ""
+"Eine explizite Referenz mit Marker \"{0}\" existiert nicht. Bitte fügen Sie "
+"eine explizite Referenz der Form \"[{0}]: link\" zur Datei hinzu oder "
+"entfernen Sie die Marke \"{0}: {1}\"."
 
 #: MAGSBS/quality_assurance/linkchecker.py:228
 msgid "Link path \"{}\" has no extension, but it should be {}."
-msgstr ""
+msgstr "Linkpfad \"{}\" hat keine Endung, sie sollte \"{}\" lauten."
 
 #: MAGSBS/quality_assurance/linkchecker.py:237
-msgid "Link path \"{}\" has .{} extension, but it should be {}."
-msgstr ""
+msgid "Link path \"{}\" has extension .{}, but it should be {}."
+msgstr "Linkpfad \"{}\" hat keine Endung, sie sollte \"{}\" lauten."
 
 #: MAGSBS/quality_assurance/linkchecker.py:250
 msgid "The file \"{}\" given by the reference \"{}\" does not exist."
-msgstr ""
+msgstr "Die Datei hinter der Referenz \"{}\" existiert nicht."
 
 #: MAGSBS/quality_assurance/linkchecker.py:261
 msgid "The source .md file for hypertext file \"{}\" does not exist."

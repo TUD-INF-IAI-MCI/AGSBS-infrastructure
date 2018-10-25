@@ -166,7 +166,7 @@ class LinkChecker:
         e = ErrorMessage(_("Implicit reference with the identifier "
                             "\"{0}\" does not exist. Please write a "
                             "reference in a form [{0}] in the markdown "
-                            "file or remove the explicit reference [{0}]:"
+                            "file or remove the anchor [{0}]:"
                             " {1}.").format(ref_id, reference.link),
                           reference.line_number, reference.file_path)
         e.pos_on_line = reference.pos_on_line
@@ -234,7 +234,7 @@ class LinkChecker:
         # search fo last comma and extension is what follows it
         elif path[path.rfind(".") + 1:].lower() not in extensions:
             e = ErrorMessage(
-                _("Link path \"{}\" has .{} extension, but it should be {}.")
+                _("Link path \"{}\" has extension .{}, but it should be {}.")
                 .format(path, path[path.rfind(".") + 1:],
                         format_extensions_list(extensions)),
                 reference.line_number, reference.file_path)
