@@ -18,7 +18,7 @@ from ..datastructures import Reference
 
 
 # Regexp for finding ids within div and span html elements
-IDS_REGEX = re.compile(r"<(?:div|span).*?id=[\"'](\S+?)[\"']")
+IDS_REGEX = re.compile(r"<(?:div|span|hr).*?id=[\"'](\S+?)[\"']")
 
 
 def find_links_in_markdown(text, init_lineno=1, init_position=1):
@@ -192,7 +192,7 @@ def is_todo_or_empty(reference):
 
 def get_html_elements_identifiers(document):
     """Returns a set of ids (of html elements) in a markdown document. Only
-    elements allowed in matuc are processed (currently div and span elements).
+    elements allowed in matuc are processed (currently div, span, hr elements).
     Note: When other type of element(s) are allowed, the IDS_REGEX constant
     has to be updated. """
     return set(IDS_REGEX.findall(document))
