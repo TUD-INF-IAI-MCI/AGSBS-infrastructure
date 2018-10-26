@@ -24,27 +24,20 @@ def shell(cmd, hint=None):
             print(hint)
         sys.exit(ret)
 
-def mkmo(podir, lang):
-    outpath = mo_base(lang)
+def mkmo(podir, pofile):
+    outpath = mo_base(os.path.splitext(pofile)[0])
     if os.path.exists(outpath):
         shutil.rmtree(outpath)
     os.makedirs(outpath)
-    inpath = os.path.join(podir, lang + ".po")
+    inpath = os.path.join(podir, pofile)
     shell("msgfmt %s -o %s/%s.mo" % (inpath, outpath, 'matuc'))
-
-def merge_i18n(podir):
-    if not shutil.which('msgmerge'):
-        print("Error, either msgmerge or intltool is required, aborting")
-        sys.exit(111)
-    for pofile in podir:
-        shell('msgmerge -F -U %s %s' % os.path.join(podir, pofile), POT_FILE)
 
 class I18nBuild(build):
     """Build gettext locale files and install them appropriately."""
     user_options = build.user_options
     def run(self, *args):
         for pofile in os.listdir('po'):
-            mkmo('po', os.path.splitext(pofile)[0])
+            mkmo('po', pofile)
         build.run(self, *args)
 
 #pylint: disable=protected-access
