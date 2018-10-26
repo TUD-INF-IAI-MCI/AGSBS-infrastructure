@@ -46,10 +46,10 @@ Available commands are:
 
 addpnum         - generate new page number, relative to its predecessors
 conf            - set, init or update a configuration
-conv            - convert a lecture
+conv            - convert a project
 fixpnums        - fix incorrect page numbering of a document
 imgdsc          - generate image description (snippets)
-iswithinlecture - test, whether a certain path is part of a lecture
+iswithinlecture - test, whether a certain path is part of a project
 new             - create new project structure
 mk              - invoke "mistkerl", a quality assurance helper
 toc             - generate table of contents
@@ -191,7 +191,7 @@ class main():
                   help=_("write output to file instead of stdout"),
                   metavar="FILENAME", default='stdout')
         parser.add_argument('directory',
-                help=_('lecture directory (containing chapters)'))
+                help=_('material directory (containing chapters)'))
         options = parser.parse_args(args)
 
         file = None
@@ -222,9 +222,9 @@ class main():
         description = _("""Allowed subcommands are `show`, `update` and `init`.
 `show` shows the current configuration settings, default values if none present.
 `update` and `show` try to find the correct configuration: if none exists in the
-current directory and you are in a subdirectory of a project, they try to
-determine the project root and read the configuration for there if present (else
-the default values are used).
+current directory and you are in a subdirectory of a project, the project root
+will be queried for a configuration. If no file was found, the default settings
+are displayed.
 
 `init` on the other hand behaves basically like update (it sets configuration
 values), but it does that for the current directory. This is handy for
@@ -237,13 +237,13 @@ sub-directory configurations or initialization of a new project.""")
         parser.add_argument("-A", dest="SourceAuthor",
                   help=_('set author of source document'))
         parser.add_argument("-e", dest="Editor",
-                  help=_('set lecture editor'),
+                  help=_('set project editor'),
                   metavar="NAME", default=None)
         parser.add_argument("-i", dest="Institution",
                   help=_('set institution (default TU Dresden)'),
                   metavar="NAME", default=None)
         parser.add_argument("-l", dest="LectureTitle",
-                  help=_('set lecture title (first heading level 1 by '
+                  help=_('set title of project (first heading level 1 by '
                       'default)'),
                   metavar="TITLE", default=None)
         parser.add_argument("-L", dest='Language',
@@ -299,12 +299,12 @@ sub-directory configurations or initialization of a new project.""")
 
     def handle_conv(self, cmd, args):
         """Convert files."""
-        usage = _("Converts a file or directory containing a lecture.\n\n"
+        usage = _("Converts a file or directory containing a project.\n\n"
                  "file:\n"
                  "Convert a file from MarkDown to HTML.\n"
                  "Other formats are not supported.\n\n"
                  "directory:\n"
-                 "Perform all actions to automate lecture conversion\n"
+                 "Perform all actions to automate project conversion\n"
                  "-    generate a table of contents\n"
                  "-    convert custom MarkDown extensions\n"
                  "-    apply custom layout definition\n"
