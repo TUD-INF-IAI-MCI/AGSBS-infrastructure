@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-10-25 17:51+CEST\n"
+"POT-Creation-Date: 2018-10-26 11:01+CEST\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -27,19 +27,19 @@ msgstr ""
 "Fehler beim Ausführen von: %s\n"
 "%s"
 
-#: MAGSBS/errors.py:78
+#: MAGSBS/errors.py:79
 msgid "in configuration from"
 msgstr "in Konfiguration unter"
 
-#: MAGSBS/errors.py:79
+#: MAGSBS/errors.py:80
 msgid "in configuration"
 msgstr "in Konfiguration"
 
-#: MAGSBS/errors.py:93
+#: MAGSBS/errors.py:94
 msgid "erroneous structure in %s: "
 msgstr "fehlerhafte Struktur in %s: "
 
-#: MAGSBS/errors.py:112
+#: MAGSBS/errors.py:113
 msgid "error in {path}"
 msgstr "Fehler in {path}"
 

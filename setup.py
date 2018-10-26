@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 import gettext
 import os
+import shlex
 import shutil
 import sys
 
 import setuptools
+from setuptools import Command
 from setuptools.command.build_py import build_py as build
 from setuptools.command.install import install
 
@@ -17,7 +19,7 @@ mo_base = lambda lang: os.path.join(BUILD_DIR, 'mo', lang)
 def shell(cmd, hint=None):
     ret = os.system(cmd)
     if ret:
-        print("Command exited with error %d: %s\nAborting." % ret, cmd)
+        print("Command exited with error %d: %s\nAborting." % (ret, cmd))
         if hint:
             print(hint)
         sys.exit(ret)
@@ -45,6 +47,8 @@ class I18nBuild(build):
             mkmo('po', os.path.splitext(pofile)[0])
         build.run(self, *args)
 
+#pylint: disable=protected-access
+#pylint: disable=inconsistent-return-statements
 def locale_destdir():
     """Find best suitable directory for locales."""
     loc_dirs = [gettext._default_localedir]
@@ -74,6 +78,34 @@ def locale_destdir():
                 dir_with_no_perms)
         sys.exit(81)
 
+class I18nGeneration(Command):
+    description = "Create/update po/pot translation files"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        files = (shlex.quote(os.path.join(dname, file))
+                for dname, _d, files in os.walk('.') for file in files
+                if file.endswith('.py') and not 'build' in dname)
+        create_pot = os.path.exists('matuc.pot')
+        if not create_pot:
+            # query last modification time of py source files
+            matuc_mtime = os.path.getmtime('matuc.pot')
+            if any(os.path.getmtime(p) > matuc_mtime for p in files):
+                create_pot = True
+        if create_pot:
+            print("Extracting translatable strings...")
+            shell('pygettext --keyword=_ --output=matuc.pot %s' \
+                    % ' '.join(files))
+        # merge new strings and old translations
+        for lang_po in os.listdir('po'):
+            shell("msgmerge -F -U %s matuc.pot" % os.path.join('po', lang_po))
+
 class I18nInstall(install):
     """Install compiled .mo files."""
     user_options = install.user_options
@@ -91,6 +123,7 @@ class I18nInstall(install):
 setuptools.setup(
     author="Sebastian Humenda, Jens Voegler",
     cmdclass={
+        'build_i18n': I18nGeneration,
         'build_py': I18nBuild,
         'install': I18nInstall
         },
