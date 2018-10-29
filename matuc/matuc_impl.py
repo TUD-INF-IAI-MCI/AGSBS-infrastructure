@@ -37,6 +37,9 @@ import MAGSBS.toc
 
 PROCNAME = os.path.basename(sys.argv[0])
 
+#necessary for function '_'
+MAGSBS.common.setup_i18n()
+
 MAIN_USAGE = _("""%s <command> <options>
 
 <command> determines which action to take. The syntax might vary between
@@ -166,7 +169,6 @@ class main():
         self.output_formatter = output_formatter
 
     def run(self, args):
-        MAGSBS.common.setup_i18n()
         if len(args) < 2:
             self.output_formatter.emit_usage(MAIN_USAGE)
         else:
