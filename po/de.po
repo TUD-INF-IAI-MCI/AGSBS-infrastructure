@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-10-26 11:32+CEST\n"
-"PO-Revision-Date: 2018-02-22 14:04+0100\n"
+"PO-Revision-Date: 2018-10-29 16:40+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
 "Language: de\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.0.6\n"
+"X-Generator: Poedit 2.2\n"
 "Generated-By: pygettext.py 1.5\n"
 
 #: MAGSBS/datastructures.py:222
@@ -69,7 +69,7 @@ msgstr "Bildbeschreibungen"
 
 #: MAGSBS/pandoc/contentfilter.py:133
 msgid "Incorrect formula: {reason}"
-msgstr "fehlerhafte Formel: {reason}"
+msgstr "Fehlerhafte Formel: {reason}"
 
 #: MAGSBS/pandoc/formats.py:189
 msgid "You need to have Pandoc installed."
@@ -365,13 +365,12 @@ msgstr ""
 "verhindert dies."
 
 #: MAGSBS/quality_assurance/markdown.py:370
-#, fuzzy
 msgid ""
 "The image description is probably incomplete, since \"{marker}\" has been "
 "found. "
 msgstr ""
 "Die Bildbeschreibung ist wahrscheinlich unvollständig, da eine Markierung "
-"\"{marker\" gefunden wurde."
+"\"{marker}\" gefunden wurde."
 
 #: MAGSBS/quality_assurance/markdown.py:392
 msgid "The included image is using wrong syntax, the converter will ignore it."
@@ -445,9 +444,8 @@ msgid "remarks about the accessible version"
 msgstr "Hinweise zur barrierefreien Version"
 
 #: matuc/matuc_impl.py:189
-#, fuzzy
 msgid "Generate table of contents."
-msgstr "Inhaltsverzeichnis"
+msgstr "Inhaltsverzeichnis generieren."
 
 #: matuc/matuc_impl.py:191
 msgid "write output to file instead of stdout"
@@ -567,6 +565,19 @@ msgid ""
 "-    apply custom layout definition\n"
 "-    and do that for all MarkDown files within the specified directory"
 msgstr ""
+"Konvertiert eine Datei oder ein Verzeichnis containing a project\n"
+"\n"
+"Datei:\n"
+"Konvertiert eine Datei von Markdown nach HTML.\n"
+"Andere Formate werden nicht unterstützt.\n"
+"\n"
+"Verzeichnis/Ordner:\n"
+"Führt alle Befehle für eine automatische Projekt Konvertierung aus\n"
+"-    generieren des Inhaltverzeichnis\n"
+"-    konvertieren der benutzerdefinierten MarkDown Erweiterung\n"
+"-    anwenden der benutzerdefinieren Layoutdefinition\n"
+"-    und führt dies für alle MarkDowndateien innerhalb des angegebenen "
+"Ordners durch"
 
 #: matuc/matuc_impl.py:315
 msgid "select output format"
@@ -605,30 +616,35 @@ msgid ""
 "\n"
 "Test whether the given file or directory is part of a lecture.\n"
 msgstr ""
+"Gebrauch: {} iswithinlecture <Pfad>\n"
+"\n"
+"Testen Sie, ob die angegebene Datei oder das Verzeichnis Teil einer "
+"Vorlesung ist.\n"
 
 #: matuc/matuc_impl.py:384
 msgid "path required"
-msgstr ""
+msgstr "Pfad erforderlich"
 
 #: matuc/matuc_impl.py:388
 msgid "only one path at a time allowed."
-msgstr ""
+msgstr "Nur ein Pfad ist gleichzeitig erlaubt."
 
 #: matuc/matuc_impl.py:400
 msgid "Initialize a new lecture material or book directory."
-msgstr ""
+msgstr "Neue Lehrmaterialien oder Buch anlegen."
 
 #: matuc/matuc_impl.py:404
+#, fuzzy
 msgid "number of appendix chapters (default 0)"
-msgstr ""
+msgstr "Anzahl der Kapitel in Anhang (Standardwert 0)"
 
 #: matuc/matuc_impl.py:407
 msgid "number of chapters (default 2)"
-msgstr ""
+msgstr "Anzahl der Kapitel (Standardwert 2)"
 
 #: matuc/matuc_impl.py:410
 msgid "sets whether a preface exists (default None)"
-msgstr ""
+msgstr "legt fest, ob ein Vorwort existiert (Standardwert Kein)"
 
 #: matuc/matuc_impl.py:413
 msgid "if set, blattxx will be used instead of kxx"
@@ -636,15 +652,16 @@ msgstr ""
 
 #: matuc/matuc_impl.py:415
 msgid "set language (default de)"
-msgstr ""
+msgstr "Sprache einstellen (Standard de)"
 
 #: matuc/matuc_impl.py:417
 msgid "new directory to create lecture in"
-msgstr ""
+msgstr "neu"
 
 #: matuc/matuc_impl.py:426
 msgid "The number of chapters and appendix chapters must be integers."
 msgstr ""
+"Die Anzahl der Kapitel und Anhangskapitel müssen ganze Zahlen sein sein."
 
 #: matuc/matuc_impl.py:439
 msgid ""
@@ -653,14 +670,19 @@ msgid ""
 "errors and\n"
 "        outputs them on the command line."
 msgstr ""
+"\n"
+"        Führen Sie \"mistkerl\", einen Qualitätssicherungshelfer aus. Er "
+"prüft auf häufige Fehler und\n"
+"        gibt diese auf der Kommandozeile aus."
 
 #: matuc/matuc_impl.py:444
 msgid "Sort critical errors first"
-msgstr ""
+msgstr "Sortiere kritische Fehler zuerst"
 
 #: matuc/matuc_impl.py:446
+#, fuzzy
 msgid "use less blank lines in output"
-msgstr ""
+msgstr "Verwenden Sie weniger leere Zeilen in der Ausgabe"
 
 #: matuc/matuc_impl.py:448
 msgid ""
@@ -670,7 +692,7 @@ msgstr ""
 
 #: matuc/matuc_impl.py:451
 msgid "specify file or directory to be checked"
-msgstr ""
+msgstr "Zu prüfende Datei oder Verzeichnis angeben"
 
 #: matuc/matuc_impl.py:455
 msgid "input file name required."
@@ -678,11 +700,11 @@ msgstr ""
 
 #: matuc/matuc_impl.py:458
 msgid "Error: %s does not exist."
-msgstr ""
+msgstr "Fehler: %s existiert nicht."
 
 #: matuc/matuc_impl.py:466
 msgid "No errors found. Hopefully there are none :-)."
-msgstr ""
+msgstr "Keine Fehler gefunden. Hoffentlich gibt es keine :-)."
 
 #: matuc/matuc_impl.py:509
 msgid ""
@@ -714,15 +736,15 @@ msgstr ""
 
 #: matuc/matuc_impl.py:530
 msgid "Line number for which to generate the page number"
-msgstr ""
+msgstr "Zeilennummer, wo die generiere Zeilennummer eingefügt werden soll"
 
 #: matuc/matuc_impl.py:535 matuc/matuc_impl.py:588
 msgid "Given path has to exist."
-msgstr ""
+msgstr "Der angegebene Pfad existiert nicht."
 
 #: matuc/matuc_impl.py:540
 msgid "Argument 2 is not a number."
-msgstr ""
+msgstr "Parameter 2 ist keine Zahl."
 
 #: matuc/matuc_impl.py:546
 msgid ""
