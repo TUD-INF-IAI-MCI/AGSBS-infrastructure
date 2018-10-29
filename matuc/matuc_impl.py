@@ -361,7 +361,7 @@ sub-directory configurations or initialization of a new project.""")
         parser.add_argument('path', nargs="?", help="path to image file")
         options = parser.parse_args(args)
         if not options.path:
-            parser.error(_("no path specified!"))
+            parser.error(_("no path specified"))
             exit(1)
         if options.description == "-":
             desc = sys.stdin.read()

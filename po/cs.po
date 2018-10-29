@@ -495,7 +495,7 @@ msgid "set title for outsourced images (mandatory if outsourced)"
 msgstr ""
 
 #: matuc/matuc_impl.py:362
-msgid "no path specified!"
+msgid "no path specified"
 msgstr ""
 
 #: matuc/matuc_impl.py:381

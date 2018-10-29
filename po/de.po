@@ -231,16 +231,18 @@ msgstr "Die Datei hinter der Referenz \"{}\" existiert nicht."
 
 #: MAGSBS/quality_assurance/linkchecker.py:261
 msgid "The source .md file for hypertext file \"{}\" does not exist."
-msgstr ""
+msgstr "Die .md-Quelldatei für Link \"{}\" existiert nicht."
 
 #: MAGSBS/quality_assurance/linkchecker.py:286
 msgid "A link is referencing the anchor \"#{}\" which does not exist."
-msgstr ""
+msgstr "Ein Link referenziert den Bezeichner \"#{}\", welcher nicht existiert."
 
 #: MAGSBS/quality_assurance/linkchecker.py:294
 msgid ""
 "A link references the anchor \"#{}\" which does not exist in the file {}."
 msgstr ""
+"Ein Link referenziert den Bezeichner \"#{}\", welcher in der Datei \"{}\" "
+"nicht existiert."
 
 #: MAGSBS/quality_assurance/markdown.py:18
 msgid ""
@@ -517,7 +519,8 @@ msgstr "setze Sprache der Dokumente (standardmäßig de)"
 #: matuc/matuc_impl.py:253
 msgid "specify gap between page numbering links in navigation bar (default: 5)"
 msgstr ""
-"setze Abstand zwischen Seitenzahlen in der Navigationsleiste (standardmäßig 5)"
+"setze Abstand zwischen Seitenzahlen in der Navigationsleiste (standardmäßig "
+"5)"
 
 #: matuc/matuc_impl.py:257
 msgid "set information about source document"
@@ -525,8 +528,9 @@ msgstr "setze Informationen über Quelldokument"
 
 #: matuc/matuc_impl.py:260
 msgid "set semester of edit (will be guessed otherwise)"
-msgstr
-"setze das Semester, in dem die Bearbeitung stattfand (ansonsten wird es geraten)"
+msgstr ""
+"setze das Semester, in dem die Bearbeitung stattfand (ansonsten wird es "
+"geraten)"
 
 #: matuc/matuc_impl.py:263
 msgid "limit the heading depth for the table of contents"
@@ -566,11 +570,11 @@ msgstr ""
 
 #: matuc/matuc_impl.py:315
 msgid "select output format"
-msgstr ""
+msgstr "wähle Ausgabeformat"
 
 #: matuc/matuc_impl.py:317
 msgid "path to input file or directory"
-msgstr ""
+msgstr "Pfad zur Eingabedatei oder -verzeichnis"
 
 #: matuc/matuc_impl.py:344
 msgid ""
@@ -581,19 +585,19 @@ msgstr ""
 
 #: matuc/matuc_impl.py:349
 msgid "image description string (- for reading stdin)"
-msgstr ""
+msgstr "Zeichenkette für Bildbeschreibung (- für stdin)"
 
 #: matuc/matuc_impl.py:353
 msgid "outsource image descriptions regardless of their length"
-msgstr ""
+msgstr "lagere Bildbeschreibungen immer aus, unabhängig von ihrer Länge"
 
 #: matuc/matuc_impl.py:357
 msgid "set title for outsourced images (mandatory if outsourced)"
-msgstr ""
+msgstr "setze Title für ausgelagerte Bilder (zwingend wenn ausgelagert)"
 
 #: matuc/matuc_impl.py:362
-msgid "no path specified!"
-msgstr ""
+msgid "no path specified"
+msgstr "kein Pfad angegeben"
 
 #: matuc/matuc_impl.py:381
 msgid ""
@@ -742,9 +746,3 @@ msgstr ""
 
 #~ msgid "glossary"
 #~ msgstr "Glossar"
-
-#~ msgid "index"
-#~ msgstr "Inhalt"
-
-#~ msgid "list of abbreviations"
-#~ msgstr "Abkürzungsverzeichnis"
