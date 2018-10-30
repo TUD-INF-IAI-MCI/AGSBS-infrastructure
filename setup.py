@@ -84,8 +84,8 @@ class I18nGeneration(Command):
     def run(self):
         files = (shlex.quote(os.path.join(dname, file))
                 for dname, _d, files in os.walk('.') for file in files
-                if file.endswith('.py') and not 'build' in dname and
-                        not 'setup' in dname)
+                if file.endswith('.py') and not 'build' in dname
+                    and not 'setup' in file and not 'test' in dname)
         create_pot = not os.path.exists('matuc.pot')
         if not create_pot:
             # query last modification time of py source files

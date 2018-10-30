@@ -302,19 +302,12 @@ sub-directory configurations or initialization of a new project.""")
     def handle_conv(self, cmd, args):
         """Convert files."""
         usage = _("Converts a file or directory containing a project.\n\n"
-                 "file:\n"
-                 "Convert a file from MarkDown to HTML.\n"
-                 "Other formats are not supported.\n\n"
-                 "directory:\n"
-                 "Perform all actions to automate project conversion\n"
-                 "-    generate a table of contents\n"
-                 "-    convert custom MarkDown extensions\n"
-                 "-    apply custom layout definition\n"
-                 "-    and do that for all MarkDown files within the specified "
-                 "directory")
+                 "If a directory is supplied, additional steps such as "
+                 "generating a table of contents are performed as well.")
         parser = HelpfulParser(cmd, self.output_formatter, usage)
         parser.add_argument("-f", dest="format",
-                            help=_('select output format'),
+                            help=_('select output format (html or epub, '
+                                'default html)'),
                             metavar="FMT", default=None)
         parser.add_argument("path", help=_("path to input file or directory"))
         args = parser.parse_args(args)
@@ -343,9 +336,9 @@ sub-directory configurations or initialization of a new project.""")
 
 
     def handle_imgdsc(self, cmd, args):
-        description = _("The working directory must be a chapter of a book or "
-                "of another kind of material; the image name must be a path "
-                      "relative to the current working directory.")
+        description = _("The working directory must be within a project; "
+                "the image path must be relative to the current "
+                "working directory.")
         parser = HelpfulParser(cmd, self.output_formatter, description)
         parser.add_argument("-d", "--description", dest="description",
                 help=_('image description string (- for reading stdin)'),
@@ -409,14 +402,14 @@ sub-directory configurations or initialization of a new project.""")
                 help=_('number of chapters (default 2)'))
         parser.add_argument("-p", dest="preface", default=False,
                 action="store_true",
-                help=_('sets whether a preface exists (default None)'))
+                help=_('add a preface (default no)")'))
         parser.add_argument("-n", dest="nochapter", default=False,
                 action="store_true",
                 help=_('if set, blattxx will be used instead of kxx'))
         parser.add_argument("-l", dest="lang", default="de",
                 help=_('set language (default de)'))
         parser.add_argument('directory', nargs="?",
-                help=_('new directory to create lecture in'))
+                help=_('new directory to create project in'))
         options = parser.parse_args(args)
         if not options.directory:
             parser.print_help()
@@ -439,7 +432,8 @@ sub-directory configurations or initialization of a new project.""")
 
     def handle_mk(self, cmd, args):
         description = textwrap.dedent(_("""
-        Run "mistkerl", a quality assurance helper. It checks for common errors and
+        Run "mistkerl", a quality assurance helper. It checks for common errors
+        in accessible markdown documents and
         outputs them on the command line."""))
         parser = HelpfulParser(cmd, self.output_formatter, description)
         parser.add_argument("-c", dest="critical_first", action="store_true",
@@ -447,7 +441,7 @@ sub-directory configurations or initialization of a new project.""")
         parser.add_argument("-s", dest="squeeze_output", action="store_true",
                 help=_("use less blank lines in output"))
         parser.add_argument("-l", dest="live_view", action="store_true",
-                help=_("open a console-only life view, refreshing the list of "
+                help=_("open a console-only live view, refreshing the list of "
                     "errors every few seconds"))
         parser.add_argument("input", nargs="?",
                 help=_("specify file or directory to be checked"))

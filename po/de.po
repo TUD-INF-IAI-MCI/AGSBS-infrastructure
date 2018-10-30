@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-10-30 15:26+CET\n"
+"POT-Creation-Date: 2018-10-30 16:27+CET\n"
 "PO-Revision-Date: 2018-02-22 14:04+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -508,17 +508,16 @@ msgstr "setze Institution (Standard TU Dresden)"
 
 #: matuc/matuc_impl.py:248
 msgid "set title of project (first heading level 1 by default)"
-msgstr "setze Titel des Projektes (standardmäßig erste Überschrift Ebene 1)"
+msgstr "setze Titel des Projektes (Standardwert erste Überschrift Ebene 1)"
 
 #: matuc/matuc_impl.py:252
 msgid "set document language (de by default)"
-msgstr "setze Sprache der Dokumente (standardmäßig de)"
+msgstr "setze Sprache der Dokumente (Standardwert de)"
 
 #: matuc/matuc_impl.py:255
 msgid "specify gap between page numbering links in navigation bar (default: 5)"
 msgstr ""
-"setze Abstand zwischen Seitenzahlen in der Navigationsleiste (standardmäßig "
-"5)"
+"setze Abstand zwischen Seitenzahlen in der Navigationsleiste (Standardwert 5)"
 
 #: matuc/matuc_impl.py:259
 msgid "set information about source document"
@@ -554,157 +553,143 @@ msgstr "Neue Einstellungen"
 msgid ""
 "Converts a file or directory containing a project.\n"
 "\n"
-"file:\n"
-"Convert a file from MarkDown to HTML.\n"
-"Other formats are not supported.\n"
-"\n"
-"directory:\n"
-"Perform all actions to automate project conversion\n"
-"-    generate a table of contents\n"
-"-    convert custom MarkDown extensions\n"
-"-    apply custom layout definition\n"
-"-    and do that for all MarkDown files within the specified directory"
+"If a directory is supplied, additional steps such as generating a table of "
+"contents are performed as well."
 msgstr ""
-"Konvertiert eine Datei oder ein Verzeichnis containing a project\n"
+"Konvertiere eine Datei oder ein Verzeichnis mit einem Projekt.\n"
 "\n"
-"Datei:\n"
-"Konvertiert eine Datei von Markdown nach HTML.\n"
-"Andere Formate werden nicht unterstützt.\n"
-"\n"
-"Verzeichnis/Ordner:\n"
-"Führt alle Befehle für eine automatische Projekt Konvertierung aus\n"
-"-    generieren des Inhaltverzeichnis\n"
-"-    konvertieren der benutzerdefinierten MarkDown Erweiterung\n"
-"-    anwenden der benutzerdefinieren Layoutdefinition\n"
-"-    und führt dies für alle MarkDowndateien innerhalb des angegebenen "
-"Ordners durch"
+"Falls ein Verzeichnis übergeben wird, werden weitere Schritte wie die "
+"Generierung des Inhaltsverzeichnisses ausgeführt."
 
-#: matuc/matuc_impl.py:317
-msgid "select output format"
-msgstr "wähle Ausgabeformat"
+#: matuc/matuc_impl.py:309
+msgid "select output format (html or epub, default html)"
+msgstr "Ändere Ausgabeformat (html oder epub, Standardwert html)"
 
-#: matuc/matuc_impl.py:319
+#: matuc/matuc_impl.py:312
 msgid "path to input file or directory"
 msgstr "Pfad zur Eingabedatei oder -verzeichnis"
 
-#: matuc/matuc_impl.py:346
+#: matuc/matuc_impl.py:339
 msgid ""
-"The working directory must be a chapter of a book or of another kind of "
-"material; the image name must be a path relative to the current working "
-"directory."
+"The working directory must be within a project; the image path must be "
+"relative to the current working directory."
 msgstr ""
+"Das Arbeitsverzeichnis muss innerhalb eines Projektes sein; der Bildpfad "
+"muss relativ zum Arbeitsverzeichnis sein."
 
-#: matuc/matuc_impl.py:351
+#: matuc/matuc_impl.py:344
 msgid "image description string (- for reading stdin)"
 msgstr "Zeichenkette für Bildbeschreibung (- für stdin)"
 
-#: matuc/matuc_impl.py:355
+#: matuc/matuc_impl.py:348
 msgid "outsource image descriptions regardless of their length"
 msgstr "lagere Bildbeschreibungen immer aus, unabhängig von ihrer Länge"
 
-#: matuc/matuc_impl.py:359
+#: matuc/matuc_impl.py:352
 msgid "set title for outsourced images (mandatory if outsourced)"
 msgstr "setze Title für ausgelagerte Bilder (zwingend wenn ausgelagert)"
 
-#: matuc/matuc_impl.py:364
+#: matuc/matuc_impl.py:357
 msgid "no path specified"
 msgstr "kein Pfad angegeben"
 
-#: matuc/matuc_impl.py:383
+#: matuc/matuc_impl.py:376
 msgid ""
 "Usage: {} iswithinlecture <path>\n"
 "\n"
 "Test whether the given file or directory is part of a lecture.\n"
 msgstr ""
-"Gebrauch: {} iswithinlecture <Pfad>\n"
+"Aufruf: {} iswithinlecture <Pfad>\n"
 "\n"
-"Testen Sie, ob die angegebene Datei oder das Verzeichnis Teil einer "
-"Vorlesung ist.\n"
+"Prüft, ob die angegebene Datei oder das Verzeichnis Teil einer Vorlesung "
+"ist.\n"
 
-#: matuc/matuc_impl.py:386
+#: matuc/matuc_impl.py:379
 msgid "path required"
 msgstr "Pfad erforderlich"
 
-#: matuc/matuc_impl.py:390
+#: matuc/matuc_impl.py:383
 msgid "only one path at a time allowed."
 msgstr "Nur ein Pfad ist gleichzeitig erlaubt."
 
-#: matuc/matuc_impl.py:402
+#: matuc/matuc_impl.py:395
 msgid "Initialize a new lecture material or book directory."
-msgstr "Neue Lehrmaterialien oder Buch anlegen."
+msgstr "Neues Lehrmaterial oder Buch anlegen."
 
-#: matuc/matuc_impl.py:406
+#: matuc/matuc_impl.py:399
 msgid "number of appendix chapters (default 0)"
 msgstr "Anzahl der Kapitel im Anhang (Standardwert 0)"
 
-#: matuc/matuc_impl.py:409
+#: matuc/matuc_impl.py:402
 msgid "number of chapters (default 2)"
 msgstr "Anzahl der Kapitel (Standardwert 2)"
 
-#: matuc/matuc_impl.py:412
-msgid "sets whether a preface exists (default None)"
-msgstr "legt fest, ob ein Vorwort existiert (Standardwert Kein)"
+#: matuc/matuc_impl.py:405
+msgid "add a preface (default no)\")"
+msgstr "füge ein Vorwort hinzu (Standardwert kein)"
 
-#: matuc/matuc_impl.py:415
+#: matuc/matuc_impl.py:408
 msgid "if set, blattxx will be used instead of kxx"
-msgstr ""
+msgstr "falls angegeben wird blattxx anstatt kxx verwendet"
 
-#: matuc/matuc_impl.py:417
+#: matuc/matuc_impl.py:410
 msgid "set language (default de)"
-msgstr "Sprache einstellen (Standard de)"
+msgstr "setze Sprache (Standardwert de)"
 
-#: matuc/matuc_impl.py:419
-msgid "new directory to create lecture in"
-msgstr "neu"
+#: matuc/matuc_impl.py:412
+msgid "new directory to create project in"
+msgstr "neues Verzeichnis, indem ein Projekt angelegt wird"
 
-#: matuc/matuc_impl.py:428
+#: matuc/matuc_impl.py:421
 msgid "The number of chapters and appendix chapters must be integers."
-msgstr ""
-"Die Anzahl der Kapitel und Anhangskapitel müssen ganze Zahlen sein sein."
+msgstr "Die Anzahl der Kapitel und Anhangskapitel müssen ganze Zahlen sein."
 
-#: matuc/matuc_impl.py:441
+#: matuc/matuc_impl.py:434
 msgid ""
 "\n"
 "        Run \"mistkerl\", a quality assurance helper. It checks for common "
-"errors and\n"
+"errors\n"
+"        in accessible markdown documents and\n"
 "        outputs them on the command line."
 msgstr ""
 "\n"
-"        Führen Sie \"mistkerl\", einen Qualitätssicherungshelfer aus. Er "
-"prüft auf häufige Fehler und\n"
-"        gibt diese auf der Kommandozeile aus."
+"Führe Mistkerl aus, ein Werkzeug zur Qualitätssicherung. Es prüft "
+"barrierefreie Markdown-Dokumente auf häufige Fehler und gibt diese auf der "
+"Kommandozeile aus."
 
-#: matuc/matuc_impl.py:446
+#: matuc/matuc_impl.py:440
 msgid "Sort critical errors first"
 msgstr "Sortiere kritische Fehler zuerst"
 
-#: matuc/matuc_impl.py:448
+#: matuc/matuc_impl.py:442
 msgid "use less blank lines in output"
 msgstr "unterdrücke Leerzeilen in der Ausgabe"
 
-#: matuc/matuc_impl.py:450
+#: matuc/matuc_impl.py:444
 msgid ""
-"open a console-only life view, refreshing the list of errors every few "
+"open a console-only live view, refreshing the list of errors every few "
 "seconds"
 msgstr ""
+"öffne eine reine Kommandozeilenansicht, welche im Abstand mehrerer Sekunden "
+"die Fehlerliste aktualisiert."
 
-#: matuc/matuc_impl.py:453
+#: matuc/matuc_impl.py:447
 msgid "specify file or directory to be checked"
 msgstr "Zu prüfende Datei oder Verzeichnis angeben"
 
-#: matuc/matuc_impl.py:457
+#: matuc/matuc_impl.py:451
 msgid "input file name required."
-msgstr ""
+msgstr "Eingabedateiname erforderlich."
 
-#: matuc/matuc_impl.py:460
+#: matuc/matuc_impl.py:454
 msgid "Error: %s does not exist."
 msgstr "Fehler: %s existiert nicht."
 
-#: matuc/matuc_impl.py:468
+#: matuc/matuc_impl.py:462
 msgid "No errors found. Hopefully there are none :-)."
 msgstr "Keine Fehler gefunden. Hoffentlich gibt es keine :-)."
 
-#: matuc/matuc_impl.py:511
+#: matuc/matuc_impl.py:505
 msgid ""
 "Generate a page number for a given context. A context consists of a line and "
 "a file. The enumeration will happen automatically (including distinction "
@@ -714,55 +699,52 @@ msgid ""
 "embedding Matuc's logic."
 msgstr ""
 
-#: matuc/matuc_impl.py:520 matuc/matuc_impl.py:576
+#: matuc/matuc_impl.py:514 matuc/matuc_impl.py:570
 msgid "read from specified path instead of reading from standard input"
 msgstr ""
 
-#: matuc/matuc_impl.py:523
+#: matuc/matuc_impl.py:517
 msgid ""
 "read from specified path instead of reading from standard input and write "
 "result back to file; this could lead to race conditions on concurrent "
 "modifications"
 msgstr ""
 
-#: matuc/matuc_impl.py:528
+#: matuc/matuc_impl.py:522
 msgid ""
 "Path to load configuration from. This can be either a file or a directory. "
 "If -f is given, the path is used as input file (by default, input is read "
 "from stdin)"
 msgstr ""
 
-#: matuc/matuc_impl.py:532
+#: matuc/matuc_impl.py:526
 msgid "Line number for which to generate the page number"
-msgstr "Zeilennummer, wo die generiere Zeilennummer eingefügt werden soll"
+msgstr "Zeilennummer für welche eine Seitenzahl generiert werden soll"
 
-#: matuc/matuc_impl.py:537 matuc/matuc_impl.py:590
+#: matuc/matuc_impl.py:531 matuc/matuc_impl.py:584
 msgid "Given path has to exist."
 msgstr "Der angegebene Pfad existiert nicht."
 
-#: matuc/matuc_impl.py:542
+#: matuc/matuc_impl.py:536
 msgid "Argument 2 is not a number."
 msgstr "Parameter 2 ist keine Zahl."
 
-#: matuc/matuc_impl.py:548
+#: matuc/matuc_impl.py:542
 msgid ""
 "Given path is not a file, but reading from it with -f has been requested."
 msgstr ""
 
-#: matuc/matuc_impl.py:572
+#: matuc/matuc_impl.py:566
 msgid ""
 "Check the page numbers of a document and warn / fix the page numbering, if "
 "the numbers do not strictly increase by one.\n"
 "This command reads from stdin by default, see -f."
 msgstr ""
 
-#: matuc/matuc_impl.py:579
+#: matuc/matuc_impl.py:573
 msgid "if -f is given, replace the page numbering in the file in-place"
 msgstr ""
 
-#: matuc/matuc_impl.py:585
+#: matuc/matuc_impl.py:579
 msgid "In-place modifications requested, but no file given."
 msgstr ""
-
-#~ msgid "glossary"
-#~ msgstr "Glossar"
