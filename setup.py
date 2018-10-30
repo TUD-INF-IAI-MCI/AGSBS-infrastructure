@@ -84,7 +84,8 @@ class I18nGeneration(Command):
     def run(self):
         files = (shlex.quote(os.path.join(dname, file))
                 for dname, _d, files in os.walk('.') for file in files
-                if file.endswith('.py') and not 'build' in dname)
+                if file.endswith('.py') and not 'build' in dname and
+                        not 'setup' in dname)
         create_pot = not os.path.exists('matuc.pot')
         if not create_pot:
             # query last modification time of py source files
@@ -105,6 +106,8 @@ class I18nInstall(install):
     def run(self):
         install.run(self)
         for pofile in os.listdir('po'):
+            if not pofile.endswith('.po'):
+                continue
             lang = os.path.splitext(pofile)[0]
             destdir = os.path.join(locale_destdir(), lang, 'LC_MESSAGES')
             if not os.path.exists(destdir):
