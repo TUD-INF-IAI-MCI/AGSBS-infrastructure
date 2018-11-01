@@ -326,10 +326,6 @@ sub-directory configurations or initialization of a new project.""")
                 m.run()
             else:
                 p = MAGSBS.pandoc.converter.Pandoc()
-                if args.profile:
-                    p.set_conversion_profile(
-                        MAGSBS.pandoc.formats.ConversionProfile.from_string(
-                                args.profile))
                 # do not handle format argument as only html is supported for
                 # convcerting a single file.
                 p.convert_files((args.path,))
