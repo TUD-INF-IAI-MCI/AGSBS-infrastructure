@@ -18,7 +18,9 @@ Name "${APPNAME}"
 # plain text files must have \r\n line delimiters
 LicenseData "binary\COPYING.txt"
 Outfile "matuc-installer.exe"
-InstallDir "$PROGRAMFILES\agsbs\matuc"
+Var /GLOBAL $INST_DIR_SUFFIX
+StrCpy $INST_DIR_SUFFIX "agsbs\matuc"
+InstallDir "$PROGRAMFILES\$INST_DIR_SUFFIX"
 
 # installation flow
 
@@ -59,15 +61,18 @@ done:
 
 FunctionEnd
 
-
 section ""
-
   # set values
   SetOutPath $INSTDIR
 
   # select the files to install
   File /r "binary\*.*"
+  # copy gettext MO object to Program Data
+  SetOutPath "%ProgramData%\$INST_DIR_SUFFIX\locales"
+  File /r "..\build\mo" # needs to be created beforehand
+  SetOutPath "$INSTDIR"
 
+  # adjust %PATH% variable (copy/paste code)
   ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR"
 
   # Start Menu
