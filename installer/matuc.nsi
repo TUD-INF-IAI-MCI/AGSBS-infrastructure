@@ -12,14 +12,18 @@
 !define INSTALLSIZE 58985741
 # installer/uninstaller's title bar
 Name "${APPNAME}"
-  
+
 !include "EnvVarUpdate.nsh"
 
 # plain text files must have \r\n line delimiters
 LicenseData "binary\COPYING.txt"
 Outfile "matuc-installer.exe"
-Var /GLOBAL $INST_DIR_SUFFIX
-StrCpy $INST_DIR_SUFFIX "agsbs\matuc"
+Var /GLOBAL INST_DIR_SUFFIX
+
+section ""
+  StrCpy $INST_DIR_SUFFIX "agsbs\matuc"
+SectionEnd
+
 InstallDir "$PROGRAMFILES\$INST_DIR_SUFFIX"
 
 # installation flow
@@ -79,7 +83,7 @@ section ""
   createDirectory "$SMPROGRAMS\${APPNAME}"
   createShortCut "$SMPROGRAMS\${APPNAME}\${APPNAME}-Deinstallation.lnk" "$INSTDIR\uninstall.exe" "" ""
   createShortCut "$SMPROGRAMS\${APPNAME}\Hilfe.lnk" "http://elvis.inf.tu-dresden.de/wiki/index.php/Matuc" "" ""
- 
+
   # Registry information for add/remove programs
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME} converter - ${DESCRIPTION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
