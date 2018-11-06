@@ -100,7 +100,8 @@ class SetUp:
             print("Python version >= 3.2 required.")
 
         # test for py2exe
-        self.check_for_module('py2exe')
+        self.check_for_command('pyinstaller', 'pyinstaller', 'Please run'\
+                                'pip install pyinstaller')
         self.check_for_module('pandocfilters')
         # check for nsis generator
         self.check_for_command('makensis', 'nsis',
