@@ -4,6 +4,7 @@
 !define VERSIONMAJOR 0
 !define VERSIONMINOR 5
 !define VERSIONBUILD 0
+!define INST_DIR_SUFFIX agsbs\matuc
 
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # email link which would open the email address in the email program
@@ -18,13 +19,8 @@ Name "${APPNAME}"
 # plain text files must have \r\n line delimiters
 LicenseData "binary\COPYING.txt"
 Outfile "matuc-installer.exe"
-Var /GLOBAL INST_DIR_SUFFIX
 
-section ""
-  StrCpy $INST_DIR_SUFFIX "agsbs\matuc"
-SectionEnd
-
-InstallDir "$PROGRAMFILES\$INST_DIR_SUFFIX"
+InstallDir "$PROGRAMFILES\${INST_DIR_SUFFIX}"
 
 # installation flow
 
@@ -67,14 +63,13 @@ FunctionEnd
 
 section ""
   # set values
-  SetOutPath $INSTDIR
-
+  SetOutPath $INSTDIR  
   # select the files to install
   File /r "binary\*.*"
   # copy gettext MO object to Program Data
-  SetOutPath "%ProgramData%\$INST_DIR_SUFFIX\locales"
-  File /r "..\build\mo" # needs to be created beforehand
-  SetOutPath "$INSTDIR"
+  SetOutPath "$%ALLUSERSPROFILE%\${INST_DIR_SUFFIX}\locales"
+  File /r "..\..\build\mo" # needs to be created beforehand
+  SetOutPath $INSTDIR
 
   # adjust %PATH% variable (copy/paste code)
   ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR"
