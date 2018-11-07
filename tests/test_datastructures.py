@@ -3,7 +3,10 @@ import unittest, sys
 sys.path.insert(0, '.') # just in case
 import MAGSBS.datastructures as datastructures
 import MAGSBS.errors as errors
+from  MAGSBS.common import setup_i18n
 import os
+
+setup_i18n()
 
 class test_gen_id(unittest.TestCase):
     def test_that_spaces_are_replaced_by_hyphens(self):
