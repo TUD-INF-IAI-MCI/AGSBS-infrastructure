@@ -162,10 +162,15 @@ class EpubConverter(OutputGenerator):
             for entry in file_info[key]:
                 with open(entry['path'], 'r', encoding='utf-8') as file:
                     json_ast = contentfilter.load_pandoc_ast(file.read())
-                    contentfilter.convert_formulas(
-                        os.path.join(os.path.dirname(entry['path']), 'bilder'),
-                        json_ast
-                    )
+                    try:
+                        # this alters the Pandoc document AST -- no return required
+                        contentfilter.convert_formulas(
+                            path,
+                            os.path.join(os.path.dirname(entry['path']), 'bilder'),
+                            json_ast
+                        )
+                    except errors.MathError as err:
+                        EpubConverter.__handle_error(path, err)
                     self.__apply_filters(json_ast,
                                          self.CHAPTER_CONTENT_FILTERS,
                                          path,
