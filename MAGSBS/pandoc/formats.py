@@ -324,8 +324,10 @@ class HtmlConverter(OutputGenerator):
             '-f', 'json', '+RTS', '-K25000000', '-RTS', # increase stack size
             '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
 
-    def __apply_filters(self, json_ast, path):
-        """add MarkDown extensions with Pandoc filters"""
+    def __apply_filters(self, json_ast, file_path):
+        """Process MAGSBS-specific markdown extensions using Pandoc filters.
+        `file_path` is relative to the current directory and points to the file being
+        converted."""
         try:
             filter_ = None
             fmt = self.PANDOC_FORMAT_NAME
@@ -334,12 +336,12 @@ class HtmlConverter(OutputGenerator):
         except KeyError as e: # API clash(?)
             raise errors.StructuralError(("Incompatible Pandoc API found, while "
                 "applying filter %s (ABI clash?).\nKeyError: %s") % \
-                        (filter.__name__, str(e)), path)
+                        (filter.__name__, str(e)), file_path)
         # use GleeTeX if configured
         if self.get_profile() is ConversionProfile.Blind:
             try:
                 # this alters the Pandoc document AST -- no return required
-                contentfilter.convert_formulas('bilder', json_ast)
+                contentfilter.convert_formulas(file_path, 'bilder', json_ast)
             except MathError as err:
                 HtmlConverter.__handle_error(path, err)
 
