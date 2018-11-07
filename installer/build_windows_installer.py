@@ -221,7 +221,6 @@ def build_installer():
     # move a few files like e.g. README to distribution; MAGSBS and matuc_impl are
     # required, since py2exe doesn't include them properly
     target = lambda x: os.path.join(BUILD_DIRECTORY, x)
-    shutil.copytree(os.path.join('..', 'matuc_impl'), target('matuc_impl'))
     shutil.copytree(os.path.join('..', 'MAGSBS'), target('MAGSBS'))
     shutil.copyfile(os.path.join('..', 'COPYING'), target('COPYING.txt'))
     shutil.copyfile(os.path.join('..', 'README.md'), target('README.md'))
