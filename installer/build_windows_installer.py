@@ -99,7 +99,7 @@ class SetUp:
         else:
             print("Python version >= 3.2 required.")
 
-        # test for py2exe
+        # test for pyinstaller
         self.check_for_command('pyinstaller', 'pyinstaller', 'Please run'\
                                 'pip install pyinstaller')
         self.check_for_module('pandocfilters')
@@ -201,11 +201,11 @@ def compile_scripts(python_command):
     `python_command` (either 'python' or 'wine python')."""
     origin = os.getcwd()
     os.chdir('..') # change to matuc script source directory
-    ret = os.system('%s -m py2exe -b 3 matuc.py' % python_command )
+    ret = os.system('pyinstaller --onefile matuc%smatuc.py' % os.sep)
     if ret: # error
         print("Stop installer creation.")
         sys.exit(8)
-    ret = os.system('%s -m py2exe -b 3 -i matuc_impl matuc_js.py' % python_command )
+    ret = os.system('pyinstaller --onefile matuc%smatuc_js.py ' % os.sep)
     if ret:
         print("Stopping compilation.")
         sys.exit(9)
