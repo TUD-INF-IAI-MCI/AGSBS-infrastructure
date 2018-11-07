@@ -179,7 +179,7 @@ def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
     """Updates all image references (referenced relative to the lecture root) so
     that pandoc can find and add them correctly for epub.
     E.g:
-    before: ilder/image.png
+    before: bilder/image.png
     after: k02/bilder/image.png"""
     if fmt != 'epub':
         return
@@ -290,7 +290,7 @@ def epub_collect_ids(key, value, fmt, meta):
         meta['ids'][content.attributes['id'].value] = meta['chapter']
 
 
-def epub_unnumbered_appendix_toc(key, value, fmt, meta, modify_ast=True):
+def epub_unnumbered_toc(key, value, fmt, meta, modify_ast=True):
     """marks all headlines of appendix to be unnumbered in toc."""
     if fmt != 'epub' or not value:
         return

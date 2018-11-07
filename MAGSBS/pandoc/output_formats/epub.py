@@ -69,7 +69,17 @@ class EpubConverter(OutputGenerator):
                              contentfilter.epub_remove_images_from_toc]
     CHAPTER_CONTENT_FILTERS = [contentfilter.epub_convert_header_ids,
                                contentfilter.epub_update_image_location]
-    BACKMATTER_CONTENT_FILTERS = [contentfilter.epub_unnumbered_appendix_toc]
+    BACKMATTER_CONTENT_FILTERS = [contentfilter.epub_unnumbered_toc]
+    SPECIAL_MD_CONTENT_FILTERS = [contentfilter.epub_unnumbered_toc]
+    LECTURE_ORDER = ['titel',
+                     'info',
+                     'copyright',
+                     'frontmatter',
+                     'chapters',
+                     'backmatter',
+                     'images',
+                     'taktil']
+    SPECIAL_MD_FILES = ['titel', 'info', 'copyright', 'taktil']
 
     def __init__(self, meta, language):
         if not shutil.which('pandoc'):
@@ -123,27 +133,32 @@ class EpubConverter(OutputGenerator):
     @staticmethod
     def __generate_file_structure(files):
         """generates a structure which makes it possible to convert everything
-        in order"""
-        file_info = {'chapters': [], 'backmatter': [], 'frontmatter': [], 'images': []}
+        in order.
+        The correct order is given by LECTURE_ORDER."""
+        # generate dict to handle files in correct order later
+        file_info = {}
+        for key in EpubConverter.LECTURE_ORDER:
+            file_info[key] = []
         for file_name in files:
             name = os.path.splitext(os.path.basename(file_name))[0]
             chapter = os.path.basename(os.path.dirname(file_name))
             if name == 'bilder':
                 file_info['images'].append({'chapter': chapter, 'path': file_name})
-            elif name == 'inhalt' or name == 'index':
-                continue  # ignore toc!
             elif name[:3] == 'anh':
                 file_info['backmatter'].append({'chapter': chapter, 'path': file_name})
-            elif name[:1] == 'v':
+            elif name.startswith('v'):
                 file_info['frontmatter'].append({'chapter': chapter, 'path': file_name})
-            else:
+            elif name.startswith('k'):
                 file_info['chapters'].append({'chapter': chapter, 'path': file_name})
+            elif name in file_info:
+                # if it's not in the dict the file is ignored (e.g. inhalt)
+                file_info[name].append({'chapter': chapter, 'path': file_name})
         return file_info
 
     def __generate_ast(self, file_info, path):
         """reads all files and generate one ast in correct order."""
         ast = {}
-        for key in ['frontmatter', 'chapters', 'backmatter', 'images']:
+        for key in self.LECTURE_ORDER:
             for entry in file_info[key]:
                 with open(entry['path'], 'r', encoding='utf-8') as file:
                     json_ast = contentfilter.load_pandoc_ast(file.read())
@@ -162,6 +177,10 @@ class EpubConverter(OutputGenerator):
                     elif key == 'backmatter':
                         self.__apply_filters(json_ast,
                                              self.BACKMATTER_CONTENT_FILTERS,
+                                             path)
+                    elif key in self.SPECIAL_MD_FILES:
+                        self.__apply_filters(json_ast,
+                                             self.SPECIAL_MD_CONTENT_FILTERS,
                                              path)
                     if ast:
                         ast['blocks'].extend(json_ast['blocks'])
