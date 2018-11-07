@@ -133,7 +133,7 @@ def convert_formulas(conversion_file, img_dir, ast):
     formulas = gleetex.pandoc.extract_formulas(ast)
     base_path = os.path.dirname(conversion_file)
     conv = gleetex.cachedconverter.CachedConverter(base_path, True,
-            encoding="UTF-8", img_dir='bilder')
+            encoding="UTF-8", img_dir=img_dir)
     conv.set_replace_nonascii(True)
     try:
         conv.convert_all(formulas)
