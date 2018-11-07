@@ -10,14 +10,15 @@ It provides:
 -   A few methods to parse arguments and to control all the functionality
     offered by the MAGSBS module.
 
-The actual output is formatted and printed using scripts called matuc and matuc_js. They share *all* of
-the functionality of this module and just define a text and a JSON interface."""
+The actual output is formatted and printed using scripts called matuc and
+matuc_js. They share *all* of the functionality of this module and just define a
+text and a JSON interface."""
+#pylint: disable=invalid-name
 from abc import ABCMeta, abstractmethod
 import argparse
 import collections
 import io
 import os
-import shutil
 import sys
 import textwrap
 
@@ -36,7 +37,10 @@ import MAGSBS.toc
 
 PROCNAME = os.path.basename(sys.argv[0])
 
-MAIN_USAGE = """%s <command> <options>
+#necessary for function '_'
+MAGSBS.common.setup_i18n()
+
+MAIN_USAGE = _("""%s <command> <options>
 
 <command> determines which action to take. The syntax might vary between
 commands. Use %s <command> -h for help.
@@ -45,22 +49,23 @@ Available commands are:
 
 addpnum         - generate new page number, relative to its predecessors
 conf            - set, init or update a configuration
-conv            - convert a lecture
+conv            - convert a project
 fixpnums        - fix incorrect page numbering of a document
 imgdsc          - generate image description (snippets)
-iswithinlecture - test, whether a certain path is part of a lecture
+iswithinlecture - test, whether a certain path is part of a project
 new             - create new project structure
 mk              - invoke "mistkerl", a quality assurance helper
 toc             - generate table of contents
 version         - output program version
-""" % (PROCNAME, PROCNAME)
+""" % (PROCNAME, PROCNAME))
 
 
 class OutputFormatter:
-    """The OutputFormatter provides abstract methods to format the output produced
-    by Matuc to either a TTY or into other formats, i.e. usable by a GUI or
-    another program. This way, matuc can emit its results to the formatter and
-    this will take care of writing it to stdout or i.e. to a JSON stream.
+    """The OutputFormatter provides abstract methods to format the output
+    produced by Matuc to either a TTY or into other formats, i.e. usable by a
+    GUI or another program. This way, matuc can emit its results to the
+    formatter and this will take care of writing it to stdout or i.e. to a JSON
+    stream.
     Valid inputs for the functions may be strings, lists/tuples and dicts. Each
     will be handled appropriately. If a dict is found with the key verbatim, the
     value of that field will be printed without modification. The rest of this
@@ -172,7 +177,8 @@ class main():
                 invokation_command = '%s %s' % (PROCNAME, sys.argv[1])
                 func = getattr(self, 'handle_%s' % args[1])
             except AttributeError:
-                self.output_formatter.emit_usage(MAIN_USAGE, "Invalid command: " + args[1])
+                self.output_formatter.emit_usage(MAIN_USAGE,
+                        _("Invalid command: %s" % args[1]))
                 sys.exit(127)
             ret = func(invokation_command, args[2:])
             if not ret:
@@ -181,12 +187,13 @@ class main():
 
     def handle_toc(self, cmd, args):
         "Table Of Contents"
-        parser = HelpfulParser(cmd, self.output_formatter, description="Generate table of contents.")
+        parser = HelpfulParser(cmd, self.output_formatter,
+                description=_("Generate table of contents."))
         parser.add_argument("-o", "--output", dest="output",
-                  help="write output to file instead of stdout",
+                  help=_("write output to file instead of stdout"),
                   metavar="FILENAME", default='stdout')
         parser.add_argument('directory',
-                help='Input directory where search for headings is performed.')
+                help=_('material directory (containing chapters)'))
         options = parser.parse_args(args)
 
         file = None
@@ -196,14 +203,15 @@ class main():
             file = open(options.output, 'w', encoding='utf-8')
         directory = options.directory
         if not os.path.exists(directory):
-            self.output_formatter.emit_error("Directory %s does not exist" % directory)
+            self.output_formatter.emit_error(("Directory %s does not exist") \
+                    % directory)
             sys.exit(126)
 
         with ErrorHandler(self.output_formatter):
-            c = MAGSBS.toc.HeadingIndexer(directory)
-            c.walk()
-            if not c.is_empty():
-                fmt = MAGSBS.toc.TocFormatter(c.get_index(), directory)
+            idxer = MAGSBS.toc.HeadingIndexer(directory)
+            idxer.walk()
+            if not idxer.is_empty():
+                fmt = MAGSBS.toc.TocFormatter(idxer.get_index(), directory)
                 file.write(fmt.format())
                 if isinstance(file, io.StringIO):
                     file.seek(0)
@@ -213,51 +221,55 @@ class main():
 
     def handle_conf(self, cmd, args):
         """Create or update configuration."""
-        description="""Allowed subcommands are `show`, `update` and `init`. `show` shows the current
-configuration settings, default values if none present.
-`update` and `show` try to find the correct configuration: if none exists
-in the current directory and you are in a subdirectory of a project, they try to
-determine the project root and read the configuration for there if present
-(else the default values are used).
+        description = _("""Allowed subcommands are `show`, `update` and `init`.
+`show` shows the current configuration settings, default values if none present.
+`update` and `show` try to find the correct configuration: if none exists in the
+current directory and you are in a subdirectory of a project, the project root
+will be queried for a configuration. If no file was found, the default settings
+are displayed.
+
 `init` on the other hand behaves basically like update (it sets configuration
 values), but it does that for the current directory. This is handy for
-sub-directory configurations or initialization of a new project."""
+sub-directory configurations or initialization of a new project.""")
         parser = HelpfulParser(cmd, self.output_formatter, description)
         parser.add_argument("-a", dest="AppendixPrefix",
-                  help='use "A" as prefix to appendix chapter numbering and omit the additional header "appendix" (or its localized version)',
+                  help=_('insert "A" as prefix for each chapter number in the '
+                          'appendix and omit the header "appendix"'),
                   action="store_true", default=False)
         parser.add_argument("-A", dest="SourceAuthor",
-                  help="set author of source document", default=None)
+                  help=_('set author of source document'))
         parser.add_argument("-e", dest="Editor",
-                  help="set editor",
+                  help=_('set project editor'),
                   metavar="NAME", default=None)
         parser.add_argument("-i", dest="Institution",
-                  help="set institution (default TU Dresden)",
+                  help=_('set institution (default TU Dresden)'),
                   metavar="NAME", default=None)
         parser.add_argument("-l", dest="LectureTitle",
-                  help="set lecture title (else try to use h1 heading, if present)",
+                  help=_('set title of project (first heading level 1 by '
+                      'default)'),
                   metavar="TITLE", default=None)
         parser.add_argument("-L", dest='Language',
-                  help="set language (default de)", metavar="LANG",
+                  help=_('set document language (de by default)'),
                   default='de')
         parser.add_argument("-p", "--pnum-gap", dest="PageNumberingGap",
-                  help="gap in numbering between page links.",
+                  help=_('specify gap between page numbering links in '
+                      'navigation bar (default: 5)'),
                   metavar="NUM", default=None)
         parser.add_argument("-s", dest="Source",
-                  help="set source document information",
+                  help=_('set information about source document'),
                   metavar="SRC", default=None)
         parser.add_argument("-S", dest="SemesterOfEdit",
-                  help="set semester of edit (will be guessed else)",
+                  help=_('set semester of edit (will be guessed otherwise)'),
                   metavar="SEMYEAR", default=None)
         parser.add_argument("--toc-depth", dest="TocDepth",
-                  help="to which depth headings should be included in the table of contents",
+                  help=_('limit the heading depth for the table of contents'),
                   metavar="NUM", default=None)
         parser.add_argument("-w", dest="WorkingGroup",
-                  help="set working group",
+                  help=_('set working group'),
                   metavar="GROUP", default=None)
 
-        if len(args) == 0 or args[0] not in ['show', 'update', 'init']:
-            parser.error("Error: no subcommand specified.")
+        if not args or args[0] not in ['show', 'update', 'init']:
+            parser.error(_('Error: no subcommand specified.'))
             sys.exit(88)
         subcmd = args[0]
 
@@ -274,13 +286,13 @@ sub-directory configurations or initialization of a new project."""
                 pass
 
         if subcmd == 'show':
-            self.output_formatter.emit_result({"Current settings":
+            self.output_formatter.emit_result({_("Current settings"):
                     {key.name: value for key, value in inst.items()}})
-        elif subcmd == 'update' or subcmd == 'init':
+        elif subcmd in ('update', 'init'):
             for opt, value in options.__dict__.items():
                 if value is not None:
                     inst[MAGSBS.config.MetaInfo[opt]] = value
-            self.output_formatter.emit_result({"New settings":
+            self.output_formatter.emit_result({_("New settings"):
                     {key.name: value for key, value in inst.items()}})
             inst.write()
         else:
@@ -289,68 +301,56 @@ sub-directory configurations or initialization of a new project."""
 
     def handle_conv(self, cmd, args):
         """Convert files."""
-        usage = ("Converts a file or directory containing a lecture.\n\n"
-                 "file:\n"
-                 "Convert a file from MarkDown to HTML.\n"
-                 "Other formats are not supported.\n\n"
-                 "directory:\n"
-                 "Perform all actions to automate lecture conversion\n"
-                 "-    generate a table of contents\n"
-                 "-    convert custom MarkDown extensions\n"
-                 "-    apply custom layout definition\n"
-                 "-    and do that for all MarkDown files within the specified "
-                 "directory")
+        usage = _("Converts a file or directory containing a project.\n\n"
+                 "If a directory is supplied, additional steps such as "
+                 "generating a table of contents are performed as well.")
         parser = HelpfulParser(cmd, self.output_formatter, usage)
         parser.add_argument("-f", dest="format",
-                            help="Select output format (html or epub)",
+                            help=_('select output format (html or epub, '
+                                'default html)'),
                             metavar="FMT", default=None)
-        parser.add_argument("-p", dest="profile",
-                            help=('profile for conversion; valid profiles are '
-                                  'blind or vid (default profile for visually '
-                                  'impaired), default is blind'))
-        parser.add_argument("path", help="path to input file or directory")
+        parser.add_argument("path", help=_("path to input file or directory"))
         args = parser.parse_args(args)
         if not os.path.exists(args.path):
-            self.output_formatter.emit_error('file or directory not found: ' + args.path)
+            self.output_formatter.emit_error(_('file or directory not found: %s'
+                        % args.path))
             sys.exit(127)
         with ErrorHandler(self.output_formatter):
             if os.path.isdir(args.path):
                 from MAGSBS.pandoc.formats import ConversionProfile, OutputFormat
                 m = MAGSBS.master.Master(
                     args.path,
-                    (ConversionProfile.Blind if not args.profile
-                     else ConversionProfile.from_string(args.profile)),
+                    ConversionProfile.Blind,
                     (OutputFormat.Html if not args.format
                      else OutputFormat.from_string(args.format)))
                 m.run()
             else:
                 p = MAGSBS.pandoc.converter.Pandoc(root_path=os.getcwd())
-                if args.profile:
-                    p.set_conversion_profile(
-                        MAGSBS.pandoc.formats.ConversionProfile.from_string(args.profile))
                 # do not handle format argument as only html is supported for
                 # convcerting a single file.
                 p.convert_files((args.path,))
 
 
     def handle_imgdsc(self, cmd, args):
-        description = ("The working directory must be a chapter of a book or of "
-                      "another kind of material; the image name must be a path "
-                      "relative to the current working directory.")
+        description = _("The working directory must be within a project; "
+                "the image path must be relative to the current "
+                "working directory.")
         parser = HelpfulParser(cmd, self.output_formatter, description)
         parser.add_argument("-d", "--description", dest="description",
-                help="image description string (or - for stdin)",
+                help=_('image description string (- for reading stdin)'),
                 metavar="DESC", default='no description')
         parser.add_argument("-o", "--outsource-descriptions", dest="outsource",
                 action="store_true", default=False,
-                help="if set, images will be outsourced, no matter how long they are.")
+                help=_('outsource image descriptions regardless of their '
+                    'length'))
         parser.add_argument("-t", "--title", dest="title",
                 default=None,
-                help="set title for outsourced images (mandatory if outsourced)")
+                help=_('set title for outsourced images (mandatory if '
+                    'outsourced)'))
         parser.add_argument('path', nargs="?", help="path to image file")
         options = parser.parse_args(args)
         if not options.path:
-            parser.error("no path specified!")
+            parser.error(_("no path specified"))
             exit(1)
         if options.description == "-":
             desc = sys.stdin.read()
@@ -369,42 +369,43 @@ sub-directory configurations or initialization of a new project."""
 
     def handle_iswithinlecture(self, cmd_name, args):
         """Tell the user whether a given path is part of a lecture or not."""
-        usage = ("Usage: {} iswithinlecture <path>\n\nTest whether the given "
+        usage = _("Usage: {} iswithinlecture <path>\n\nTest whether the given "
         "file or directory is part of a lecture.\n").format(cmd_name)
-        if len(args) == 0:
-            self.output_formatter.emit_usage(usage, "path required.")
+        if not args:
+            self.output_formatter.emit_usage(usage, _("path required"))
             sys.exit(127)
         elif len(args) > 1:
-            self.output_formatter.emit_usage(usage, "only one path at a time allowed.")
+            self.output_formatter.emit_usage(usage,
+                    _("only one path at a time allowed."))
             sys.exit(127)
         else:
             if args[0] == '-h' or args[0] == '--help':
                 self.output_formatter.emit_usage(usage)
                 sys.exit(0)
             else:
-                self.output_formatter.emit_result({ 'is within a lecture':
-                    MAGSBS.common.is_within_lecture(args[0]) })
+                self.output_formatter.emit_result({'is within a lecture':
+                    MAGSBS.common.is_within_lecture(args[0])})
 
 
     def handle_new(self, cmd, args):
-        description = "Initialize a new lecture material or book directory (tree)."
+        description = _('Initialize a new lecture material or book directory.')
         parser = HelpfulParser(cmd, self.output_formatter, description)
         parser.add_argument("-a", dest="appendix_count", default="0", type=int,
                 metavar="COUNT",
-                help="number of appendix chapters (default 0)")
+                help=_('number of appendix chapters (default 0)'))
         parser.add_argument("-c", dest="chapter_count", default="2", type=int,
                 metavar="COUNT",
-                help="number of chapters (default 2)")
+                help=_('number of chapters (default 2)'))
         parser.add_argument("-p", dest="preface", default=False,
                 action="store_true",
-                help="sets whether a preface exists (default None)")
+                help=_('add a preface (default no)")'))
         parser.add_argument("-n", dest="nochapter", default=False,
                 action="store_true",
-                help='if set, blattxx will be used instead of kxx')
+                help=_('if set, blattxx will be used instead of kxx'))
         parser.add_argument("-l", dest="lang", default="de",
-                help="sets language (default de)")
+                help=_('set language (default de)'))
         parser.add_argument('directory', nargs="?",
-                help="new directory to create lecture in")
+                help=_('new directory to create project in'))
         options = parser.parse_args(args)
         if not options.directory:
             parser.print_help()
@@ -413,10 +414,11 @@ sub-directory configurations or initialization of a new project."""
             a = int(options.appendix_count)
             c = int(options.chapter_count)
         except ValueError:
-            self.output_formatter.emit_error("The number of chapters and "
-                    "appendix chapters must be integers.")
+            self.output_formatter.emit_error(_("The number of chapters and "
+                    "appendix chapters must be integers."))
             sys.exit(125)
-        builder = MAGSBS.filesystem.InitLecture(options.directory, c, options.lang)
+        builder = MAGSBS.filesystem.InitLecture(options.directory, c,
+                options.lang)
         builder.set_amount_appendix_chapters(a)
         if options.preface:
             builder.set_has_preface(True)
@@ -425,25 +427,27 @@ sub-directory configurations or initialization of a new project."""
         builder.generate_structure()
 
     def handle_mk(self, cmd, args):
-        description = textwrap.dedent("""
-        Run "mistkerl", a quality assurance helper. It checks for common errors and
-        outputs them on the command line.""")
+        description = textwrap.dedent(_("""
+        Run "mistkerl", a quality assurance helper. It checks for common errors
+        in accessible markdown documents and
+        outputs them on the command line."""))
         parser = HelpfulParser(cmd, self.output_formatter, description)
         parser.add_argument("-c", dest="critical_first", action="store_true",
-                help="Sort critical errors first")
+                help=_("Sort critical errors first"))
         parser.add_argument("-s", dest="squeeze_output", action="store_true",
-                help="use less blank lines")
+                help=_("use less blank lines in output"))
         parser.add_argument("-l", dest="live_view", action="store_true",
-                help="open a console-only life view, refreshing the list of errors every few seconds")
+                help=_("open a console-only live view, refreshing the list of "
+                    "errors every few seconds"))
         parser.add_argument("input", nargs="?",
-                help="specify file or directory to be checked")
+                help=_("specify file or directory to be checked"))
         options = parser.parse_args(args)
 
         if not options.input:
-            self.output_formatter.emit_error("input file name required.")
-            sys.exit( 127 )
+            self.output_formatter.emit_error(_("input file name required."))
+            sys.exit(127)
         if not os.path.exists(options.input):
-            self.output_formatter.emit_error("Error: %s does not exist." \
+            self.output_formatter.emit_error(_("Error: %s does not exist.") \
                     % options.input)
             sys.exit(5)
 
@@ -451,34 +455,35 @@ sub-directory configurations or initialization of a new project."""
             mistkerl = MAGSBS.quality_assurance.Mistkerl()
             mistakes = mistkerl.run(options.input)
             if not mistakes:
-                return ("Nun denn, ich konnte keine Fehler entdecken. Hoffen "
-                        "wir, dass es auch wirklich keine gibt ;-).")
-            else:
-                transformed = collections.OrderedDict()
-                # sort mistakes by path
-                for m in sorted(mistakes, key=lambda x: x.path):
-                    # convert m.lineno, m.pos_on_line attribute into tuple; second arg is optional
-                    pos = tuple(filter(bool, (m.lineno, m.pos_on_line)))
-                    new = {pos: m.message}
-                    if not m.path in transformed: # add sublist, if none present yet
-                        transformed[m.path] = []
-                    transformed[m.path].append(new)
-                # sort errors by (lineno, pos_on_line); convert to readable string representation
-                for messages in transformed.values():
-                    messages.sort(key=lambda x: next(iter(x)))
-                    for index, message in enumerate(messages):
-                        key = next(iter(message))
-                        if not key:
-                            messages[index] = message[key]
-                        else:
-                            messages[index] = {', '.join(map(str, key)): message[key]}
-                return transformed
+                return _("No errors found. Hopefully there are none :-).")
+            transformed = collections.OrderedDict()
+            # sort mistakes by path
+            for mt in sorted(mistakes, key=lambda x: x.path):
+                # convert m.lineno, m.pos_on_line attribute into tuple;
+                # second arg is optional
+                pos = tuple(filter(bool, (mt.lineno, mt.pos_on_line)))
+                new = {pos: mt.message}
+                if not mt.path in transformed: # add sublist if not present
+                    transformed[mt.path] = []
+                transformed[mt.path].append(new)
+            # sort errors by (lineno, pos_on_line); convert to readable
+            # string representation
+            for messages in transformed.values():
+                messages.sort(key=lambda x: next(iter(x)))
+                for index, message in enumerate(messages):
+                    key = next(iter(message))
+                    if not key:
+                        messages[index] = message[key]
+                    else:
+                        messages[index] = {', '.join(
+                                map(str, key)): message[key]}
+            return transformed
 
         if options.live_view:
             import time
             try:
                 while True:
-                    mistakes = format_errors() # fetch them before clearing the screen
+                    mistakes = format_errors() # fetch before clearing screen
                     self.output_formatter.clear()
                     self.output_formatter.emit_result(mistakes)
                     time.sleep(5)
@@ -493,7 +498,7 @@ sub-directory configurations or initialization of a new project."""
         The new page number is generated using it's predecessors. It both
         respects the numbering from the predecessor, as also the format (roman
         or arabic)."""
-        parser = HelpfulParser(cmd, self.output_formatter, description=(
+        parser = HelpfulParser(cmd, self.output_formatter, description=_(
                 "Generate a page number for a given context. A context "
                 "consists of a line and a file. The enumeration will "
                 "happen automatically (including distinction between roman and "
@@ -502,41 +507,41 @@ sub-directory configurations or initialization of a new project."""
                 "page number by default, but print it to stdout. This is meant "
                 "to be used by applications embedding Matuc's logic."))
         parser.add_argument("-f", dest="read_from_file", action="store_true",
-                default=False, help="read from specified path instead of reading from standard input")
+                default=False, help=_("read from specified path instead of "
+                    "reading from standard input"))
         parser.add_argument("-F", dest="rw_from_file", action="store_true",
-                default=False, help=("read from specified path instead of "
+                default=False, help=_("read from specified path instead of "
                     "reading from standard input and write result back to file; "
                     "this could lead to race conditions on concurrent "
                     "modifications"))
         parser.add_argument('path', nargs=1,
-                help=("Path to load configuration from. This can be either a "
+                help=_("Path to load configuration from. This can be either a "
                 "file or a directory. If -f is given, the path is used as "
-                "input file (by default, input is read from stdin)."))
+                "input file (by default, input is read from stdin)"))
         parser.add_argument('line_number', nargs=1,
-                help="Line number for which to generate the page number")
+                help=_("Line number for which to generate the page number"))
 
         options = parser.parse_args(args)
-
         path = options.path[0]
         if not os.path.exists(path):
-            self.output_formatter.emit_error("Given path has to exist.")
-            sys.exit(29)
+            self.output_formatter.emit_error(_("Given path has to exist."))
+            return 29
         try:
             line_number = int(options.line_number[0])
         except ValueError:
-            self.output_formatter.emit_error("Argument 2 is not a number.")
+            self.output_formatter.emit_error(_("Argument 2 is not a number."))
             return 5
         # try to read from stdin or from file if -f or -F; write to stdout or to
         # file if -F given
         if options.read_from_file or options.rw_from_file:
             if not os.path.isfile(path):
-                self.output_formatter.emit_error("Given path is not a file, "
-                        "but reading from it with -f has been requested.")
-                sys.exit(99)
+                self.output_formatter.emit_error(_("Given path is not a file, "
+                        "but reading from it with -f has been requested."))
+                return 99
             text = pagenumbering.add_page_number(path, line_number).format()
 
             if options.read_from_file: # print to stdout
-                self.output_formatter.emit_result({ 'pagenumber': text })
+                self.output_formatter.emit_result({'pagenumber': text})
             else: # read and write into given path
                 with open(path, encoding='utf-8') as f:
                     lines = f.read().split('\n')
@@ -545,32 +550,34 @@ sub-directory configurations or initialization of a new project."""
                     f.write('\n'.join(lines))
         else:
             data = sys.stdin.read()
-            self.output_formatter.emit_result({ 'pagenumber':
+            self.output_formatter.emit_result({'pagenumber':
                 pagenumbering.add_page_number_from_str(data, line_number,
                     path=path).format()})
+        return 0
 
 
     def handle_fixpnums(self, cmd, args):
         """Please see usage info."""
-        parser = HelpfulParser(cmd, self.output_formatter, description=("Check the "
-            "page numbers of a document and warn / fix the page numbering, if "
-            "the numbers do not strictly increase by one.\n"
-            "This command reads from stdin by default, see -f."))
+        parser = HelpfulParser(cmd, self.output_formatter, description= \
+            _("Check the page numbers of a document and warn / fix the page "
+                "numbering, if the numbers do not strictly increase by one.\n"
+                "This command reads from stdin by default, see -f."))
         parser.add_argument("-f", dest="file", metavar="FILE",
-                default=None, help="read from specified path instead of reading from standard input")
+                default=None, help=_("read from specified path instead of "
+                    "reading from standard input"))
         parser.add_argument("-i", dest="in_place", action="store_true",
-            help="if -f is given, replace the page numbering in the "
-                "file in-place")
+            help=_("if -f is given, replace the page numbering in the "
+                "file in-place"))
 
         options = parser.parse_args(args)
 
         if options.in_place and not options.file:
-            self.output_formatter.emit_error(("In-place modifications "
+            self.output_formatter.emit_error(_("In-place modifications "
                     "requested, but no file given."))
             sys.exit(73)
 
         if options.file and not os.path.exists(options.file):
-            self.output_formatter.emit_error("Given path has to exist.")
+            self.output_formatter.emit_error(_("Given path has to exist."))
             sys.exit(74)
         pnums = None
         if options.file:
@@ -594,7 +601,7 @@ sub-directory configurations or initialization of a new project."""
                 lines = f.read().split('\n')
                 # destructure list of dicts into list of tuples
                 for lnum, string in (x for d in corrected for x in d.items()):
-                    lines[int(lnum) - 1] = string # inefficient, but easier for output formatter
+                    lines[int(lnum) - 1] = string # inefficient, but easier to
             with open(options.file, 'w', encoding='utf-8') as f:
                 f.write('\n'.join(lines))
         else:
@@ -604,7 +611,8 @@ sub-directory configurations or initialization of a new project."""
 
     #pylint: disable=unused-argument
     def handle_version(self, dont, care):
-        self.output_formatter.emit_result({'version': str(MAGSBS.config.VERSION)})
+        self.output_formatter.emit_result({'version':
+                str(MAGSBS.config.VERSION)})
 
 def insert_line(lines, line_number, line):
     """This function allows the insertion of a line into a list of lines. It

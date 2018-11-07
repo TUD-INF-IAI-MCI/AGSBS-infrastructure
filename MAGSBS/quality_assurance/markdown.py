@@ -368,7 +368,7 @@ class ToDosInImageDescriptionsAreBad(OnelinerMistake):
         match = self._todo_pattern.search(line)
         if match:
             return self.error(_("The image description is probably incomplete, "
-                    "since \"{marker}\" has been found.").format(
+                    "since \"{marker}\" has been found. ").format(
                         marker=match.groups()[0]), lnum=lnum)
 
 

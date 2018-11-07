@@ -368,12 +368,19 @@ def get_title(json_ast):
                 if node['c'][0] == 1: # level 1 heading
                     return pandocfilters.stringify(node['c'])
 
-def convert_formulas(base_path, ast):
+def convert_formulas(conversion_file, img_dir, ast):
     """This filter extracts all formulas from the given Pandoc AST, converts
-    them and replaces their original occurrences with RAW inline HTML."""
+    them and replaces their original occurrences with RAW inline HTML.
+    For the linking to work, the first argument needs to be the path to the file
+    being converted (relative to the current working directory) and the second a
+    path to the image directory name and will be in the same directory as the
+    file under conversion.
+    Example, cwd="some project root":
+    >>> convert_formulas('k01/k01.md', 'bilder', my_ast)"""
     formulas = gleetex.pandoc.extract_formulas(ast)
+    base_path = os.path.dirname(conversion_file)
     conv = gleetex.cachedconverter.CachedConverter(base_path, True,
-                                                   encoding="UTF-8")
+            encoding="UTF-8", img_dir=img_dir)
     conv.set_replace_nonascii(True)
     try:
         conv.convert_all(formulas)

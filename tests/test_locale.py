@@ -1,46 +1,47 @@
 #pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
 import os
 import unittest
+from unittest.mock import patch
 import tempfile
 import sys
+from MAGSBS.common import _get_localedir
 
-from MAGSBS.config import _get_localedir
 
-def touch(path):
-    """Create the path recursively. If the argument string does not end on a
-    slash, it is taken as file name and created as an empty file below the
-    prefix."""
-    if path.endswith('/'):
-        os.makedirs(path, exist_ok=True)
+def fake_mo(actual_path, desired=None):
+    if desired.lower() in actual_path.lower():
+        return [(os.path.join(desired, 'de', 'LC_MESSAGES'), [], ['matuc.mo'])]
     else:
-        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        with open(path, 'w') as f:
-            f.write("\n")
+        return [('./', (), ())]
 
+fake_usr_local = lambda x: fake_mo(x, desired="/usr/share/locale")
+fake_c_program_files = lambda x: fake_mo(x, desired='C:\\ProgramData')
+fake_none = lambda x: fake_mo(x, ".")
+
+def normalise_path(path):
+    """Enable comparison of UNIX and Windows paths."""
+    return path.replace('\\', '/').lower()
 class test_locale(unittest.TestCase):
-    def test_that_locale_is_available(self):
-        if sys.platform == "linux":
-            loc_dir = _get_localedir()
-            self.assertTrue(loc_dir == '/usr/share/locale' or
-                loc_dir == os.path.join(os.path.dirname(
-                os.path.abspath(sys.argv[0])), 'share', 'locale')
-                or os.path.join(os.path.dirname(os.path.dirname(os.environ['_'])),
-                'share', 'locale'))
-        elif sys.platform == "win32":
-            self.assertEqual(_get_localedir(),  "C:\ProgramData\matuc\locale")
-        elif sys.platform == "darwin":
-            loc_dir = _get_localedir()
-            self.assertTrue(loc_dir == '/usr/share/locale' or
-                            loc_dir == os.path.join(os.path.dirname(
-                            os.path.abspath(sys.argv[0])), 'share', 'locale'))
 
-    def test_that_locale_not_exists_in_programData(self):
-        if sys.platform == "win32":
-            programDataPath = os.path.join(os.getenv('ProgramData'),
-                                                    "matuc", "locale")
-            tempName = os.path.join(os.getenv('ProgramData'), "matuc", "_locale")
-            if os.path.exists(programDataPath):
-                os.rename(programDataPath, tempName)
-            # ToDo add case that magsbs is execute from source code
-            self.assertEqual(_get_localedir(), None)
-            os.rename(tempName, programDataPath)
+    @patch("os.walk", fake_usr_local)
+    @patch("sys.platform", "linux")
+    def test_that_locale_is_available_Linux(self):
+        self.assertEqual(_get_localedir(), '/usr/share/locale')
+
+    @patch("os.walk", fake_usr_local)
+    @patch("sys.platform", "darwin")
+    def test_that_locale_is_available_OSX(self):
+        self.assertTrue(_get_localedir(), '/usr/share/locale')
+
+    @patch("os.walk", fake_c_program_files)
+    @patch("sys.platform", "win32")
+    @patch("os.getenv", lambda x: r'c:\ProgramData')
+    def test_that_locale_is_available_Windows(self):
+        # platform unknown, as is the os.sep, use slash *always*
+        self.assertEqual(normalise_path(_get_localedir()),
+                "c:/programdata/matuc/locale")
+
+        # ToDo: test name ergibt keinen sinn, Testaufbau schlecht. Daten aus
+        # Code sammeln, assert* ausführen
+    @patch("os.walk", fake_none)
+    def test_install_locale_returns_none(self):
+        self.assertEqual(_get_localedir(), None)

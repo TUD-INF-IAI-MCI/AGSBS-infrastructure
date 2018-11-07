@@ -39,10 +39,9 @@ EXCEPTED_STRING_STARTS = ["www."]
 
 
 def format_extensions_list(extensions):
-    """Format a list of extensions in a human-readable way."""
-    if not extensions:  # list should have at least one element
-        raise ValueError("No extension defined for link, yet required")
-
+    """Format a list of extensions in a human-readable way for error messages."""
+    if not extensions:
+        raise ValueError(_("Expected a file extension, got nothing"))
     if len(extensions) == 1:
         return ".{}".format(extensions[0])
     return _(".{} or .{}").format(', .'.join(extensions[:-1]), extensions[-1])
@@ -167,7 +166,7 @@ class LinkChecker:
         e = ErrorMessage(_("Implicit reference with the identifier "
                             "\"{0}\" does not exist. Please write a "
                             "reference in a form [{0}] in the markdown "
-                            "file or remove the explicit reference [{0}]:"
+                            "file or remove the anchor [{0}]:"
                             " {1}.").format(ref_id, reference.link),
                           reference.line_number, reference.file_path)
         e.pos_on_line = reference.pos_on_line
@@ -235,7 +234,7 @@ class LinkChecker:
         # search fo last comma and extension is what follows it
         elif path[path.rfind(".") + 1:].lower() not in extensions:
             e = ErrorMessage(
-                _("Link path \"{}\" has .{} extension, but it should be {}.")
+                _("Link path \"{}\" has extension .{}, but it should be {}.")
                 .format(path, path[path.rfind(".") + 1:],
                         format_extensions_list(extensions)),
                 reference.line_number, reference.file_path)
@@ -260,7 +259,7 @@ class LinkChecker:
         file_path_md = "{}.{}".format(os.path.splitext(file_path)[0], 'md')
         if not os.path.exists(file_path_md):
             error_message = _("The source .md file for hypertext file \"{}\" "
-                              "does not exist.".format(parsed_path))
+                              "does not exist.").format(parsed_path)
             e = ErrorMessage(error_message, reference.line_number,
                              reference.file_path)
             e.pos_on_line = reference.pos_on_line

@@ -31,7 +31,7 @@ welcome to send corrections or additions, as well as any requests.
 
 ### Dependencies
 
-This version of MAGSBS / matuc depends on Python in version >= 3.4.
+This version of MAGSBS / matuc depends on Python in version >= 3.6.
 
 To test what your default Python is, execute:
 

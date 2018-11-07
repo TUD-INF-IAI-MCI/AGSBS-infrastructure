@@ -7,17 +7,6 @@ from MAGSBS.datastructures import Reference
 from MAGSBS.quality_assurance import linkchecker
 
 
-class TestHelpingFunctions(unittest.TestCase):
-
-    def test_print_list(self):
-        self.assertRaises(ValueError, linkchecker.format_extensions_list, [])
-        self.assertEqual(linkchecker.format_extensions_list(["jpg"]), ".jpg")
-        self.assertEqual(linkchecker.format_extensions_list(["jpg", "bmp"]),
-                         ".jpg or .bmp")
-        self.assertEqual(linkchecker.format_extensions_list(
-            ["jpg", "bmp", "svg", "png"]), ".jpg, .bmp, .svg or .png")
-
-
 class TestLinkChecker(unittest.TestCase):
 
     @staticmethod

@@ -183,7 +183,6 @@ def _get_localedir():
         if any(file == 'matuc.mo' for _d, _ds, files in os.walk(loc_dir_lang)
                 for file in files):
             return directory
-    print(loc_dirs)
     WarningRegistry().register_warning(
             "Couldn't find locales directory.") # → None
 
@@ -202,4 +201,3 @@ def setup_i18n():
 
     trans.install()
 
-setup_i18n()

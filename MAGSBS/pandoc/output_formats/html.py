@@ -81,8 +81,8 @@ class HtmlConverter(OutputGenerator):
     PANDOC_FORMAT_NAME = 'html'
     FILE_EXTENSION = 'html'
     CONTENT_FILTERS = [contentfilter.page_number_extractor,
-                       contentfilter.suppress_captions,
-                       contentfilter.html_link_converter]
+                    contentfilter.html_link_converter,
+                    contentfilter.suppress_captions]
 
     def __init__(self, meta, language):
         if not shutil.which('pandoc'):
@@ -115,15 +115,15 @@ class HtmlConverter(OutputGenerator):
         annotation = start_with_caps(trans.get_translation('note of editor'))
         frames = ['.frame:before { content: "%s: "; }' % \
                     start_with_caps(trans.get_translation("frame")),
-                  '.frame:after { content: "\\A %s"; }' % start_with_caps(trans \
+                '.frame:after { content: "\\A %s"; }' % start_with_caps(trans \
                     .get_translation("end of frame"))]
         boxes = ['.box:before { content: "%s: "; }' % \
                     trans.get_translation("box"),
-                 '.box:after { content: "\\A %s"; }' % start_with_caps(trans \
+                '.box:after { content: "\\A %s"; }' % start_with_caps(trans \
             .get_translation("end of box"))]
         colours = {'black': '#000000;', 'blue': '#0000FF', 'brown': '#A52A2A',
-                   'grey': '#A9A9A9', 'green': '#006400', 'orange': '#FF8C00',
-                   'red': '#FF0000', 'violet': '#8A2BE2', 'yellow': '#FFFF00'}
+            'grey': '#A9A9A9', 'green': '#006400', 'orange': '#FF8C00',
+            'red': '#FF0000', 'violet': '#8A2BE2', 'yellow': '#FFFF00'}
         for name, rgb in colours.items():
             frames.append('.frame.%s { border-color: %s; }' % (name, rgb))
             frames.append('.frame.%s:before { content: "%s: "; }' % (name, \
@@ -134,13 +134,13 @@ class HtmlConverter(OutputGenerator):
 
         try:
             return data.format(annotation=annotation,
-                               frames='\n    '.join(frames),
-                               boxes='\n    '.join(boxes),
-                               title=trans.get_translation("title"),
-                               **meta)
+                    frames='\n    '.join(frames),
+                    boxes='\n    '.join(boxes),
+                    title=trans.get_translation("title"),
+                    **meta)
         except KeyError as e:
             raise errors.ConfigurationError(("The key %s is missing in the "
-                                             "configuration.") % e.args[0], meta['path'])
+                "configuration.") % e.args[0], meta['path'])
 
     def set_meta_data(self, meta):
         """Overwrite parent settr to re-generate template generation."""
@@ -196,9 +196,8 @@ class HtmlConverter(OutputGenerator):
                 nav_start, nav_end = self.generate_page_navigation(
                     path, file_cache,
                     mparser.extract_page_numbers_from_par(
-                        mparser.file2paragraphs(document)
+                        mparser.file2paragraphs(document))
                     )
-                )
             except errors.FormattingError as e:
                 e.path = path
                 raise e from None
@@ -215,37 +214,36 @@ class HtmlConverter(OutputGenerator):
         # instruct pandoc to enumerate headings
         try:
             pandoc_args += ['--number-sections', '--number-offset',
-                            str(datastructures.extract_chapter_number(path) - 1)]
+                str(datastructures.extract_chapter_number(path) - 1)]
         except errors.StructuralError:
             pass # no enumeration of headings if not chapter
         # for 'blind' see __apply_filters, doesn't need a Pandoc argument
         if self.get_profile() is ConversionProfile.VisuallyImpairedDefault:
             pandoc_args.append('--mathjax')
-        execute(['pandoc'] + pandoc_args + [
-            '-t', self.PANDOC_FORMAT_NAME,
+        execute(['pandoc'] + pandoc_args + ['-t', self.PANDOC_FORMAT_NAME,
             '-f', 'json', '+RTS', '-K25000000', '-RTS', # increase stack size
-            '-o', outputf
-        ], stdin=json.dumps(json_ast), cwd=dirname)
+            '-o', outputf], stdin=json.dumps(json_ast), cwd=dirname)
 
-    def __apply_filters(self, json_ast, path):
-        """add MarkDown extensions with Pandoc filters"""
+    def __apply_filters(self, json_ast, file_path):
+        """Process MAGSBS-specific markdown extensions using Pandoc filters.
+        `file_path` is relative to the current directory and points to the file being
+        converted."""
         try:
             filter_ = None
             fmt = self.PANDOC_FORMAT_NAME
             for filter_ in self.CONTENT_FILTERS:
                 json_ast = pandocfilters.walk(json_ast, filter_, fmt, [])
         except KeyError as e: # API clash(?)
-            raise errors.StructuralError((
-                "Incompatible Pandoc API found, while "
-                "applying filter %s (ABI clash?).\nKeyError: %s"
-            ) % (filter.__name__, str(e)), path)
+            raise errors.StructuralError(("Incompatible Pandoc API found, while "
+                "applying filter %s (ABI clash?).\nKeyError: %s") % \
+                        (filter.__name__, str(e)), file_path)
         # use GleeTeX if configured
         if self.get_profile() is ConversionProfile.Blind:
             try:
                 # this alters the Pandoc document AST -- no return required
-                contentfilter.convert_formulas('bilder', json_ast)
+                contentfilter.convert_formulas(file_path, 'bilder', json_ast)
             except errors.MathError as err:
-                HtmlConverter.__handle_error(path, err)
+                HtmlConverter.__handle_error(file_path, err)
 
     def generate_page_navigation(self, file_path, file_cache, page_numbers, conf=None):
         """generate_page_navigation(path, file_cache, page_numbers, conf=None)
@@ -265,27 +263,25 @@ class HtmlConverter(OutputGenerator):
         trans.set_language(conf[config.MetaInfo.Language])
         relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
         previous, nxt = file_cache.get_neighbours_for(relative_path)
-        make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace(
-            '.md',
-            '.' + self.FILE_EXTENSION
-        ))
+        make_path = lambda path: '../{}/{}'.format(path[0], path[1].replace('.md',
+            '.' + self.FILE_EXTENSION))
         if previous:
             previous = '[{}]({})'.format(trans.get_translation('previous').title(),
-                                         make_path(previous))
+                    make_path(previous))
         if nxt:
             nxt = '[{}]({})'.format(trans.get_translation('next').title(),
-                                    make_path(nxt))
+                    make_path(nxt))
         navbar = []
         # take each pnumgapth element
         page_numbers = [pnum for pnum in page_numbers
-                        if (pnum.number % conf[config.MetaInfo.PageNumberingGap]) == 0]
+            if (pnum.number % conf[config.MetaInfo.PageNumberingGap]) == 0]
         if page_numbers:
             navbar.append(trans.get_translation('pages').title() + ': ')
             navbar.extend('[[{0}]](#p{0}), '.format(num) for num in page_numbers)
             navbar[-1] = navbar[-1][:-2] # strip ", " from last chunk
         navbar = ''.join(navbar)
         chapternav = '[{}](../inhalt.{})'.format(trans.get_translation(
-            'table of contents').title(), self.FILE_EXTENSION)
+                'table of contents').title(), self.FILE_EXTENSION)
 
         if previous:
             chapternav = previous + '  ' + chapternav

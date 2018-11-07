@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-03-23 12:40+CET\n"
+"POT-Creation-Date: 2018-10-30 16:27+CET\n"
 "PO-Revision-Date: 2018-02-19 09:19+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -16,8 +16,30 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: MAGSBS/datastructures.py:145
+#: MAGSBS/datastructures.py:222
 msgid "the file does not follow naming conventions"
+msgstr ""
+
+#: MAGSBS/errors.py:60
+msgid ""
+"error while running: %s\n"
+"%s"
+msgstr ""
+
+#: MAGSBS/errors.py:79
+msgid "in configuration from"
+msgstr ""
+
+#: MAGSBS/errors.py:80
+msgid "in configuration"
+msgstr ""
+
+#: MAGSBS/errors.py:94
+msgid "erroneous structure in %s: "
+msgstr ""
+
+#: MAGSBS/errors.py:113
+msgid "error in {path}"
 msgstr ""
 
 #: MAGSBS/factories.py:56
@@ -44,11 +66,15 @@ msgstr ""
 msgid "image descriptions"
 msgstr ""
 
-#: MAGSBS/pandoc/formats.py:218
+#: MAGSBS/pandoc/contentfilter.py:133
+msgid "Incorrect formula: {reason}"
+msgstr ""
+
+#: MAGSBS/pandoc/formats.py:189
 msgid "You need to have Pandoc installed."
 msgstr ""
 
-#: MAGSBS/pandoc/formats.py:285
+#: MAGSBS/pandoc/formats.py:476
 msgid ""
 "LaTeX reported an error while converting a fomrula. Unfortunately, "
 "improperly closed formula environments exist, therefore it cannot be "
@@ -126,40 +152,54 @@ msgid ""
 "should be used, so that the formula is not squeezed to the line height."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:42
+#: MAGSBS/quality_assurance/linkchecker.py:44
+msgid "Expected a file extension, got nothing"
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:47
 msgid ".{} or .{}"
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:175
+#: MAGSBS/quality_assurance/linkchecker.py:119
 msgid ""
-"A reference to the link \"{}\" does not exist. Please write a reference in a "
-"form [{}]: link to the markdown file."
+"An explicit reference with identifier \"{0}\" does not exist. Please write "
+"an explicit reference in a form \"[{0}]: link\" to the markdown file."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:197
-msgid "Reference \"{}\" is duplicated on lines {} and {}."
+#: MAGSBS/quality_assurance/linkchecker.py:147
+msgid "Identifier \"{}\" for reference is duplicated on lines {} and {}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:215
+#: MAGSBS/quality_assurance/linkchecker.py:166
 msgid ""
-"A link for the reference \"{}\" does not exist. Please write a link in a "
-"form [{}] link to the markdown file or remove the reference."
+"Implicit reference with the identifier \"{0}\" does not exist. Please write "
+"a reference in a form [{0}] in the markdown file or remove the anchor [{0}]: "
+"{1}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:275
+#: MAGSBS/quality_assurance/linkchecker.py:228
 msgid "Link path \"{}\" has no extension, but it should be {}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:282
-msgid "Link path \"{}\" has .{} extension, but it should be {}."
+#: MAGSBS/quality_assurance/linkchecker.py:237
+msgid "Link path \"{}\" has extension .{}, but it should be {}."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:294
+#: MAGSBS/quality_assurance/linkchecker.py:250
 msgid "The file \"{}\" given by the reference \"{}\" does not exist."
 msgstr ""
 
-#: MAGSBS/quality_assurance/linkchecker.py:326
-msgid "The anchor \"{}\" was not found in the \"{}\" file."
+#: MAGSBS/quality_assurance/linkchecker.py:261
+msgid "The source .md file for hypertext file \"{}\" does not exist."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:286
+msgid "A link is referencing the anchor \"#{}\" which does not exist."
+msgstr ""
+
+#: MAGSBS/quality_assurance/linkchecker.py:294
+msgid ""
+"A link references the anchor \"#{}\" which does not exist in the file {}."
 msgstr ""
 
 #: MAGSBS/quality_assurance/markdown.py:18
@@ -257,7 +297,7 @@ msgstr ""
 #: MAGSBS/quality_assurance/markdown.py:370
 msgid ""
 "The image description is probably incomplete, since \"{marker}\" has been "
-"found."
+"found. "
 msgstr ""
 
 #: MAGSBS/quality_assurance/markdown.py:392
@@ -279,345 +319,318 @@ msgid ""
 "File not encoded in UTF-8, please configure this encoding in your editor."
 msgstr ""
 
-#: MAGSBS/quality_assurance/mistkerl.py:221
+#: MAGSBS/quality_assurance/mistkerl.py:222
 msgid "The configuration could not be read: {reason}"
 msgstr ""
 
-#: MAGSBS/quality_assurance/mistkerl.py:232
+#: MAGSBS/quality_assurance/mistkerl.py:233
 msgid ""
 "The file is too long. To ease navigation and maintain readability, the file "
 "should be split into fileswith less than {count} lines by naming them like "
 "kXXYY.md."
 msgstr ""
 
-#: MAGSBS/toc.py:203
+#: MAGSBS/toc.py:209
 msgid "table of contents"
 msgstr ""
 
-#: MAGSBS/toc.py:211
+#: MAGSBS/toc.py:217
 msgid "title page"
 msgstr ""
 
-#: MAGSBS/toc.py:215
+#: MAGSBS/toc.py:221
 msgid "preface"
 msgstr ""
 
-#: MAGSBS/toc.py:220
+#: MAGSBS/toc.py:226
 msgid "chapters"
 msgstr ""
 
-#: MAGSBS/toc.py:223
+#: MAGSBS/toc.py:229
 msgid "appendix"
 msgstr ""
 
-#: MAGSBS/toc.py:228
-msgid "glossary"
-msgstr ""
-
-#: MAGSBS/toc.py:230
-msgid "index"
-msgstr ""
-
-#: MAGSBS/toc.py:233
-msgid "list of abbreviations"
-msgstr ""
-
-#: MAGSBS/toc.py:235
+#: MAGSBS/toc.py:234
 msgid "list of tactile graphics"
 msgstr ""
 
-#: MAGSBS/toc.py:237
+#: MAGSBS/toc.py:236
 msgid "copyright notice"
 msgstr ""
 
-#: MAGSBS/toc.py:244
+#: MAGSBS/toc.py:243
 msgid "remarks about the accessible version"
 msgstr ""
 
-#~ msgid ""
-#~ "Die Datei ist zu lang. Um die Navigation zu erleichtern und die einfache "
-#~ "Lesbarkeit zu gewährleisten sollten lange Kapitel mit mehr als 2500 "
-#~ "Zeilen in mehrere Unterdateien nach dem Schema kxxyy.md oder kleiner "
-#~ "aufgeteilt werden."
-#~ msgstr ""
-#~ "Soubor je příliš dlouhý. Pro usnadnění navigace a zajištění snadné "
-#~ "čitelnosti by měly být dlouhé kapitoly (s více než 2500 řádky)rozděleny "
-#~ "do několika dílčích souborů podle schématu kxxyy.md."
+#: matuc/matuc_impl.py:191
+msgid "Generate table of contents."
+msgstr ""
 
-#~ msgid ""
-#~ "Datei ist nicht in UTF-8 kodiert, bitte waehle \"UTF-8\" als Zeichensatz "
-#~ "im Editor."
-#~ msgstr ""
-#~ "Soubor není zakódován pomocí UTF-8. Prosím zvolte v editoru kódování "
-#~ "znaků \"UTF-8\"."
+#: matuc/matuc_impl.py:193
+msgid "write output to file instead of stdout"
+msgstr ""
 
-#~ msgid ""
-#~ "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit "
-#~ "Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert "
-#~ "werden."
-#~ msgstr ""
-#~ "Byla nalezena pomlčka, která byla pravděpodobně zkopírována z textu s "
-#~ "odůvodněním. To bude nesprávně formátováno na výstupu."
+#: matuc/matuc_impl.py:196
+msgid "material directory (containing chapters)"
+msgstr ""
 
-#~ msgid ""
-#~ "Die Bildbeschreibung ist wahrscheinlich nicht vollständig, da ein Marker "
-#~ "wie \"to do\" gefunden wurde."
-#~ msgstr ""
-#~ "Popis obrázku pravděpodobně není úplný, protože byla nalezena značka \"to "
-#~ "do\"."
+#: matuc/matuc_impl.py:224
+msgid ""
+"Allowed subcommands are `show`, `update` and `init`.\n"
+"`show` shows the current configuration settings, default values if none "
+"present.\n"
+"`update` and `show` try to find the correct configuration: if none exists in "
+"the\n"
+"current directory and you are in a subdirectory of a project, the project "
+"root\n"
+"will be queried for a configuration. If no file was found, the default "
+"settings\n"
+"are displayed.\n"
+"\n"
+"`init` on the other hand behaves basically like update (it sets "
+"configuration\n"
+"values), but it does that for the current directory. This is handy for\n"
+"sub-directory configurations or initialization of a new project."
+msgstr ""
 
-#~ msgid ""
-#~ "Wenn ein Absatz mit einem \\ umgebrochen wird, so wird die nächste "
-#~ "(leere) Zeile dem vorigen Absatz zugeordnet. Der Absatz geht verloren und "
-#~ "in der Folge wird das folgende Element falsch formatiert."
-#~ msgstr ""
-#~ "Pokud je odstavec zabalen s \\, další (prázdný) řádek je přiřazen "
-#~ "předchozímu odstavci. Tento odstavec je ztracen a následně je nesprávně "
-#~ "formátován následující prvek."
+#: matuc/matuc_impl.py:236
+msgid ""
+"insert \"A\" as prefix for each chapter number in the appendix and omit the "
+"header \"appendix\""
+msgstr ""
 
-#~ msgid ""
-#~ "Relationsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
-#~ "mittels \\< und \\> erzeugt werden."
-#~ msgstr ""
-#~ "Relační operátoři by s výhodou neměli být generováni pomocí HTML, ale "
-#~ "lépe pomocí \\< a \\>."
+#: matuc/matuc_impl.py:240
+msgid "set author of source document"
+msgstr ""
 
-#~ msgid ""
-#~ "Es sollte kein Umbruch mittels HTML-Tags erzeugt werden. Platziert man "
-#~ "einen \\ als einziges Zeichen auf eine Zeile und lässt davor und danach "
-#~ "eine Zeile frei, hat dies denselben Effekt."
-#~ msgstr ""
-#~ "Pro zalamování by nemělo být použito značek HTML. Stejného efektu "
-#~ "docílíte, pokud umístíte na řádek jako jediný znak \\ (a zároveň "
-#~ "ponecháte řádky před a po prázdné)."
+#: matuc/matuc_impl.py:242
+msgid "set project editor"
+msgstr ""
 
-#~ msgid ""
-#~ "Es dürfen, bis auf div und span keine HTML-tags in das Markdown-Dokument "
-#~ "eingebettet werden."
-#~ msgstr ""
-#~ "Není povoleno vkládat HTML tagy do Markdown dokumentu (s výjimkou div a "
-#~ "span)."
+#: matuc/matuc_impl.py:245
+msgid "set institution (default TU Dresden)"
+msgstr ""
 
-#~ msgid "Es fehlt ein \"-\" in der Seitenzahl. Vorgabe: \"|| - Seite xyz -\""
-#~ msgstr ""
-#~ "V označení stránky chybí \"-\". Výchozí hodnota: \"|| - stránka xyz -\""
+#: matuc/matuc_impl.py:248
+msgid "set title of project (first heading level 1 by default)"
+msgstr ""
 
-#~ msgid ""
-#~ "Es existieren mehr als {} Überschriften der Ebene {}. Das macht das "
-#~ "Inhaltsverzeichnis sehr unübersichtlich. Man kann entweder in der "
-#~ "Konfiguration tocDepth kleiner setzen, um Überschriften dieser Ebene "
-#~ "nicht ins Inhaltsverzeichnis aufzunehmen (für Foliensätze z.B. tocDepth "
-#~ "1) oder die Anzahl an Überschriften minimieren, sofern möglich."
-#~ msgstr ""
-#~ "Existuje více než {} záhlaví úrovně {}. Obsah je proto velmi matoucí. "
-#~ "Můžete buď zmenšit tocDepth v konfiguraci tak, aby nadpisy této úrovně "
-#~ "nebyly do obsahu zahrnuty (například pro slajdy nastavit tocDepth 1), "
-#~ "nebo, pokud je to možné, snižte počet nadpisů této úrovně."
+#: matuc/matuc_impl.py:252
+msgid "set document language (de by default)"
+msgstr ""
 
-#~ msgid ""
-#~ "Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich "
-#~ "um einen Tippfehler. Die Seitenzahl wird ignoriert."
-#~ msgstr ""
-#~ "Číslo stránky \"{}\" není rozpoznáno a je ignorováno. Jedná se "
-#~ "pravděpodobně o překlep."
+#: matuc/matuc_impl.py:255
+msgid "specify gap between page numbering links in navigation bar (default: 5)"
+msgstr ""
 
-#~ msgid ""
-#~ "Jede Seitenzahl muss in der Zeile darueber oder darunter eine Leerzeile "
-#~ "haben, das heißt sie muss in einem eigenen Absatz stehen."
-#~ msgstr ""
-#~ "Nad (či pod) číslem každé stránky musí být prázdný řádek, tj. musí být v "
-#~ "samostatném odstavci."
+#: matuc/matuc_impl.py:259
+msgid "set information about source document"
+msgstr ""
 
-#~ msgid "Errors may only be of type ErrorMessage, got '{}'"
-#~ msgstr "Chyby mohou být pouze typu ErrorMessage, byl vrácen typ '{}'"
+#: matuc/matuc_impl.py:262
+msgid "set semester of edit (will be guessed otherwise)"
+msgstr ""
 
-#~ msgid ""
-#~ "Leerräume in Formeln sollten mit \\quad oder \\qquad gekennzeichnet "
-#~ "werden, da sie sonst mit Sprachausgabe schwer lesbar sind."
-#~ msgstr ""
-#~ "Mezery ve vzorcích by měly být vysázeny pomocí \\quad či \\qquad, jiná "
-#~ "sazba způsobuje problémy při čtení odčítačem obrazovky."
+#: matuc/matuc_impl.py:265
+msgid "limit the heading depth for the table of contents"
+msgstr ""
 
-#~ msgid ""
-#~ "Formeln in einem Absatz (umgeben von Text), müssen mit einfachen $-"
-#~ "Zeichen gesetzt werden, da sich die Formeln sonst in der Ausgabe nicht in "
-#~ "den Text integrieren. $$ (display math) sollte für einzeln stehende "
-#~ "Formeln verwendet werden."
-#~ msgstr ""
-#~ "Vzorce uvedené přímo v odstavci (obklopené textem) musí být vloženy "
-#~ "pomocí jednoduchých znaků $, jinak se vzorce nevloží do výstupního textu. "
-#~ "$$ (matematické zobrazení) by mělo být použito pro samostatné vzorce."
+#: matuc/matuc_impl.py:268
+msgid "set working group"
+msgstr ""
 
-#~ msgid ""
-#~ "Die LaTeX-Umgebung zur Fallunterscheidung (cases) sollte Zeilenumbrüche "
-#~ "an den passenden Stellen enthalten, um die Lesbarkeit zu gewährleisten."
-#~ msgstr ""
-#~ "Pro lepší čitelnost textu sázeného pomocí LaTeXu prosím použijte "
-#~ "zalamování řádků (na vhodných místech)."
+#: matuc/matuc_impl.py:272
+msgid "Error: no subcommand specified."
+msgstr ""
 
-#~ msgid ""
-#~ "Matrizen sollten, damit sie einfach lesbar sind, nicht mit \\left\\(..., "
-#~ "sondern einfach mit \\begin{pmatrix}...  erzeugt werden. Dabei werden "
-#~ "auch Klammern automatisch gesetzt und es ist kürzer."
-#~ msgstr ""
-#~ "Pro lepší čitelnost nevytvářejte matice pomocí \\left\\(...), ale "
-#~ "jednoduše pomocí \\begin{pmatrix}... Závorky se poté nastavují "
-#~ "automaticky a jsou kratší."
+#: matuc/matuc_impl.py:289
+msgid "Current settings"
+msgstr ""
 
-#~ msgid ""
-#~ "Die Datei \"{}\" ist falsch benannt und folgt nicht den "
-#~ "Namenskonventionen. Dies führt zu einer falschen Verwendung der Datei."
-#~ msgstr ""
-#~ "Soubor (adresář) \"{}\" je pojmenován nesprávně a nedodržuje konvence "
-#~ "pojmenování. To může vést k nesprávnému použití souboru."
+#: matuc/matuc_impl.py:295
+msgid "New settings"
+msgstr ""
 
-#~ msgid ""
-#~ "Fehler in der Konfiguration: Der Wert {} ist nicht gesetzt, wodurch die "
-#~ "Kopfdaten in den HTML-Dateien nicht erzeugt werden können."
-#~ msgstr ""
-#~ "Chyba konfigurace: Hodnota {} není nastavena, což znamená, že záhlaví v "
-#~ "HTML souborech nelze generovat."
+#: matuc/matuc_impl.py:304
+msgid ""
+"Converts a file or directory containing a project.\n"
+"\n"
+"If a directory is supplied, additional steps such as generating a table of "
+"contents are performed as well."
+msgstr ""
 
-#~ msgid ""
-#~ "Es wurden inkorrekt dargestellte Umlaute gefunden. Dies geschieht oft, "
-#~ "wenn Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings "
-#~ "schwer leserlich."
-#~ msgstr ""
-#~ "Byly nalezeny nesprávně zobrazené nápisy. To se často stává, když je text "
-#~ "zkopírován ze souborů PDF. To ztěžuje čtení textu."
+#: matuc/matuc_impl.py:309
+msgid "select output format (html or epub, default html)"
+msgstr ""
 
-#~ msgid ""
-#~ "Anstatt einen Umlaut zu schreiben, wurde eine LaTeX-Kontrollsequenz "
-#~ "verwendet. Das ist schwer leserlich und kann außerdem einfach durch "
-#~ "setzen des Zeichensatzes umgangen werden."
-#~ msgstr ""
-#~ "Namísto zápisu písmene s přehláskou byla použita kontrolní sekvence "
-#~ "LaTeXu. Tuto formu zápisu písmen s přehláskou je obtížné číst a lze ji "
-#~ "snadno nahradit využitím vhodné znakové sady."
+#: matuc/matuc_impl.py:312
+msgid "path to input file or directory"
+msgstr ""
 
-#~ msgid ""
-#~ "Jede Zeile einer Matrix oder Tabelle sollte zur besseren Lesbarkeit auf "
-#~ "eine eigene Zeile gesetzt werden."
-#~ msgstr ""
-#~ "Každý řádek matice nebo tabulky by měl být umístěn na samostatném řádku "
-#~ "pro čitelnost."
+#: matuc/matuc_impl.py:339
+msgid ""
+"The working directory must be within a project; the image path must be "
+"relative to the current working directory."
+msgstr ""
 
-#~ msgid ""
-#~ "Eine Formel, die einzeln in einem Absatz steht, wurde als eingebettete "
-#~ "Formel mit einfachen $ gesetzt. Stattdessen sollten doppelte "
-#~ "Dollarzeichen verwendet werden, da dies verhindert, dass LaTeX die Formel "
-#~ "auf Zeilenhöhe staucht."
-#~ msgstr ""
-#~ "Pro vzorec, který je vložen jako samostatný odstavec, by neměla být "
-#~ "použita syntaxe s jednoduchým znakem $. Namísto toho by měly být použity "
-#~ "dva dolarové znaky, což zabrání LaTeXu, aby přerušil vzorec ve výšce "
-#~ "řádku."
+#: matuc/matuc_impl.py:344
+msgid "image description string (- for reading stdin)"
+msgstr ""
 
-#~ msgid ""
-#~ "{0} sollte in LaTeX-Formeln grundsätzlich als Befehl gesetzt werden, d.h. "
-#~ "mittels \\{0}. Nur so wird es in der Ausgabe korrekt formatiert und ist "
-#~ "gleichzeitig gut lesbar."
-#~ msgstr ""
-#~ "Funkce {0} by měla být vždy nastavena jako příkaz ve vzorcích v LaTeXu, "
-#~ "tj. pomocí \\{0}. V opačném případě nebude na výstupu správně "
-#~ "naformátován a tedy ani čitelný."
+#: matuc/matuc_impl.py:348
+msgid "outsource image descriptions regardless of their length"
+msgstr ""
 
-#~ msgid ""
-#~ "For a mistake checker of type oneliner, exactly two arguments are "
-#~ "required."
-#~ msgstr ""
-#~ "Modul kontrolující chyby typu oneliner vyžaduje přesně dva argumenty."
+#: matuc/matuc_impl.py:352
+msgid "set title for outsourced images (mandatory if outsourced)"
+msgstr ""
 
-#~ msgid "List or tuple expected."
-#~ msgstr "Byl očekáván seznam nebo n-tice."
+#: matuc/matuc_impl.py:357
+msgid "no path specified"
+msgstr ""
 
-#~ msgid ""
-#~ "In diesem Verzeichnis gibt es mehr als eine Überschrift der Ebene 1. Dies "
-#~ "ist nicht erlaubt. Beispielsweise hat jeder Foliensatz nur eine "
-#~ "Hauptüberschrift und auch ein Kapitel wird nur mit einer Überschrift "
-#~ "bezeichnet."
-#~ msgstr ""
-#~ "V tomto adresáři je více než jeden nadpis úrovně 1, což není povoleno. "
-#~ "Například každá sada slajdů může mít pouze jeden hlavní nadpis úrovně 1 a "
-#~ "slajd je označena pouze nadpisem úrovně 2."
+#: matuc/matuc_impl.py:376
+msgid ""
+"Usage: {} iswithinlecture <path>\n"
+"\n"
+"Test whether the given file or directory is part of a lecture.\n"
+msgstr ""
 
-#~ msgid ""
-#~ "Eine Aufzählung muss in einem eigenen Absatz stehen, d. h. es muss "
-#~ "zumindest davor eine Leerzeile existieren."
-#~ msgstr ""
-#~ "Výčet musí být uveden v samostatném odstavci, tj. před výčtem musí být "
-#~ "alespoň jeden prázdný řádek."
+#: matuc/matuc_impl.py:379
+msgid "path required"
+msgstr ""
 
-#~ msgid ""
-#~ "In der Datei \"{}\"  wurde zuerst \"{}\" verwendet, {}. Dies sollte "
-#~ "einheitlich sein."
-#~ msgstr ""
-#~ "V souboru \"{}\" byl používán nejprve \"{}\", {}. To by ale mělo být "
-#~ "konzistentní."
+#: matuc/matuc_impl.py:383
+msgid "only one path at a time allowed."
+msgstr ""
 
-#~ msgid "in der Datei \"{}\" dann aber \"{}\""
-#~ msgstr "v souboru \"{}\", ale následně \"{}\""
+#: matuc/matuc_impl.py:395
+msgid "Initialize a new lecture material or book directory."
+msgstr ""
 
-#~ msgid "später dann aber \"{}\""
-#~ msgstr "následně ale \"{}\""
+#: matuc/matuc_impl.py:399
+msgid "number of appendix chapters (default 0)"
+msgstr ""
 
-#~ msgid ""
-#~ "Wahrscheinlich wurde an dieser Stelle eine Seitenzahl notiert, bei der "
-#~ "nach dem Wort die anschließende Nummer vergessen wurde."
-#~ msgstr ""
-#~ "Pravděpodobně bylo uvedeno označení stránky, ve kterém nebylo uvedeno "
-#~ "číslo."
+#: matuc/matuc_impl.py:402
+msgid "number of chapters (default 2)"
+msgstr ""
 
-#~ msgid ""
-#~ "Überschriften gleichen Namens machen Inhaltsverzeichnisse schwer lesbar "
-#~ "und erschweren die Navigation. Häufig kommt dies bei Foliensätzen vor. Am "
-#~ "Besten man setzt das TocDepth so, dass nur die Überschrift des "
-#~ "Foliensatzes (oft Ebene 1) aufgenommen wird und alle Überschriften, "
-#~ "mitsamt der Überschriften die doppelt sind, gar nicht erst im "
-#~ "Inhaltsverzeichnis erscheinen."
-#~ msgstr ""
-#~ "Stejné nadpisy způsobují, že obsah je obtížné číst, což ztěžuje to i "
-#~ "navigaci. Toto se často stává u slajdů. Nejlepším způsobem, je nastavit "
-#~ "TocDepth tak, aby byl použit pouze nadpis sady snímků (často úroveň 1) a "
-#~ "v obsahu se neobleví opakující se nadpisy."
+#: matuc/matuc_impl.py:405
+msgid "add a preface (default no)\")"
+msgstr ""
 
-#~ msgid ""
-#~ "Die Überschrift wurde unterstrichen und gleichzeitig mit gekennzeichnet. "
-#~ "Am Besten ist es, die da sie sonst als Text angezeigt werden."
-#~ msgstr ""
-#~ "Nadpis byl současně podtržen i označen. Nejlepší je, aby se zobrazoval "
-#~ "jako text."
+#: matuc/matuc_impl.py:408
+msgid "if set, blattxx will be used instead of kxx"
+msgstr ""
 
-#~ msgid ""
-#~ "Eine ungerade Anzahl von Dollar-Zeichen wurde auf der Zeile entdeckt. "
-#~ "Entweder eine Formel wurde nicht geschlossen, oder es wurde versucht, "
-#~ "eine eingebettete Formel über mehrere Zeilen zu strecken. Im ersteren "
-#~ "Fall muss ein weiteres Dollar eingefügt werden, im zweiten Fall sollte "
-#~ "die Formel mit doppelten Dollarzeichen umrahmt werden."
-#~ msgstr ""
-#~ "Na řádku byl zjištěn lichý počet znaků dolar. Nebyl buď uzavřen vzorec "
-#~ "nebo došlo k pokusu o rozdělení vloženého vzorce na několik řádků. V "
-#~ "prvním případě musí být do vzorce vložen další znak dolar, ve druhém "
-#~ "případě by měly být pro vzorec použity dva dolarové znaky za sebou."
+#: matuc/matuc_impl.py:410
+msgid "set language (default de)"
+msgstr ""
 
-#~ msgid ""
-#~ "In Aufzählungen und Nummerierungen darf direkt nach dem "
-#~ "Aufzählungszeichen nicht ein weiteres Aufzählungszeichen oder eine "
-#~ "weitere Nummerierung folgen, da dies sonst als Unterliste erkannt wird. "
-#~ "Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt verhindert "
-#~ "dies."
-#~ msgstr ""
-#~ "Při označení vyčtu a číslování by neměla být pomlčka následována další "
-#~ "pomlčkou nebo číslováním, jinak bude rozpoznáno jako dílčí seznam. Znak "
-#~ "\\ před pomlčkou (nebo před tečkou u číslování) tomuto zabrání."
+#: matuc/matuc_impl.py:412
+msgid "new directory to create project in"
+msgstr ""
 
-#~ msgid ""
-#~ "Ein Bild wurde mit fehlerhafter Syntax eingebunden, wodurch das Bild vom "
-#~ "Konverter ignoriert wird."
-#~ msgstr "Obrázek nebyl vložen pomocí správné syntaxe a ignoroval svůj obraz."
+#: matuc/matuc_impl.py:421
+msgid "The number of chapters and appendix chapters must be integers."
+msgstr ""
 
-#~ msgid "Es wurde keine Bildbeschreibung eingefügt."
-#~ msgstr "Nebyl vložen popis obrázku."
+#: matuc/matuc_impl.py:434
+msgid ""
+"\n"
+"        Run \"mistkerl\", a quality assurance helper. It checks for common "
+"errors\n"
+"        in accessible markdown documents and\n"
+"        outputs them on the command line."
+msgstr ""
 
-#~ msgid "Die Konfiguration konnte nicht gelesen werden: {}"
-#~ msgstr "Nebylo možné načíst soubor s konfigurací: {}"
+#: matuc/matuc_impl.py:440
+msgid "Sort critical errors first"
+msgstr ""
+
+#: matuc/matuc_impl.py:442
+msgid "use less blank lines in output"
+msgstr ""
+
+#: matuc/matuc_impl.py:444
+msgid ""
+"open a console-only live view, refreshing the list of errors every few "
+"seconds"
+msgstr ""
+
+#: matuc/matuc_impl.py:447
+msgid "specify file or directory to be checked"
+msgstr ""
+
+#: matuc/matuc_impl.py:451
+msgid "input file name required."
+msgstr ""
+
+#: matuc/matuc_impl.py:454
+msgid "Error: %s does not exist."
+msgstr ""
+
+#: matuc/matuc_impl.py:462
+msgid "No errors found. Hopefully there are none :-)."
+msgstr ""
+
+#: matuc/matuc_impl.py:505
+msgid ""
+"Generate a page number for a given context. A context consists of a line and "
+"a file. The enumeration will happen automatically (including distinction "
+"between roman and arabic), as well as the detection of the language of the "
+"lecture. This command will not insert the newly created page number by "
+"default, but print it to stdout. This is meant to be used by applications "
+"embedding Matuc's logic."
+msgstr ""
+
+#: matuc/matuc_impl.py:514 matuc/matuc_impl.py:570
+msgid "read from specified path instead of reading from standard input"
+msgstr ""
+
+#: matuc/matuc_impl.py:517
+msgid ""
+"read from specified path instead of reading from standard input and write "
+"result back to file; this could lead to race conditions on concurrent "
+"modifications"
+msgstr ""
+
+#: matuc/matuc_impl.py:522
+msgid ""
+"Path to load configuration from. This can be either a file or a directory. "
+"If -f is given, the path is used as input file (by default, input is read "
+"from stdin)"
+msgstr ""
+
+#: matuc/matuc_impl.py:526
+msgid "Line number for which to generate the page number"
+msgstr ""
+
+#: matuc/matuc_impl.py:531 matuc/matuc_impl.py:584
+msgid "Given path has to exist."
+msgstr ""
+
+#: matuc/matuc_impl.py:536
+msgid "Argument 2 is not a number."
+msgstr ""
+
+#: matuc/matuc_impl.py:542
+msgid ""
+"Given path is not a file, but reading from it with -f has been requested."
+msgstr ""
+
+#: matuc/matuc_impl.py:566
+msgid ""
+"Check the page numbers of a document and warn / fix the page numbering, if "
+"the numbers do not strictly increase by one.\n"
+"This command reads from stdin by default, see -f."
+msgstr ""
+
+#: matuc/matuc_impl.py:573
+msgid "if -f is given, replace the page numbering in the file in-place"
+msgstr ""
+
+#: matuc/matuc_impl.py:579
+msgid "In-place modifications requested, but no file given."
+msgstr ""
