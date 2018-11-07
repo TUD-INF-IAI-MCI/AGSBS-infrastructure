@@ -242,12 +242,16 @@ def build_installer():
     shutil.copy('EnvVarUpdate.nsh', os.path.join(BUILD_DIRECTORY,
         'EnvVarUpdate.nsh'))
     shutil.copy('matuc.nsi', os.path.join(BUILD_DIRECTORY, 'matuc.nsi'))
-
+    subprocess_call('python setup.py install', "..")
     #pylint: disable=import-error
     # update installer version number and size
     from MAGSBS.config import VERSION
     update_installer_info(os.path.join(BUILD_DIRECTORY, 'matuc.nsi'), VERSION,
             get_size(BUILD_DIRECTORY))
+    installer_file = os.path.join("matuc-installer-" + str(VERSION) + ".exe")
+    # avoid error that file exists
+    if os.path.exists(installer_file):
+        os.remove(installer_file)
     subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
 
     out_file = "matuc-installer-" + str(VERSION) + ".exe"
