@@ -343,7 +343,7 @@ class HtmlConverter(OutputGenerator):
                 # this alters the Pandoc document AST -- no return required
                 contentfilter.convert_formulas(file_path, 'bilder', json_ast)
             except MathError as err:
-                HtmlConverter.__handle_error(path, err)
+                HtmlConverter.__handle_error(file_path, err)
 
     def generate_page_navigation(self, file_path, file_cache, page_numbers, conf=None):
         """generate_page_navigation(path, file_cache, page_numbers, conf=None)
