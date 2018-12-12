@@ -85,7 +85,7 @@ class I18nGeneration(Command):
         files = (shlex.quote(os.path.join(dname, file))
                 for dname, _d, files in os.walk('.') for file in files
                 if file.endswith('.py') and not 'build' in dname
-                    and not 'setup' in file and not 'test' in dname)
+                    and not 'setup' in file and not 'test' in dname)        
         create_pot = not os.path.exists('matuc.pot')
         if not create_pot:
             # query last modification time of py source files
@@ -126,17 +126,18 @@ setuptools.setup(
     description="MAGSBS - MarkDown AG SBS module",
     entry_points={
        "console_scripts": [
-           "matuc = matuc.matuc:main",
-            "matuc_js = matuc.matuc_js:main",
+           "matuc = MAGSBS.matuc:main",
+            "matuc_js = MAGSBS.matuc_js:main",
         ],
     },
     install_requires=[
         "pandocfilters >= 1.4.2",
     ],
+    include_package_data=True,
     license="LGPL",
     name="MAGSBS-matuc",
     packages=setuptools.find_packages("."),
     url="https://github.com/TUD-INF-IAI-MCI/AGSBS-infrastructure",
     version=str(VERSION),
-    zip_safe=False
+    zip_safe=True
 )
