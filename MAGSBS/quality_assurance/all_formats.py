@@ -52,7 +52,7 @@ class OnlyCorrectDirectoriesFound(Mistake):
     def worker(self, *args):
         root = args[0]
         for file in os.listdir(root):
-            if any(file.startswith(x) for x in ('bilder', 'inhalt', 'titel',
+            if any(file.startswith(x) for x in ('bilder', 'tabellen', 'inhalt', 'titel',
                     'glossar', 'index', 'kurz' 'taktil', 'copyright',
                     '.lecture_meta')):
                 continue
