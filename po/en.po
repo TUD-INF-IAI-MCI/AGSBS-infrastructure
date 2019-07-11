@@ -1,0 +1,542 @@
+# English PO file -- DO NOT TRANSLATE :)
+# Copyright (C) 2019
+# Sebastian Humenda <shumenda |at| gmx /dot/ de>
+# This file serves only as the reminder to the setup routine to also install and
+# generate an English locale.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2018-10-30 16:27+CET\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF8\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: ./MAGSBS/datastructures.py:222
+msgid "the file does not follow naming conventions"
+msgstr ""
+
+#: ./MAGSBS/errors.py:60
+msgid ""
+"error while running: %s\n"
+"%s"
+msgstr ""
+
+#: ./MAGSBS/errors.py:79
+msgid "in configuration from"
+msgstr ""
+
+#: ./MAGSBS/errors.py:80
+msgid "in configuration"
+msgstr ""
+
+#: ./MAGSBS/errors.py:94
+msgid "erroneous structure in %s: "
+msgstr ""
+
+#: ./MAGSBS/errors.py:113
+msgid "error in {path}"
+msgstr ""
+
+#: ./MAGSBS/factories.py:56
+msgid "images"
+msgstr ""
+
+#: ./MAGSBS/factories.py:81
+msgid "external image description"
+msgstr ""
+
+#: ./MAGSBS/factories.py:94
+msgid "description of image"
+msgstr ""
+
+#: ./MAGSBS/filesystem.py:140
+msgid "chapter"
+msgstr ""
+
+#: ./MAGSBS/filesystem.py:142
+msgid "paper"
+msgstr ""
+
+#: ./MAGSBS/filesystem.py:150 ./MAGSBS/filesystem.py:152
+msgid "image descriptions"
+msgstr ""
+
+#: ./MAGSBS/pandoc/contentfilter.py:133
+msgid "Incorrect formula: {reason}"
+msgstr ""
+
+#: ./MAGSBS/pandoc/formats.py:189
+msgid "You need to have Pandoc installed."
+msgstr ""
+
+#: ./MAGSBS/pandoc/formats.py:476
+msgid "LaTeX reported an error while converting a fomrula. Unfortunately, improperly closed formula environments exist, therefore it cannot be determined which formula was errorneous. Please re-read the document and fix any unclosed formula environments."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/all_formats.py:22
+msgid "Error in the lecture configuration: the value {} is unset, thefefore the meta data in the HTML files cannot be generated."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/all_formats.py:46
+msgid "Incorrectly formatted umlauts have been found. This usually happens when copying texts from PDFs. This makes text nearly impossible to read."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/all_formats.py:60
+msgid "The naming of the file or directory \"{}\" is incorrect and does not follow the naming conventions. This leads to an incorrect usage of the file."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:21
+msgid "The LaTeX environment \"cases\" should contain line breaks at suitable places to increase readibility."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:38
+msgid "To increase readibility, matrices should not be constructed using manual formatting commands, but using \"\\begin{pmatrix}...\". This is also shorter."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:52
+msgid "Each line of a matrix or table should be written on one line, using a hard line break."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:71
+msgid "Instead of using an actual umlaut, a LaTeX control sequence was used. This is hard to read and not required with this program."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:85
+msgid "Formulas within a paragraph surrounded by text have to be set with single dollars, because the formulas don't integrate into the line otherwise. $$ (displaymath) should be used in formulas standing on their own in a paragraph."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:97
+msgid "Empty space in formulas should be set with \\quad or \\qquad, because they are otherwise hard to read with speech synthesis."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:120
+msgid "'{0}' should be generally set using the appropriate LaTeX command, namely using \\{0}. This way it will be properly formatted in the output and easily readable by screen readers."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/latex.py:140
+msgid "A formula, occurring on a paragraph on its own, has been set as an embedded formula using single dollars. Instead double dollar signs around the formula should be used, so that the formula is not squeezed to the line height."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:44
+msgid "Expected a file extension, got nothing"
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:47
+msgid ".{} or .{}"
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:119
+msgid "An explicit reference with identifier \"{0}\" does not exist. Please write an explicit reference in a form \"[{0}]: link\" to the markdown file."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:147
+msgid "Identifier \"{}\" for reference is duplicated on lines {} and {}."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:166
+msgid "Implicit reference with the identifier \"{0}\" does not exist. Please write a reference in a form [{0}] in the markdown file or remove the anchor [{0}]: {1}."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:228
+msgid "Link path \"{}\" has no extension, but it should be {}."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:237
+msgid "Link path \"{}\" has extension .{}, but it should be {}."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:250
+msgid "The file \"{}\" given by the reference \"{}\" does not exist."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:261
+msgid "The source .md file for hypertext file \"{}\" does not exist."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:286
+msgid "A link is referencing the anchor \"#{}\" which does not exist."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/linkchecker.py:294
+msgid "A link references the anchor \"#{}\" which does not exist in the file {}."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:18
+msgid "Each line number has to have an empty line before and after it, that is, on a paragraph of its own."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:48
+msgid "There is more than one heading of level one, which is not allowed. For instance, a slide set or a chapter has only one heading of level 1."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:89
+msgid "A list or enumeration needs to be on a paragraph of its own and needs to have at least an empty line before."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:109
+msgid "The page number \"{}\" can't be recognised, possibly due to a typo, hence it is ignored at the moment."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:124
+msgid "Two differing page number identifiers were found."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:127
+msgid "First \"{pagenum}\", later \"{another}\"."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:131
+msgid "First \"{pagenum}\", but then \"{another}\" in \"{file}\"."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:178
+msgid "There are more than {count} headings of level {depth}. This can be circumvented by decreasing the heading depth which will end up the the table of contents, by decreasing the value tocDepth in the configuration."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:208
+msgid "A page number was marked up, but the actual number has not been inserted."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:229
+msgid "A \"-\" in the page number is missing, required: \"|| - Page xyz -\""
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:244
+msgid "\"{tag}\" is not allowed, use a new paragraph or a \"\\\" at the end of a line."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:248
+msgid "It is not allowed to use HTML tags, except for div and span."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:260
+msgid "Comparison operators shouldn't be marked up in HTML, but with \\< and \\>."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:269
+msgid "The heading was underlined and also marked with #'s."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:287
+msgid "If a paragraph ends on a \\, the next empty line will become part of the paragraph and hence the next paragraph is formatted incorrectly."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:307
+msgid "Line contains uneven number of dollar signs. Either a formula wasn't closed or an embedded formula was stretched across multiple lines (try double dollars). If you meant a real dollar sign, prepend a \\ to it."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:349
+msgid "In enumerations and lists, the enumeration character may not immediately be followed by another such character, because it will be recognised as a sublist. A \\ in front of a character or in front of the dot for enumerations will suppress this."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:370
+msgid "The image description is probably incomplete, since \"{marker}\" has been found. "
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:392
+msgid "The included image is using wrong syntax, the converter will ignore it."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:422
+msgid "A hyphen was found which possibly originates from copied justified text. This will be incorrectly formatted in the output."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/markdown.py:464
+msgid "No image description provided."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/mistkerl.py:118
+msgid "File not encoded in UTF-8, please configure this encoding in your editor."
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/mistkerl.py:222
+msgid "The configuration could not be read: {reason}"
+msgstr ""
+
+#: ./MAGSBS/quality_assurance/mistkerl.py:233
+msgid "The file is too long. To ease navigation and maintain readability, the file should be split into fileswith less than {count} lines by naming them like kXXYY.md."
+msgstr ""
+
+#: ./MAGSBS/toc.py:209
+msgid "table of contents"
+msgstr ""
+
+#: ./MAGSBS/toc.py:217
+msgid "title page"
+msgstr ""
+
+#: ./MAGSBS/toc.py:221
+msgid "preface"
+msgstr ""
+
+#: ./MAGSBS/toc.py:226
+msgid "chapters"
+msgstr ""
+
+#: ./MAGSBS/toc.py:229
+msgid "appendix"
+msgstr ""
+
+#: ./MAGSBS/toc.py:234
+msgid "list of tactile graphics"
+msgstr ""
+
+#: ./MAGSBS/toc.py:236
+msgid "copyright notice"
+msgstr ""
+
+#: ./MAGSBS/toc.py:243
+msgid "remarks about the accessible version"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:191
+msgid "Generate table of contents."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:193
+msgid "write output to file instead of stdout"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:196
+msgid "material directory (containing chapters)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:224
+msgid ""
+"Allowed subcommands are `show`, `update` and `init`.\n"
+"`show` shows the current configuration settings, default values if none present.\n"
+"`update` and `show` try to find the correct configuration: if none exists in the\n"
+"current directory and you are in a subdirectory of a project, the project root\n"
+"will be queried for a configuration. If no file was found, the default settings\n"
+"are displayed.\n"
+"\n"
+"`init` on the other hand behaves basically like update (it sets configuration\n"
+"values), but it does that for the current directory. This is handy for\n"
+"sub-directory configurations or initialization of a new project."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:236
+msgid "insert \"A\" as prefix for each chapter number in the appendix and omit the header \"appendix\""
+msgstr ""
+
+#: ./matuc/matuc_impl.py:240
+msgid "set author of source document"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:242
+msgid "set project editor"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:245
+msgid "set institution (default TU Dresden)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:248
+msgid "set title of project (first heading level 1 by default)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:252
+msgid "set document language (de by default)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:255
+msgid "specify gap between page numbering links in navigation bar (default: 5)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:259
+msgid "set information about source document"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:262
+msgid "set semester of edit (will be guessed otherwise)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:265
+msgid "limit the heading depth for the table of contents"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:268
+msgid "set working group"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:272
+msgid "Error: no subcommand specified."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:289
+msgid "Current settings"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:295
+msgid "New settings"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:304
+msgid ""
+"Converts a file or directory containing a project.\n"
+"\n"
+"If a directory is supplied, additional steps such as generating a table of contents are performed as well."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:309
+msgid "select output format (html or epub, default html)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:312
+msgid "path to input file or directory"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:339
+msgid "The working directory must be within a project; the image path must be relative to the current working directory."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:344
+msgid "image description string (- for reading stdin)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:348
+msgid "outsource image descriptions regardless of their length"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:352
+msgid "set title for outsourced images (mandatory if outsourced)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:357
+msgid "no path specified"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:376
+msgid ""
+"Usage: {} iswithinlecture <path>\n"
+"\n"
+"Test whether the given file or directory is part of a lecture.\n"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:379
+msgid "path required"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:383
+msgid "only one path at a time allowed."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:395
+msgid "Initialize a new lecture material or book directory."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:399
+msgid "number of appendix chapters (default 0)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:402
+msgid "number of chapters (default 2)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:405
+msgid "add a preface (default no)\")"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:408
+msgid "if set, blattxx will be used instead of kxx"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:410
+msgid "set language (default de)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:412
+msgid "new directory to create project in"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:421
+msgid "The number of chapters and appendix chapters must be integers."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:434
+msgid ""
+"\n"
+"        Run \"mistkerl\", a quality assurance helper. It checks for common errors\n"
+"        in accessible markdown documents and\n"
+"        outputs them on the command line."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:440
+msgid "Sort critical errors first"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:442
+msgid "use less blank lines in output"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:444
+msgid "open a console-only live view, refreshing the list of errors every few seconds"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:447
+msgid "specify file or directory to be checked"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:451
+msgid "input file name required."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:454
+msgid "Error: %s does not exist."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:462
+msgid "No errors found. Hopefully there are none :-)."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:505
+msgid "Generate a page number for a given context. A context consists of a line and a file. The enumeration will happen automatically (including distinction between roman and arabic), as well as the detection of the language of the lecture. This command will not insert the newly created page number by default, but print it to stdout. This is meant to be used by applications embedding Matuc's logic."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:514 ./matuc/matuc_impl.py:570
+msgid "read from specified path instead of reading from standard input"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:517
+msgid "read from specified path instead of reading from standard input and write result back to file; this could lead to race conditions on concurrent modifications"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:522
+msgid "Path to load configuration from. This can be either a file or a directory. If -f is given, the path is used as input file (by default, input is read from stdin)"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:526
+msgid "Line number for which to generate the page number"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:531 ./matuc/matuc_impl.py:584
+msgid "Given path has to exist."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:536
+msgid "Argument 2 is not a number."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:542
+msgid "Given path is not a file, but reading from it with -f has been requested."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:566
+msgid ""
+"Check the page numbers of a document and warn / fix the page numbering, if the numbers do not strictly increase by one.\n"
+"This command reads from stdin by default, see -f."
+msgstr ""
+
+#: ./matuc/matuc_impl.py:573
+msgid "if -f is given, replace the page numbering in the file in-place"
+msgstr ""
+
+#: ./matuc/matuc_impl.py:579
+msgid "In-place modifications requested, but no file given."
+msgstr ""
+
