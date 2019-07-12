@@ -131,7 +131,11 @@ instead.
                 self[MetaInfo.Editor] = getpass.getuser()
             else: # on unixoids, use pwd
                 import pwd
-                editor = pwd.getpwuid(os.getuid())[4]
+                print(pwd.getpwuid(os.getuid()))
+                if pwd.getpwuid(os.getuid())[4]:
+                    editor = pwd.getpwuid(os.getuid())[4]
+                else:
+                    editor = pwd.getpwuid(os.getuid())[0] # login name
                 # on some systems, real name end with commas, strip those
                 while editor and not editor[-1].isalpha():
                     editor = editor[:-1]
