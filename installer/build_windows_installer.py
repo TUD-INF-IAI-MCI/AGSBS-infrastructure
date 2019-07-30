@@ -14,7 +14,7 @@ Dependencies:
 If running from Windows: haskell-platform
 """
 
-import os
+import os, os.path as path
 import shutil
 import subprocess
 import sys
@@ -116,23 +116,24 @@ class SetUp:
         # fetch gladtex
         os.mkdir(BUILD_DIRECTORY)
         import io, urllib.request, zipfile
-        print("Downloading " + GLADTEX_REPO_URL)
-        with urllib.request.urlopen(GLADTEX_REPO_URL) as u:
-            zip = u.read()
-        zip = zipfile.ZipFile(io.BytesIO(zip))
-        zip.extractall(BUILD_DIRECTORY)
-        # if it had a subdirectory, move contents out of it
-        build_contents = os.listdir(BUILD_DIRECTORY)
-        if len(build_contents) == 1:
-            subdir = os.path.join(BUILD_DIRECTORY, build_contents[0])
-            if os.path.isdir(subdir):
-                subprocess_call('pyinstaller --onefile build{0}GladTeX-master{0}gladtex.py' \
-                        .format(os.sep))
-                shutil.move('dist{0}gladtex.exe'.format(os.sep), BUILD_DIRECTORY)
-                # move all files from subdirectory one level higher
-                for f in (os.path.join(subdir, f) for f in os.listdir(subdir)):
-                    shutil.move(f, BUILD_DIRECTORY)
-                os.rmdir(subdir)
+        # take gladtex from host
+#        print("Downloading " + GLADTEX_REPO_URL)
+#        with urllib.request.urlopen(GLADTEX_REPO_URL) as u:
+#            zip = u.read()
+#        zip = zipfile.ZipFile(io.BytesIO(zip))
+#        zip.extractall(BUILD_DIRECTORY)
+#        # if it had a subdirectory, move contents out of it
+#        build_contents = os.listdir(BUILD_DIRECTORY)
+#        if len(build_contents) == 1:
+#            subdir = os.path.join(BUILD_DIRECTORY, build_contents[0])
+#            if os.path.isdir(subdir):
+#                subprocess_call('pyinstaller --onefile build{0}GladTeX-master{0}gladtex.py' \
+#                        .format(os.sep))
+#                shutil.move('dist{0}gladtex.exe'.format(os.sep), BUILD_DIRECTORY)
+#                # move all files from subdirectory one level higher
+#                for f in (os.path.join(subdir, f) for f in os.listdir(subdir)):
+#                    shutil.move(f, BUILD_DIRECTORY)
+#                os.rmdir(subdir)
 
         # fetch pandoc installer, extract pandoc.exe (is a static binary)
         tmp = os.path.join(BUILD_DIRECTORY, 'tmp.pandoc')
@@ -199,17 +200,13 @@ def update_installer_info(filename, version, total_size_kb):
             file.write(line)
 
 
-def compile_scripts(python_command):
+def compile_scripts(python_command, target):
     """Compile matuc using py2exe. Cross-compilation is determined by
     `python_command` (either 'python' or 'wine python')."""
-    origin = os.getcwd()
-    subprocess_call('pyinstaller --onefile MAGSBS{0}matuc_js.py --paths=MAGSBS'.format(os.sep))
-    # move compiled binary files
-    for file in os.listdir('dist'):
-        dest = os.path.join(os.path.basename(origin), BUILD_DIRECTORY, file)
-        if not os.path.exists(dest):
-            os.rename(os.path.join('dist', file), dest)
-    os.chdir(origin)
+    installer_src = path.dirname(path.abspath(__file__))
+    mod_path = path.join(path.dirname(installer_src), 'MAGSBS')
+    subprocess_call('pyinstaller --onefile {}{}matuc_js.py --distpath {}'\
+            .format(mod_path, os.sep, target))
 
 def build_installer():
     """Prepare environment to build Windows installer using makensis."""
@@ -253,11 +250,13 @@ def build_installer():
     if shutil.which("chmod"):
         os.system("chmod a+r " + out_file)
 
+def main():
+    clean() # clean up previous build files
+    st = SetUp()
+    st.detect_build_dependencies()
+    st.retrieve_dependencies()
+    compile_scripts(st.python_command, BUILD_DIRECTORY)
+    build_installer()
+    clean()
 
-clean()
-st = SetUp()
-st.detect_build_dependencies()
-st.retrieve_dependencies()
-compile_scripts(st.python_command)
-build_installer()
-clean()
+main()
