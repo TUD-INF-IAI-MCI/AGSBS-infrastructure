@@ -20,7 +20,7 @@ try:
     import matuc_impl
 except (SystemError, ModuleNotFoundError): 
     # usually happens when executing from source
-    from . import matuc_impl
+    from matuc_impl import matuc_impl
 
 def get_terminal_size():
     """Get terminal size on GNU/Linux, default to 80 x 25 if not detectable."""

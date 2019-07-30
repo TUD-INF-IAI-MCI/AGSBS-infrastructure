@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
 
-GLADTEX_BINARY_URL = "http://github.com/humenda/GladTeX/releases/download/v2.3/gladtex-win64-2.3-py_3.4.4-standalone.zip"
+GLADTEX_REPO_URL = "https://codeload.github.com/humenda/GladTeX/zip/v3.0.0"
 PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.1.3/pandoc-2.1.3-windows.zip"
 BUILD_DIRECTORY = "build"
 
@@ -116,8 +116,8 @@ class SetUp:
         # fetch gladtex
         os.mkdir(BUILD_DIRECTORY)
         import io, urllib.request, zipfile
-        print("Downloading " + GLADTEX_BINARY_URL)
-        with urllib.request.urlopen(GLADTEX_BINARY_URL) as u:
+        print("Downloading " + GLADTEX_REPO_URL)
+        with urllib.request.urlopen(GLADTEX_REPO_URL) as u:
             zip = u.read()
         zip = zipfile.ZipFile(io.BytesIO(zip))
         zip.extractall(BUILD_DIRECTORY)
@@ -126,6 +126,9 @@ class SetUp:
         if len(build_contents) == 1:
             subdir = os.path.join(BUILD_DIRECTORY, build_contents[0])
             if os.path.isdir(subdir):
+                subprocess_call('pyinstaller --onefile build{0}GladTeX-master{0}gladtex.py' \
+                        .format(os.sep))
+                shutil.move('dist{0}gladtex.exe'.format(os.sep), BUILD_DIRECTORY)
                 # move all files from subdirectory one level higher
                 for f in (os.path.join(subdir, f) for f in os.listdir(subdir)):
                     shutil.move(f, BUILD_DIRECTORY)
@@ -200,15 +203,7 @@ def compile_scripts(python_command):
     """Compile matuc using py2exe. Cross-compilation is determined by
     `python_command` (either 'python' or 'wine python')."""
     origin = os.getcwd()
-    os.chdir('..') # change to matuc script source directory
-    ret = os.system('pyinstaller --onefile matuc%smatuc.py' % os.sep)
-    if ret: # error
-        print("Stop installer creation.")
-        sys.exit(8)
-    ret = os.system('pyinstaller --onefile matuc%smatuc_js.py ' % os.sep)
-    if ret:
-        print("Stopping compilation.")
-        sys.exit(9)
+    subprocess_call('pyinstaller --onefile MAGSBS{0}matuc_js.py --paths=MAGSBS'.format(os.sep))
     # move compiled binary files
     for file in os.listdir('dist'):
         dest = os.path.join(os.path.basename(origin), BUILD_DIRECTORY, file)
@@ -242,19 +237,17 @@ def build_installer():
     shutil.copy('EnvVarUpdate.nsh', os.path.join(BUILD_DIRECTORY,
         'EnvVarUpdate.nsh'))
     shutil.copy('matuc.nsi', os.path.join(BUILD_DIRECTORY, 'matuc.nsi'))
-    subprocess_call('python setup.py install', "..")
     #pylint: disable=import-error
     # update installer version number and size
     from MAGSBS.config import VERSION
     update_installer_info(os.path.join(BUILD_DIRECTORY, 'matuc.nsi'), VERSION,
             get_size(BUILD_DIRECTORY))
-    installer_file = os.path.join("matuc-installer-" + str(VERSION) + ".exe")
-    # avoid error that file exists
-    if os.path.exists(installer_file):
-        os.remove(installer_file)
-    subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
-
+    # remove existing binary installer
     out_file = "matuc-installer-" + str(VERSION) + ".exe"
+    if os.path.exists(out_file):
+        os.remove(installer_file)
+
+    subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
 
     os.rename(os.path.join(BUILD_DIRECTORY, "matuc-installer.exe"), out_file)
     if shutil.which("chmod"):

@@ -12,7 +12,7 @@ import sys
 try:
     import matuc_impl
 except (SystemError, ModuleNotFoundError): # usually happens when executing from source
-    from . import matuc_impl
+    from matuc_impl import matuc_impl
 
 # enable debugging for matuc_js, since it is an API internface and it is
 # useful to report errors when they occur

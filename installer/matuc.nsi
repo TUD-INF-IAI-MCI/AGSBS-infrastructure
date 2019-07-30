@@ -63,12 +63,12 @@ FunctionEnd
 
 section ""
   # set values
-  SetOutPath $INSTDIR  
+  SetOutPath $INSTDIR
   # select the files to install
   File /r "binary\*.*"
   # copy gettext MO object to Program Data
-  SetOutPath "$%ALLUSERSPROFILE%\${INST_DIR_SUFFIX}\locales"
-  File /r "..\..\build\mo" # needs to be created beforehand
+  SetOutPath "$%ALLUSERSPROFILE%\${INST_DIR_SUFFIX}\locale"
+  File /r "..\..\build\mo" # needs to be created beforehand by python script
   SetOutPath $INSTDIR
 
   # adjust %PATH% variable (copy/paste code)
