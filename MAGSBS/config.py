@@ -130,8 +130,7 @@ instead.
                 import getpass
                 self[MetaInfo.Editor] = getpass.getuser()
             else: # on unixoids, use pwd
-                import pwd
-                print(pwd.getpwuid(os.getuid()))
+                import pwd                
                 if pwd.getpwuid(os.getuid())[4]:
                     editor = pwd.getpwuid(os.getuid())[4]
                 else:
