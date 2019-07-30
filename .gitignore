@@ -11,3 +11,4 @@ installer/matuc-installer*.exe
 __pycache__
 *.swo
 *.swp
+*.pyo
