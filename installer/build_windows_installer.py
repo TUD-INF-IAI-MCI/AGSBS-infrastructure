@@ -242,7 +242,7 @@ def build_installer():
     # remove existing binary installer
     out_file = "matuc-installer-" + str(VERSION) + ".exe"
     if os.path.exists(out_file):
-        os.remove(installer_file)
+        os.remove(out_file)
 
     subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
 
