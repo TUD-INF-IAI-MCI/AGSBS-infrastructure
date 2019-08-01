@@ -15,10 +15,11 @@ import os
 import shutil
 import sys
 import textwrap
+import MAGSBS
 
-try:    
+try:
     import matuc_impl
-except (SystemError, ModuleNotFoundError): 
+except (SystemError, ModuleNotFoundError):
     # usually happens when executing from source
     from matuc_impl import matuc_impl
 
