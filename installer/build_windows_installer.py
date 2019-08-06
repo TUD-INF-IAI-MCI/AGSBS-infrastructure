@@ -205,15 +205,14 @@ def compile_scripts(python_command, target):
     `python_command` (either 'python' or 'wine python')."""
     installer_src = path.dirname(path.abspath(__file__))
     mod_path = path.join(path.dirname(installer_src), 'MAGSBS')
-    import gleetex #
-    cwd = os.getcwd()  #change path for command pyinstaller
-    os.chdir("..")
+    import gleetex # required for getting path to gleetex module
     subprocess_call('pyinstaller --clean -d all MAGSBS{0}matuc.py --onefile  --distpath installer{0}{1} '\
                '--paths MAGSBS --paths MAGSBS{0}pandoc '\
                '--paths {2} '\
-               '--hidden-import=gleetex --additional-hooks-dir=. '.format(os.sep, target, os.path.dirname(gleetex.__file__)))
+               '--hidden-import=gleetex --additional-hooks-dir=.'\
+                .format(os.sep, target, os.path.dirname(gleetex.__file__)),
+            other_dir=path.abspath('..'))
 
-    os.chdir(cwd)
 
 def build_installer():
     """Prepare environment to build Windows installer using makensis."""
