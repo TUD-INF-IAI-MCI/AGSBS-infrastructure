@@ -102,6 +102,9 @@ SectionEnd
 
 Section "Uninstall"
   ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR"
+  SetShellVarContext all
+  RMDir /r "$APPDATA\agsbs"
+  RMDir "$APPDATA\agsbs"
   RMDir /r "$INSTDIR"
   rmDir /r "$SMPROGRAMS\${APPNAME}"
 
