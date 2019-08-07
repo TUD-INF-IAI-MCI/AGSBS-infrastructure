@@ -69,7 +69,7 @@ section ""
   SetShellVarContext all
   # copy gettext MO object to Program Data
   SetOutPath "$APPDATA\${INST_DIR_SUFFIX}\locale"
-  File /r "..\..\build\mo" # needs to be created beforehand by python script
+  File /r "..\..\build\mo\*" # needs to be created beforehand by python script
   SetOutPath $INSTDIR
 
   # adjust %PATH% variable (copy/paste code)
