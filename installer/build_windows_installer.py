@@ -200,17 +200,19 @@ def update_installer_info(filename, version, total_size_kb):
             file.write(line)
 
 
-def compile_scripts(python_command, target):
+def compile_scripts(command, target):
     """Compile matuc using py2exe. Cross-compilation is determined by
     `python_command` (either 'python' or 'wine python')."""
     installer_src = path.dirname(path.abspath(__file__))
     mod_path = path.join(path.dirname(installer_src), 'MAGSBS')
-    import gleetex # required for getting path to gleetex module
-    subprocess_call('pyinstaller --clean -d all MAGSBS{0}matuc.py --onefile  --distpath installer{0}{1} '\
-               '--paths {2} '\
-               '--hidden-import=gleetex --additional-hooks-dir=.'\
-                .format(os.sep, target, os.path.dirname(os.path.dirname(gleetex.__file__))),
-            other_dir=path.abspath('..'))
+    import gleetex  # required for getting path to gleetex module
+
+    for script in ['matuc.py', 'matuc_js.py']:
+        subprocess_call(f'pyinstaller --clean -d all MAGSBS{os.sep}{script} --onefile  --distpath installer{os.sep}{target} '\
+                  f'--paths {os.path.dirname(os.path.dirname(gleetex.__file__))} '\
+                  '--hidden-import=gleetex --additional-hooks-dir=.',
+                   other_dir=path.abspath('..'))
+
 
 def build_installer():
     """Prepare environment to build Windows installer using makensis."""
