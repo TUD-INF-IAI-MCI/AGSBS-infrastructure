@@ -21,8 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
 
-GLADTEX_BINARY_URL = "http://github.com/humenda/GladTeX/releases/download/v2.3/gladtex-win64-2.3-py_3.4.4-standalone.zip"
-PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.1.3/pandoc-2.1.3-windows.zip"
+PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-windows-x86_64.zip"
 BUILD_DIRECTORY = "build"
 
 
@@ -115,21 +114,6 @@ class SetUp:
         # fetch gladtex
         os.mkdir(BUILD_DIRECTORY)
         import io, urllib.request, zipfile
-        print("Downloading " + GLADTEX_BINARY_URL)
-        with urllib.request.urlopen(GLADTEX_BINARY_URL) as u:
-            zip = u.read()
-        zip = zipfile.ZipFile(io.BytesIO(zip))
-        zip.extractall(BUILD_DIRECTORY)
-        # if it had a subdirectory, move contents out of it
-        build_contents = os.listdir(BUILD_DIRECTORY)
-        if len(build_contents) == 1:
-            subdir = os.path.join(BUILD_DIRECTORY, build_contents[0])
-            if os.path.isdir(subdir):
-                # move all files from subdirectory one level higher
-                for f in (os.path.join(subdir, f) for f in os.listdir(subdir)):
-                    shutil.move(f, BUILD_DIRECTORY)
-                os.rmdir(subdir)
-
         # fetch pandoc installer, extract pandoc.exe (is a static binary)
         tmp = os.path.join(BUILD_DIRECTORY, 'tmp.pandoc')
         os.mkdir(tmp)
