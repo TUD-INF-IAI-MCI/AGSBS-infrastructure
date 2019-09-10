@@ -14,7 +14,7 @@ Dependencies:
 If running from Windows: haskell-platform
 """
 
-import os
+import os, os.path as path
 import shutil
 import subprocess
 import sys
@@ -22,6 +22,7 @@ import sys
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
 
 PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-windows-x86_64.zip"
+
 BUILD_DIRECTORY = "build"
 
 
@@ -98,8 +99,9 @@ class SetUp:
         else:
             print("Python version >= 3.2 required.")
 
-        # test for py2exe
-        self.check_for_module('py2exe')
+        # test for pyinstaller
+        self.check_for_command('pyinstaller', 'pyinstaller', 'Please run'\
+                                'pip install pyinstaller')
         self.check_for_module('pandocfilters')
         # check for nsis generator
         self.check_for_command('makensis', 'nsis',
@@ -179,32 +181,25 @@ def update_installer_info(filename, version, total_size_kb):
             file.write(line)
 
 
-def compile_scripts(python_command):
+def compile_scripts(command, target):
     """Compile matuc using py2exe. Cross-compilation is determined by
     `python_command` (either 'python' or 'wine python')."""
-    origin = os.getcwd()
-    os.chdir('..') # change to matuc script source directory
-    ret = os.system('%s -m py2exe -b 3 matuc.py' % python_command )
-    if ret: # error
-        print("Stop installer creation.")
-        sys.exit(8)
-    ret = os.system('%s -m py2exe -b 3 -i matuc_impl matuc_js.py' % python_command )
-    if ret:
-        print("Stopping compilation.")
-        sys.exit(9)
-    # move compiled binary files
-    for file in os.listdir('dist'):
-        dest = os.path.join(os.path.basename(origin), BUILD_DIRECTORY, file)
-        if not os.path.exists(dest):
-            os.rename(os.path.join('dist', file), dest)
-    os.chdir(origin)
+    installer_src = path.dirname(path.abspath(__file__))
+    mod_path = path.join(path.dirname(installer_src), 'MAGSBS')
+    import gleetex  # required for getting path to gleetex module
+
+    for script in ['matuc.py', 'matuc_js.py']:
+        subprocess_call(f'pyinstaller --clean -d all MAGSBS{os.sep}{script} --onefile  --distpath installer{os.sep}{target} '\
+                  f'--paths {os.path.dirname(os.path.dirname(gleetex.__file__))} '\
+                  '--hidden-import=gleetex --additional-hooks-dir=.',
+                   other_dir=path.abspath('..'))
+
 
 def build_installer():
     """Prepare environment to build Windows installer using makensis."""
     # move a few files like e.g. README to distribution; MAGSBS and matuc_impl are
     # required, since py2exe doesn't include them properly
     target = lambda x: os.path.join(BUILD_DIRECTORY, x)
-    shutil.copytree(os.path.join('..', 'matuc_impl'), target('matuc_impl'))
     shutil.copytree(os.path.join('..', 'MAGSBS'), target('MAGSBS'))
     shutil.copyfile(os.path.join('..', 'COPYING'), target('COPYING.txt'))
     shutil.copyfile(os.path.join('..', 'README.md'), target('README.md'))
@@ -232,19 +227,24 @@ def build_installer():
     from MAGSBS.config import VERSION
     update_installer_info(os.path.join(BUILD_DIRECTORY, 'matuc.nsi'), VERSION,
             get_size(BUILD_DIRECTORY))
-    subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
-
+    # remove existing binary installer
     out_file = "matuc-installer-" + str(VERSION) + ".exe"
+    if os.path.exists(out_file):
+        os.remove(out_file)
+
+    subprocess_call("makensis matuc.nsi", other_dir=BUILD_DIRECTORY)
 
     os.rename(os.path.join(BUILD_DIRECTORY, "matuc-installer.exe"), out_file)
     if shutil.which("chmod"):
         os.system("chmod a+r " + out_file)
 
+def main():
+    clean() # clean up previous build files
+    st = SetUp()
+    st.detect_build_dependencies()
+    st.retrieve_dependencies()
+    compile_scripts(st.python_command, BUILD_DIRECTORY)
+    build_installer()
+    clean()
 
-clean()
-st = SetUp()
-st.detect_build_dependencies()
-st.retrieve_dependencies()
-compile_scripts(st.python_command)
-build_installer()
-clean()
+main()

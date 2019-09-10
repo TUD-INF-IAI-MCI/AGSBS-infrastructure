@@ -701,7 +701,7 @@ msgstr ""
 
 #: matuc/matuc_impl.py:514 matuc/matuc_impl.py:570
 msgid "read from specified path instead of reading from standard input"
-msgstr "liest angegebenen Pfad ein, anstatt von der Standardeingabe"
+msgstr "lies angegebenen Pfad ein, anstatt von der Standardeingabe"
 
 #: matuc/matuc_impl.py:517
 #, fuzzy
@@ -710,8 +710,8 @@ msgid ""
 "result back to file; this could lead to race conditions on concurrent "
 "modifications"
 msgstr ""
-"liest angegebenen Pfad ein, anstatt von der Standardeingabe und speichert "
-"Änderungen in der Dateien. Die kann beim gleichzeitigen Speichern zu "
+"lies angegebenen Pfad ein, anstatt von der Standardeingabe und speichere "
+"Änderungen in die Dateien. Dies kann beim gleichzeitigen Speichern zu "
 "Problemen führen."
 
 #: matuc/matuc_impl.py:522
@@ -747,14 +747,14 @@ msgid ""
 "This command reads from stdin by default, see -f."
 msgstr ""
 "Überprüft die Seitenzahlen eines Dokumentes und warnt / korrigiert die "
-"Seitenzahlen, wenn die Nummer nicht genau um eins erhöht wurden.\n"
+"Seitenzahlen, wenn die Nummer nicht genau um eins erhöht wurde.\n"
 "Diese Befehlt liest von stdin als Standard, siehe -f."
 
 #: matuc/matuc_impl.py:573
 #, fuzzy
 msgid "if -f is given, replace the page numbering in the file in-place"
 msgstr ""
-"falls angegeben wird die Seitennummerierung direkt in der Datei ersetzt"
+"falls angegeben, wird die Seitennummerierung direkt in der Datei ersetzt"
 
 #: matuc/matuc_impl.py:579
 #, fuzzy
