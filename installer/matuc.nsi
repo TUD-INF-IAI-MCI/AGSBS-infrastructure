@@ -19,7 +19,6 @@ Name "${APPNAME}"
 # plain text files must have \r\n line delimiters
 LicenseData "binary\COPYING.txt"
 Outfile "matuc-installer.exe"
-
 InstallDir "$PROGRAMFILES\${INST_DIR_SUFFIX}"
 
 # installation flow

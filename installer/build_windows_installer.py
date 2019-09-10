@@ -240,6 +240,7 @@ def build_installer():
     shutil.copy('EnvVarUpdate.nsh', os.path.join(BUILD_DIRECTORY,
         'EnvVarUpdate.nsh'))
     shutil.copy('matuc.nsi', os.path.join(BUILD_DIRECTORY, 'matuc.nsi'))
+
     #pylint: disable=import-error
     # update installer version number and size
     from MAGSBS.config import VERSION
