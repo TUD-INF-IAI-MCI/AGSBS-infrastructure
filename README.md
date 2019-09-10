@@ -57,6 +57,9 @@ something like 2.x.x, you need to call every mentioned command instead with
         [GladTeX](https://github.com/humenda/GladTeX) from source and install
         [MacTeX](www.tug.org/mactex/).
     -   On windows you can try [MikTeX](https://miktex.org/)
+        -   It is advised that you install a 64 bit MikTeX on a 64 bit system
+            because a mixture of 32 and 64 bit components is known to cause hard
+            to debug issues.
 
 
 ### Installation
