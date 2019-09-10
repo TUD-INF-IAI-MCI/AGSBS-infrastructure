@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-10-30 16:27+CET\n"
+"POT-Creation-Date: 2019-09-10 16:59+CEST\n"
 "PO-Revision-Date: 2019-08-09 12:02+0200\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -67,7 +67,333 @@ msgstr "Papier"
 msgid "image descriptions"
 msgstr "Bildbeschreibungen"
 
-#: MAGSBS/pandoc/contentfilter.py:133
+#: MAGSBS/matuc_impl.py:191
+msgid "Generate table of contents."
+msgstr "Generiere Inhaltsverzeichnis"
+
+#: MAGSBS/matuc_impl.py:193
+msgid "write output to file instead of stdout"
+msgstr "schreibe Ausgaben in in Datei anstatt nach Stdout"
+
+#: MAGSBS/matuc_impl.py:196
+msgid "material directory (containing chapters)"
+msgstr "Materialverzeichnis mit Kapiteln"
+
+#: MAGSBS/matuc_impl.py:224
+msgid ""
+"Allowed subcommands are `show`, `update` and `init`.\n"
+"`show` shows the current configuration settings, default values if none "
+"present.\n"
+"`update` and `show` try to find the correct configuration: if none exists in "
+"the\n"
+"current directory and you are in a subdirectory of a project, the project "
+"root\n"
+"will be queried for a configuration. If no file was found, the default "
+"settings\n"
+"are displayed.\n"
+"\n"
+"`init` on the other hand behaves basically like update (it sets "
+"configuration\n"
+"values), but it does that for the current directory. This is handy for\n"
+"sub-directory configurations or initialization of a new project."
+msgstr ""
+"Erlaubte Unterkommandos sind `show`, `update` und `init`?.\n"
+"`show` zeigt die aktuellen Einstellungen, oder deren Standardwert, wenn\n"
+"nichts gesetzt wurde.\n"
+"`show` und `update` versuchen die korrekte Konfiguration zu finden: wenn\n"
+"im aktuellen Verzeichnis keine existiert und Sie im Unterverzeichnis\n"
+"eines Projektes sind, wird im Wurzelverzeichnisses des Projektes nach einer\n"
+"Konfiguration gesucht. Wird keine Datei gefunden, werden die \n"
+"Standardeinstellungen angezeigt.\n"
+"\n"
+"`init` verhält sich im Grunde wie `update`, nur im aktuellen Verzeichnis.\n"
+"Das ist nützlich, wenn Sie Konfigurationen in Unterverzeichnissen anlegen\n"
+"wollen oder ein neues Projekt anlegen."
+
+#: MAGSBS/matuc_impl.py:236
+msgid ""
+"insert \"A\" as prefix for each chapter number in the appendix and omit the "
+"header \"appendix\""
+msgstr ""
+"füge \"A\" als Präfix für alle Überschriften im Anhang hinzu und lasse die "
+"Überschrift \"Anhang\" weg"
+
+#: MAGSBS/matuc_impl.py:240
+msgid "set author of source document"
+msgstr "setze Autor im Quelldokument"
+
+#: MAGSBS/matuc_impl.py:242
+msgid "set project editor"
+msgstr "setze Bearbeiter des Projektes"
+
+#: MAGSBS/matuc_impl.py:245
+msgid "set institution (default TU Dresden)"
+msgstr "setze Institution (Standard TU Dresden)"
+
+#: MAGSBS/matuc_impl.py:248
+msgid "set title of project (first heading level 1 by default)"
+msgstr "setze Titel des Projektes (Standardwert erste Überschrift Ebene 1)"
+
+#: MAGSBS/matuc_impl.py:252
+msgid "set document language (de by default)"
+msgstr "setze Sprache der Dokumente (Standardwert de)"
+
+#: MAGSBS/matuc_impl.py:255
+msgid "specify gap between page numbering links in navigation bar (default: 5)"
+msgstr ""
+"setze Abstand zwischen Seitenzahlen in der Navigationsleiste (Standardwert 5)"
+
+#: MAGSBS/matuc_impl.py:259
+msgid "set information about source document"
+msgstr "setze Informationen über Quelldokument"
+
+#: MAGSBS/matuc_impl.py:262
+msgid "set semester of edit (will be guessed otherwise)"
+msgstr ""
+"setze das Semester, in dem die Bearbeitung stattfand (ansonsten wird es "
+"geraten)"
+
+#: MAGSBS/matuc_impl.py:265
+msgid "limit the heading depth for the table of contents"
+msgstr "begrenze Tiefe der Überschriften im Inhaltsverzeichnis"
+
+#: MAGSBS/matuc_impl.py:268
+msgid "set working group"
+msgstr "setze Arbeitsgruppe"
+
+#: MAGSBS/matuc_impl.py:272
+msgid "Error: no subcommand specified."
+msgstr "Fehler: kein Unterkommando angegeben."
+
+#: MAGSBS/matuc_impl.py:289
+msgid "Current settings"
+msgstr "Aktuelle Einstellungen"
+
+#: MAGSBS/matuc_impl.py:295
+msgid "New settings"
+msgstr "Neue Einstellungen"
+
+#: MAGSBS/matuc_impl.py:304
+msgid ""
+"Converts a file or directory containing a project.\n"
+"\n"
+"If a directory is supplied, additional steps such as generating a table of "
+"contents are performed as well."
+msgstr ""
+"Konvertiere eine Datei oder ein Verzeichnis mit einem Projekt.\n"
+"\n"
+"Falls ein Verzeichnis übergeben wird, werden weitere Schritte wie die "
+"Generierung des Inhaltsverzeichnisses ausgeführt."
+
+#: MAGSBS/matuc_impl.py:309
+msgid "select output format (html or epub, default html)"
+msgstr "Ändere Ausgabeformat (html oder epub, Standardwert html)"
+
+#: MAGSBS/matuc_impl.py:312
+msgid "path to input file or directory"
+msgstr "Pfad zur Eingabedatei oder -verzeichnis"
+
+#: MAGSBS/matuc_impl.py:335
+msgid ""
+"The working directory must be within a project; the image path must be "
+"relative to the current working directory."
+msgstr ""
+"Das Arbeitsverzeichnis muss innerhalb eines Projektes sein; der Bildpfad "
+"muss relativ zum Arbeitsverzeichnis sein."
+
+#: MAGSBS/matuc_impl.py:340
+msgid "image description string (- for reading stdin)"
+msgstr "Zeichenkette für Bildbeschreibung (- für stdin)"
+
+#: MAGSBS/matuc_impl.py:344
+msgid "outsource image descriptions regardless of their length"
+msgstr "lagere Bildbeschreibungen immer aus, unabhängig von ihrer Länge"
+
+#: MAGSBS/matuc_impl.py:348
+msgid "set title for outsourced images (mandatory if outsourced)"
+msgstr "setze Title für ausgelagerte Bilder (zwingend wenn ausgelagert)"
+
+#: MAGSBS/matuc_impl.py:353
+msgid "no path specified"
+msgstr "kein Pfad angegeben"
+
+#: MAGSBS/matuc_impl.py:372
+msgid ""
+"Usage: {} iswithinlecture <path>\n"
+"\n"
+"Test whether the given file or directory is part of a lecture.\n"
+msgstr ""
+"Aufruf: {} iswithinlecture <Pfad>\n"
+"\n"
+"Prüft, ob die angegebene Datei oder das Verzeichnis Teil einer Vorlesung "
+"ist.\n"
+
+#: MAGSBS/matuc_impl.py:375
+msgid "path required"
+msgstr "Pfad erforderlich"
+
+#: MAGSBS/matuc_impl.py:379
+msgid "only one path at a time allowed."
+msgstr "Nur ein Pfad ist gleichzeitig erlaubt."
+
+#: MAGSBS/matuc_impl.py:391
+msgid "Initialize a new lecture material or book directory."
+msgstr "Neues Lehrmaterial oder Buch anlegen."
+
+#: MAGSBS/matuc_impl.py:395
+msgid "number of appendix chapters (default 0)"
+msgstr "Anzahl der Kapitel im Anhang (Standardwert 0)"
+
+#: MAGSBS/matuc_impl.py:398
+msgid "number of chapters (default 2)"
+msgstr "Anzahl der Kapitel (Standardwert 2)"
+
+#: MAGSBS/matuc_impl.py:401
+msgid "add a preface (default no)\")"
+msgstr "füge ein Vorwort hinzu (Standardwert kein)"
+
+#: MAGSBS/matuc_impl.py:404
+msgid "if set, blattxx will be used instead of kxx"
+msgstr "falls angegeben wird blattxx anstatt kxx verwendet"
+
+#: MAGSBS/matuc_impl.py:406
+msgid "set language (default de)"
+msgstr "setze Sprache (Standardwert de)"
+
+#: MAGSBS/matuc_impl.py:408
+msgid "new directory to create project in"
+msgstr "neues Verzeichnis, indem ein Projekt angelegt wird"
+
+#: MAGSBS/matuc_impl.py:417
+msgid "The number of chapters and appendix chapters must be integers."
+msgstr "Die Anzahl der Kapitel und Anhangskapitel müssen ganze Zahlen sein."
+
+#: MAGSBS/matuc_impl.py:430
+msgid ""
+"\n"
+"        Run \"mistkerl\", a quality assurance helper. It checks for common "
+"errors\n"
+"        in accessible markdown documents and\n"
+"        outputs them on the command line."
+msgstr ""
+"\n"
+"Führe Mistkerl aus, ein Werkzeug zur Qualitätssicherung. Es prüft "
+"barrierefreie Markdown-Dokumente auf häufige Fehler und gibt diese auf der "
+"Kommandozeile aus."
+
+#: MAGSBS/matuc_impl.py:436
+msgid "Sort critical errors first"
+msgstr "Sortiere kritische Fehler zuerst"
+
+#: MAGSBS/matuc_impl.py:438
+msgid "use less blank lines in output"
+msgstr "unterdrücke Leerzeilen in der Ausgabe"
+
+#: MAGSBS/matuc_impl.py:440
+msgid ""
+"open a console-only live view, refreshing the list of errors every few "
+"seconds"
+msgstr ""
+"öffne eine reine Kommandozeilenansicht, welche im Abstand mehrerer Sekunden "
+"die Fehlerliste aktualisiert."
+
+#: MAGSBS/matuc_impl.py:443
+msgid "specify file or directory to be checked"
+msgstr "Zu prüfende Datei oder Verzeichnis angeben"
+
+#: MAGSBS/matuc_impl.py:447
+msgid "input file name required."
+msgstr "Eingabedateiname erforderlich."
+
+#: MAGSBS/matuc_impl.py:450
+msgid "Error: %s does not exist."
+msgstr "Fehler: %s existiert nicht."
+
+#: MAGSBS/matuc_impl.py:458
+msgid "No errors found. Hopefully there are none :-)."
+msgstr "Keine Fehler gefunden. Hoffentlich gibt es keine :-)."
+
+#: MAGSBS/matuc_impl.py:501
+msgid ""
+"Generate a page number for a given context. A context consists of a line and "
+"a file. The enumeration will happen automatically (including distinction "
+"between roman and arabic), as well as the detection of the language of the "
+"lecture. This command will not insert the newly created page number by "
+"default, but print it to stdout. This is meant to be used by applications "
+"embedding Matuc's logic."
+msgstr ""
+"Generiere eine Seitenzahl für einen Kontext. Der Kontext besteht aus einer "
+"Datei und einer Zeile. Die Nummerierung erfolgt automatisch, inklusive "
+"Unterscheidung von arabischen und römischen Zahlen, ferner wird auch die "
+"Sprache erkannt. Die neue Seitenzahl wird nicht in die Datei eingefügt, "
+"sondern auf der Standardausgabe ausgegeben. Dies ist für Anwendungen "
+"gedacht, die Matuc einbetten wollen."
+
+#: MAGSBS/matuc_impl.py:510 MAGSBS/matuc_impl.py:566
+msgid "read from specified path instead of reading from standard input"
+msgstr "lies angegebenen Pfad ein, anstatt von der Standardeingabe"
+
+#: MAGSBS/matuc_impl.py:513
+#, fuzzy
+msgid ""
+"read from specified path instead of reading from standard input and write "
+"result back to file; this could lead to race conditions on concurrent "
+"modifications"
+msgstr ""
+"lies angegebenen Pfad ein, anstatt von der Standardeingabe und speichere "
+"Änderungen in die Dateien. Dies kann beim gleichzeitigen Speichern zu "
+"Problemen führen."
+
+#: MAGSBS/matuc_impl.py:518
+msgid ""
+"Path to load configuration from. This can be either a file or a directory. "
+"If -f is given, the path is used as input file (by default, input is read "
+"from stdin)"
+msgstr ""
+"Pfad von dem die Konfiguration eingelesen werden soll. Dies kann entweder "
+"eine Datei oder ein Verzeichnis sein. Wird -f übergeben, wird die Datei als "
+"Eingabedatei verwendet (standardmäßig ist es die Standardeingabe)."
+
+#: MAGSBS/matuc_impl.py:522
+msgid "Line number for which to generate the page number"
+msgstr "Zeilennummer für welche eine Seitenzahl generiert werden soll"
+
+#: MAGSBS/matuc_impl.py:527 MAGSBS/matuc_impl.py:580
+msgid "Given path has to exist."
+msgstr "Der angegebene Pfad existiert nicht."
+
+#: MAGSBS/matuc_impl.py:532
+msgid "Argument 2 is not a number."
+msgstr "Parameter 2 ist keine Zahl."
+
+#: MAGSBS/matuc_impl.py:538
+msgid ""
+"Given path is not a file, but reading from it with -f has been requested."
+msgstr ""
+"Der angegebene Pfad ist keine Datei, aber Einlesen der Datei mit -f "
+"erfordert eine Datei."
+
+#: MAGSBS/matuc_impl.py:562
+msgid ""
+"Check the page numbers of a document and warn / fix the page numbering, if "
+"the numbers do not strictly increase by one.\n"
+"This command reads from stdin by default, see -f."
+msgstr ""
+"Überprüft die Seitenzahlen eines Dokumentes und warnt / korrigiert die "
+"Seitenzahlen, wenn die Nummer nicht genau um eins erhöht wurde.\n"
+"Diese Befehlt liest von stdin als Standard, siehe -f."
+
+#: MAGSBS/matuc_impl.py:569
+#, fuzzy
+msgid "if -f is given, replace the page numbering in the file in-place"
+msgstr ""
+"falls angegeben, wird die Seitennummerierung direkt in der Datei ersetzt"
+
+#: MAGSBS/matuc_impl.py:575
+msgid "In-place modifications requested, but no file given."
+msgstr "Ersetzung in der Datei erforderlich, aber keine Datei vorhanden"
+
+#: MAGSBS/pandoc/contentfilter.py:141
 msgid "Incorrect formula: {reason}"
 msgstr "Fehlerhafte Formel: {reason}"
 
@@ -75,7 +401,7 @@ msgstr "Fehlerhafte Formel: {reason}"
 msgid "You need to have Pandoc installed."
 msgstr "Sie müssen Pandoc installiert haben."
 
-#: MAGSBS/pandoc/formats.py:476
+#: MAGSBS/pandoc/formats.py:478
 msgid ""
 "LaTeX reported an error while converting a fomrula. Unfortunately, "
 "improperly closed formula environments exist, therefore it cannot be "
@@ -408,7 +734,7 @@ msgid ""
 "kXXYY.md."
 msgstr ""
 "Die Datei ist zu lang. Um die Navigation zu erleichtern und die Lesbarkeit "
-"zu gewährleisten sollten lange Kapitel mit mehr als {count} Zeilen in "
+"zu gewährleisten, sollten lange Kapitel mit mehr als {count} Zeilen in "
 "mehrere Dateien mit einer Bennung wie kXXYY.md aufgeteilt werden."
 
 #: MAGSBS/toc.py:209
@@ -442,321 +768,3 @@ msgstr "Urheberrechtshinweis"
 #: MAGSBS/toc.py:243
 msgid "remarks about the accessible version"
 msgstr "Hinweise zur barrierefreien Version"
-
-#: matuc/matuc_impl.py:191
-msgid "Generate table of contents."
-msgstr "Generiere Inhaltsverzeichnis"
-
-#: matuc/matuc_impl.py:193
-msgid "write output to file instead of stdout"
-msgstr "schreibe Ausgaben in in Datei anstatt nach Stdout"
-
-#: matuc/matuc_impl.py:196
-msgid "material directory (containing chapters)"
-msgstr "Materialverzeichnis mit Kapiteln"
-
-#: matuc/matuc_impl.py:224
-msgid ""
-"Allowed subcommands are `show`, `update` and `init`.\n"
-"`show` shows the current configuration settings, default values if none "
-"present.\n"
-"`update` and `show` try to find the correct configuration: if none exists in "
-"the\n"
-"current directory and you are in a subdirectory of a project, the project "
-"root\n"
-"will be queried for a configuration. If no file was found, the default "
-"settings\n"
-"are displayed.\n"
-"\n"
-"`init` on the other hand behaves basically like update (it sets "
-"configuration\n"
-"values), but it does that for the current directory. This is handy for\n"
-"sub-directory configurations or initialization of a new project."
-msgstr ""
-"Erlaubte Unterkommandos sind `show`, `update` und `init`?.\n"
-"`show` zeigt die aktuellen Einstellungen, oder deren Standardwert, wenn\n"
-"nichts gesetzt wurde.\n"
-"`show` und `update` versuchen die korrekte Konfiguration zu finden: wenn\n"
-"im aktuellen Verzeichnis keine existiert und Sie im Unterverzeichnis\n"
-"eines Projektes sind, wird im Wurzelverzeichnisses des Projektes nach einer\n"
-"Konfiguration gesucht. Wird keine Datei gefunden, werden die \n"
-"Standardeinstellungen angezeigt.\n"
-"\n"
-"`init` verhält sich im Grunde wie `update`, nur im aktuellen Verzeichnis.\n"
-"Das ist nützlich, wenn Sie Konfigurationen in Unterverzeichnissen anlegen\n"
-"wollen oder ein neues Projekt anlegen."
-
-#: matuc/matuc_impl.py:236
-msgid ""
-"insert \"A\" as prefix for each chapter number in the appendix and omit the "
-"header \"appendix\""
-msgstr ""
-"füge \"A\" als Präfix für alle Überschriften im Anhang hinzu und lasse die "
-"Überschrift \"Anhang\" weg"
-
-#: matuc/matuc_impl.py:240
-msgid "set author of source document"
-msgstr "setze Autor im Quelldokument"
-
-#: matuc/matuc_impl.py:242
-msgid "set project editor"
-msgstr "setze Bearbeiter des Projektes"
-
-#: matuc/matuc_impl.py:245
-msgid "set institution (default TU Dresden)"
-msgstr "setze Institution (Standard TU Dresden)"
-
-#: matuc/matuc_impl.py:248
-msgid "set title of project (first heading level 1 by default)"
-msgstr "setze Titel des Projektes (Standardwert erste Überschrift Ebene 1)"
-
-#: matuc/matuc_impl.py:252
-msgid "set document language (de by default)"
-msgstr "setze Sprache der Dokumente (Standardwert de)"
-
-#: matuc/matuc_impl.py:255
-msgid "specify gap between page numbering links in navigation bar (default: 5)"
-msgstr ""
-"setze Abstand zwischen Seitenzahlen in der Navigationsleiste (Standardwert 5)"
-
-#: matuc/matuc_impl.py:259
-msgid "set information about source document"
-msgstr "setze Informationen über Quelldokument"
-
-#: matuc/matuc_impl.py:262
-msgid "set semester of edit (will be guessed otherwise)"
-msgstr ""
-"setze das Semester, in dem die Bearbeitung stattfand (ansonsten wird es "
-"geraten)"
-
-#: matuc/matuc_impl.py:265
-msgid "limit the heading depth for the table of contents"
-msgstr "begrenze Tiefe der Überschriften im Inhaltsverzeichnis"
-
-#: matuc/matuc_impl.py:268
-msgid "set working group"
-msgstr "setze Arbeitsgruppe"
-
-#: matuc/matuc_impl.py:272
-msgid "Error: no subcommand specified."
-msgstr "Fehler: kein Unterkommando angegeben."
-
-#: matuc/matuc_impl.py:289
-msgid "Current settings"
-msgstr "Aktuelle Einstellungen"
-
-#: matuc/matuc_impl.py:295
-msgid "New settings"
-msgstr "Neue Einstellungen"
-
-#: matuc/matuc_impl.py:304
-msgid ""
-"Converts a file or directory containing a project.\n"
-"\n"
-"If a directory is supplied, additional steps such as generating a table of "
-"contents are performed as well."
-msgstr ""
-"Konvertiere eine Datei oder ein Verzeichnis mit einem Projekt.\n"
-"\n"
-"Falls ein Verzeichnis übergeben wird, werden weitere Schritte wie die "
-"Generierung des Inhaltsverzeichnisses ausgeführt."
-
-#: matuc/matuc_impl.py:309
-msgid "select output format (html or epub, default html)"
-msgstr "Ändere Ausgabeformat (html oder epub, Standardwert html)"
-
-#: matuc/matuc_impl.py:312
-msgid "path to input file or directory"
-msgstr "Pfad zur Eingabedatei oder -verzeichnis"
-
-#: matuc/matuc_impl.py:339
-msgid ""
-"The working directory must be within a project; the image path must be "
-"relative to the current working directory."
-msgstr ""
-"Das Arbeitsverzeichnis muss innerhalb eines Projektes sein; der Bildpfad "
-"muss relativ zum Arbeitsverzeichnis sein."
-
-#: matuc/matuc_impl.py:344
-msgid "image description string (- for reading stdin)"
-msgstr "Zeichenkette für Bildbeschreibung (- für stdin)"
-
-#: matuc/matuc_impl.py:348
-msgid "outsource image descriptions regardless of their length"
-msgstr "lagere Bildbeschreibungen immer aus, unabhängig von ihrer Länge"
-
-#: matuc/matuc_impl.py:352
-msgid "set title for outsourced images (mandatory if outsourced)"
-msgstr "setze Title für ausgelagerte Bilder (zwingend wenn ausgelagert)"
-
-#: matuc/matuc_impl.py:357
-msgid "no path specified"
-msgstr "kein Pfad angegeben"
-
-#: matuc/matuc_impl.py:376
-msgid ""
-"Usage: {} iswithinlecture <path>\n"
-"\n"
-"Test whether the given file or directory is part of a lecture.\n"
-msgstr ""
-"Aufruf: {} iswithinlecture <Pfad>\n"
-"\n"
-"Prüft, ob die angegebene Datei oder das Verzeichnis Teil einer Vorlesung "
-"ist.\n"
-
-#: matuc/matuc_impl.py:379
-msgid "path required"
-msgstr "Pfad erforderlich"
-
-#: matuc/matuc_impl.py:383
-msgid "only one path at a time allowed."
-msgstr "Nur ein Pfad ist gleichzeitig erlaubt."
-
-#: matuc/matuc_impl.py:395
-msgid "Initialize a new lecture material or book directory."
-msgstr "Neues Lehrmaterial oder Buch anlegen."
-
-#: matuc/matuc_impl.py:399
-msgid "number of appendix chapters (default 0)"
-msgstr "Anzahl der Kapitel im Anhang (Standardwert 0)"
-
-#: matuc/matuc_impl.py:402
-msgid "number of chapters (default 2)"
-msgstr "Anzahl der Kapitel (Standardwert 2)"
-
-#: matuc/matuc_impl.py:405
-msgid "add a preface (default no)\")"
-msgstr "füge ein Vorwort hinzu (Standardwert kein)"
-
-#: matuc/matuc_impl.py:408
-msgid "if set, blattxx will be used instead of kxx"
-msgstr "falls angegeben wird blattxx anstatt kxx verwendet"
-
-#: matuc/matuc_impl.py:410
-msgid "set language (default de)"
-msgstr "setze Sprache (Standardwert de)"
-
-#: matuc/matuc_impl.py:412
-msgid "new directory to create project in"
-msgstr "neues Verzeichnis, indem ein Projekt angelegt wird"
-
-#: matuc/matuc_impl.py:421
-msgid "The number of chapters and appendix chapters must be integers."
-msgstr "Die Anzahl der Kapitel und Anhangskapitel müssen ganze Zahlen sein."
-
-#: matuc/matuc_impl.py:434
-msgid ""
-"\n"
-"        Run \"mistkerl\", a quality assurance helper. It checks for common "
-"errors\n"
-"        in accessible markdown documents and\n"
-"        outputs them on the command line."
-msgstr ""
-"\n"
-"Führe Mistkerl aus, ein Werkzeug zur Qualitätssicherung. Es prüft "
-"barrierefreie Markdown-Dokumente auf häufige Fehler und gibt diese auf der "
-"Kommandozeile aus."
-
-#: matuc/matuc_impl.py:440
-msgid "Sort critical errors first"
-msgstr "Sortiere kritische Fehler zuerst"
-
-#: matuc/matuc_impl.py:442
-msgid "use less blank lines in output"
-msgstr "unterdrücke Leerzeilen in der Ausgabe"
-
-#: matuc/matuc_impl.py:444
-msgid ""
-"open a console-only live view, refreshing the list of errors every few "
-"seconds"
-msgstr ""
-"öffne eine reine Kommandozeilenansicht, welche im Abstand mehrerer Sekunden "
-"die Fehlerliste aktualisiert."
-
-#: matuc/matuc_impl.py:447
-msgid "specify file or directory to be checked"
-msgstr "Zu prüfende Datei oder Verzeichnis angeben"
-
-#: matuc/matuc_impl.py:451
-msgid "input file name required."
-msgstr "Eingabedateiname erforderlich."
-
-#: matuc/matuc_impl.py:454
-msgid "Error: %s does not exist."
-msgstr "Fehler: %s existiert nicht."
-
-#: matuc/matuc_impl.py:462
-msgid "No errors found. Hopefully there are none :-)."
-msgstr "Keine Fehler gefunden. Hoffentlich gibt es keine :-)."
-
-#: matuc/matuc_impl.py:505
-msgid ""
-"Generate a page number for a given context. A context consists of a line and "
-"a file. The enumeration will happen automatically (including distinction "
-"between roman and arabic), as well as the detection of the language of the "
-"lecture. This command will not insert the newly created page number by "
-"default, but print it to stdout. This is meant to be used by applications "
-"embedding Matuc's logic."
-msgstr ""
-
-#: matuc/matuc_impl.py:514 matuc/matuc_impl.py:570
-msgid "read from specified path instead of reading from standard input"
-msgstr "lies angegebenen Pfad ein, anstatt von der Standardeingabe"
-
-#: matuc/matuc_impl.py:517
-#, fuzzy
-msgid ""
-"read from specified path instead of reading from standard input and write "
-"result back to file; this could lead to race conditions on concurrent "
-"modifications"
-msgstr ""
-"lies angegebenen Pfad ein, anstatt von der Standardeingabe und speichere "
-"Änderungen in die Dateien. Dies kann beim gleichzeitigen Speichern zu "
-"Problemen führen."
-
-#: matuc/matuc_impl.py:522
-msgid ""
-"Path to load configuration from. This can be either a file or a directory. "
-"If -f is given, the path is used as input file (by default, input is read "
-"from stdin)"
-msgstr ""
-
-#: matuc/matuc_impl.py:526
-msgid "Line number for which to generate the page number"
-msgstr "Zeilennummer für welche eine Seitenzahl generiert werden soll"
-
-#: matuc/matuc_impl.py:531 matuc/matuc_impl.py:584
-msgid "Given path has to exist."
-msgstr "Der angegebene Pfad existiert nicht."
-
-#: matuc/matuc_impl.py:536
-msgid "Argument 2 is not a number."
-msgstr "Parameter 2 ist keine Zahl."
-
-#: matuc/matuc_impl.py:542
-msgid ""
-"Given path is not a file, but reading from it with -f has been requested."
-msgstr ""
-"Der angegebene Pfad ist keine Datei, aber Einlesen der Datei mit -f "
-"erfordert eine Datei."
-
-#: matuc/matuc_impl.py:566
-msgid ""
-"Check the page numbers of a document and warn / fix the page numbering, if "
-"the numbers do not strictly increase by one.\n"
-"This command reads from stdin by default, see -f."
-msgstr ""
-"Überprüft die Seitenzahlen eines Dokumentes und warnt / korrigiert die "
-"Seitenzahlen, wenn die Nummer nicht genau um eins erhöht wurde.\n"
-"Diese Befehlt liest von stdin als Standard, siehe -f."
-
-#: matuc/matuc_impl.py:573
-#, fuzzy
-msgid "if -f is given, replace the page numbering in the file in-place"
-msgstr ""
-"falls angegeben, wird die Seitennummerierung direkt in der Datei ersetzt"
-
-#: matuc/matuc_impl.py:579
-#, fuzzy
-msgid "In-place modifications requested, but no file given."
-msgstr "Ersetzung in der Datei erforderlich, aber keine Datei vorhanden"
