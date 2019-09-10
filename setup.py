@@ -14,7 +14,7 @@ from MAGSBS.config import VERSION
 
 BUILD_DIR = 'build'
 POT_FILE = 'matuc.pot'
-mo_base = lambda lang: os.path.join(BUILD_DIR, 'mo', lang)
+mo_base = lambda lang: os.path.join(BUILD_DIR, 'mo', lang, 'LC_MESSAGES')
 
 def shell(cmd, hint=None):
     ret = os.system(cmd)
@@ -30,7 +30,7 @@ def mkmo(podir, pofile):
         shutil.rmtree(outpath)
     os.makedirs(outpath)
     inpath = os.path.join(podir, pofile)
-    shell("msgfmt %s -o %s/%s.mo" % (inpath, outpath, 'matuc'))
+    shell("msgfmt %s -o %s%s%s.mo" % (inpath, outpath, os.sep, 'matuc'))
 
 class I18nBuild(build):
     """Build gettext locale files and install them appropriately."""
@@ -85,7 +85,7 @@ class I18nGeneration(Command):
         files = (shlex.quote(os.path.join(dname, file))
                 for dname, _d, files in os.walk('.') for file in files
                 if file.endswith('.py') and not 'build' in dname
-                    and not 'setup' in file and not 'test' in dname)        
+                    and not 'setup' in file and not 'test' in dname)
         create_pot = not os.path.exists('matuc.pot')
         if not create_pot:
             # query last modification time of py source files

@@ -4,6 +4,7 @@
 !define VERSIONMAJOR 0
 !define VERSIONMINOR 5
 !define VERSIONBUILD 0
+!define INST_DIR_SUFFIX agsbs\matuc
 
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # email link which would open the email address in the email program
@@ -12,13 +13,13 @@
 !define INSTALLSIZE 58985741
 # installer/uninstaller's title bar
 Name "${APPNAME}"
-  
+
 !include "EnvVarUpdate.nsh"
 
 # plain text files must have \r\n line delimiters
 LicenseData "binary\COPYING.txt"
 Outfile "matuc-installer.exe"
-InstallDir "$PROGRAMFILES\agsbs\matuc"
+InstallDir "$PROGRAMFILES\${INST_DIR_SUFFIX}"
 
 # installation flow
 
@@ -59,22 +60,25 @@ done:
 
 FunctionEnd
 
-
 section ""
-
   # set values
   SetOutPath $INSTDIR
-
   # select the files to install
   File /r "binary\*.*"
+  SetShellVarContext all
+  # copy gettext MO object to Program Data
+  SetOutPath "$APPDATA\${INST_DIR_SUFFIX}\locale"
+  File /r "..\..\build\mo\*" # needs to be created beforehand by python script
+  SetOutPath $INSTDIR
 
+  # adjust %PATH% variable (copy/paste code)
   ${EnvVarUpdate} $0 "PATH" "A" "HKLM" "$INSTDIR"
 
   # Start Menu
   createDirectory "$SMPROGRAMS\${APPNAME}"
   createShortCut "$SMPROGRAMS\${APPNAME}\${APPNAME}-Deinstallation.lnk" "$INSTDIR\uninstall.exe" "" ""
   createShortCut "$SMPROGRAMS\${APPNAME}\Hilfe.lnk" "http://elvis.inf.tu-dresden.de/wiki/index.php/Matuc" "" ""
- 
+
   # Registry information for add/remove programs
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "DisplayName" "${APPNAME} converter - ${DESCRIPTION}"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPNAME}" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
@@ -97,6 +101,9 @@ SectionEnd
 
 Section "Uninstall"
   ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" "$INSTDIR"
+  SetShellVarContext all
+  RMDir /r "$APPDATA\agsbs"
+  RMDir "$APPDATA\agsbs"
   RMDir /r "$INSTDIR"
   rmDir /r "$SMPROGRAMS\${APPNAME}"
 

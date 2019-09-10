@@ -176,8 +176,8 @@ def _get_localedir():
         loc_dirs += ["/usr/share/locale", "/usr/local/share/locale"]
     elif sys.platform == "win32":
         # default installer place
-        loc_dirs.append(os.path.join(os.getenv('ProgramData'), "matuc",
-                "locale"))
+        loc_dirs.append(os.path.join(os.getenv('ProgramData'), "agsbs",
+                "matuc", "locale"))
     for directory in loc_dirs:
         loc_dir_lang = os.path.join(directory, locale.getdefaultlocale()[0][:2])
         if any(file == 'matuc.mo' for _d, _ds, files in os.walk(loc_dir_lang)
