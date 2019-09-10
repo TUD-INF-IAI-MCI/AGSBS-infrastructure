@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-10-30 16:27+CET\n"
-"PO-Revision-Date: 2018-02-22 14:04+0100\n"
+"PO-Revision-Date: 2019-08-09 12:02+0200\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
 "Language: de\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 2.2.3\n"
 "Generated-By: pygettext.py 1.5\n"
 
 #: MAGSBS/datastructures.py:222
@@ -701,14 +701,18 @@ msgstr ""
 
 #: matuc/matuc_impl.py:514 matuc/matuc_impl.py:570
 msgid "read from specified path instead of reading from standard input"
-msgstr ""
+msgstr "liest angegebenen Pfad ein, anstatt von der Standardeingabe"
 
 #: matuc/matuc_impl.py:517
+#, fuzzy
 msgid ""
 "read from specified path instead of reading from standard input and write "
 "result back to file; this could lead to race conditions on concurrent "
 "modifications"
 msgstr ""
+"liest angegebenen Pfad ein, anstatt von der Standardeingabe und speichert "
+"Änderungen in der Dateien. Die kann beim gleichzeitigen Speichern zu "
+"Problemen führen."
 
 #: matuc/matuc_impl.py:522
 msgid ""
@@ -733,6 +737,8 @@ msgstr "Parameter 2 ist keine Zahl."
 msgid ""
 "Given path is not a file, but reading from it with -f has been requested."
 msgstr ""
+"Der angegebene Pfad ist keine Datei, aber Einlesen der Datei mit -f "
+"erfordert eine Datei."
 
 #: matuc/matuc_impl.py:566
 msgid ""
@@ -740,11 +746,17 @@ msgid ""
 "the numbers do not strictly increase by one.\n"
 "This command reads from stdin by default, see -f."
 msgstr ""
+"Überprüft die Seitenzahlen eines Dokumentes und warnt / korrigiert die "
+"Seitenzahlen, wenn die Nummer nicht genau um eins erhöht wurden.\n"
+"Diese Befehlt liest von stdin als Standard, siehe -f."
 
 #: matuc/matuc_impl.py:573
+#, fuzzy
 msgid "if -f is given, replace the page numbering in the file in-place"
 msgstr ""
+"falls angegeben wird die Seitennummerierung direkt in der Datei ersetzt"
 
 #: matuc/matuc_impl.py:579
+#, fuzzy
 msgid "In-place modifications requested, but no file given."
-msgstr ""
+msgstr "Ersetzung in der Datei erforderlich, aber keine Datei vorhanden"
