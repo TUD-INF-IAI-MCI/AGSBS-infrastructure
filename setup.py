@@ -37,7 +37,11 @@ class I18nBuild(build):
     user_options = build.user_options
     def run(self, *args):
         for pofile in os.listdir('po'):
-            mkmo('po', pofile)
+            # ~-files are known to cause issues, delete them
+            if pofile.endswith('~'):
+                os.remove(os.path.join('po', pofile))
+            elif pofile.endswith('po'): # only convert .po files
+                mkmo('po', pofile)
         build.run(self, *args)
 
 #pylint: disable=protected-access
@@ -105,15 +109,12 @@ class I18nInstall(install):
     user_options = install.user_options
     def run(self):
         install.run(self)
-        for pofile in os.listdir('po'):
-            if not pofile.endswith('.po'):
-                continue
-            lang = os.path.splitext(pofile)[0]
+        for lang in os.listdir(os.path.join(BUILD_DIR, 'mo')):
             destdir = os.path.join(locale_destdir(), lang, 'LC_MESSAGES')
             if not os.path.exists(destdir):
                 os.makedirs(destdir)
-            src_mo = os.path.join('build', 'mo', lang, 'matuc.mo')
-            print("Installing %s to %s" % (src_mo, destdir))
+            src_mo = os.path.join(BUILD_DIR, 'mo', lang, 'LC_MESSAGES', 'matuc.mo')
+            print(f"Installing {src_mo} to {destdir}")
             shutil.copy(src_mo, destdir)
 
 setuptools.setup(
@@ -127,7 +128,7 @@ setuptools.setup(
     entry_points={
        "console_scripts": [
            "matuc = MAGSBS.matuc:main",
-            "matuc_js = MAGSBS.matuc_js:main",
+           "matuc_js = MAGSBS.matuc_js:main",
         ],
     },
     install_requires=[
