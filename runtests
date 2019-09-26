@@ -8,4 +8,4 @@ then
     PYTHON=python3
 fi
 
-$PYTHON -m unittest discover tests
+$PYTHON tests

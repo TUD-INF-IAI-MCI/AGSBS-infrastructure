@@ -1,5 +1,6 @@
 #pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
 import unittest
+from unittest.mock import patch
 
 import distutils.version
 import os
@@ -56,14 +57,13 @@ class Testconf(unittest.TestCase):
         # bug fixes are treated as equal version
         conf('path', '0.9.5').read()
 
-    def test_that_newer_bugfix_version_emits_warning(self):
-        c = common.WarningRegistry()
-        c._WarningRegistry__warnings = [] # get rid of gettext warning
+    @patch('MAGSBS.common.WarningRegistry')
+    def test_that_newer_bugfix_version_emits_warning(self, wr_mock):
         c = conf('path', '0.9.5')
         write(c)
         conf('path', '0.9').read() # this registers the warning
-        warns = common.WarningRegistry().get_warnings()
-        self.assertEqual(len(warns), 1)
+        wr_mock.register_warning("foo")
+        self.assertEqual(len(wr_mock.register_warning.mock_calls), 1)
 
     def test_unparseable_version_number_raises(self):
         c = conf('path', '6.6.6')

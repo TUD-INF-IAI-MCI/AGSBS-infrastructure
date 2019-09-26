@@ -224,7 +224,7 @@ instead.
             self.__changed = True
             self.write() # overwrite version number in configuration which is too old
         else:
-            raise ConfigurationError(("matuc is too old, the configuration "
+            raise ConfigurationError(_("Matuc is too old, the configuration "
                 "requires version {}, but version {} is running.").format(version, VERSION),
                 path, get_lnum_of_tag(path, 'MAGSBS:version'))
 

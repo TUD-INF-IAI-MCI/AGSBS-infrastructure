@@ -38,7 +38,7 @@ class test_locale(unittest.TestCase):
     def test_that_locale_is_available_Windows(self):
         # platform unknown, as is the os.sep, use slash *always*
         self.assertEqual(normalise_path(_get_localedir()),
-                "c:/programdata/matuc/locale")
+                "c:/programdata/agsbs/matuc/locale")
 
         # ToDo: test name ergibt keinen sinn, Testaufbau schlecht. Daten aus
         # Code sammeln, assert* ausführen
