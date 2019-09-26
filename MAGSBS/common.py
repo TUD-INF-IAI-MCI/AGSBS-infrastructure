@@ -3,7 +3,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2016-2019 Sebastian Humenda <shumenda |at| gmx |dot| de>
 import atexit
 import gettext
 import itertools
@@ -184,7 +184,7 @@ def _get_localedir():
                 for file in files):
             return directory
     WarningRegistry().register_warning(
-            "Couldn't find locales directory.") # → None
+            _("Couldn't find 'locales' directory.")) # → None
 
 def setup_i18n():
     """Set up internationalisation support in MAGSBS/matuc."""

@@ -1,9 +1,9 @@
 # MAGSBS German translation file
-# Copyright (C) 2018 Sebastian Humenda
+# Copyright (C) 2019 Sebastian Humenda
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-09-10 16:59+CEST\n"
+"POT-Creation-Date: 2019-09-26 17:14+0200\n"
 "PO-Revision-Date: 2019-08-09 12:02+0200\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -15,9 +15,51 @@ msgstr ""
 "X-Generator: Poedit 2.2.3\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: MAGSBS/datastructures.py:222
-msgid "the file does not follow naming conventions"
-msgstr "der Dateiname folgt nicht den Namenskonventionen"
+#: MAGSBS/common.py:187
+msgid "Couldn't find 'locales' directory."
+msgstr "Konnte Verzeichnis 'locales' nicht finden."
+
+#: MAGSBS/config.py:186
+msgid ""
+"Unknown key %s, skipping. Please update the configuration and rerun the "
+"operation."
+msgstr ""
+"Unbekannter Schlüsselbegriff %s, wird ignoriert. Bitte aktualisieren Sie die "
+"Konfiguration und wiederholen Sie dann diese Operation."
+
+#: MAGSBS/config.py:203
+#, fuzzy
+msgid "Malformed XML in configuration: "
+msgstr "in Konfiguration"
+
+#: MAGSBS/config.py:214
+msgid "invalid version number: {}"
+msgstr "ungültige Versionsnummer: {}"
+
+#: MAGSBS/config.py:227
+msgid ""
+"Matuc is too old, the configuration requires version {}, but version {} is "
+"running."
+msgstr ""
+"Matuc ist zu alt. Die Konfiguration benötigt Version {}, es läuft aber "
+"Version {}."
+
+#: MAGSBS/config.py:239
+msgid "Option {} couldn't be converted to a number: {}"
+msgstr "Option {} konnte nicht zu einer Zahl konvertiert werden: {}"
+
+#: MAGSBS/config.py:242
+msgid "the key %s is unknown"
+msgstr "der Schlüsselbegriff %s ist nicht bekannt"
+
+#: MAGSBS/config.py:299
+#, fuzzy
+msgid "Configuration errorneous: "
+msgstr "in Konfiguration unter"
+
+#: MAGSBS/config.py:387
+msgid "unsupported language %s; known languages: %s"
+msgstr "unbekannte Sprache %s; bekannte Sprachen: %s"
 
 #: MAGSBS/errors.py:60
 msgid ""

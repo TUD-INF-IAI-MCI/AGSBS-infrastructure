@@ -183,7 +183,7 @@ instead.
                     version_read = True
                     self.__check_for_version(self.__path, child.text)
                 elif not tag in xmlkey2dict:
-                    raise ConfigurationError(("Unknown key %s, skipping. Please"
+                    raise ConfigurationError(_("Unknown key %s, skipping. Please"
                         " update the configuration and rerun the operation.") % tag,
                             path=self.__path)
                 else:
@@ -194,13 +194,13 @@ instead.
                         try:
                             value = int(value)
                         except ValueError:
-                            raise ConfigurationError("Option " + tag +
-                                "has invalid, non-numerical value of " +
-                                value, self.__path)
+                            raise ConfigurationError(_(f"Option {tag} "
+                                "has invalid, non-numerical value of {value}"),
+                                self.__path)
                     try:
                         self[key] = value
                     except IndexError:
-                        msg = 'Malformed XML in configuration: ' + ET.dump(child)
+                        msg = _('Malformed XML in configuration: ') + ET.dump(child)
                         raise ConfigurationError(msg, self.__path)
             if not version_read:
                 self.__check_for_version(self.__path, '0.1')
@@ -211,7 +211,7 @@ instead.
         try:
             version = StrictVersion(value)
         except ValueError:
-            raise ConfigurationError("invalid version number: " + repr(value),
+            raise ConfigurationError(_("invalid version number: {}").format(repr(value),),
                     path, line=get_lnum_of_tag(path, 'MAGSBS:version'))
         # check whether the first two digits of the version numbers match;
         # that'll tread bug fix releases the same
@@ -236,10 +236,10 @@ instead.
             try:
                 v = int(v)
             except ValueError:
-                raise ConfigurationError(("Option {} couldn't be converted to "
+                raise ConfigurationError(_("Option {} couldn't be converted to "
                     "a number: {}").format(k, v), self.__path)
         if k not in self.keys():
-            raise ConfigurationError("the key %s is unknown" % k, self.__path)
+            raise ConfigurationError(_("the key %s is unknown") % k, self.__path)
         super().__setitem__(k, v)
         self.__changed = True
 
@@ -294,9 +294,9 @@ configuration and then, if present, the corresponding subdirectory configuration
                 if os.path.exists(conf_path):
                     self._instances[conf_path].read()
             except UnicodeDecodeError:
-                raise ValueError(conf_path + ": File must be encoded in UTF-8")
+                raise ValueError(_(f"{conf_path}: File must be encoded in UTF-8"))
             except ET.ParseError as e:
-                raise ConfigurationError("Configuration errorneous: " + str(e),
+                raise ConfigurationError(_("Configuration errorneous: ") + str(e),
                         conf_path, e.position[0])
         return self._instances[conf_path]
 
@@ -384,7 +384,7 @@ class Translate:
 
     def set_language(self, lang):
         if not lang in self.supported_languages:
-            raise ValueError("unsupported language %s; known languages: %s" \
+            raise ValueError(_("unsupported language %s; known languages: %s") \
                     % (lang, ', '.join(self.supported_languages)))
         self.lang = lang
 

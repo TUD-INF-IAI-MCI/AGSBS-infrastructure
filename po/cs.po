@@ -4,7 +4,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-09-10 16:59+CEST\n"
+"POT-Creation-Date: 2019-09-26 17:14+0200\n"
 "PO-Revision-Date: 2018-02-19 09:19+0100\n"
 "Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
 "Language-Team: TUD\n"
@@ -16,8 +16,44 @@ msgstr ""
 "X-Generator: Poedit 2.0.6\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: MAGSBS/datastructures.py:222
-msgid "the file does not follow naming conventions"
+#: MAGSBS/common.py:187
+msgid "Couldn't find 'locales' directory."
+msgstr ""
+
+#: MAGSBS/config.py:186
+msgid ""
+"Unknown key %s, skipping. Please update the configuration and rerun the "
+"operation."
+msgstr ""
+
+#: MAGSBS/config.py:203
+msgid "Malformed XML in configuration: "
+msgstr ""
+
+#: MAGSBS/config.py:214
+msgid "invalid version number: {}"
+msgstr ""
+
+#: MAGSBS/config.py:227
+msgid ""
+"Matuc is too old, the configuration requires version {}, but version {} is "
+"running."
+msgstr ""
+
+#: MAGSBS/config.py:239
+msgid "Option {} couldn't be converted to a number: {}"
+msgstr ""
+
+#: MAGSBS/config.py:242
+msgid "the key %s is unknown"
+msgstr ""
+
+#: MAGSBS/config.py:299
+msgid "Configuration errorneous: "
+msgstr ""
+
+#: MAGSBS/config.py:387
+msgid "unsupported language %s; known languages: %s"
 msgstr ""
 
 #: MAGSBS/errors.py:60

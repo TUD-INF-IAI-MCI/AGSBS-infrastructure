@@ -87,7 +87,7 @@ class I18nGeneration(Command):
 
     def run(self):
         files = (shlex.quote(os.path.join(dname, file))
-                for dname, _d, files in os.walk('.') for file in files
+                for dname, _d, files in os.walk('MAGSBS') for file in files
                 if file.endswith('.py') and not 'build' in dname
                     and not 'setup' in file and not 'test' in dname)
         create_pot = not os.path.exists('matuc.pot')
@@ -98,7 +98,9 @@ class I18nGeneration(Command):
                 create_pot = True
         if create_pot:
             print("Extracting translatable strings...")
-            shell('pygettext --keyword=_ --output=matuc.pot %s' \
+            pygettext = ('pygettext3' if shutil.which('pygettext3')
+                    else 'pygettext')
+            shell(f'{pygettext} --keyword=_ --output=matuc.pot %s' \
                     % ' '.join(files))
         # merge new strings and old translations
         for lang_po in os.listdir('po'):
