@@ -6,10 +6,10 @@ Introduction
 ------------
 
 
-This module and it's sample command client is meant to ease the work flow from
-the [AG SBS](https://elvis.inf.tu-dresden.de/index.php?menuid=23). In short it
-helps prepare lecture material and relevant literature for visually impaired and
-blind students. The format for editing is MarkDown and the accessible output
+This module and its command-line client assists in preparing and editing lecture
+material, books and more for visually impaired and blind students. It is
+developed at the [AG SBS](https://elvis.inf.tu-dresden.de/index.php?menuid=23).
+The format for editing is MarkDown and the accessible output
 format is HTML.
 HTML has the advantage that the referenced images can be described with an
 alternate text for the screen reader user, while displaying the actual image on
