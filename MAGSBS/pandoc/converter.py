@@ -13,7 +13,9 @@ the field converters of the pandoc class.
 #pylint: disable=multiple-imports
 
 import os
-from .formats import ConversionProfile, HtmlConverter, OutputFormat
+from .formats import ConversionProfile, OutputFormat
+from .output_formats.html import HtmlConverter
+from .output_formats.epub import EpubConverter
 from .. import config
 from ..config import MetaInfo
 from .. import common
@@ -22,7 +24,7 @@ from .. import errors
 from .. import filesystem
 
 
-ACTIVE_CONVERTERS = [HtmlConverter]
+ACTIVE_CONVERTERS = [HtmlConverter, EpubConverter]
 
 def get_lecture_root(some_file):
     """Return lecture root for a file or raise exception if it cannot be
@@ -45,7 +47,7 @@ class Pandoc:
     """Abstract the translation by pandoc into a class which add meta-information
 to the output, handles errors and checks for the correct encoding.
 """
-    def __init__(self, conf=None):
+    def __init__(self, conf=None, root_path=None):
         self.converters = ACTIVE_CONVERTERS
         self.__conf = (config.ConfFactory().get_conf_instance(os.getcwd())
                 if not conf else conf)
@@ -53,6 +55,7 @@ to the output, handles errors and checks for the correct encoding.
         self.__meta_data['path'] = None
         self.__conv_profile = ConversionProfile.Blind
         self.__output_format = OutputFormat.Html
+        self.__root_path = root_path
 
     def get_formatter_for_format(self, format_):
         """Get converter object."""
@@ -76,7 +79,7 @@ to the output, handles errors and checks for the correct encoding.
         self.__meta_data['path'] = conf.get_path()
 
     @staticmethod
-    def __get_cache(files):
+    def get_cache(files):
         """See convert() for documentation."""
         if isinstance(files, datastructures.FileCache):
             cache = files
@@ -101,13 +104,12 @@ to the output, handles errors and checks for the correct encoding.
         """converts a list of files. They should share all the meta data, except
         for the title. All files must be part of one lecture.
         `files` can be either a cache object or a list of files to convert."""
-        cache, files = Pandoc.__get_cache(files)
         converter = None # declare in outer scope for finally
         converter = self.get_formatter_for_format(self.__output_format.value)
         converter.set_meta_data(self.__meta_data)
         converter.setup()
         converter.set_profile(self.__conv_profile)
-        converter.convert(files, cache=cache)
+        converter.convert(files, path=self.__root_path)
 
     def set_conversion_profile(self, profile):
         if not isinstance(profile, ConversionProfile):

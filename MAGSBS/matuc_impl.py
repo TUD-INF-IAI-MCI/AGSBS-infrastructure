@@ -325,7 +325,7 @@ sub-directory configurations or initialization of a new project.""")
                      else OutputFormat.from_string(args.format)))
                 m.run()
             else:
-                p = MAGSBS.pandoc.converter.Pandoc()
+                p = MAGSBS.pandoc.converter.Pandoc(root_path=os.getcwd())
                 # do not handle format argument as only html is supported for
                 # convcerting a single file.
                 p.convert_files((args.path,))
