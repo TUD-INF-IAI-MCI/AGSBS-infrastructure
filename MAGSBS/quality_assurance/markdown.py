@@ -238,7 +238,7 @@ class DoNotEmbedHtml(OnelinerMistake):
     def check(self, num, line):
         match = self.pattern.search(line.lower())
         tag = (match.groups()[0] if match else None)
-        if tag and tag not in ['div', 'span', 'hr']:
+        if tag and tag not in ['div', 'span']:
             pos_on_line = match.span()[1]
             if tag.lower() == 'br':
                 return self.error(_("\"{tag}\" is not allowed, use a new "
