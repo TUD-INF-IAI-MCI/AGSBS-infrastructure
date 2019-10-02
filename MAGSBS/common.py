@@ -184,7 +184,7 @@ def _get_localedir():
                 for file in files):
             return directory
     WarningRegistry().register_warning(
-            _("Couldn't find 'locales' directory.")) # → None
+            "Couldn't find 'locales' directory.") # → None
 
 def setup_i18n():
     """Set up internationalisation support in MAGSBS/matuc."""

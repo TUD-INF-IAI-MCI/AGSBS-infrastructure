@@ -9,8 +9,10 @@ import unittest, unittest.mock
 # available during test runtime. Hence it's better mocked out. For the few rare
 # cases where the warning registry is under test, the mock can be added using a
 # patch to the test function.
+import MAGSBS.common
 
 with unittest.mock.patch('MAGSBS.common.WarningRegistry'):
+    MAGSBS.common.setup_i18n()
     import unittest
     sys.argv.append('discover')
     sys.argv.append('tests')
