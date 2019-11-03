@@ -135,6 +135,7 @@ setuptools.setup(
     },
     install_requires=[
         "pandocfilters >= 1.4.2",
+        "gladtex       >= 3.1"
     ],
     include_package_data=True,
     license="LGPL",
