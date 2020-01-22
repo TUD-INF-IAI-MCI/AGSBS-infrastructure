@@ -21,7 +21,7 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..')) # insert directory above as first path
 
-PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.7.3/pandoc-2.7.3-windows-x86_64.zip"
+PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.9.1.1/pandoc-2.9.1.1-windows-x86_64.zip"
 
 BUILD_DIRECTORY = "build"
 
@@ -128,10 +128,8 @@ class SetUp:
             subprocess_call('7z x x.zip')
         else:
             subprocess_call('7z x x.zip')
-        subdir = os.listdir('.')[0] # unzips with subdirectory
-        if not os.path.isdir(subdir):
-            raise OSError("Pandoc zip file layout changed, please fix this script.")
-        os.rename(os.path.join(subdir, 'pandoc.exe'),
+        subdir = os.listdir('.')[0]  # unzips with subdirectory
+        os.rename(os.path.join('.', 'pandoc.exe'),
                 os.path.join('..', 'pandoc.exe'))
         os.chdir("..")
         shutil.rmtree(os.path.basename(tmp)) # remove pandoc's temp directory
