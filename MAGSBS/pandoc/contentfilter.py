@@ -173,7 +173,7 @@ def epub_remove_images_from_toc(key, value, fmt, meta):
                     text
                 )
             )
- 
+
 
 def epub_update_image_location(key, value, fmt, url_prefix, modify_ast=True):
     """Updates all image references (referenced relative to the lecture root) so
@@ -220,7 +220,7 @@ def epub_create_back_links(key, value, fmt, meta):
     the chapter as key"""
     if fmt != 'epub':
         return
-    # header from image descriptions are within a RawBlock 
+    # header from image descriptions are within a RawBlock
     # due to a previous filter
     # before: <p id="image_id", class="header" data-level="2">Image Id</p>
     # after:

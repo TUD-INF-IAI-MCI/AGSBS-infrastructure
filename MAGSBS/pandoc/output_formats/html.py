@@ -213,8 +213,12 @@ class HtmlConverter(OutputGenerator):
             pandoc_args += ['-V', 'pagetitle:' + title, '-V', 'title:' + title]
         # instruct pandoc to enumerate headings
         try:
-            pandoc_args += ['--number-sections', '--number-offset',
+            from ...config import MetaInfo
+            conf = config.ConfFactory().get_conf_instance(dirname)
+            if conf[MetaInfo.AutoNumberingOfChapter]:
+                pandoc_args += ['--number-sections', '--number-offset',
                 str(datastructures.extract_chapter_number(path) - 1)]
+
         except errors.StructuralError:
             pass # no enumeration of headings if not chapter
         # for 'blind' see __apply_filters, doesn't need a Pandoc argument

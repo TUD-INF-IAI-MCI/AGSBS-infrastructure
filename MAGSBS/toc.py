@@ -127,7 +127,7 @@ class ChapterNumberEnumerator:
             raise ValueError(("Neither get_level() nor get_chapter_number() "
                 "may be None for the given heading"))
             # each chapter has its own sections, so if new chapter, reset all
-            # section counters
+            # section counter
         if heading.get_chapter_number() != self.__lastchapter:
             self.__registered = [0 for x in range(ChapterNumberEnumerator.MAX_DEPTH)]
             self.__registered[0] = heading.get_chapter_number()
@@ -193,9 +193,12 @@ the TOC corrrectly."""
                     # only numbered headings are registered for numbering and
                     # included in the TOC
                     enumerators[h_type].register(heading)
-                    self.__headings[h_type].append((
-                            enumerators[h_type].get_heading_enumeration(),
-                            heading, os.path.join(directory_above, file)))
+                heading_enumration = ""
+                if self.conf[MetaInfo.AutoNumberingOfChapter]:
+                    heading_enumration = enumerators[h_type].get_heading_enumeration()
+
+                self.__headings[h_type].append((heading_enumration,
+                        heading, os.path.join(directory_above, file)))
 
 
 
