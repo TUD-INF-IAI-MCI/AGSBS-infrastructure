@@ -22,7 +22,7 @@ from . import common
 from .errors import ConfigurationError
 from . import roman
 
-VERSION = StrictVersion('0.8')
+VERSION = StrictVersion('0.9')
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -70,6 +70,7 @@ def get_lnum_of_tag(path, tag):
 
 class MetaInfo(enum.Enum):
     AppendixPrefix = 'MAGSBS:appendixPrefix'
+    AutoNumberingOfChapter = 'MAGSBS:autoNumberingOfChapter'
     Editor = 'dc:creator'
     GenerateToc = 'MAGSBS:generateToc'
     Institution = 'dc:publisher'
@@ -109,9 +110,11 @@ instead.
             MetaInfo.Institution: 'TU Dresden',
             MetaInfo.Rights: 'Access limited to members',
             MetaInfo.TocDepth: 5, MetaInfo.AppendixPrefix: 0,
-            MetaInfo.PageNumberingGap: 5, MetaInfo.GenerateToc: 1}
+            MetaInfo.PageNumberingGap: 5, MetaInfo.GenerateToc: 1,
+            MetaInfo.AutoNumberingOfChapter: 0}
     NUMERICAL = (MetaInfo.TocDepth, MetaInfo.AppendixPrefix,
-                MetaInfo.PageNumberingGap, MetaInfo.GenerateToc)
+                MetaInfo.PageNumberingGap, MetaInfo.GenerateToc,
+                MetaInfo.AutoNumberingOfChapter)
 
     def __init__(self, file_path, version=VERSION):
         """Set default values."""

@@ -128,7 +128,6 @@ class SetUp:
             subprocess_call('7z x x.zip')
         else:
             subprocess_call('7z x x.zip')
-        subdir = os.listdir('.')[0]  # unzips with subdirectory
         os.rename(os.path.join('.', 'pandoc.exe'),
                 os.path.join('..', 'pandoc.exe'))
         os.chdir("..")
