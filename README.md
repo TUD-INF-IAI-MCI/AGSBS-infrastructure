@@ -82,3 +82,15 @@ two-letter codes given by [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_
 
 For generation, you can use the e.g. the [msgfmt script]
 (http://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/msgfmt.html)
+
+
+Development
+-----------
+
+### Code Style
+
+The source code is auto-formatted using the [black code
+formatter](https://github.com/psf/black).
+
+Before committing code changes, install it via ``pip install -U black`` and run ``black
+.`` in the repository's root to ensure everything is formatted in a consistent manner.

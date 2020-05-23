@@ -1,13 +1,16 @@
-#pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
+# pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
 import unittest
 from MAGSBS.quality_assurance import latex
 from MAGSBS.quality_assurance import meta
 
+
 def iserror(obj):
     return isinstance(obj, meta.ErrorMessage)
 
+
 def check(text):
     return latex.DisplayMathShouldNotBeUsedWithinAParagraph().check(1, text)
+
 
 class testDisplayMathShouldNotBeInsideAParagraph(unittest.TestCase):
     def test_error_is_not_triggered_for_correct_formulas(self):
@@ -28,4 +31,3 @@ class testDisplayMathShouldNotBeInsideAParagraph(unittest.TestCase):
 
     def test_that_multiple_displaymaths_are_detected(self):
         self.assertTrue(iserror(check("jo $$a$$ and $$b$$")))
-

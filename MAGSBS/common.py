@@ -12,17 +12,13 @@ import os
 import sys
 
 
-VALID_PREFACE_BGN = ['v']
-VALID_MAIN_BGN = ['k', 'blatt', 'Blatt', 'paper', 'Übung', 'übung', 'uebung',
-        'Uebung']
-VALID_APPENDIX_BGN = ['anh']
+VALID_PREFACE_BGN = ["v"]
+VALID_MAIN_BGN = ["k", "blatt", "Blatt", "paper", "Übung", "übung", "uebung", "Uebung"]
+VALID_APPENDIX_BGN = ["anh"]
 VALID_FILE_BGN = VALID_PREFACE_BGN + VALID_MAIN_BGN + VALID_APPENDIX_BGN
 
 
-
-
-
-#pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods
 class Singleton:
     """A non-thread-safe helper class to ease implementing singletons.
 This should be used as a decorator -- not a metaclass -- to the class that
@@ -34,6 +30,7 @@ decorated class.
 
 Limitations: The decorated class cannot be inherited from.
 """
+
     def __init__(self, decorated):
         self._decorated = decorated
         self._instance = None
@@ -49,14 +46,17 @@ subsequent calls, the already created instance is returned.  """
     def __instancecheck__(self, inst):
         return isinstance(inst, self._decorated)
 
+
 def format_warning(warning):
-    if not hasattr(warning, 'get') or not warning.get('message'):
-        raise TypeError(("Expected a dictionary with at least a key called "
-            "message."))
-    string = ['Warning: ', warning.pop('message'), '\n']
+    if not hasattr(warning, "get") or not warning.get("message"):
+        raise TypeError(
+            ("Expected a dictionary with at least a key called " "message.")
+        )
+    string = ["Warning: ", warning.pop("message"), "\n"]
     for key, val in warning.items():
-        string.append('  {}: {}\n'.format(key.title(), val))
-    return ''.join(string)
+        string.append("  {}: {}\n".format(key.title(), val))
+    return "".join(string)
+
 
 @Singleton
 class WarningRegistry:
@@ -64,15 +64,16 @@ class WarningRegistry:
     process. They are gathered during the conversion process and can be
     retrieved at the end. If they are not requested, they will be displayed when
     the program exits."""
+
     def __init__(self):
-        self.__warnings = [] # lists are actually thread-safe regarding .append
+        self.__warnings = []  # lists are actually thread-safe regarding .append
 
     def register_warning(self, msg, lnum=None, path=None):
-        warning = {'message': msg}
+        warning = {"message": msg}
         if lnum:
-            warning['line'] = lnum
+            warning["line"] = lnum
         if path:
-            warning['path'] = path
+            warning["path"] = path
         self.__warnings.append(warning)
 
     def get_warnings(self):
@@ -81,6 +82,7 @@ class WarningRegistry:
         self.__warnings = []
         return warnings
 
+
 def flush_warnings():
     """Print all warnings to stderr which were gathered during execution and
     have not been retrieved since."""
@@ -88,7 +90,8 @@ def flush_warnings():
     for warning in registry.get_warnings():
         sys.stderr.write(format_warning(warning))
 
-#pylint: disable=invalid-name
+
+# pylint: disable=invalid-name
 def pairwise(something):
     """Iterate pairwise over the given ocllection / iterator."""
     a, b = itertools.tee(something)
@@ -106,7 +109,7 @@ def is_valid_file(path):
         return False
     path = os.path.basename(path)
     for token in VALID_FILE_BGN:
-        if path.startswith(token) and len(path) > len(token)+1:
+        if path.startswith(token) and len(path) > len(token) + 1:
             # if prefix token is followed by digit, it's valid
             if path[len(token)].isdigit():
                 return True
@@ -124,12 +127,14 @@ def is_lecture_root(directory):
     # if cwd starts with a chapter prefix, it is no lecture root
     if is_valid_file(directory):
         return False
-    subdir = (e for e in os.listdir(directory) \
-            if os.path.isdir(os.path.join(directory, e)))
+    subdir = (
+        e for e in os.listdir(directory) if os.path.isdir(os.path.join(directory, e))
+    )
     # if any of the subdirectories is a valid file, it's a lecture root
     if any(directory for directory in subdir if is_valid_file(directory)):
-        return True # at least one chapter, so this is a lecture root
+        return True  # at least one chapter, so this is a lecture root
     return False
+
 
 def is_within_lecture(path):
     """Check whether given path is within a lecture. Since explanation of the
@@ -154,37 +159,47 @@ def is_within_lecture(path):
     if not os.path.exists(path):
         return False
     elif os.path.isfile(path):
-        return is_valid_file(parent(path)) or \
-                is_valid_file(parent(parent(path))) or \
-                is_lecture_root(parent(path))
+        return (
+            is_valid_file(parent(path))
+            or is_valid_file(parent(parent(path)))
+            or is_lecture_root(parent(path))
+        )
     # directories:
     return is_valid_file(path) or is_valid_file(parent(path))
-
 
 
 ################################################################################
 # register atexit hook to flush warnings, if they haven't been queried
 atexit.register(flush_warnings)
 
-#pylint: disable=protected-access
+# pylint: disable=protected-access
 def _get_localedir():
     """Get locale dirs depending on operating system."""
     loc_dirs = [gettext._default_localedir]
-    loc_dirs.append(os.path.join(os.path.dirname(os.path.dirname(
-                    os.path.abspath(sys.argv[0]))), 'share', 'locale'))
+    loc_dirs.append(
+        os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))),
+            "share",
+            "locale",
+        )
+    )
     if sys.platform in ["linux", "darwin"]:
         loc_dirs += ["/usr/share/locale", "/usr/local/share/locale"]
     elif sys.platform == "win32":
         # default installer place
-        loc_dirs.append(os.path.join(os.getenv('ProgramData'), "agsbs",
-                "matuc", "locale"))
+        loc_dirs.append(
+            os.path.join(os.getenv("ProgramData"), "agsbs", "matuc", "locale")
+        )
     for directory in loc_dirs:
         loc_dir_lang = os.path.join(directory, locale.getdefaultlocale()[0][:2])
-        if any(file == 'matuc.mo' for _d, _ds, files in os.walk(loc_dir_lang)
-                for file in files):
+        if any(
+            file == "matuc.mo"
+            for _d, _ds, files in os.walk(loc_dir_lang)
+            for file in files
+        ):
             return directory
-    WarningRegistry().register_warning(
-            "Couldn't find 'locales' directory.") # → None
+    WarningRegistry().register_warning("Couldn't find 'locales' directory.")  # → None
+
 
 def setup_i18n():
     """Set up internationalisation support in MAGSBS/matuc."""
@@ -194,10 +209,10 @@ def setup_i18n():
     localedir = _get_localedir()
     trans = None
     try:
-        trans = gettext.translation("matuc", localedir=localedir,
-            languages=[locale.getdefaultlocale()[0][:2]])
+        trans = gettext.translation(
+            "matuc", localedir=localedir, languages=[locale.getdefaultlocale()[0][:2]]
+        )
     except (FileNotFoundError, AttributeError):
         trans = gettext.translation("matuc", localedir=localedir, fallback=True)
 
     trans.install()
-

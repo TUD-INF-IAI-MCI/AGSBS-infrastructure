@@ -11,8 +11,10 @@ import collections
 import os
 import shlex
 
+
 class MAGSBS_error(Exception):
     """Just a parent."""
+
     def __init__(self, message, path=None, line=None, pos=None):
         self.message = message
         self.path = path
@@ -26,21 +28,24 @@ class MAGSBS_error(Exception):
         dictionary."""
         data = collections.OrderedDict()
         if self.path:
-            data['path'] = self.path
+            data["path"] = self.path
         if self.line:
-            data['line'] = self.line
-        if self.pos: # position on line
-            data['position'] = self.pos
-        data['message'] = self.message
+            data["line"] = self.line
+        if self.pos:  # position on line
+            data["position"] = self.pos
+        data["message"] = self.message
         if kwargs:
             data.update(kwargs)
         return data
 
     def __str__(self):
-        fmt = lambda b, pre: ('' if not b else '%s%s' % (pre, b))
-        pathlinepos = '%s%s%s' % (fmt(self.path, ''), fmt(self.line, ', '),
-                fmt(self.pos, ':'))
-        return '%s: %s' % (fmt(pathlinepos, ''), self.message)
+        fmt = lambda b, pre: ("" if not b else "%s%s" % (pre, b))
+        pathlinepos = "%s%s%s" % (
+            fmt(self.path, ""),
+            fmt(self.line, ", "),
+            fmt(self.pos, ":"),
+        )
+        return "%s: %s" % (fmt(pathlinepos, ""), self.message)
 
 
 class SubprocessError(MAGSBS_error):
@@ -54,17 +59,23 @@ class SubprocessError(MAGSBS_error):
     The error object will have attributes called command, message, path and line
     number (where the last may be None).
     """
+
     def __init__(self, command, message, path=os.getcwd(), line=None):
-        self.command = (' '.join(map(shlex.quote, command))
-                if isinstance(command, list) else command)
-        self.message = _('error while running: %s\n%s') % (self.command, message)
+        self.command = (
+            " ".join(map(shlex.quote, command))
+            if isinstance(command, list)
+            else command
+        )
+        self.message = _("error while running: %s\n%s") % (self.command, message)
         super().__init__(message)
         self.path = os.path.abspath(path)
         self.line = line
 
     def __str__(self):
-        return self.message.rstrip() + ('' if not self.path
-                else '\n  Path: ' + self.path)
+        return self.message.rstrip() + (
+            "" if not self.path else "\n  Path: " + self.path
+        )
+
 
 class ConfigurationError(MAGSBS_error):
     def __init__(self, message, path, line=None):
@@ -74,24 +85,28 @@ class ConfigurationError(MAGSBS_error):
         self.line = line
 
     def __str__(self):
-        prefix = ''
+        prefix = ""
         if self.path and os.path.exists(self.path):
-            prefix = (_('in configuration from') if os.path.isdir(self.path)
-                    else _('in configuration')) + ' '
-        return '{} {}: {}'.format(prefix, self.path, self.message)
+            prefix = (
+                _("in configuration from")
+                if os.path.isdir(self.path)
+                else _("in configuration")
+            ) + " "
+        return "{} {}: {}".format(prefix, self.path, self.message)
 
 
 class StructuralError(MAGSBS_error):
     """StructuralError(msg, path)
     Structural errors like wrong file name endings, wrong directory structures,
     etc."""
+
     def __init__(self, msg, path):
         self.message = msg
         super().__init__(msg)
         self.path = path
 
     def __str__(self):
-        msg = _('erroneous structure in %s: ') % self.path
+        msg = _("erroneous structure in %s: ") % self.path
         return msg + self.message
 
 
@@ -100,27 +115,34 @@ class FormattingError(MAGSBS_error):
     Report formatting error. It is adviced to provide a path, but it is not
     mandatory. The `excerpt` is used to show an example of where the formatting
     error occurred."""
+
     def __init__(self, msg, excerpt, path=None, line=None):
         self.excerpt = excerpt
         self.message = msg
-        super().__init__(msg + ':' + excerpt)
+        super().__init__(msg + ":" + excerpt)
         self.path = path
         self.line_no = line
 
     def __str__(self):
-        prefix = ''
+        prefix = ""
         if self.path:
-            prefix += _('error in {path}').format(self.path)
+            prefix += _("error in {path}").format(self.path)
         if self.line_no:
-            prefix += (' ' if prefix else '') + str(self.line_no)
-        return '%s%s%s\nExcerpt: %s' % (prefix, (': ' if prefix else ''),
-                self.message, self.excerpt)
+            prefix += (" " if prefix else "") + str(self.line_no)
+        return "%s%s%s\nExcerpt: %s" % (
+            prefix,
+            (": " if prefix else ""),
+            self.message,
+            self.excerpt,
+        )
+
 
 class MathError(MAGSBS_error):
-    #pylint: disable=too-many-arguments
-    def __init__(self, msg, formula, path=None, line=None, pos=None,
-            formula_count=None):
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self, msg, formula, path=None, line=None, pos=None, formula_count=None
+    ):
         self.formula = formula
-        msg = '%s\n  %s' % (msg, formula)
+        msg = "%s\n  %s" % (msg, formula)
         super().__init__(msg, path=path, line=line, pos=pos)
         self.formula_count = formula_count

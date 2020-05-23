@@ -1,8 +1,9 @@
-#pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable
+# pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable
 # absolute imports are fine: we're running test cases from the top directory
 import MAGSBS.quality_assurance.markdown as ma
 import MAGSBS.quality_assurance.meta as meta
 import unittest
+
 
 def check(line, lnum=1):
     checker = ma.DetectStrayingDollars()
@@ -34,7 +35,7 @@ class test_DetectStrayingDollars(unittest.TestCase):
         self.assertNotEqual(check(text), None)
 
     def test_that_escaped_dollars_are_ignored(self):
-        text = 'formula: $jo$ and \$ is ignored'
+        text = "formula: $jo$ and \$ is ignored"
         self.assertEqual(check(text), None)
 
     def test_that_prices_are_ignored(self):
@@ -42,7 +43,5 @@ class test_DetectStrayingDollars(unittest.TestCase):
         self.assertEqual(check(text), None)
 
     def test_that_straying_dollar_at_end_detected(self):
-        text = r'The formula is 3\cdot 2$'
+        text = r"The formula is 3\cdot 2$"
         self.assertNotEqual(check(text), None)
-    
-

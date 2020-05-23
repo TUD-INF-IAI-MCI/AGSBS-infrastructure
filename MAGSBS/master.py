@@ -15,8 +15,7 @@ from . import pandoc
 from . import toc
 
 
-
-class Master():
+class Master:
     """m =Master(path)
 m.run()
 
@@ -26,15 +25,19 @@ file so that we actually have multiple roots (a forest). This is necessary for
 lectures containing e.g. lecture and exercise material.  For each root the
 navigation bar and the table of contents is generated; afterwards all MarkDown
 files are converted."""
+
     def __init__(self, path, profile, output_format):
         if os.path.exists(path):
             if os.path.isfile(path):
                 raise OSError("Operation can only be applied to directories.")
             if common.is_valid_file(os.path.abspath(path)):
                 raise errors.StructuralError(
-                        ("The master command can only be called "
-                        "on a whole lecture, not on particular chapters."),
-                    path)
+                    (
+                        "The master command can only be called "
+                        "on a whole lecture, not on particular chapters."
+                    ),
+                    path,
+                )
         self._roots = self.__findroot(path)
         self._profile = profile
         self._output_format = output_format
@@ -47,22 +50,27 @@ files are converted."""
         dirs = [path]
         go_deeper = True
         for directory in dirs:
-            meta = [e for e in os.listdir(directory) if e ==
-                    config.CONF_FILE_NAME]
-            if meta: # found, this is our root
+            meta = [e for e in os.listdir(directory) if e == config.CONF_FILE_NAME]
+            if meta:  # found, this is our root
                 roots.append(directory)
                 go_deeper = False
             else:
                 if go_deeper:
-                    dirs += [os.path.join(directory, e) \
-                            for e in os.listdir(directory) \
-                            if os.path.isdir(os.path.join(directory, e))]
-        found_md = any(fname.endswith(".md")
-            for directory, _, flist in os.walk(path)  for fname in flist)
+                    dirs += [
+                        os.path.join(directory, e)
+                        for e in os.listdir(directory)
+                        if os.path.isdir(os.path.join(directory, e))
+                    ]
+        found_md = any(
+            fname.endswith(".md")
+            for directory, _, flist in os.walk(path)
+            for fname in flist
+        )
         if not roots and found_md:
             # no root and markdown files present → lecture without configuration
-            raise errors.ConfigurationError(("no configuration found, but it "
-                "is required"), path)
+            raise errors.ConfigurationError(
+                ("no configuration found, but it " "is required"), path
+            )
         return roots
 
     def get_translation(self, word, path):
@@ -102,13 +110,15 @@ files are converted."""
                     if not c.is_empty():
                         index = c.get_index()
                         md_creator = toc.TocFormatter(index, ".")
-                        with open("inhalt.md", 'w', encoding="utf-8") as file:
+                        with open("inhalt.md", "w", encoding="utf-8") as file:
                             file.write(md_creator.format())
 
             conv = pandoc.converter.Pandoc(root_path=orig_cwd)
-            files_to_convert = [os.path.join(dir, f)
-                    for dir, _, flist in filesystem.get_markdown_files(".", True)
-                    for f in flist]
+            files_to_convert = [
+                os.path.join(dir, f)
+                for dir, _, flist in filesystem.get_markdown_files(".", True)
+                for f in flist
+            ]
             conv.set_conversion_profile(self._profile)
             conv.set_output_format(self._output_format)
             conv.convert_files(files_to_convert)

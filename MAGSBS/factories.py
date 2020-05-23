@@ -13,8 +13,8 @@ from . import config
 from .config import MetaInfo
 
 
-#pylint: disable=too-many-instance-attributes
-class ImageDescription():
+# pylint: disable=too-many-instance-attributes
+class ImageDescription:
     """
 ImageDescription(image_path)
 
@@ -38,22 +38,24 @@ data is either a dictionary with keys 'internal' and 'external', where
 edited text, i.e. into the chapter, 'external' is meant to be included in the
 file containing outsourced image descriptions.
 """
-    def __init__(self, image_path, file_extension='html'):
-        self.__conf = config.ConfFactory().get_conf_instance( \
-                os.path.split(image_path)[0])
+
+    def __init__(self, image_path, file_extension="html"):
+        self.__conf = config.ConfFactory().get_conf_instance(
+            os.path.split(image_path)[0]
+        )
         l10N = config.Translate()
         l10N.set_language(self.__conf[MetaInfo.Language])
         self.__translate = _ = l10N.get_translation
         self.__image_path = image_path
         # replace \\ through / on windows
-        if sys.platform.lower().startswith('win') and os.sep in image_path:
-            self.__image_path = '/'.join(image_path.split(os.sep))
-        self.__description = '\n'
+        if sys.platform.lower().startswith("win") and os.sep in image_path:
+            self.__image_path = "/".join(image_path.split(os.sep))
+        self.__description = "\n"
         self.__title = None
         self.__outsource_descriptions = False
         # maximum length of image description before outsourcing it
         self.img_maxlength = 100
-        self.__outsource_path = _('images') + '.' + file_extension
+        self.__outsource_path = _("images") + "." + file_extension
 
     def set_description(self, desc):
         """Set alternative image description."""
@@ -77,22 +79,31 @@ file containing outsourced image descriptions.
     def get_outsourcing_link(self):
         """Return the link for the case that the picture is excluded."""
         _ = self.__translate
-        label = datastructures.gen_id( self.get_title() )
-        link_text = _('external image description')
-        return '[![%s](%s)](%s#%s)' % (link_text, self.__image_path,
-                self.get_outsource_path(), label)
+        label = datastructures.gen_id(self.get_title())
+        link_text = _("external image description")
+        return "[![%s](%s)](%s#%s)" % (
+            link_text,
+            self.__image_path,
+            self.get_outsource_path(),
+            label,
+        )
 
     def get_inline_description(self):
         """Generate markdown image with description."""
-        desc = self.__description.replace('\n',' ').replace('\r',' ').replace(' ',' ')
-        return '![%s](%s)' % (desc, self.__image_path)
+        desc = (
+            self.__description.replace("\n", " ").replace("\r", " ").replace(" ", " ")
+        )
+        return "![%s](%s)" % (desc, self.__image_path)
 
     def __get_outsourced_title(self):
         _ = self.__translate
         if not self.__title:
             # generate one from path
-            self.__title = _('description of image').capitalize() + " " + \
-                    os.path.split(self.__image_path)[1]
+            self.__title = (
+                _("description of image").capitalize()
+                + " "
+                + os.path.split(self.__image_path)[1]
+            )
             return self.__title
         else:
             return self.__title
@@ -103,7 +114,7 @@ file containing outsourced image descriptions.
         it'll depend on the description length."""
         if self.__outsource_descriptions:
             return True
-        return (True if len(self.__description) > self.img_maxlength else False)
+        return True if len(self.__description) > self.img_maxlength else False
 
     def get_output(self):
         """Dispatcher function for get_inline_description and
@@ -113,9 +124,9 @@ file containing outsourced image descriptions.
     description if set by set_outsource_descriptions(True) or will automatically
     exclude images longer than 100 characters."""
         if not self.will_be_outsourced():
-            return {'internal' : self.get_inline_description()}
+            return {"internal": self.get_inline_description()}
         title = self.__get_outsourced_title()
-        external_text = '{}\n{}\n\n{}\n\n* * * * *\n'.format(
-                title, '-' * len(title), self.__description)
-        return {'internal': self.get_outsourcing_link(),
-                'external': external_text}
+        external_text = "{}\n{}\n\n{}\n\n* * * * *\n".format(
+            title, "-" * len(title), self.__description
+        )
+        return {"internal": self.get_outsourcing_link(), "external": external_text}

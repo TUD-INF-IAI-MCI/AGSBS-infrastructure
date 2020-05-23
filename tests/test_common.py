@@ -1,27 +1,29 @@
-#pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
+# pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
 import os
 import shutil
 import tempfile
 import unittest
 from MAGSBS.common import is_within_lecture
 
+
 def touch(path):
     """Create the path recursively. If the argument string does not end on a
     slash, it is taken as file name and created as an empty file below the
     prefix."""
-    if path.endswith('/'):
+    if path.endswith("/"):
         os.makedirs(path, exist_ok=True)
     else:
         os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-        with open(path, 'w') as f:
+        with open(path, "w") as f:
             f.write("\n")
+
 
 class TestCommon(unittest.TestCase):
     def setUp(self):
         self.original_directory = os.getcwd()
         self.tmpdir = tempfile.mkdtemp()
         os.chdir(self.tmpdir)
-        self.call_cleanup_on_me = None # used for the OutputFormatters
+        self.call_cleanup_on_me = None  # used for the OutputFormatters
 
     def tearDown(self):
         os.chdir(self.original_directory)
@@ -29,10 +31,8 @@ class TestCommon(unittest.TestCase):
         if self.call_cleanup_on_me:
             self.call_cleanup_on_me.cleanup()
 
-
-
     def test_that_a_file_that_doesnt_exist_is_invalid(self):
-        self.assertFalse(is_within_lecture('/highway/to/hell'))
+        self.assertFalse(is_within_lecture("/highway/to/hell"))
 
     def test_that_random_path_is_not_considered_correct(self):
         touch("mypath/anotherpath/subdirectory/")
@@ -57,12 +57,10 @@ class TestCommon(unittest.TestCase):
         self.assertTrue(is_within_lecture("lecture/k01/bilder"))
 
     def test_that_files_in_lecture_root_work(self):
-        touch("myroot/k01//k01.md") # a sample directory
+        touch("myroot/k01//k01.md")  # a sample directory
         touch("myroot/info.md")
         self.assertTrue(is_within_lecture("myroot/info.md"))
 
     def test_that_directory_outside_a_lecture_returns_false(self):
         touch("myroot/")
         self.assertFalse(is_within_lecture("myroot"))
-
-
