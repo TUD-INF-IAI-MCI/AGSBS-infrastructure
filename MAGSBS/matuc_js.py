@@ -9,9 +9,13 @@ matuc and alters the OutputFormatter to print JSON."""
 import json
 import os
 import sys
+
 try:
     import matuc_impl
-except (SystemError, ModuleNotFoundError): # usually happens when executing from source
+except (
+    SystemError,
+    ModuleNotFoundError,
+):  # usually happens when executing from source
     try:
         from matuc_impl import matuc_impl
     except ModuleNotFoundError:
@@ -19,32 +23,34 @@ except (SystemError, ModuleNotFoundError): # usually happens when executing from
 
 # enable debugging for matuc_js, since it is an API internface and it is
 # useful to report errors when they occur
-os.environ['DEBUG'] = str(1)
+os.environ["DEBUG"] = str(1)
+
 
 class JsonFormatter(matuc_impl.OutputFormatter):
     """Out formatter which displays all messages and objects as JSON objects."""
+
     def __emit_json(self, object):
-        sys.stdout.write(json.dumps(object, indent=2, sort_keys=True) + '\n')
+        sys.stdout.write(json.dumps(object, indent=2, sort_keys=True) + "\n")
 
     def emit_result(self, result):
         warnings = self.get_warnings()
         output = {}
         if warnings:
-            output['warnings'] = warnings
-        output['result'] = result
+            output["warnings"] = warnings
+        output["result"] = result
         self.__emit_json(output)
 
     def emit_error(self, error):
         warnings = self.get_warnings()
-        output = {'error': error}
+        output = {"error": error}
         if warnings:
-            output['warnings'] = warnings
+            output["warnings"] = warnings
         self.__emit_json(output)
 
     def emit_usage(self, usage, error=None):
-        output = {'usage': usage}
+        output = {"usage": usage}
         if error:
-            output['error'] = error.rstrip()
+            output["error"] = error.rstrip()
         self.__emit_json(output)
 
     def clear(self):
@@ -57,5 +63,5 @@ def main():
     main_inst.run(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

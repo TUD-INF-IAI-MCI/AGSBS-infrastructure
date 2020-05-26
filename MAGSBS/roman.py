@@ -17,25 +17,39 @@ __license__ = "Python"
 import re
 
 # Define exceptions
-class RomanError(Exception): pass
-class OutOfRangeError(RomanError): pass
-class NotIntegerError(RomanError): pass
-class InvalidRomanNumeralError(RomanError): pass
+class RomanError(Exception):
+    pass
+
+
+class OutOfRangeError(RomanError):
+    pass
+
+
+class NotIntegerError(RomanError):
+    pass
+
+
+class InvalidRomanNumeralError(RomanError):
+    pass
+
 
 # Define digit mapping
-romanNumeralMap = (('M',  1000),
-                   ('CM', 900),
-                   ('D',  500),
-                   ('CD', 400),
-                   ('C',  100),
-                   ('XC', 90),
-                   ('L',  50),
-                   ('XL', 40),
-                   ('X',  10),
-                   ('IX', 9),
-                   ('V',  5),
-                   ('IV', 4),
-                   ('I',  1))
+romanNumeralMap = (
+    ("M", 1000),
+    ("CM", 900),
+    ("D", 500),
+    ("CD", 400),
+    ("C", 100),
+    ("XC", 90),
+    ("L", 50),
+    ("XL", 40),
+    ("X", 10),
+    ("IX", 9),
+    ("V", 5),
+    ("IV", 4),
+    ("I", 1),
+)
+
 
 def to_roman(n):
     """convert integer to Roman numeral"""
@@ -53,8 +67,9 @@ def to_roman(n):
             n -= integer
     return result
 
+
 # Define pattern to detect valid Roman numerals
-roman_numeral_pattern_string = '''^
+roman_numeral_pattern_string = """^
     M{0,4}              # thousands - 0 to 4 M's
     (?:CM|CD|D?C{0,3})    # hundreds - 900 (CM), 400 (CD), 0-300 (0 to 3 C's),
                         #            or 500-800 (D, followed by 0 to 3 C's)
@@ -62,21 +77,23 @@ roman_numeral_pattern_string = '''^
                         #        or 50-80 (L, followed by 0 to 3 X's)
     (?:IX|IV|V?I{0,3})    # ones - 9 (IX), 4 (IV), 0-3 (0 to 3 I's),
                         #        or 5-8 (V, followed by 0 to 3 I's)
-    $'''
+    $"""
 roman_numeral_pattern = re.compile(roman_numeral_pattern_string, re.VERBOSE)
+
 
 def from_roman(letters):
     """convert Roman numeral to integer"""
     if not letters:
-        raise InvalidRomanNumeralError('Input can not be blank')
+        raise InvalidRomanNumeralError("Input can not be blank")
     if not roman_numeral_pattern.search(letters):
-        raise InvalidRomanNumeralError('Invalid Roman numeral: %letters' % letters)
+        raise InvalidRomanNumeralError(
+            "Invalid Roman numeral: %letters" % letters
+        )
 
     result = 0
     index = 0
     for numeral, integer in romanNumeralMap:
-        while letters[index:index+len(numeral)] == numeral:
+        while letters[index : index + len(numeral)] == numeral:
             result += integer
             index += len(numeral)
     return result
-

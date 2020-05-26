@@ -4,12 +4,13 @@
 # (c) 2016-2017 Sebastian Humenda <shumenda |at| gmx |dot| de>
 # Disabling the checkers below is discouraged, but encouraged for this file;
 # pylint makes mistakes itself
-#pylint: disable=line-too-long,no-init,too-few-public-methods
+# pylint: disable=line-too-long,no-init,too-few-public-methods
 """This file contains all helper functions and classes to represent a
 mistake."""
 
 from abc import ABCMeta, abstractmethod
 import enum
+
 
 class MistakeType(enum.Enum):
     """The mistake type determines the arguments and the environment in which to
@@ -31,6 +32,7 @@ formulas        (path, formulas)    apply checks on the ordered list of formulas
                                     of `path`; for the format see mparser.parse_formulas
 lectureroot     Do any check with the given lecture root.
 """
+
     full_file = 1
     oneliner = 2
     headings = 3
@@ -41,11 +43,13 @@ lectureroot     Do any check with the given lecture root.
     formulas = 8
     lecture_root = 9
 
+
 class Mistake:
     """This class implements the actual mistake checker.
 
 It has to be subclassed and the child needs to override the run method. It
 should set the relevant properties in the constructor."""
+
     __metaclass__ = ABCMeta
     mistake_type = MistakeType.full_file
 
@@ -56,7 +60,7 @@ should set the relevant properties in the constructor."""
 
     def set_file_types(self, types):
         # is it list-alike
-        if not (hasattr(types, '__iter__') or hasattr(types, '__getitem__')):
+        if not (hasattr(types, "__iter__") or hasattr(types, "__getitem__")):
             raise TypeError("List or tuple expected.")
         self.__file_types = types
 
@@ -72,7 +76,6 @@ should set the relevant properties in the constructor."""
         assert isinstance(value, bool)
         self.__apply = value
 
-
     def run(self, *args):
         if not self.should_be_run:
             return
@@ -84,11 +87,12 @@ should set the relevant properties in the constructor."""
 
     def error(self, msg, lnum=None, path=None, pos=None):
         """Short hand to return an ErrorMessage object."""
-        msg = ' '.join(msg.split())
+        msg = " ".join(msg.split())
         e = ErrorMessage(msg, lnum, path)
         if pos:
             e.pos_on_line = pos
         return e
+
 
 class OnelinerMistake(Mistake):
     """Class to ease the creation of onliner checks further:
@@ -98,17 +102,21 @@ class myMistake(OnelinerMistake):
     def check(self, num, line):
         # ToDo: implement checks here
 It'll save typing."""
+
     mistake_type = MistakeType.oneliner
 
     def __init__(self):
         Mistake.__init__(self)
+
     def check(self, lnum, text):
         """The method to implement the actual  checker in."""
         pass
 
     def worker(self, *args):
         if len(args) != 2:
-            raise ValueError("For a mistake checker of type oneliner, exactly two arguments are required.")
+            raise ValueError(
+                "For a mistake checker of type oneliner, exactly two arguments are required."
+            )
         return self.check(args[0], args[1])
 
 
@@ -122,12 +130,12 @@ class FormulaMistake(Mistake):
             # *implement checks here*
     When calling .error inside such a checker, a call might look like this:
         self.error("some_msg", lnum=some_line, pos=position_on_line)"""
+
     mistake_type = MistakeType.formulas
 
     @abstractmethod
     def worker(self, *args):
         pass
-
 
 
 class ErrorMessage:
@@ -139,10 +147,9 @@ e.pos_on_line = 52 # at which character the error was encountered
 e.path = "foo.md" # usually set by the Mistkerl, but can be altered
 assert hasattr(e, 'message') and hasattr(e, 'lineno')
 """
+
     def __init__(self, message, lineno, path):
         self.lineno = lineno
         self.message = message
         self.path = path
         self.pos_on_line = None
-
-
