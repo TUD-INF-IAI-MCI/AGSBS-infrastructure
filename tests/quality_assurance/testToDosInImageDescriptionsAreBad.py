@@ -39,6 +39,4 @@ class TestToDosInImageDescriptionsAreBad(unittest.TestCase):
 
     def test_the_words_to_and_do_are_ignored_otherwise(self):
         line = "This has nothing to do with incomplete descriptions."
-        self.assertTrue(
-            ma.ToDosInImageDescriptionsAreBad().check(1, line) is None
-        )
+        self.assertTrue(ma.ToDosInImageDescriptionsAreBad().check(1, line) is None)

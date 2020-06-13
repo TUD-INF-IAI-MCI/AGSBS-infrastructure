@@ -143,10 +143,7 @@ class HtmlConverter(OutputGenerator):
             frames.append(".frame.%s { border-color: %s; }" % (name, rgb))
             frames.append(
                 '.frame.%s:before { content: "%s: "; }'
-                % (
-                    name,
-                    start_with_caps(trans.get_translation("%s frame" % name)),
-                )
+                % (name, start_with_caps(trans.get_translation("%s frame" % name)),)
             )
             boxes.append(".box.%s { border-color: %s; }" % (name, rgb))
             boxes.append(
@@ -193,9 +190,7 @@ class HtmlConverter(OutputGenerator):
         # set path for error
         if not err.path:
             err.path = (
-                os.path.abspath(file_name)
-                .replace(os.getcwd(), "")
-                .lstrip(os.sep)
+                os.path.abspath(file_name).replace(os.getcwd(), "").lstrip(os.sep)
             )
         if not isinstance(err, errors.MathError):
             raise err
@@ -246,10 +241,14 @@ class HtmlConverter(OutputGenerator):
         # instruct pandoc to enumerate headings
         try:
             from ...config import MetaInfo
+
             conf = config.ConfFactory().get_conf_instance(dirname)
             if conf[MetaInfo.AutoNumberingOfChapter]:
-                pandoc_args += ['--number-sections', '--number-offset',
-                str(datastructures.extract_chapter_number(path) - 1)]
+                pandoc_args += [
+                    "--number-sections",
+                    "--number-offset",
+                    str(datastructures.extract_chapter_number(path) - 1),
+                ]
 
         except errors.StructuralError:
             pass  # no enumeration of headings if not chapter
@@ -300,9 +299,7 @@ class HtmlConverter(OutputGenerator):
             except errors.MathError as err:
                 HtmlConverter.__handle_error(file_path, err)
 
-    def generate_page_navigation(
-        self, file_path, file_cache, page_numbers, conf=None
-    ):
+    def generate_page_navigation(self, file_path, file_cache, page_numbers, conf=None):
         """generate_page_navigation(path, file_cache, page_numbers, conf=None)
         Generate the page navigation for a page. The file path must be relative to
         the lecture root. The file cache must be the datastructures.FileCache, the
@@ -315,9 +312,7 @@ class HtmlConverter(OutputGenerator):
         if not file_cache:
             raise ValueError("Cache with values may not be None")
         if not conf:
-            conf = config.ConfFactory().get_conf_instance(
-                os.path.dirname(file_path)
-            )
+            conf = config.ConfFactory().get_conf_instance(os.path.dirname(file_path))
         trans = config.Translate()
         trans.set_language(conf[config.MetaInfo.Language])
         relative_path = os.sep.join(file_path.rsplit(os.sep)[-2:])
@@ -342,14 +337,11 @@ class HtmlConverter(OutputGenerator):
         ]
         if page_numbers:
             navbar.append(trans.get_translation("pages").title() + ": ")
-            navbar.extend(
-                "[[{0}]](#p{0}), ".format(num) for num in page_numbers
-            )
+            navbar.extend("[[{0}]](#p{0}), ".format(num) for num in page_numbers)
             navbar[-1] = navbar[-1][:-2]  # strip ", " from last chunk
         navbar = "".join(navbar)
         chapternav = "[{}](../inhalt.{})".format(
-            trans.get_translation("table of contents").title(),
-            self.FILE_EXTENSION,
+            trans.get_translation("table of contents").title(), self.FILE_EXTENSION,
         )
 
         if previous:

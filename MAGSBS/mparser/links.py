@@ -176,9 +176,7 @@ def detect_image_footnote(text, index):
     else:
         is_image = False
 
-    is_footnote = (
-        True if len(text) > index + 1 and text[index + 1] == "^" else False
-    )
+    is_footnote = True if len(text) > index + 1 and text[index + 1] == "^" else False
 
     return is_image, is_footnote
 

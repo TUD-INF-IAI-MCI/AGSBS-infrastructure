@@ -45,9 +45,7 @@ def page_number_extractor(key, value, fmt, meta):
             return  # no content in Paragraph - ignore
         # first chunk of paragraph must be str and contain '||'
         if isinstance(text, str) and text.startswith("||"):
-            text = pandocfilters.stringify(
-                value
-            )  # get whole text of page number
+            text = pandocfilters.stringify(value)  # get whole text of page number
             pnum = config.PAGENUMBERING_PATTERN.search(text)
             if pnum:
                 # strip the first ||
@@ -59,9 +57,7 @@ def page_number_extractor(key, value, fmt, meta):
                         )
                     )
                 return html(
-                    '<p><span id="p{0}">{1}</span></p>'.format(
-                        pnum.groups()[1], text
-                    )
+                    '<p><span id="p{0}">{1}</span></p>'.format(pnum.groups()[1], text)
                 )
 
 
@@ -103,9 +99,7 @@ def epub_link_converter(key, value, fmt, meta, modify_ast=True):
             # check if link id is within 'ids' dict of meta
             if link_parts[1] in meta["ids"]:
                 # set chapter from meta
-                link_parts[0] = "ch{:03d}.xhtml".format(
-                    meta["ids"][link_parts[1]]
-                )
+                link_parts[0] = "ch{:03d}.xhtml".format(meta["ids"][link_parts[1]])
                 value[-1][0] = "#".join(link_parts)
 
 
@@ -126,9 +120,7 @@ def epub_convert_header_ids(key, value, fmt, url_prefix, modify_ast=True):
             return
         if isinstance(link, str):
             link_parts = link.split("#", 1)  # split in # once
-            if (
-                len(link_parts) < 2 or not link_parts[1]
-            ):  # return if there is no anchor
+            if len(link_parts) < 2 or not link_parts[1]:  # return if there is no anchor
                 return
             link_parts[1] = "_".join([url_prefix, link_parts[1]])
             # check if link is attached to an image and update it
@@ -264,8 +256,7 @@ def epub_create_back_links(key, value, fmt, meta):
         # id: 'image_id' -> back link: '#image_id_back'
         link = xml.createElement("a")
         link.setAttribute(
-            "href",
-            "ch{:03d}.xhtml#{}".format(meta["ids"][anchor_id], anchor_id),
+            "href", "ch{:03d}.xhtml#{}".format(meta["ids"][anchor_id], anchor_id),
         )
         text = xml.createTextNode(content.firstChild.toxml())
         link.appendChild(text)
@@ -343,10 +334,7 @@ def load_pandoc_ast(text):
     """Run pandoc on given document and return parsed JSON AST."""
     command = ["pandoc", "-f", "markdown", "-t", "json"]
     proc = subprocess.Popen(
-        command,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
     )
     data = proc.communicate(text.encode(sys.getdefaultencoding()))
     ret = proc.wait()

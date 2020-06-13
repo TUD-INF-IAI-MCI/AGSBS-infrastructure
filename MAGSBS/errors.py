@@ -66,10 +66,7 @@ class SubprocessError(MAGSBS_error):
             if isinstance(command, list)
             else command
         )
-        self.message = _("error while running: %s\n%s") % (
-            self.command,
-            message,
-        )
+        self.message = _("error while running: %s\n%s") % (self.command, message,)
         super().__init__(message)
         self.path = os.path.abspath(path)
         self.line = line

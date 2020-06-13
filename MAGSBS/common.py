@@ -137,9 +137,7 @@ def is_lecture_root(directory):
     if is_valid_file(directory):
         return False
     subdir = (
-        e
-        for e in os.listdir(directory)
-        if os.path.isdir(os.path.join(directory, e))
+        e for e in os.listdir(directory) if os.path.isdir(os.path.join(directory, e))
     )
     # if any of the subdirectories is a valid file, it's a lecture root
     if any(directory for directory in subdir if is_valid_file(directory)):
@@ -209,9 +207,7 @@ def _get_localedir():
             for file in files
         ):
             return directory
-    WarningRegistry().register_warning(
-        "Couldn't find 'locales' directory."
-    )  # → None
+    WarningRegistry().register_warning("Couldn't find 'locales' directory.")  # → None
 
 
 def setup_i18n():
@@ -223,9 +219,7 @@ def setup_i18n():
     trans = None
     try:
         trans = gettext.translation(
-            "matuc",
-            localedir=localedir,
-            languages=[locale.getdefaultlocale()[0][:2]],
+            "matuc", localedir=localedir, languages=[locale.getdefaultlocale()[0][:2]],
         )
     except (FileNotFoundError, AttributeError):
         trans = gettext.translation("matuc", localedir=localedir, fallback=True)

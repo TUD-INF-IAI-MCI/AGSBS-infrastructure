@@ -35,9 +35,7 @@ class LaTeXMatricesShouldBeConstructeedUsingPmatrix(FormulaMistake):
     """There are various ways to make matrices hard to read. Spot and report
     them."""
 
-    PATTERN = re.compile(
-        r".*(\\left|\\big|\\Big)(\(|\{).*?begin{(array|matrix)"
-    )
+    PATTERN = re.compile(r".*(\\left|\\big|\\Big)(\(|\{).*?begin{(array|matrix)")
 
     def __init__(self):
         super().__init__()
@@ -163,9 +161,7 @@ class UseProperCommandsForMathOperatorsAndFunctions(FormulaMistake):
         self.set_file_types(["md", "tex"])
 
     def worker(self, *args):
-        has_backslash = lambda text, idx: (
-            text[idx - 1] == "\\" if idx > 0 else False
-        )
+        has_backslash = lambda text, idx: (text[idx - 1] == "\\" if idx > 0 else False)
         for (line, pos), formula in args[0].items():
             for mathop in self.OPSANDFUNCS:
                 match = mathop.search(formula)

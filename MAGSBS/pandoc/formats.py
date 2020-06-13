@@ -175,16 +175,11 @@ def __handle_gladtex_error(error, file_path, dirname):
     file_path = os.path.join(dirname, file_path)  # full path is better
     try:
         details = dict(
-            line.split(": ", 1)
-            for line in error.message.split("\n")
-            if ": " in line
+            line.split(": ", 1) for line in error.message.split("\n") if ": " in line
         )
     except ValueError as e:
         # output was not formatted as expected, report that
-        msg = "couldn't parse GladTeX output: %s\noutput: %s" % (
-            str(e),
-            error.message,
-        )
+        msg = "couldn't parse GladTeX output: %s\noutput: %s" % (str(e), error.message,)
         return errors.SubprocessError(error.command, msg, path=dirname)
     if details and "Number" in details and "Message" in details:
         number = int(details["Number"])

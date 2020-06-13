@@ -23,18 +23,14 @@ class test_factories(unittest.TestCase):
             self.assertEqual(
                 len(c.get_heading_enumeration()),
                 1,
-                (
-                    "only level-one "
-                    "chapters should have been counted; got: {}"
-                ).format(repr(c.get_heading_enumeration())),
+                ("only level-one " "chapters should have been counted; got: {}").format(
+                    repr(c.get_heading_enumeration())
+                ),
             )
             self.assertEqual(
                 c.get_heading_enumeration()[0],
                 i,
-                (
-                    "the enumerator "
-                    "should have counted to %d, but counted only to %d"
-                )
+                ("the enumerator " "should have counted to %d, but counted only to %d")
                 % (i, c.get_heading_enumeration()[0]),
             )
 
@@ -51,17 +47,13 @@ class test_factories(unittest.TestCase):
                 len(c.get_heading_enumeration()),
                 2,
                 (
-                    "two level "
-                    "should exist: chapter and section; got instead: {}"
+                    "two level " "should exist: chapter and section; got instead: {}"
                 ).format(repr(c.get_heading_enumeration())),
             )
             self.assertEqual(
                 c.get_heading_enumeration(),
                 [1, i],
-                (
-                    "the enumerator "
-                    "should have counted to %d, but counted only to %d"
-                )
+                ("the enumerator " "should have counted to %d, but counted only to %d")
                 % (i, c.get_heading_enumeration()[0]),
             )
 
@@ -76,17 +68,13 @@ class test_factories(unittest.TestCase):
                 len(c.get_heading_enumeration()),
                 2,
                 (
-                    "two level "
-                    "should exist: chapter and section; got instead: {}"
+                    "two level " "should exist: chapter and section; got instead: {}"
                 ).format(repr(c.get_heading_enumeration())),
             )
             self.assertEqual(
                 c.get_heading_enumeration(),
                 [2, i],
-                (
-                    "the enumerator "
-                    "should have counted to %d, but counted only to %d"
-                )
+                ("the enumerator " "should have counted to %d, but counted only to %d")
                 % (i, c.get_heading_enumeration()[0]),
             )
 

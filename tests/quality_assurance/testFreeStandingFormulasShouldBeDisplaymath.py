@@ -14,8 +14,7 @@ class testFormulasSpanningAParagraphShouldBeDisplayMath(unittest.TestCase):
     def test_that_normal_paragraphs_are_ignored(self):
         result = check("bla\nblub\ndfdfkj")
         self.assertFalse(
-            result,
-            "expected that normal text is ignored, but got " + repr(result),
+            result, "expected that normal text is ignored, but got " + repr(result),
         )
 
     def test_that_single_dollars_ignored(self):
@@ -23,9 +22,7 @@ class testFormulasSpanningAParagraphShouldBeDisplayMath(unittest.TestCase):
             result = check(text)
             self.assertFalse(
                 result,
-                "expected no error when checking {}, got {}".format(
-                    text, repr(result)
-                ),
+                "expected no error when checking {}, got {}".format(text, repr(result)),
             )
 
     def test_that_display_math_not_detected_by_chance(self):

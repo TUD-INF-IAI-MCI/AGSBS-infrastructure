@@ -69,9 +69,7 @@ def check_page_numbering(pnums):
     """
     if not pnums:
         return tuple()
-    errorneous = (
-        []
-    )  # tuple of page number object and expected page number (as number)
+    errorneous = []  # tuple of page number object and expected page number (as number)
     prev = pnums[0]  # previous
     for cur in pnums[1:]:
         # if previous page number was errorneous and the style is unchanged:

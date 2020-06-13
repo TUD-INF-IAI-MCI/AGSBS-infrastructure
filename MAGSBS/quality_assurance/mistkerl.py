@@ -91,9 +91,7 @@ class Mistkerl:
     def get_issues(self, required_type, fname=None):
         """Instanciate issue classes and filter for their configured file
         extension."""
-        extension = (
-            os.path.splitext(fname)[1].replace(".", "") if fname else "md"
-        )
+        extension = os.path.splitext(fname)[1].replace(".", "") if fname else "md"
         issues = (i for i in self.__issues if i.mistake_type == required_type)
         return list(
             i
@@ -123,12 +121,8 @@ class Mistkerl:
                 self.run_directory_filters(last_dir)
                 last_dir = directoryname
                 # check configuration
-                if os.path.exists(
-                    os.path.join(directoryname, config.CONF_FILE_NAME)
-                ):
-                    self.__handle_configuration(
-                        directoryname, config.CONF_FILE_NAME
-                    )
+                if os.path.exists(os.path.join(directoryname, config.CONF_FILE_NAME)):
+                    self.__handle_configuration(directoryname, config.CONF_FILE_NAME)
                     continue  # do no more checks
 
             for file in file_list:
@@ -161,9 +155,7 @@ class Mistkerl:
             return
         if not isinstance(err, ErrorMessage):
             raise TypeError(
-                "Errors may only be of type ErrorMessage, got '{}'".format(
-                    str(err)
-                )
+                "Errors may only be of type ErrorMessage, got '{}'".format(str(err))
             )
         if not err.path:
             err.path = path
@@ -250,9 +242,9 @@ class Mistkerl:
             except ET.ParseError as e:
                 pos = e.position
                 mistake = ErrorMessage(
-                    _(
-                        "The configuration could not be read: " "{reason}"
-                    ).format(e.args[0]),
+                    _("The configuration could not be read: " "{reason}").format(
+                        e.args[0]
+                    ),
                     pos[0],
                     path,
                 )

@@ -141,9 +141,7 @@ class UniformPagestrings(Mistake):
 
     def __init__(self):
         Mistake.__init__(self)
-        self.pattern = re.compile(
-            ".*(%s).*" % "|".join(config.PAGENUMBERINGTOKENS)
-        )
+        self.pattern = re.compile(".*(%s).*" % "|".join(config.PAGENUMBERINGTOKENS))
 
     def _error(self, first_fn, first_pnum, later_fn, later_pnum):
         first_fn = os.path.basename(first_fn)
@@ -262,9 +260,7 @@ class PageNumbersWithoutDashes(Mistake):
 
     def __init__(self):
         super().__init__()
-        pattern = (
-            r"\|\|\s*(?:-)?\s*(" + "|".join(config.PAGENUMBERINGTOKENS) + ")"
-        )
+        pattern = r"\|\|\s*(?:-)?\s*(" + "|".join(config.PAGENUMBERINGTOKENS) + ")"
         self.pattern = re.compile(pattern.lower())
 
     def worker(self, *args):
@@ -344,10 +340,7 @@ class HeadingsUseEitherUnderliningOrHashes(Mistake):
         for heading in args[0]:
             if heading.get_text().startswith("#"):
                 return self.error(
-                    _(
-                        "The heading was underlined and also "
-                        "marked with #'s."
-                    ),
+                    _("The heading was underlined and also " "marked with #'s."),
                     lnum=heading.get_line_number(),
                 )
 
@@ -546,8 +539,7 @@ class HyphensFromJustifiedTextWereRemoved(Mistake):
                         next_line
                         and next_line[0].isalpha()
                         and not (
-                            next_line.startswith("und")
-                            or next_line.startswith("and")
+                            next_line.startswith("und") or next_line.startswith("and")
                         )
                     ):
                         return self.error(
@@ -589,12 +581,8 @@ class DetectEmptyImageDescriptions(Mistake):
         with open(path, "r", encoding="utf-8") as file:
             lines = file.readlines()
 
-        headings = [
-            h for h in headings if h.get_level() > 1
-        ]  # ignore level 1 headings
-        for start_line, end_line in self.get_heading_ranges(
-            headings, len(lines)
-        ):
+        headings = [h for h in headings if h.get_level() > 1]  # ignore level 1 headings
+        for start_line, end_line in self.get_heading_ranges(headings, len(lines)):
             image_description_found = False
             for line in lines[
                 start_line : end_line - 1
@@ -608,7 +596,5 @@ class DetectEmptyImageDescriptions(Mistake):
                     break
             if not image_description_found:
                 return self.error(
-                    _("No image description provided."),
-                    lnum=start_line,
-                    path=path,
+                    _("No image description provided."), lnum=start_line, path=path,
                 )

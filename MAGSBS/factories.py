@@ -91,9 +91,7 @@ file containing outsourced image descriptions.
     def get_inline_description(self):
         """Generate markdown image with description."""
         desc = (
-            self.__description.replace("\n", " ")
-            .replace("\r", " ")
-            .replace(" ", " ")
+            self.__description.replace("\n", " ").replace("\r", " ").replace(" ", " ")
         )
         return "![%s](%s)" % (desc, self.__image_path)
 

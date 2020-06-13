@@ -1,8 +1,6 @@
 # pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
 import unittest
-from MAGSBS.quality_assurance.markdown import (
-    HyphensFromJustifiedTextWereRemoved,
-)
+from MAGSBS.quality_assurance.markdown import HyphensFromJustifiedTextWereRemoved
 from MAGSBS.quality_assurance.meta import ErrorMessage
 
 
@@ -39,9 +37,7 @@ class TestHyphensFromJustifiedTextWereRemoved(unittest.TestCase):
         par = str2par("--- ----\na   b\nc   d\n--- ---")
         self.assertEqual(checker(par), None)
 
-    def test_that_hyphen_at_end_of_line_and_no_word_at_next_line_is_ignored(
-        self,
-    ):
+    def test_that_hyphen_at_end_of_line_and_no_word_at_next_line_is_ignored(self,):
         par = str2par("foo bar-\n+-----+...")
         self.assertEqual(checker(par), None)
 

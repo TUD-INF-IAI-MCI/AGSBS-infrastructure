@@ -189,9 +189,7 @@ label "Heading" and attributes "{#id .class key=value}".
 
     def set_type(self, a_type):
         if not isinstance(a_type, Heading.Type):
-            raise ValueError(
-                "Wrong heading type. Must be of type Heading.Type."
-            )
+            raise ValueError("Wrong heading type. Must be of type Heading.Type.")
         else:
             self.__type = a_type
 
@@ -343,8 +341,7 @@ class FileCache:
                 return (previous, succ)
         # if this code fragment is reached, file was not contained in list
         raise errors.StructuralError(
-            ("The file was not found in the lecture. " "This indicates a bug."),
-            path,
+            ("The file was not found in the lecture. " "This indicates a bug."), path,
         )
 
 

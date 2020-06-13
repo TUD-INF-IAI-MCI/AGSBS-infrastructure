@@ -59,9 +59,7 @@ def locale_destdir():
         loc_dirs += ["/usr/share/locale", "/usr/local/share/locale"]
     elif sys.platform == "win32":
         # default installer place
-        loc_dirs.append(
-            os.path.join(os.getenv("ProgramData"), "matuc", "locale")
-        )
+        loc_dirs.append(os.path.join(os.getenv("ProgramData"), "matuc", "locale"))
     loc_dirs.append(
         os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))),
@@ -84,8 +82,7 @@ def locale_destdir():
                 return directory
     if dir_with_no_perms:
         print(
-            "Insufficient rights to install translations (.mo) to "
-            + dir_with_no_perms
+            "Insufficient rights to install translations (.mo) to " + dir_with_no_perms
         )
         sys.exit(81)
 
@@ -118,13 +115,8 @@ class I18nGeneration(Command):
                 create_pot = True
         if create_pot:
             print("Extracting translatable strings...")
-            pygettext = (
-                "pygettext3" if shutil.which("pygettext3") else "pygettext"
-            )
-            shell(
-                f"{pygettext} --keyword=_ --output=matuc.pot %s"
-                % " ".join(files)
-            )
+            pygettext = "pygettext3" if shutil.which("pygettext3") else "pygettext"
+            shell(f"{pygettext} --keyword=_ --output=matuc.pot %s" % " ".join(files))
         # merge new strings and old translations
         for lang_po in os.listdir("po"):
             shell("msgmerge -F -U %s matuc.pot" % os.path.join("po", lang_po))
@@ -141,9 +133,7 @@ class I18nInstall(install):
             destdir = os.path.join(locale_destdir(), lang, "LC_MESSAGES")
             if not os.path.exists(destdir):
                 os.makedirs(destdir)
-            src_mo = os.path.join(
-                BUILD_DIR, "mo", lang, "LC_MESSAGES", "matuc.mo"
-            )
+            src_mo = os.path.join(BUILD_DIR, "mo", lang, "LC_MESSAGES", "matuc.mo")
             print(f"Installing {src_mo} to {destdir}")
             shutil.copy(src_mo, destdir)
 

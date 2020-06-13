@@ -131,9 +131,7 @@ class EpubConverter(OutputGenerator):
         # set path for error
         if not err.path:
             err.path = (
-                os.path.abspath(file_name)
-                .replace(os.getcwd(), "")
-                .lstrip(os.sep)
+                os.path.abspath(file_name).replace(os.getcwd(), "").lstrip(os.sep)
             )
         if not isinstance(err, errors.MathError):
             raise err
@@ -157,21 +155,13 @@ class EpubConverter(OutputGenerator):
             name = os.path.splitext(os.path.basename(file_name))[0]
             chapter = os.path.basename(os.path.dirname(file_name))
             if name == "bilder":
-                file_info["images"].append(
-                    {"chapter": chapter, "path": file_name}
-                )
+                file_info["images"].append({"chapter": chapter, "path": file_name})
             elif name[:3] == "anh":
-                file_info["backmatter"].append(
-                    {"chapter": chapter, "path": file_name}
-                )
+                file_info["backmatter"].append({"chapter": chapter, "path": file_name})
             elif name.startswith("v"):
-                file_info["frontmatter"].append(
-                    {"chapter": chapter, "path": file_name}
-                )
+                file_info["frontmatter"].append({"chapter": chapter, "path": file_name})
             elif name.startswith("k"):
-                file_info["chapters"].append(
-                    {"chapter": chapter, "path": file_name}
-                )
+                file_info["chapters"].append({"chapter": chapter, "path": file_name})
             elif name in file_info:
                 # if it's not in the dict the file is ignored (e.g. inhalt)
                 file_info[name].append({"chapter": chapter, "path": file_name})
@@ -188,9 +178,7 @@ class EpubConverter(OutputGenerator):
                         # this alters the Pandoc document AST -- no return required
                         contentfilter.convert_formulas(
                             path,
-                            os.path.join(
-                                os.path.dirname(entry["path"]), "bilder"
-                            ),
+                            os.path.join(os.path.dirname(entry["path"]), "bilder"),
                             json_ast,
                         )
                     except errors.MathError as err:
@@ -202,9 +190,7 @@ class EpubConverter(OutputGenerator):
                         os.path.dirname(entry["path"]),
                     )
                     if key == "images":
-                        self.__apply_filters(
-                            json_ast, self.IMAGE_CONTENT_FILTERS, path
-                        )
+                        self.__apply_filters(json_ast, self.IMAGE_CONTENT_FILTERS, path)
                     elif key == "backmatter":
                         self.__apply_filters(
                             json_ast, self.BACKMATTER_CONTENT_FILTERS, path

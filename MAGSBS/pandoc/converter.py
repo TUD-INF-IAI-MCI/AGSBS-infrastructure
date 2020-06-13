@@ -53,9 +53,7 @@ to the output, handles errors and checks for the correct encoding.
     def __init__(self, conf=None, root_path=None):
         self.converters = ACTIVE_CONVERTERS
         self.__conf = (
-            config.ConfFactory().get_conf_instance(os.getcwd())
-            if not conf
-            else conf
+            config.ConfFactory().get_conf_instance(os.getcwd()) if not conf else conf
         )
         self.__meta_data = {k.name: v for k, v in self.__conf.items()}
         self.__meta_data["path"] = None
@@ -127,9 +125,7 @@ to the output, handles errors and checks for the correct encoding.
 
     def set_conversion_profile(self, profile):
         if not isinstance(profile, ConversionProfile):
-            raise TypeError(
-                "Expected profile of type " + type(ConversionProfile)
-            )
+            raise TypeError("Expected profile of type " + type(ConversionProfile))
         self.__conv_profile = profile
 
     def set_output_format(self, format_):

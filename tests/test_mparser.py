@@ -40,9 +40,7 @@ class test_mparser(unittest.TestCase):
         self.assertEqual(len(pnums), 1, "exactly one page number is expected.")
         self.assertEqual(pnums[0].number, 80)
 
-    def test_that_more_than_one_pnum_is_parsed_and_line_numbers_are_correct(
-        self,
-    ):
+    def test_that_more_than_one_pnum_is_parsed_and_line_numbers_are_correct(self,):
         pars = collections.OrderedDict()
         pars[1] = ["|| - Seite 80 -"]
         pars[3] = ["|| Some text", "hopefully ignored"]
@@ -72,11 +70,7 @@ class test_mparser(unittest.TestCase):
 
     def test_that_roman_numbers_work(self):
         pnums = mp.extract_page_numbers_from_par(
-            {
-                1: ["|| - Seite I -"],
-                7: ["|| - Seite XVI -"],
-                20: ["|| - Seite CCC -"],
-            }
+            {1: ["|| - Seite I -"], 7: ["|| - Seite XVI -"], 20: ["|| - Seite CCC -"],}
         )
         self.assertEqual(len(pnums), 3)
 
@@ -128,16 +122,12 @@ class test_mparser(unittest.TestCase):
             par("a heading\\\nwhich is too long\\\ntest\n-----\n\ncontent\n")
         )
         self.assertEqual(len(headings), 1)
-        self.assertEqual(
-            headings[0].get_text(), "a heading\nwhich is too long\ntest"
-        )
+        self.assertEqual(headings[0].get_text(), "a heading\nwhich is too long\ntest")
 
     ############################################################################
     # tests for compute_position()
 
-    def test_that_position_for_formula_at_beginning_of_document_is_correct(
-        self,
-    ):
+    def test_that_position_for_formula_at_beginning_of_document_is_correct(self,):
         self.assertEqual(mp.compute_position(""), 1)
         self.assertEqual(mp.compute_position("", 1), 1)
 
@@ -170,9 +160,7 @@ class test_mparser(unittest.TestCase):
     def test_that_two_formulas_per_line_are_recognized(self):
         formulas = mp.parse_environments("Here is $$\\tau$$ and $$\\pi$$.")
         self.assertEqual(
-            len(formulas.keys()),
-            2,
-            "expected two formulas, got " + repr(formulas),
+            len(formulas.keys()), 2, "expected two formulas, got " + repr(formulas),
         )
         self.assertTrue("\\tau" in formulas.values())
         self.assertTrue("\\pi" in formulas.values())
@@ -192,18 +180,14 @@ class test_mparser(unittest.TestCase):
         formulas = mp.parse_environments("j$$a\nb$$,\n$$c$$")
         self.assertTrue(
             (1, 2) in formulas.keys(),
-            "expected (1, 2) to be in the "
-            + "list of formulas, got "
-            + repr(formulas),
+            "expected (1, 2) to be in the " + "list of formulas, got " + repr(formulas),
         )
         self.assertTrue((3, 1) in formulas.keys())
         # the same with the second environment slightly shiftet
         formulas = mp.parse_environments("j$$a\nb$$,\nchar$$c$$")
         self.assertTrue(
             (1, 2) in formulas.keys(),
-            "expected (1, 2) to be in the "
-            + "list of formulas, got "
-            + repr(formulas),
+            "expected (1, 2) to be in the " + "list of formulas, got " + repr(formulas),
         )
         self.assertTrue((3, 5) in formulas.keys())
 
@@ -237,9 +221,7 @@ class TestParseFormulas(unittest.TestCase):
         )
         self.assertTrue(
             "third" in formulas.values(),
-            "'third' expected i"
-            + "in formulas; found: "
-            + repr(formulas.values()),
+            "'third' expected i" + "in formulas; found: " + repr(formulas.values()),
         )
 
     def test_positions_of_formulas_are_correct_with_line_breaks(self):
@@ -312,8 +294,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         self.assertEqual(
             "".join(flatten(data[7])).strip(),
             "",
-            "The code block in the middle should be empty; document is: "
-            + repr(data),
+            "The code block in the middle should be empty; document is: " + repr(data),
         )
 
     def test_backprime_tilde_code_blocks_at_beginning_and_end_are_removed(self):
@@ -334,8 +315,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         self.assertEqual(
             "".join(flatten(data[7])).strip(),
             "",
-            "The code block in the middle should be empty; document is: "
-            + repr(data),
+            "The code block in the middle should be empty; document is: " + repr(data),
         )
 
     def test_that_backprime_blocks_with_prg_language_are_removed(self):
@@ -353,9 +333,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         self.assertFalse("more_code" in "\n".join(flatten(data.values())))
 
     def test_that_indented_code_blocks_in_the_middle_work(self):
-        data = parcdblk(
-            "heading\n======\n\ndum-\nmy\n\n\tremoved\n\ntest\ndone\n"
-        )
+        data = parcdblk("heading\n======\n\ndum-\nmy\n\n\tremoved\n\ntest\ndone\n")
         self.assertFalse(
             "removed" in "\n".join(flatten(data.values())),
             "code block should have been removed; document: " + repr(data),
@@ -365,8 +343,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         self.assertEqual(
             "".join(flatten(data[7])).strip(),
             "",
-            "The code block in the middle should be empty; document is: "
-            + repr(data),
+            "The code block in the middle should be empty; document is: " + repr(data),
         )
 
     def test_that_indented_block_not_removed_if_itemize_before(self):
@@ -396,9 +373,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         )
 
     def test_that_even_indented_tilde_blocks_are_removed(self):
-        data = parcdblk(
-            "-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup"
-        )
+        data = parcdblk("-  blah\n\n    ~~~~\n    ok, here we go\n    ~~~~\n\njup")
         self.assertFalse("ok, here" in seralize_doc(data))
         self.assertTrue(7 in data)
 
@@ -414,9 +389,7 @@ class TestCodeBlockRemoval(unittest.TestCase):
         for start in (1, 3, 5):
             self.assertTrue(
                 start in data,
-                "Expected {} in data, but not found.  Got: ".format(
-                    start, data
-                ),
+                "Expected {} in data, but not found.  Got: ".format(start, data),
             )
         self.assertEqual(data[3][0].strip(), "")
 
@@ -443,14 +416,10 @@ class TestLinkParser(unittest.TestCase):
             for j, reference in enumerate(result):
                 self.assertEqual(reference.type, outputs[i][j].type)
                 self.assertEqual(reference.is_image, outputs[i][j].is_image)
-                self.assertEqual(
-                    reference.is_footnote, outputs[i][j].is_footnote
-                )
+                self.assertEqual(reference.is_footnote, outputs[i][j].is_footnote)
                 self.assertEqual(reference.id, outputs[i][j].id)
                 self.assertEqual(reference.link, outputs[i][j].link)
-                self.assertEqual(
-                    reference.line_number, outputs[i][j].line_number
-                )
+                self.assertEqual(reference.line_number, outputs[i][j].line_number)
 
     def test_parsing_inline_links(self):
         test_inputs = [
@@ -458,18 +427,12 @@ class TestLinkParser(unittest.TestCase):
             'title](http://fsf.org "click here for a good time!").',
             "[Write me!](mailto:sam@green.eggs.ham)",
             "[I'm an inline link](https://www.google.com)",
-            "[I'm inline with title](https://www.google.com"
-            ' "Google\'s Homepage")',
+            "[I'm inline with title](https://www.google.com" ' "Google\'s Homepage")',
         ]
         test_outputs = [
             [
                 Reference(
-                    Reference.Type.INLINE,
-                    False,
-                    "inline link",
-                    "/url",
-                    False,
-                    2,
+                    Reference.Type.INLINE, False, "inline link", "/url", False, 2,
                 ),
                 Reference(
                     Reference.Type.INLINE,
@@ -562,12 +525,7 @@ class TestLinkParser(unittest.TestCase):
             ],
             [
                 Reference(
-                    Reference.Type.EXPLICIT,
-                    False,
-                    "my label 2",
-                    "/foo",
-                    False,
-                    1,
+                    Reference.Type.EXPLICIT, False, "my label 2", "/foo", False, 1,
                 )
             ],
             [
@@ -657,8 +615,7 @@ class TestLinkParser(unittest.TestCase):
 
     def test_nested_inlines(self):
         test_inputs = [
-            "[![Bildbeschreibung](bilder/test.jpg)](bild.html#"
-            "title-of-the-graphic)",
+            "[![Bildbeschreibung](bilder/test.jpg)](bild.html#" "title-of-the-graphic)",
             "[ ![Bildbeschreib](bilder/bild1.PNG) ]"
             "(bilder.html#bildb)\n\n|| - Seite 4 - \nabc"
             "[www.schattauer.de](www.schatt.de)",
@@ -744,40 +701,22 @@ class TestLinkParser(unittest.TestCase):
         ]
         test_outputs = [
             [],
+            [Reference(Reference.Type.INLINE, False, "tEst", "#TesT", False, 1)],
             [
                 Reference(
-                    Reference.Type.INLINE, False, "tEst", "#TesT", False, 1
-                )
-            ],
-            [
-                Reference(
-                    Reference.Type.INLINE,
-                    False,
-                    "[15]",
-                    "#seite-15--",
-                    False,
-                    1,
+                    Reference.Type.INLINE, False, "[15]", "#seite-15--", False, 1,
                 ),
                 Reference(Reference.Type.IMPLICIT, False, "15", None, False, 1),
                 Reference(
-                    Reference.Type.INLINE,
-                    False,
-                    "[20]",
-                    "#seite-20--",
-                    False,
-                    2,
+                    Reference.Type.INLINE, False, "[20]", "#seite-20--", False, 2,
                 ),
                 Reference(Reference.Type.IMPLICIT, False, "20", None, False, 2),
             ],
             [],
             [
-                Reference(
-                    Reference.Type.IMPLICIT, False, "a\[", None, False, 1
-                ),
+                Reference(Reference.Type.IMPLICIT, False, "a\[", None, False, 1),
                 Reference(Reference.Type.IMPLICIT, False, "\]", None, False, 1),
-                Reference(
-                    Reference.Type.IMPLICIT, False, "\[\]", None, False, 1
-                ),
+                Reference(Reference.Type.IMPLICIT, False, "\[\]", None, False, 1),
                 Reference(Reference.Type.INLINE, False, "", "\]", False, 2),
             ],
             [
@@ -791,16 +730,7 @@ class TestLinkParser(unittest.TestCase):
                 ),
                 Reference(Reference.Type.IMPLICIT, False, "d", None, False, 1),
             ],
-            [
-                Reference(
-                    Reference.Type.INLINE,
-                    False,
-                    "image",
-                    "google.jpg",
-                    False,
-                    1,
-                )
-            ],
+            [Reference(Reference.Type.INLINE, False, "image", "google.jpg", False, 1,)],
             [
                 Reference(
                     Reference.Type.IMPLICIT,
@@ -820,16 +750,10 @@ class TestLinkParser(unittest.TestCase):
         ]
         test_outputs = [
             [
-                Reference(
-                    Reference.Type.IMPLICIT, False, "second", "", False, 2
-                ),
+                Reference(Reference.Type.IMPLICIT, False, "second", "", False, 2),
                 Reference(Reference.Type.IMPLICIT, True, "third", "", False, 3),
-                Reference(
-                    Reference.Type.INLINE, False, "fif\nth", "k01.md", False, 5
-                ),
-                Reference(
-                    Reference.Type.EXPLICIT, False, "second", "k07.md", False, 7
-                ),
+                Reference(Reference.Type.INLINE, False, "fif\nth", "k01.md", False, 5),
+                Reference(Reference.Type.EXPLICIT, False, "second", "k07.md", False, 7),
             ]
         ]
         self.make_comparison(test_inputs, test_outputs, "Line numbers")
@@ -862,19 +786,10 @@ class TestLinkParser(unittest.TestCase):
             ],
             [
                 Reference(
-                    Reference.Type.EXPLICIT,
-                    False,
-                    "^2",
-                    "not to be tested",
-                    True,
-                    1,
+                    Reference.Type.EXPLICIT, False, "^2", "not to be tested", True, 1,
                 )
             ],
-            [
-                Reference(
-                    Reference.Type.EXPLICIT, False, "^3", "test\n", True, 1
-                )
-            ],
+            [Reference(Reference.Type.EXPLICIT, False, "^3", "test\n", True, 1)],
             [
                 Reference(
                     Reference.Type.EXPLICIT,
@@ -898,11 +813,7 @@ class TestLinkParser(unittest.TestCase):
         test_outputs = [
             [],
             [],
-            [
-                Reference(
-                    Reference.Type.IMPLICIT, False, "formula", "", False, 1
-                )
-            ],
+            [Reference(Reference.Type.IMPLICIT, False, "formula", "", False, 1)],
             [
                 Reference(
                     Reference.Type.EXPLICIT,
@@ -943,15 +854,12 @@ class TestElementsIdsExtractor(unittest.TestCase):
         self.assertEqual(res, {"first", "second", "3"}, msg=self.out_msg(res))
 
     def test_short_entry(self):
-        res = mp.get_html_elements_identifiers(
-            "<div id=\"1\"/><span id='2_nd'/>"
-        )
+        res = mp.get_html_elements_identifiers("<div id=\"1\"/><span id='2_nd'/>")
         self.assertEqual(res, {"1", "2_nd"}, msg=self.out_msg(res))
 
     def test_no_id_entry(self):
         res = mp.get_html_elements_identifiers(
-            '<div></div><div/><span></span></span><div id=""/>'
-            "<span id=''></span>"
+            '<div></div><div/><span></span></span><div id=""/>' "<span id=''></span>"
         )
         self.assertEqual(res, set(), msg=self.out_msg(res))
 

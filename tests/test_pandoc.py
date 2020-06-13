@@ -88,8 +88,7 @@ class test_HTMLConverter(unittest.TestCase):
                 continue  # those don't need to be included
             self.assertTrue(
                 value in data,
-                "%s (key=%s) not found in the template\n%s"
-                % (value, key, str(data)),
+                "%s (key=%s) not found in the template\n%s" % (value, key, str(data)),
             )
 
     def test_that_setup_writes_template(self):
@@ -138,10 +137,7 @@ class test_HTMLConverter(unittest.TestCase):
         """
         ast = {
             "blocks": [
-                {
-                    "t": "Link",
-                    "c": [["", [], []], [], ["target.md#target_id", ""]],
-                }
+                {"t": "Link", "c": [["", [], []], [], ["target.md#target_id", ""]],}
             ]
         }
         ast = pandocfilters.walk(
@@ -177,10 +173,7 @@ class test_EPUBConverter(unittest.TestCase):
         meta contains the key 'target_id' with the chapter number '3' as value."""
         ast = {
             "blocks": [
-                {
-                    "t": "Link",
-                    "c": [["", [], []], [], ["target.html#target_id", ""]],
-                }
+                {"t": "Link", "c": [["", [], []], [], ["target.html#target_id", ""]],}
             ]
         }
         meta = {"ids": {"target_id": 3}}
@@ -204,11 +197,7 @@ class test_EPUBConverter(unittest.TestCase):
                         [
                             {
                                 "t": "Image",
-                                "c": [
-                                    ["", [], []],
-                                    [],
-                                    ["k02/bilder/image.png", ""],
-                                ],
+                                "c": [["", [], []], [], ["k02/bilder/image.png", ""],],
                             }
                         ],
                         ["image#image_id", ""],
@@ -230,10 +219,7 @@ class test_EPUBConverter(unittest.TestCase):
         """
         ast = {"blocks": [{"t": "Header", "c": [1, ["image_id", [], []], []]}]}
         ast = pandocfilters.walk(
-            ast,
-            pandoc.contentfilter.epub_convert_image_header_ids,
-            "epub",
-            None,
+            ast, pandoc.contentfilter.epub_convert_image_header_ids, "epub", None,
         )
         self.assertTrue("image_image_id" in json.dumps(ast))
 
@@ -248,19 +234,11 @@ class test_EPUBConverter(unittest.TestCase):
             "blocks": [
                 {
                     "t": "Header",
-                    "c": [
-                        1,
-                        ["header_id1", [], []],
-                        [{"t": "Str", "c": "Text"}],
-                    ],
+                    "c": [1, ["header_id1", [], []], [{"t": "Str", "c": "Text"}],],
                 },
                 {
                     "t": "Header",
-                    "c": [
-                        2,
-                        ["header_id2", [], []],
-                        [{"t": "Str", "c": "Text"}],
-                    ],
+                    "c": [2, ["header_id2", [], []], [{"t": "Str", "c": "Text"}],],
                 },
             ]
         }
@@ -280,11 +258,7 @@ class test_EPUBConverter(unittest.TestCase):
         """meta conatins 'k03' which is used as prefix for URI.
         ast contains a image with path: 'image.png'.
         It should get converted to 'k03/image.png'."""
-        ast = {
-            "blocks": [
-                {"t": "Image", "c": [["", [], []], [], ["image.png", ""]]}
-            ]
-        }
+        ast = {"blocks": [{"t": "Image", "c": [["", [], []], [], ["image.png", ""]]}]}
         meta = "k03"
         ast = pandocfilters.walk(
             ast, pandoc.contentfilter.epub_update_image_location, "epub", meta
@@ -296,10 +270,7 @@ class test_EPUBConverter(unittest.TestCase):
         It should get converted to 'target_id_back'."""
         ast = {
             "blocks": [
-                {
-                    "t": "Link",
-                    "c": [["", [], []], [], ["target.html#target_id", ""]],
-                }
+                {"t": "Link", "c": [["", [], []], [], ["target.html#target_id", ""]],}
             ]
         }
         ast = pandocfilters.walk(
@@ -328,8 +299,7 @@ class test_EPUBConverter(unittest.TestCase):
             ast, pandoc.contentfilter.epub_create_back_links, "epub", meta
         )
         self.assertTrue(
-            '<a href=\\"ch003.xhtml#image_id_back\\">Image</a>'
-            in json.dumps(ast)
+            '<a href=\\"ch003.xhtml#image_id_back\\">Image</a>' in json.dumps(ast)
         )
 
     def test_conentfilter_collect_ids(self):
@@ -349,11 +319,7 @@ class test_EPUBConverter(unittest.TestCase):
                 {"t": "Header", "c": [1, ["header_id", [], []], []]},
                 {
                     "t": "Link",
-                    "c": [
-                        ["target_id", [], []],
-                        [],
-                        ["target.html#target_id", ""],
-                    ],
+                    "c": [["target_id", [], []], [], ["target.html#target_id", ""],],
                 },
             ]
         }
@@ -362,15 +328,9 @@ class test_EPUBConverter(unittest.TestCase):
             ast, pandoc.contentfilter.epub_collect_ids, "epub", meta
         )
         self.assertTrue(meta["chapter"] == 2)
-        self.assertTrue(
-            "image_id" in meta["ids"] and meta["ids"]["image_id"] == 1
-        )
-        self.assertTrue(
-            "header_id" in meta["ids"] and meta["ids"]["header_id"] == 2
-        )
-        self.assertTrue(
-            "target_id" in meta["ids"] and meta["ids"]["target_id"] == 2
-        )
+        self.assertTrue("image_id" in meta["ids"] and meta["ids"]["image_id"] == 1)
+        self.assertTrue("header_id" in meta["ids"] and meta["ids"]["header_id"] == 2)
+        self.assertTrue("target_id" in meta["ids"] and meta["ids"]["target_id"] == 2)
 
     def test_conentfilter_unnumbered_toc(self):
         """ast contains a header with the id: 'header_id'.
@@ -438,18 +398,14 @@ class TestNavbarGeneration(unittest.TestCase):
     def test_that_roman_numbers_work(self):
         h = get_html_converter()
         pnums = [
-            datastructures.PageNumber("page", i, is_arabic=False)
-            for i in range(1, 20)
+            datastructures.PageNumber("page", i, is_arabic=False) for i in range(1, 20)
         ]
         conf = {MetaInfo.Language: "de", MetaInfo.PageNumberingGap: 5}
         path = "k01/k01.md"  # that has been initilized in the setup method
-        start, end = h.generate_page_navigation(
-            path, self.cache, pnums, conf=conf
-        )
+        start, end = h.generate_page_navigation(path, self.cache, pnums, conf=conf)
         self.assertTrue(
             "[V]" in start + end,
-            "Expected page number V in output, but couldn't be found: "
-            + repr(start),
+            "Expected page number V in output, but couldn't be found: " + repr(start),
         )
 
     def test_that_language_is_used(self):

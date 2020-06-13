@@ -196,9 +196,7 @@ def compute_position(text_before, accumulated_stringlength=1):
         return len(text_before[pos + 1 :]) + 1
 
 
-def parse_environments(
-    document, indicator="$$", stripped_document=None, start_line=1
-):
+def parse_environments(document, indicator="$$", stripped_document=None, start_line=1):
     """parse_environments(document, indicator='$$'', stripped_document=None,
     start_line=1)
     This function will parse environments starting with a configurable indicator
@@ -229,9 +227,7 @@ def parse_environments(
             # the new position depends on the length of formula and line breaks
             pos_in_line = compute_position(token, pos) + 2 * len(indicator)
             if stripped_document is not None:
-                stripped_document.append(
-                    " " * (len(token) + 2 * len(indicator))
-                )
+                stripped_document.append(" " * (len(token) + 2 * len(indicator)))
         else:
             last_plain_text = (
                 token  # save non-formula text for later position retrieval

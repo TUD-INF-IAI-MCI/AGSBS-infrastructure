@@ -32,9 +32,7 @@ class test_gen_id(unittest.TestCase):
         self.assertEqual(datastructures.gen_id(question), "do-i-know")
 
     def test_that_leading_numbers_are_ignored(self):
-        self.assertEqual(
-            datastructures.gen_id("01 hints and tips"), "hints-and-tips"
-        )
+        self.assertEqual(datastructures.gen_id("01 hints and tips"), "hints-and-tips")
 
     def test_that_special_characters_are_ignored(self):
         self.assertEqual(datastructures.gen_id("$$foo##!bar"), "foobar")
@@ -77,9 +75,7 @@ class TestFileCache(unittest.TestCase):
         f = datastructures.FileCache(files)
         for file in [e[2] for e in files]:
             file = file[0] if not isinstance(file, str) else file
-            self.assertTrue(
-                file in f, "%s should be contained in the cache" % file
-            )
+            self.assertTrue(file in f, "%s should be contained in the cache" % file)
 
     def test_that_files_are_grouped_correctly(self):
         appendix = ("anh03", 0, ("anh0301.md", "anh0302.md"))
@@ -121,18 +117,14 @@ class TestFileCache(unittest.TestCase):
         )
         # this one has only a next
         self.assertEqual(
-            f.get_neighbours_for("v04/v04.md"),
-            (None, ("blatt05", "blatt05.md")),
+            f.get_neighbours_for("v04/v04.md"), (None, ("blatt05", "blatt05.md")),
         )
         # this one has only a previous
         self.assertEqual(
-            f.get_neighbours_for("anh03/anh0302.md"),
-            (("anh03", "anh0301.md"), None),
+            f.get_neighbours_for("anh03/anh0302.md"), (("anh03", "anh0301.md"), None),
         )
 
-    def test_requesting_neighbours_for_not_existing_files_raises_exception(
-        self,
-    ):
+    def test_requesting_neighbours_for_not_existing_files_raises_exception(self,):
         f = datastructures.FileCache([("anh03", 0, ("anh0301.md",))])
         with self.assertRaises(errors.StructuralError):
             # pylint: disable=pointless-statement
@@ -141,19 +133,12 @@ class TestFileCache(unittest.TestCase):
     def test_that_number_is_extracted_from_normal_file_name(self):
         self.assertEqual(2, datastructures.extract_chapter_number("k02.md"))
 
-    def test_that_number_is_extracted_from_relative_paths_and_absolute_paths(
-        self,
-    ):
+    def test_that_number_is_extracted_from_relative_paths_and_absolute_paths(self,):
         self.assertEqual(
-            datastructures.extract_chapter_number(
-                os.path.join("k04", "k04.md")
-            ),
-            4,
+            datastructures.extract_chapter_number(os.path.join("k04", "k04.md")), 4,
         )
         self.assertEqual(
-            datastructures.extract_chapter_number(
-                os.path.join("c:", "k09", "k09.md")
-            ),
+            datastructures.extract_chapter_number(os.path.join("c:", "k09", "k09.md")),
             9,
         )
         self.assertEqual(datastructures.extract_chapter_number("k08/k08.md"), 8)

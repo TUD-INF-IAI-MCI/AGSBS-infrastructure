@@ -141,9 +141,7 @@ class LinkChecker:
         then they are not reported. """
         # check only explicit references
         list_of_labels = [
-            ref
-            for ref in self.reference_list
-            if ref.type == Reference.Type.EXPLICIT
+            ref for ref in self.reference_list if ref.type == Reference.Type.EXPLICIT
         ]
         seen = set()  # set of link_texts (labels) that were already checked
         for ref in list_of_labels:
@@ -161,9 +159,7 @@ class LinkChecker:
                             _(
                                 'Identifier "{}" for reference is duplicated '
                                 "on lines {} and {}."
-                            ).format(
-                                ref_id, ref.line_number, tested_ref.line_number
-                            ),
+                            ).format(ref_id, ref.line_number, tested_ref.line_number),
                             ref.line_number,
                             ref.file_path,
                         )
@@ -256,9 +252,9 @@ class LinkChecker:
 
         if path.rfind(".") < 0:  # no extension
             e = ErrorMessage(
-                _(
-                    'Link path "{}" has no extension, but it should be {}.'
-                ).format(path, format_extensions_list(extensions)),
+                _('Link path "{}" has no extension, but it should be {}.').format(
+                    path, format_extensions_list(extensions)
+                ),
                 reference.line_number,
                 reference.file_path,
             )
@@ -268,9 +264,7 @@ class LinkChecker:
         # search fo last comma and extension is what follows it
         elif path[path.rfind(".") + 1 :].lower() not in extensions:
             e = ErrorMessage(
-                _(
-                    'Link path "{}" has extension .{}, but it should be {}.'
-                ).format(
+                _('Link path "{}" has extension .{}, but it should be {}.').format(
                     path,
                     path[path.rfind(".") + 1 :],
                     format_extensions_list(extensions),
@@ -288,8 +282,7 @@ class LinkChecker:
         if not os.path.exists(file_path):
             e = ErrorMessage(
                 _(
-                    'The file "{}" given by the reference "{}" does not'
-                    " exist."
+                    'The file "{}" given by the reference "{}" does not' " exist."
                 ).format(parsed_path, reference.id),
                 reference.line_number,
                 reference.file_path,
@@ -305,9 +298,7 @@ class LinkChecker:
             error_message = _(
                 'The source .md file for hypertext file "{}" ' "does not exist."
             ).format(parsed_path)
-            e = ErrorMessage(
-                error_message, reference.line_number, reference.file_path
-            )
+            e = ErrorMessage(error_message, reference.line_number, reference.file_path)
             e.pos_on_line = reference.pos_on_line
             self.errors.append(e)
             return False
@@ -331,8 +322,7 @@ class LinkChecker:
         if not parsed_url.path:
             e = ErrorMessage(
                 _(
-                    'A link is referencing the anchor "#{}" '
-                    "which does not exist."
+                    'A link is referencing the anchor "#{}" ' "which does not exist."
                 ).format(parsed_url.fragment, path),
                 reference.line_number,
                 reference.file_path,
@@ -371,9 +361,7 @@ class LinkChecker:
         """
         with open(path, encoding="utf-8") as file:
             paragraphs = mparser.file2paragraphs(file.read())
-        self.__cached_headings[path] = mparser.extract_headings_from_par(
-            paragraphs
-        )
+        self.__cached_headings[path] = mparser.extract_headings_from_par(paragraphs)
 
     def load_ids(self, path):
         """This method loads ids of div and span elements into
@@ -381,6 +369,6 @@ class LinkChecker:
         loading same files repeatedly if links are pointing to the same files.
         """
         with open(path, encoding="utf-8") as file:
-            self.__cashed_html_ids[
-                path
-            ] = mparser.get_html_elements_identifiers(file.read())
+            self.__cashed_html_ids[path] = mparser.get_html_elements_identifiers(
+                file.read()
+            )

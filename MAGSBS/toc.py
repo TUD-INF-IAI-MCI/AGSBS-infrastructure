@@ -39,7 +39,7 @@ Format of index: dict of lists: every filename is the key, the list of heading
         """walk()
 By calling the function, the actual index is build."""
         conf = config.ConfFactory().get_conf_instance_safe(self.__dir)
-        if not conf[MetaInfo.GenerateToc]
+        if not conf[MetaInfo.GenerateToc]:
             return  # don't generate a TOC
         for directory, _, files in fs.get_markdown_files(self.__dir):
             for file in files:

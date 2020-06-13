@@ -43,10 +43,7 @@ class TestLinkChecker(unittest.TestCase):
             line_number=10,
         )
         reference_impl_nok = Reference(
-            Reference.Type.IMPLICIT,
-            False,
-            identifier="incorrect",
-            line_number=12,
+            Reference.Type.IMPLICIT, False, identifier="incorrect", line_number=12,
         )
 
         checker = linkchecker.LinkChecker([reference_2], {})
@@ -80,15 +77,9 @@ class TestLinkChecker(unittest.TestCase):
         checker = linkchecker.LinkChecker([], {})
         checker.is_correct_extension(self.get_path(correct_ref), correct_ref)
         self.assertEqual(checker.errors, [])
-        checker.is_correct_extension(
-            self.get_path(html_instead_img), html_instead_img
-        )
-        checker.is_correct_extension(
-            self.get_path(jpq_instead_html), jpq_instead_html
-        )
-        checker.is_correct_extension(
-            self.get_path(md_instead_html), md_instead_html
-        )
+        checker.is_correct_extension(self.get_path(html_instead_img), html_instead_img)
+        checker.is_correct_extension(self.get_path(jpq_instead_html), jpq_instead_html)
+        checker.is_correct_extension(self.get_path(md_instead_html), md_instead_html)
         self.assertEqual(len(checker.errors), 3)
         for i in range(len(checker.errors)):
             self.assertEqual(checker.errors[i].lineno, i + 1)
@@ -149,9 +140,7 @@ class TestLinkChecker(unittest.TestCase):
         )
 
         checker = linkchecker.LinkChecker([], {})
-        checker.target_exists(
-            self.get_path(ref_1), ref_1, "nonsenspath with space"
-        )
+        checker.target_exists(self.get_path(ref_1), ref_1, "nonsenspath with space")
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0].lineno, 1)
 

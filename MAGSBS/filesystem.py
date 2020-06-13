@@ -70,18 +70,10 @@ Files picked up: ending on configured file endings."""
             else:
                 items = [os.path.join(dir, e) for e in os.listdir(dir)]
             files = sorted(
-                [
-                    e
-                    for e in items
-                    if os.path.isfile(e) and self.interesting_file(e)
-                ]
+                [e for e in items if os.path.isfile(e) and self.interesting_file(e)]
             )
             newdirs = sorted(
-                [
-                    e
-                    for e in items
-                    if os.path.isdir(e) and self.interesting_dir(e)
-                ]
+                [e for e in items if os.path.isdir(e) and self.interesting_dir(e)]
             )
             if self.exclude_non_chapter_prefixed:
                 # remove those which aren't starting with a common chapter prefix

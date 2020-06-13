@@ -9,9 +9,7 @@ import re
 def all_lines_indented(lines):
     """An indented code block must indent all lines (except for empty ones) with
     four spaces or a tab."""
-    return all(
-        not l or l.startswith("    ") or l.startswith("\t") for l in lines
-    )
+    return all(not l or l.startswith("    ") or l.startswith("\t") for l in lines)
 
 
 def is_even(num):
@@ -32,9 +30,7 @@ def rm_codeblocks(paragraphs):
     for start_line, par in paragraphs.items():
         changed = handle_fenced_blocks(modified_paragraphs, start_line, "~~~")
         if not changed:
-            changed = handle_fenced_blocks(
-                modified_paragraphs, start_line, "```"
-            )
+            changed = handle_fenced_blocks(modified_paragraphs, start_line, "```")
         par = modified_paragraphs[start_line]  # update, just to be sure
         if not changed:
             # if all lines start with indentation
@@ -59,9 +55,7 @@ def is_indented_itemize(paragraphs, current_startline):
     for lineno in reversed(keys[:idx]):
         par = paragraphs[lineno]
         # any itemize environment in this paragraph?
-        if any(
-            len(l) > 1 and l.lstrip()[:2] in ["- ", "+ ", "* "] for l in par
-        ):
+        if any(len(l) > 1 and l.lstrip()[:2] in ["- ", "+ ", "* "] for l in par):
             return True  # I'm aware that indented code blocks with an example markdown list won't work
         elif all_lines_indented(par):
             continue  # not clear whether it's a list
@@ -85,9 +79,7 @@ def handle_fenced_blocks(paragraphs, start_line, indicator):
     forward to find the end. This function will itself update the paragraphs
     from the paragraphs input parameter, so works directly on the reference."""
     indicator_count = sum(
-        1
-        for line in paragraphs[start_line]
-        if line.lstrip().startswith(indicator)
+        1 for line in paragraphs[start_line] if line.lstrip().startswith(indicator)
     )
     if indicator_count == 0:
         return False

@@ -201,9 +201,7 @@ class main:
     def handle_toc(self, cmd, args):
         "Table Of Contents"
         parser = HelpfulParser(
-            cmd,
-            self.output_formatter,
-            description=_("Generate table of contents."),
+            cmd, self.output_formatter, description=_("Generate table of contents."),
         )
         parser.add_argument(
             "-o",
@@ -287,9 +285,7 @@ sub-directory configurations or initialization of a new project."""
         parser.add_argument(
             "-l",
             dest="LectureTitle",
-            help=_(
-                "set title of project (first heading level 1 by " "default)"
-            ),
+            help=_("set title of project (first heading level 1 by " "default)"),
             metavar="TITLE",
             default=None,
         )
@@ -369,11 +365,7 @@ sub-directory configurations or initialization of a new project."""
                 if value is not None:
                     inst[MAGSBS.config.MetaInfo[opt]] = value
             self.output_formatter.emit_result(
-                {
-                    _("New settings"): {
-                        key.name: value for key, value in inst.items()
-                    }
-                }
+                {_("New settings"): {key.name: value for key, value in inst.items()}}
             )
             inst.write()
         else:
@@ -445,18 +437,14 @@ sub-directory configurations or initialization of a new project."""
             dest="outsource",
             action="store_true",
             default=False,
-            help=_(
-                "outsource image descriptions regardless of their " "length"
-            ),
+            help=_("outsource image descriptions regardless of their " "length"),
         )
         parser.add_argument(
             "-t",
             "--title",
             dest="title",
             default=None,
-            help=_(
-                "set title for outsourced images (mandatory if " "outsourced)"
-            ),
+            help=_("set title for outsourced images (mandatory if " "outsourced)"),
         )
         parser.add_argument("path", nargs="?", help="path to image file")
         options = parser.parse_args(args)
@@ -476,10 +464,7 @@ sub-directory configurations or initialization of a new project."""
             # wrap all values in a "verbatim" dict, telling the formatter to not
             # reindent this value
             self.output_formatter.emit_result(
-                {
-                    key: {"verbatim": value}
-                    for key, value in img.get_output().items()
-                }
+                {key: {"verbatim": value} for key, value in img.get_output().items()}
             )
 
     def handle_iswithinlecture(self, cmd_name, args):
@@ -502,11 +487,7 @@ sub-directory configurations or initialization of a new project."""
                 sys.exit(0)
             else:
                 self.output_formatter.emit_result(
-                    {
-                        "is within a lecture": MAGSBS.common.is_within_lecture(
-                            args[0]
-                        )
-                    }
+                    {"is within a lecture": MAGSBS.common.is_within_lecture(args[0])}
                 )
 
     def handle_new(self, cmd, args):
@@ -557,15 +538,10 @@ sub-directory configurations or initialization of a new project."""
             c = int(options.chapter_count)
         except ValueError:
             self.output_formatter.emit_error(
-                _(
-                    "The number of chapters and "
-                    "appendix chapters must be integers."
-                )
+                _("The number of chapters and " "appendix chapters must be integers.")
             )
             sys.exit(125)
-        builder = MAGSBS.filesystem.InitLecture(
-            options.directory, c, options.lang
-        )
+        builder = MAGSBS.filesystem.InitLecture(options.directory, c, options.lang)
         builder.set_amount_appendix_chapters(a)
         if options.preface:
             builder.set_has_preface(True)
@@ -605,9 +581,7 @@ sub-directory configurations or initialization of a new project."""
             ),
         )
         parser.add_argument(
-            "input",
-            nargs="?",
-            help=_("specify file or directory to be checked"),
+            "input", nargs="?", help=_("specify file or directory to be checked"),
         )
         options = parser.parse_args(args)
 
@@ -644,9 +618,7 @@ sub-directory configurations or initialization of a new project."""
                     if not key:
                         messages[index] = message[key]
                     else:
-                        messages[index] = {
-                            ", ".join(map(str, key)): message[key]
-                        }
+                        messages[index] = {", ".join(map(str, key)): message[key]}
             return transformed
 
         if options.live_view:
@@ -687,8 +659,7 @@ sub-directory configurations or initialization of a new project."""
             action="store_true",
             default=False,
             help=_(
-                "read from specified path instead of "
-                "reading from standard input"
+                "read from specified path instead of " "reading from standard input"
             ),
         )
         parser.add_argument(
@@ -777,8 +748,7 @@ sub-directory configurations or initialization of a new project."""
             metavar="FILE",
             default=None,
             help=_(
-                "read from specified path instead of "
-                "reading from standard input"
+                "read from specified path instead of " "reading from standard input"
             ),
         )
         parser.add_argument(
@@ -786,8 +756,7 @@ sub-directory configurations or initialization of a new project."""
             dest="in_place",
             action="store_true",
             help=_(
-                "if -f is given, replace the page numbering in the "
-                "file in-place"
+                "if -f is given, replace the page numbering in the " "file in-place"
             ),
         )
 
@@ -833,9 +802,7 @@ sub-directory configurations or initialization of a new project."""
 
     # pylint: disable=unused-argument
     def handle_version(self, dont, care):
-        self.output_formatter.emit_result(
-            {"version": str(MAGSBS.config.VERSION)}
-        )
+        self.output_formatter.emit_result({"version": str(MAGSBS.config.VERSION)})
 
 
 def insert_line(lines, line_number, line):

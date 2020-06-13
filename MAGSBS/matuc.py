@@ -36,9 +36,7 @@ def get_terminal_size():
         try:
             import fcntl, termios, struct
 
-            cr = struct.unpack(
-                "hh", fcntl.ioctl(fd, termios.TIOCGWINSZ, "1234")
-            )
+            cr = struct.unpack("hh", fcntl.ioctl(fd, termios.TIOCGWINSZ, "1234"))
         except:
             return
         return cr
@@ -96,9 +94,7 @@ class TextFormatter(matuc_impl.OutputFormatter):
             width=get_terminal_size()[0] - indent, initial_indent=prefix
         )
         lines = t.wrap(line)
-        return [lines[0]] + [
-            "\n{}{}".format(" " * indent, l) for l in lines[1:]
-        ]
+        return [lines[0]] + ["\n{}{}".format(" " * indent, l) for l in lines[1:]]
 
     def format_recursive(self, obj, indent):
         """Format a JSON-alike structure (dicts and lists containing dicts,
@@ -149,9 +145,7 @@ class TextFormatter(matuc_impl.OutputFormatter):
             message = error.pop("message")
             error["message"] = {"verbatim": message}
         error = {"error": error}
-        sys.stderr.write(
-            "".join(flatten(self.format_recursive(error, 0))) + "\n"
-        )
+        sys.stderr.write("".join(flatten(self.format_recursive(error, 0))) + "\n")
 
     def emit_usage(self, usage, error=None):
         if error:

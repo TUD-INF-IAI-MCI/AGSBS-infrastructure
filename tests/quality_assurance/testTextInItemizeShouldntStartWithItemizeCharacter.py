@@ -11,9 +11,7 @@ def is_error(obj):
 
 class TestTextInItemizeShouldntStartWithItemizeCharacter(unittest.TestCase):
     def run_checker(self, *arguments):
-        return ma.TextInItemizeShouldntStartWithItemizeCharacter().worker(
-            *arguments
-        )
+        return ma.TextInItemizeShouldntStartWithItemizeCharacter().worker(*arguments)
 
     def test_that_normal_itemizes_are_notaffected(self):
         file = {1: ["- item", "- item", "- another"], 6: ["+ item", "+ item"]}

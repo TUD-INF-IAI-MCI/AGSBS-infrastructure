@@ -79,12 +79,7 @@ class TestDetectEmptyImageDescriptions(unittest.TestCase):
 
     def test_that_missing_descriptions_at_end_of_file_detected(self):
         h = make_headings(
-            bilder=[
-                "# ok\n##ok II\n\ndesc\n\n## ok III\n\n",
-                (1, 1),
-                (2, 2),
-                (2, 6),
-            ]
+            bilder=["# ok\n##ok II\n\ndesc\n\n## ok III\n\n", (1, 1), (2, 2), (2, 6),]
         )
         self.assertTrue(check(h))
 
@@ -103,9 +98,7 @@ class TestDetectEmptyImageDescriptions(unittest.TestCase):
     def test_that_empty_description_detected_even_if_multiple_headings_within_paragraph(
         self,
     ):
-        h = make_headings(
-            bilder=["# yup\n\n## abc\n## def\n", (1, 1), (2, 3), (2, 4)]
-        )
+        h = make_headings(bilder=["# yup\n\n## abc\n## def\n", (1, 1), (2, 3), (2, 4)])
         self.assertTrue(check(h))
 
     def test_that_underline_of_headings_ignored(self):

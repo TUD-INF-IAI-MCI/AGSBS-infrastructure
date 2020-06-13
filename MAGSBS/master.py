@@ -50,9 +50,7 @@ files are converted."""
         dirs = [path]
         go_deeper = True
         for directory in dirs:
-            meta = [
-                e for e in os.listdir(directory) if e == config.CONF_FILE_NAME
-            ]
+            meta = [e for e in os.listdir(directory) if e == config.CONF_FILE_NAME]
             if meta:  # found, this is our root
                 roots.append(directory)
                 go_deeper = False

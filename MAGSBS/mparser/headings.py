@@ -53,9 +53,7 @@ def __extract_hashed(start_line, paragraph):
             break
 
 
-def extract_headings_from_par(
-    paragraphs, max_headings=-1, remove_duplicates=True
-):
+def extract_headings_from_par(paragraphs, max_headings=-1, remove_duplicates=True):
     """extract_headings_from_par(list_of_paragraphs, max_headings=-1)
     Return list of heading objects; if max_headings is set to a value > -1, only
     this number of headings will be parsed.
@@ -87,8 +85,7 @@ def extract_headings_from_par(
                 if (
                     remove_duplicates
                     and headings
-                    and headings[-1].get_text().strip()
-                    == heading.get_text().strip()
+                    and headings[-1].get_text().strip() == heading.get_text().strip()
                 ):
                     continue  # skip doubled headings
                 headings.append(heading)
@@ -104,9 +101,7 @@ def extract_headings_from_par(
                 text += paragraph[potential_underline_at].rstrip("\\") + "\n"
                 potential_underline_at += 1
         if potential_underline_at < len(paragraph):
-            text += paragraph[
-                potential_underline_at
-            ]  # get last line without backslash
+            text += paragraph[potential_underline_at]  # get last line without backslash
         potential_underline_at += (
             1  # ended on last line of text, need to be at underline
         )

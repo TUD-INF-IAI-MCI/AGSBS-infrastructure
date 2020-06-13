@@ -1,13 +1,9 @@
 # pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports
 import unittest
 
-from MAGSBS.quality_assurance import (
-    UseProperCommandsForMathOperatorsAndFunctions,
-)
+from MAGSBS.quality_assurance import UseProperCommandsForMathOperatorsAndFunctions
 
-check = lambda x: UseProperCommandsForMathOperatorsAndFunctions().worker(
-    {(1, 1): x}
-)
+check = lambda x: UseProperCommandsForMathOperatorsAndFunctions().worker({(1, 1): x})
 
 
 class TestUseProperCommandsForMathOperatorsAndFunctions(unittest.TestCase):

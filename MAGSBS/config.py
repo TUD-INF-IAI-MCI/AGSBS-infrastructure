@@ -22,7 +22,7 @@ from . import common
 from .errors import ConfigurationError
 from . import roman
 
-VERSION = StrictVersion('0.9')
+VERSION = StrictVersion("0.9")
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -36,8 +36,7 @@ PAGENUMBERINGTOKENS += [
 # regular expression to recognize page numbers, includes both arabic and roman
 # numbers
 ROMAN_NUMBER = re.compile(
-    roman.roman_numeral_pattern_string.strip().lstrip("^").rstrip("$"),
-    re.VERBOSE,
+    roman.roman_numeral_pattern_string.strip().lstrip("^").rstrip("$"), re.VERBOSE,
 )
 PAGENUMBERING_PATTERN = re.compile(
     r"""
@@ -46,11 +45,7 @@ PAGENUMBERING_PATTERN = re.compile(
         -\s*(%s)\s+
         (\d+|%s(?:-(?:\d+|%s))?)\s*- # arabic or roman numbers
         """
-    % (
-        "|".join(PAGENUMBERINGTOKENS),
-        ROMAN_NUMBER.pattern,
-        ROMAN_NUMBER.pattern,
-    ),
+    % ("|".join(PAGENUMBERINGTOKENS), ROMAN_NUMBER.pattern, ROMAN_NUMBER.pattern,),
     re.VERBOSE,
 )
 
@@ -96,6 +91,7 @@ class MetaInfo(enum.Enum):
     TocDepth = "MAGSBS:tocDepth"
     WorkingGroup = "dc:contributor"
 
+
 class LectureMetaData(dict):
     """The lecture conversion needs meta data which is then embedded into the HTML
 document. Those fields are e.g. source, editor, etc.
@@ -118,15 +114,25 @@ Please note: you should not use this class, except if you can make sure that
 exactly one instance at a time exists for a given path. Use the ConfFactory
 instead.
 """
-    DEFAULTS = {MetaInfo.WorkingGroup: 'AG SBS', MetaInfo.Language: 'de',
-            MetaInfo.Institution: 'TU Dresden',
-            MetaInfo.Rights: 'Access limited to members',
-            MetaInfo.TocDepth: 5, MetaInfo.AppendixPrefix: 0,
-            MetaInfo.PageNumberingGap: 5, MetaInfo.GenerateToc: 1,
-            MetaInfo.AutoNumberingOfChapter: 1}
-    NUMERICAL = (MetaInfo.TocDepth, MetaInfo.AppendixPrefix,
-                MetaInfo.PageNumberingGap, MetaInfo.GenerateToc,
-                MetaInfo.AutoNumberingOfChapter)
+
+    DEFAULTS = {
+        MetaInfo.WorkingGroup: "AG SBS",
+        MetaInfo.Language: "de",
+        MetaInfo.Institution: "TU Dresden",
+        MetaInfo.Rights: "Access limited to members",
+        MetaInfo.TocDepth: 5,
+        MetaInfo.AppendixPrefix: 0,
+        MetaInfo.PageNumberingGap: 5,
+        MetaInfo.GenerateToc: 1,
+        MetaInfo.AutoNumberingOfChapter: 1,
+    }
+    NUMERICAL = (
+        MetaInfo.TocDepth,
+        MetaInfo.AppendixPrefix,
+        MetaInfo.PageNumberingGap,
+        MetaInfo.GenerateToc,
+        MetaInfo.AutoNumberingOfChapter,
+    )
 
     def __init__(self, file_path, version=VERSION):
         """Set default values."""
@@ -227,9 +233,7 @@ instead.
                     try:
                         self[key] = value
                     except IndexError:
-                        msg = _("Malformed XML in configuration: ") + ET.dump(
-                            child
-                        )
+                        msg = _("Malformed XML in configuration: ") + ET.dump(child)
                         raise ConfigurationError(msg, self.__path)
             if not version_read:
                 self.__check_for_version(self.__path, "0.1")
@@ -252,8 +256,7 @@ instead.
                 self.__version.version[-1] < version.version[-1]
             ):  # a newer bug fix release is available
                 common.WarningRegistry().register_warning(
-                    ("A newer version of " "Matuc is available: ")
-                    + str(version)
+                    ("A newer version of " "Matuc is available: ") + str(version)
                 )
             # do nothing
         elif version < self.__version:
@@ -280,15 +283,13 @@ instead.
                 v = int(v)
             except ValueError:
                 raise ConfigurationError(
-                    _(
-                        "Option {} couldn't be converted to " "a number: {}"
-                    ).format(k, v),
+                    _("Option {} couldn't be converted to " "a number: {}").format(
+                        k, v
+                    ),
                     self.__path,
                 )
         if k not in self.keys():
-            raise ConfigurationError(
-                _("the key %s is unknown") % k, self.__path
-            )
+            raise ConfigurationError(_("the key %s is unknown") % k, self.__path)
         super().__setitem__(k, v)
         self.__changed = True
 
@@ -335,9 +336,7 @@ configuration and then, if present, the corresponding subdirectory configuration
             return self._instances[conf_path]
         else:
             # check directory above if in a subdirectory of a lecture
-            if not os.path.exists(conf_path) and not common.is_lecture_root(
-                path
-            ):
+            if not os.path.exists(conf_path) and not common.is_lecture_root(path):
                 dir_above = os.path.split(os.path.abspath(path))[0]
                 if common.is_lecture_root(dir_above):
                     conf_path = os.path.join(dir_above, CONF_FILE_NAME)
@@ -346,14 +345,10 @@ configuration and then, if present, the corresponding subdirectory configuration
                 if os.path.exists(conf_path):
                     self._instances[conf_path].read()
             except UnicodeDecodeError:
-                raise ValueError(
-                    _(f"{conf_path}: File must be encoded in UTF-8")
-                )
+                raise ValueError(_(f"{conf_path}: File must be encoded in UTF-8"))
             except ET.ParseError as e:
                 raise ConfigurationError(
-                    _("Configuration errorneous: ") + str(e),
-                    conf_path,
-                    e.position[0],
+                    _("Configuration errorneous: ") + str(e), conf_path, e.position[0],
                 )
         return self._instances[conf_path]
 
@@ -418,9 +413,7 @@ class Translate:
             "yellow": ("jaune",) * 2,
         }.items():
             masc, fem = trans
-            self.en_fr["%s frame" % colour] = "Cadre {} autour du texte".format(
-                masc
-            )
+            self.en_fr["%s frame" % colour] = "Cadre {} autour du texte".format(masc)
             self.en_fr["%s box" % colour] = "Bulle {} de texte".format(fem)
 
         self.en_de = {

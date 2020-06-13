@@ -38,9 +38,7 @@ class TestCommon(unittest.TestCase):
         touch("mypath/anotherpath/subdirectory/")
         self.assertFalse(is_within_lecture("mypath/anotherpath/subdirectory/"))
         touch("Bees And Their Importance/paper/foo.tex")
-        self.assertFalse(
-            is_within_lecture("Bees And Their Importance/paper/foo.tex")
-        )
+        self.assertFalse(is_within_lecture("Bees And Their Importance/paper/foo.tex"))
 
     def test_that_chapter_file_within_invalid_directory_is_invalid_too(self):
         touch("mypath/invalid/k01.md")

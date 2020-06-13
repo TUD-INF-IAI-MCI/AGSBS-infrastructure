@@ -19,9 +19,7 @@ import shutil
 import subprocess
 import sys
 
-sys.path.insert(
-    0, os.path.abspath("..")
-)  # insert directory above as first path
+sys.path.insert(0, os.path.abspath(".."))  # insert directory above as first path
 
 PANDOC_INSTALLER_URL = "https://github.com/jgm/pandoc/releases/download/2.9.1.1/pandoc-2.9.1.1-windows-x86_64.zip"
 
@@ -47,9 +45,7 @@ class SetUp:
         self.needs_wine = True if not sys.platform.startswith("win") else False
         self.python_command = "wine python" if self.needs_wine else "python"
 
-    def check_for_command(
-        self, cmd, debian_pkg, install_otherwise, silent=False
-    ):
+    def check_for_command(self, cmd, debian_pkg, install_otherwise, silent=False):
         """Check whether given command exists and give instruction how to
         install, if not found. If silent=True, no messages are printed and
         True/False is returned."""
@@ -64,10 +60,7 @@ class SetUp:
                     % cmd
                 )
                 if shutil.which("dpkg"):
-                    print(
-                        "  Install it using `sudo apt-get install %s`."
-                        % debian_pkg
-                    )
+                    print("  Install it using `sudo apt-get install %s`." % debian_pkg)
                 else:
                     print("  " + install_otherwise)
                 sys.exit(2)
@@ -88,9 +81,7 @@ class SetUp:
     def detect_build_dependencies(self):
         if self.needs_wine:
             self.check_for_command(
-                "wine",
-                "wine64",
-                "Install it from https://www.winehq.org/download",
+                "wine", "wine64", "Install it from https://www.winehq.org/download",
             )
             # detect python; -h switch is used to notprint output
             if os.system("wine python -h 2>&1 > /dev/null"):
@@ -100,17 +91,14 @@ class SetUp:
                 )
         else:
             self.check_for_command(
-                "python",
-                "python3",
-                "Install it from https://www.winehq.org/download",
+                "python", "python3", "Install it from https://www.winehq.org/download",
             )
 
         import re
 
         # detect python version
         proc = subprocess.Popen(
-            self.python_command.split(" ") + ["--version"],
-            stdout=subprocess.PIPE,
+            self.python_command.split(" ") + ["--version"], stdout=subprocess.PIPE,
         )
         data = proc.communicate()[0].decode(sys.getdefaultencoding())
         if proc.wait():
@@ -121,8 +109,7 @@ class SetUp:
             pyversion = pyversion.groups()[0]
             if not pyversion.startswith("3"):
                 print(
-                    "Python version >= 3.2 required, found %s"
-                    % pyversion.groups()[0]
+                    "Python version >= 3.2 required, found %s" % pyversion.groups()[0]
                 )
         else:
             print("Python version >= 3.2 required.")
@@ -160,9 +147,8 @@ class SetUp:
         if not shutil.which("7z"):
             subprocess_call("7z x x.zip")
         else:
-            subprocess_call('7z x x.zip')
-        os.rename(os.path.join('.', 'pandoc.exe'),
-                os.path.join('..', 'pandoc.exe'))
+            subprocess_call("7z x x.zip")
+        os.rename(os.path.join(".", "pandoc.exe"), os.path.join("..", "pandoc.exe"))
         os.chdir("..")
         shutil.rmtree(os.path.basename(tmp))  # remove pandoc's temp directory
         os.chdir("..")
@@ -172,8 +158,7 @@ def clean():
     """Remove build directory."""
     if not os.path.basename(os.getcwd()) == "installer":
         raise ValueError(
-            "BUG, expected to be in directory `installer`, but am in "
-            + os.getcwd()
+            "BUG, expected to be in directory `installer`, but am in " + os.getcwd()
         )
     if os.path.exists(BUILD_DIRECTORY):
         shutil.rmtree(BUILD_DIRECTORY)
@@ -250,9 +235,7 @@ def build_installer():
     os.rename("binary", os.path.join(BUILD_DIRECTORY, "binary"))
 
     # copy matuc.nsi and *.nsh to build/
-    shutil.copy(
-        "EnvVarUpdate.nsh", os.path.join(BUILD_DIRECTORY, "EnvVarUpdate.nsh")
-    )
+    shutil.copy("EnvVarUpdate.nsh", os.path.join(BUILD_DIRECTORY, "EnvVarUpdate.nsh"))
     shutil.copy("matuc.nsi", os.path.join(BUILD_DIRECTORY, "matuc.nsi"))
 
     # pylint: disable=import-error
@@ -260,9 +243,7 @@ def build_installer():
     from MAGSBS.config import VERSION
 
     update_installer_info(
-        os.path.join(BUILD_DIRECTORY, "matuc.nsi"),
-        VERSION,
-        get_size(BUILD_DIRECTORY),
+        os.path.join(BUILD_DIRECTORY, "matuc.nsi"), VERSION, get_size(BUILD_DIRECTORY),
     )
     # remove existing binary installer
     out_file = "matuc-installer-" + str(VERSION) + ".exe"
