@@ -1,5 +1,6 @@
 import unittest, sys
-sys.path.insert(0, '.') # just in case
+
+sys.path.insert(0, ".")  # just in case
 import os
 
 import MAGSBS
@@ -16,6 +17,7 @@ def mkpnum(line, num, arabic=True):
     p = MAGSBS.datastructures.PageNumber("Slide", num, is_arabic=arabic)
     p.line_no = num
     return p
+
 
 class test_add_pagenumber(unittest.TestCase):
 
@@ -51,32 +53,48 @@ class TestCheckPageNumbering(unittest.TestCase):
         pnums = [mkpnum(1, 1), mkpnum(3, 2), mkpnum(5, 3), mkpnum(20, 4)]
         self.assertEqual(pagenumbering.check_page_numbering(pnums), [])
         # roman numbers
-        pnums = [mkpnum(1, 1, False), mkpnum(3, 2, False),
-                mkpnum(5, 3, False), mkpnum(20, 4, False)]
+        pnums = [
+            mkpnum(1, 1, False),
+            mkpnum(3, 2, False),
+            mkpnum(5, 3, False),
+            mkpnum(20, 4, False),
+        ]
         self.assertEqual(pagenumbering.check_page_numbering(pnums), [])
 
     def test_starting_at_arbitrary_number_works(self):
         pnums = [mkpnum(1, 10), mkpnum(3, 11), mkpnum(5, 12), mkpnum(20, 13)]
         self.assertEqual(pagenumbering.check_page_numbering(pnums), [])
         # roman numbers
-        pnums = [mkpnum(1, 10, False), mkpnum(3, 11, False), mkpnum(5, 12, False),
-                mkpnum(20, 13, False)]
+        pnums = [
+            mkpnum(1, 10, False),
+            mkpnum(3, 11, False),
+            mkpnum(5, 12, False),
+            mkpnum(20, 13, False),
+        ]
         self.assertEqual(pagenumbering.check_page_numbering(pnums), [])
 
     def test_jumps_are_not_tolerated(self):
         pnums = [mkpnum(1, 10), mkpnum(3, 11), mkpnum(5, 12), mkpnum(20, 19)]
         self.assertNotEqual(pagenumbering.check_page_numbering(pnums), [])
         # roman numbers
-        pnums = [mkpnum(1, 10, False), mkpnum(3, 11, False), mkpnum(5, 12, False),
-                mkpnum(20, 18, False)]
+        pnums = [
+            mkpnum(1, 10, False),
+            mkpnum(3, 11, False),
+            mkpnum(5, 12, False),
+            mkpnum(20, 18, False),
+        ]
         self.assertNotEqual(pagenumbering.check_page_numbering(pnums), [])
 
     def test_all_numbers_after_errneous_are_reported(self):
         pnums = [mkpnum(1, 2), mkpnum(3, 11), mkpnum(5, 12), mkpnum(20, 19)]
         self.assertEqual(len(pagenumbering.check_page_numbering(pnums)), 3)
         # roman numbers
-        pnums = [mkpnum(1, 2, False), mkpnum(3, 11, False), mkpnum(5, 12, False),
-                mkpnum(20, 18, False)]
+        pnums = [
+            mkpnum(1, 2, False),
+            mkpnum(3, 11, False),
+            mkpnum(5, 12, False),
+            mkpnum(20, 18, False),
+        ]
         self.assertEqual(len(pagenumbering.check_page_numbering(pnums)), 3)
 
     def test_style_changes_are_correctly_handled(self):
@@ -84,8 +102,10 @@ class TestCheckPageNumbering(unittest.TestCase):
         pnums = [mkpnum(1, 10), mkpnum(3, 11), mkpnum(5, 99, False)]
         self.assertEqual(pagenumbering.check_page_numbering(pnums), [])
         # provoke error, continue normal
-        pnums = [mkpnum(1, 10), mkpnum(3, 22), mkpnum(5, 98, False),
-                mkpnum(20, 99, False)]
+        pnums = [
+            mkpnum(1, 10),
+            mkpnum(3, 22),
+            mkpnum(5, 98, False),
+            mkpnum(20, 99, False),
+        ]
         self.assertEqual(len(pagenumbering.check_page_numbering(pnums)), 1)
-       
-

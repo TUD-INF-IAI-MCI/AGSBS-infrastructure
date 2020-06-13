@@ -51,7 +51,7 @@ def find_links_in_markdown(text, init_lineno=1, init_position=1):
         # cases when [ is within formula)
         if text[index] == "[" and not escape_next and not is_in_formula:
             beginning = index - max(0, index - 2)
-            chars, reference = extract_link(text[index - beginning:])
+            chars, reference = extract_link(text[index - beginning :])
             # chars recalculation - beginning should not be counted twice
             chars = chars - beginning
             # result processing, but not when it is a to-do list
@@ -62,12 +62,14 @@ def find_links_in_markdown(text, init_lineno=1, init_position=1):
                 # there should be some inner references within line text
                 if reference.id:
                     for inner_reference in find_links_in_markdown(
-                            reference.id, lineno, position):
+                        reference.id, lineno, position
+                    ):
                         output.append(inner_reference)
                 # there should be some inner references in link itself
                 if reference.link:
                     for inner_reference in find_links_in_markdown(
-                            reference.link, lineno, position):
+                        reference.link, lineno, position
+                    ):
                         output.append(inner_reference)
                 # recalculate the index char, number of lines and position
                 for _ in range(index, index + chars):
@@ -77,8 +79,11 @@ def find_links_in_markdown(text, init_lineno=1, init_position=1):
                         lineno += 1
                         position = 1
 
-        escape_next = True if index < len(text) and \
-            text[index] == "\\" and not escape_next else False
+        escape_next = (
+            True
+            if index < len(text) and text[index] == "\\" and not escape_next
+            else False
+        )
         index += 1
         position += 1
     return output
@@ -89,9 +94,9 @@ def extract_link(text):
     Parameter text should contain opening square bracket.
     Then it is resolved and new instance of Reference class is returned. """
     if "[" not in text:
-        raise ValueError("Text for extracting link must contain \"[\".")
+        raise ValueError('Text for extracting link must contain "[".')
     index = text.find("[")
-    image_char, is_footnote = detect_image_footnote(text[:index + 2], index)
+    image_char, is_footnote = detect_image_footnote(text[: index + 2], index)
 
     # [ ... whatever ... ] part
     first_part = get_text_inside_brackets(text[index:])
@@ -100,33 +105,61 @@ def extract_link(text):
     # solve labeled
     if index < len(text) - 1 and text[index] == "[" and text[index + 1] != "]":
         second_part = get_text_inside_brackets(text[index:])
-        return index + second_part[0], Reference(
-            Reference.Type.IMPLICIT, image_char, identifier=second_part[1],
-            is_footnote=is_footnote)
+        return (
+            index + second_part[0],
+            Reference(
+                Reference.Type.IMPLICIT,
+                image_char,
+                identifier=second_part[1],
+                is_footnote=is_footnote,
+            ),
+        )
     elif index < len(text) and text[index] == "(":  # inline links
         second_part = get_text_inside_brackets(text[index:])
         second_part_str = second_part[1]
         if second_part_str.find(r" ") != -1:
-            second_part_str = second_part_str[:second_part_str.find(r" ")]
-        return index + second_part[0], Reference(
-            Reference.Type.INLINE, image_char, identifier=first_part[1],
-            link=second_part_str)
+            second_part_str = second_part_str[: second_part_str.find(r" ")]
+        return (
+            index + second_part[0],
+            Reference(
+                Reference.Type.INLINE,
+                image_char,
+                identifier=first_part[1],
+                link=second_part_str,
+            ),
+        )
     elif index < len(text) and text[index] == ":":  # explicit reference links
         if is_footnote:  # explicit reference to footnote
             end_index = text[index:].find("\n\n")
             # no two newlines there till end of string
             end_index = len(text) if end_index < 0 else end_index + index
 
-            return end_index, Reference(
-                Reference.Type.EXPLICIT, image_char, identifier=first_part[1],
-                link=text[index + 2:end_index], is_footnote=True)
+            return (
+                end_index,
+                Reference(
+                    Reference.Type.EXPLICIT,
+                    image_char,
+                    identifier=first_part[1],
+                    link=text[index + 2 : end_index],
+                    is_footnote=True,
+                ),
+            )
         # explicit reference link, is ended by first whitespace after ": "
-        link = text[index + 1:].split(None, 1)[0]
-        return index + len(link), Reference(Reference.Type.EXPLICIT,
-                                            image_char, first_part[1], link)
+        link = text[index + 1 :].split(None, 1)[0]
+        return (
+            index + len(link),
+            Reference(Reference.Type.EXPLICIT, image_char, first_part[1], link),
+        )
     # nothing from previous = implicit reference link
-    return index, Reference(Reference.Type.IMPLICIT, image_char,
-                            identifier=first_part[1], is_footnote=is_footnote)
+    return (
+        index,
+        Reference(
+            Reference.Type.IMPLICIT,
+            image_char,
+            identifier=first_part[1],
+            is_footnote=is_footnote,
+        ),
+    )
 
 
 def detect_image_footnote(text, index):
@@ -143,8 +176,9 @@ def detect_image_footnote(text, index):
     else:
         is_image = False
 
-    is_footnote = True if len(text) > index + 1 and text[index + 1] == "^" \
-        else False
+    is_footnote = (
+        True if len(text) > index + 1 and text[index + 1] == "^" else False
+    )
 
     return is_image, is_footnote
 
@@ -173,8 +207,7 @@ def get_text_inside_brackets(text):
             count_brackets += 1
         if text[index] == closing_bracket_char and not escape_next:
             count_brackets -= 1
-        escape_next = True if text[index] == "\\" and not escape_next \
-            else False
+        escape_next = True if text[index] == "\\" and not escape_next else False
 
         output += text[index]
         index += 1
@@ -186,8 +219,11 @@ def is_todo_or_empty(reference):
     """This methods returns True if the implicit reference represents
     todo list in markdown format (i.e. in format [ ] or [x]) or identifier
     is empty, False otherwise."""
-    return reference.type == Reference.Type.IMPLICIT and \
-        not reference.link and reference.id.lower() in (" ", "x", "")
+    return (
+        reference.type == Reference.Type.IMPLICIT
+        and not reference.link
+        and reference.id.lower() in (" ", "x", "")
+    )
 
 
 def get_html_elements_identifiers(document):
