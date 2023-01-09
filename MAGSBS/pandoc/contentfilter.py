@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2018 Sebastian Humenda <shumenda |at|gmx |dot| de>
+# (c) 2016-2023 Sebastian Humenda <shumenda |at|gmx |dot| de>
 # pylint: disable=unused-argument
 """
 To convert lecture material and books taillored to our requirements, content
@@ -415,8 +415,8 @@ def convert_formulas(conversion_file, img_dir, ast):
     # an converted image has information like image depth and height and hence
     # the data structure is different
     formulas = [conv.get_data_for(eqn, style) for _p, style, eqn in formulas]
-    with gleetex.htmlhandling.HtmlImageFormatter(base_path) as img_fmt:
-        img_fmt.set_exclude_long_formulas(True)
-        img_fmt.set_replace_nonascii(True)
-        # this alters the AST reference, so no return value required
-        gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast["blocks"], formulas)
+    img_fmt = gleetex.htmlhandling.HtmlImageFormatter(base_path)
+    img_fmt.set_exclude_long_formulas(True)
+    img_fmt.set_replace_nonascii(True)
+    # this alters the AST reference, so no return value required
+    gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast["blocks"], formulas)
