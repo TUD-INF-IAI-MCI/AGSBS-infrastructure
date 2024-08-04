@@ -230,7 +230,7 @@ class HtmlConverter(OutputGenerator):
                 raise e from None
             document = "{}\n\n{}\n\n{}\n".format(nav_start, document, nav_end)
         json_ast = contentfilter.load_pandoc_ast(document)
-        self.__apply_filters(json_ast, path)
+        json_ast = self.__apply_filters(json_ast, path)
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + "." + self.FILE_EXTENSION
         pandoc_args = ["-s", "--template=%s" % self.template_path]
@@ -295,7 +295,7 @@ class HtmlConverter(OutputGenerator):
         if self.get_profile() is ConversionProfile.Blind:
             try:
                 # this alters the Pandoc document AST -- no return required
-                contentfilter.convert_formulas(file_path, "bilder", json_ast)
+                return contentfilter.convert_formulas(file_path, "bilder", json_ast)
             except errors.MathError as err:
                 HtmlConverter.__handle_error(file_path, err)
 
