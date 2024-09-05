@@ -295,9 +295,10 @@ class HtmlConverter(OutputGenerator):
         if self.get_profile() is ConversionProfile.Blind:
             try:
                 # this alters the Pandoc document AST -- no return required
-                return contentfilter.convert_formulas(file_path, "bilder", json_ast)
+                contentfilter.convert_formulas(file_path, "bilder", json_ast)
             except errors.MathError as err:
                 HtmlConverter.__handle_error(file_path, err)
+        return json_ast
 
     def generate_page_navigation(self, file_path, file_cache, page_numbers, conf=None):
         """generate_page_navigation(path, file_cache, page_numbers, conf=None)
