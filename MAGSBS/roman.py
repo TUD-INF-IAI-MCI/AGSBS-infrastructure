@@ -86,7 +86,7 @@ def from_roman(letters):
     if not letters:
         raise InvalidRomanNumeralError("Input can not be blank")
     if not roman_numeral_pattern.search(letters):
-        raise InvalidRomanNumeralError("Invalid Roman numeral: %letters" % letters)
+        raise InvalidRomanNumeralError(f"Invalid Roman numeral: {letters}")
 
     result = 0
     index = 0
