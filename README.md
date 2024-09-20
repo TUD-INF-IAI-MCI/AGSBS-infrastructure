@@ -31,19 +31,6 @@ welcome to send corrections or additions, as well as any requests.
 
 ### Dependencies
 
-This version of MAGSBS / matuc depends on Python in version >= 3.6.
-
-To test what your default Python is, execute:
-
-    python --version
-
-If it outputs a version starting with 3, everything is fine and you can execute
-all commands below with "python" (and "pip". If however the command returns
-something like 2.x.x, you need to call every mentioned command instead with
-"python3". In the latter case, you should also check that Python3 is instaled.
-
-***Other dependencies:***
-
 -   Pandoc: <https://github.com/jgm/pandoc>
 -   pandocfilters for python
     -   pip3 install pandocfilters
