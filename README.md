@@ -31,6 +31,7 @@ welcome to send corrections or additions, as well as any requests.
 
 ### Dependencies
 
+-   Python
 -   Pandoc: <https://github.com/jgm/pandoc>
 -   pandocfilters for python
     -   pip3 install pandocfilters
