@@ -82,9 +82,9 @@ class test_mparser(unittest.TestCase):
         pnums = mp.extract_page_numbers_from_par(
             {
                 1: ["|| - Seite I -"],
-                7: ["|| - Seite XVI -"],
-                20: ["|| - Seite CCC -"],
-                32: ["|| - Seite CMLI-CMLXVII -"],
+                7: ["|| - Seite XVi -"],
+                20: ["|| - Seite CcC -"],
+                32: ["|| - Seite cmli-CMLXVII -"],
             },
         )
         self.assertEqual(len(pnums), 4)
@@ -93,11 +93,32 @@ class test_mparser(unittest.TestCase):
         pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite IIIIIVC -"]})
         self.assertEqual(len(pnums), 0)
 
-        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite III-IIIIIVC -"]})
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite iii-IIIIIVC -"]})
         self.assertEqual(len(pnums), 0)
 
         pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite VIIX-XII -"]})
         self.assertEqual(len(pnums), 0)
+
+    def test_roman_number_case_is_correctly_detected(self):
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite XXVI -"]})
+        self.assertEqual(len(pnums), 1)
+        self.assertEqual(pnums[0].number, 26)
+        self.assertEqual(pnums[0].uppercase, True)
+
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite xlix -"]})
+        self.assertEqual(len(pnums), 1)
+        self.assertEqual(pnums[0].number, 49)
+        self.assertEqual(pnums[0].uppercase, False)
+
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite Xcv-Ci -"]})
+        self.assertEqual(len(pnums), 1)
+        self.assertEqual(pnums[0].number, range(95, 101))
+        self.assertEqual(pnums[0].uppercase, True)
+
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite ccc-cccii -"]})
+        self.assertEqual(len(pnums), 1)
+        self.assertEqual(pnums[0].number, range(300, 302))
+        self.assertEqual(pnums[0].uppercase, False)
 
     ##############################################################
     # test file2paragraphs

@@ -42,7 +42,7 @@ class test_add_pagenumber(unittest.TestCase):
 || - Seite 320 -
 
 
-|| - Seite II-III -
+|| - Seite Ii-iiI -
 """
         newpnum = pagenumbering.add_page_number_from_str(mydocument, 2)
         self.assertEqual(newpnum.number, 2)
