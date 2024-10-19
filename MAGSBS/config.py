@@ -43,7 +43,7 @@ PAGENUMBERING_PATTERN = re.compile(
         # recognize all different languages which are supported for the words
         # "slide" and "page"
         -\s*(%s)\s+
-        (\d+|%s(?:-(?:\d+|%s))?)\s*- # arabic or roman numbers
+        (\d+|%s)(?:-(\d+|%s))?\s*- # arabic or roman numbers
         """
     % ("|".join(PAGENUMBERINGTOKENS), ROMAN_NUMBER.pattern, ROMAN_NUMBER.pattern,),
     re.VERBOSE,
