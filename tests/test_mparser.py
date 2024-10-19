@@ -40,11 +40,15 @@ class test_mparser(unittest.TestCase):
         self.assertEqual(len(pnums), 1, "exactly one page number is expected.")
         self.assertEqual(pnums[0].number, 80)
 
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite 23-56 -"]})
+        self.assertEqual(len(pnums), 1, "exactly one page number is expected.")
+        self.assertEqual(pnums[0].number, range(23, 56))
+
     def test_that_more_than_one_pnum_is_parsed_and_line_numbers_are_correct(self,):
         pars = collections.OrderedDict()
         pars[1] = ["|| - Seite 80 -"]
         pars[3] = ["|| Some text", "hopefully ignored"]
-        pars[5] = ["|| - Seite 81 -"]
+        pars[5] = ["|| - Seite 81-83 -"]
         pnums = mp.extract_page_numbers_from_par(pars)
         self.assertEqual(len(pnums), 2)
         lnums = [pnum.line_no for pnum in pnums]
@@ -58,6 +62,12 @@ class test_mparser(unittest.TestCase):
         pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite abc -"]})
         self.assertEqual(len(pnums), 0)
 
+        pars = {1: ["|| - 32--42 -"]}
+        self.assertEqual(len(mp.extract_page_numbers_from_par(pars)), 0)
+
+        pars = {1: ["|| - V--XII -"]}
+        self.assertEqual(len(mp.extract_page_numbers_from_par(pars)), 0)
+
     def test_that_lower_case_page_identifiers_are_recognized(self):
         pnums = mp.extract_page_numbers_from_par({999: ["|| - seite 80 -"]})
         self.assertEqual(len(pnums), 1)
@@ -70,12 +80,23 @@ class test_mparser(unittest.TestCase):
 
     def test_that_roman_numbers_work(self):
         pnums = mp.extract_page_numbers_from_par(
-            {1: ["|| - Seite I -"], 7: ["|| - Seite XVI -"], 20: ["|| - Seite CCC -"],}
+            {
+                1: ["|| - Seite I -"],
+                7: ["|| - Seite XVI -"],
+                20: ["|| - Seite CCC -"],
+                32: ["|| - Seite CMLI-CMLXVII -"],
+            },
         )
-        self.assertEqual(len(pnums), 3)
+        self.assertEqual(len(pnums), 4)
 
     def test_invalid_roman_numbers_trigger_exception(self):
         pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite IIIIIVC -"]})
+        self.assertEqual(len(pnums), 0)
+
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite III-IIIIIVC -"]})
+        self.assertEqual(len(pnums), 0)
+
+        pnums = mp.extract_page_numbers_from_par({1: ["|| - Seite VIIX-XII -"]})
         self.assertEqual(len(pnums), 0)
 
     ##############################################################
