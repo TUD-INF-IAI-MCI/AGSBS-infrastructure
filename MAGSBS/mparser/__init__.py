@@ -150,7 +150,7 @@ def extract_page_numbers_from_par(
             pnum = pnum_from_str(par[0], regex)
         except ValueError as e:
             raise errors.FormattingError(
-                "cannot recognize page number", e.args, line=start_line,
+                "cannot recognize page number", *e.args, line=start_line,
             )
         if pnum is None:
             continue
@@ -173,13 +173,15 @@ def pnum_from_str(str, regex=config.PAGENUMBERING_PATTERN):
     id, *numbers = result.groups()
     # figure out whether arabic or roman number
     is_arabic = True
+    is_uppercase = True
     page_numbers = []
     for number in filter(lambda n: n is not None, numbers):
         try:
             number = int(number)
         except ValueError:  # try roman number
+            is_uppercase = not number.islower()    # Prefer upper case.
             try:
-                number = roman.from_roman(number)
+                number = roman.from_roman(number.upper())
                 is_arabic = False
             except roman.InvalidRomanNumeralError:
                 # Parsing failed.
@@ -190,6 +192,7 @@ def pnum_from_str(str, regex=config.PAGENUMBERING_PATTERN):
         id,
         range(*page_numbers) if len(page_numbers) > 1 else page_numbers[0],
         is_arabic=is_arabic,
+        is_uppercase=is_uppercase,
     )
 
 

@@ -36,7 +36,8 @@ PAGENUMBERINGTOKENS += [
 # regular expression to recognize page numbers, includes both arabic and roman
 # numbers
 ROMAN_NUMBER = re.compile(
-    roman.roman_numeral_pattern_string.strip().lstrip("^").rstrip("$"), re.VERBOSE,
+    roman.roman_numeral_pattern_string.strip().lstrip("^").rstrip("$"),
+    re.VERBOSE | re.IGNORECASE,
 )
 PAGENUMBERING_PATTERN = re.compile(
     r"""
@@ -46,7 +47,7 @@ PAGENUMBERING_PATTERN = re.compile(
         # arabic or roman numbers, optionally with range; the last terms are needed
         # to ensure that either all numbers are matched or none of them to make
         # it less confusing.
-        (\d+|%s)(?:-(\d+|%s)\s*-|\s+-|-(?:\W+|$))
+        (\d+|(?i:%s))(?:-(\d+|(?i:%s))\s*-|\s+-|-(?:\W+|$))
         """
     % ("|".join(PAGENUMBERINGTOKENS), ROMAN_NUMBER.pattern, ROMAN_NUMBER.pattern,),
     re.VERBOSE,

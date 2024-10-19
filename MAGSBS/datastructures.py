@@ -347,20 +347,23 @@ class FileCache:
 
 class PageNumber:
     """Abstract representation of a page number. It consists of a identifier (a
-    string like "page" or "slide), a boolean arabic (if False, roman) and a
-    number. Number can be a range, too. Optionally, the source code line number
-    can be stored as well."""
+    string like "page" or "slide), a boolean arabic (if False, roman), a boolean
+    uppercase determining the case of the number if it is roman (if False, lower
+    case) and a number. Number can be a range, too. Optionally, the source code
+    line number can be stored as well."""
 
-    def __init__(self, identification, number, is_arabic=True):
+    def __init__(self, identification, number, is_arabic=True, is_uppercase=True):
         self.arabic = is_arabic
         self.identifier = identification
         self.number = number
         self.line_no = None
+        self.uppercase = is_uppercase
 
     def __str__(self):
         conv = str if self.arabic else roman.to_roman
         if isinstance(self.number, range):
-            return "%s-%s" % (conv(self.number.start), conv(self.number.stop))
+            result = "%s-%s" % (conv(self.number.start), conv(self.number.stop))
+            return result.upper() if self.uppercase else result.lower()
         else:
             return conv(self.number)
 
