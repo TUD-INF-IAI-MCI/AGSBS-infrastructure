@@ -22,8 +22,8 @@ import pandocfilters
 import gleetex
 import gleetex.pandoc
 
-from .. import config
 from ..errors import MathError, SubprocessError
+from ..mparser import pnum_from_str
 
 
 html = lambda text: pandocfilters.RawBlock("html", text)
@@ -46,18 +46,18 @@ def page_number_extractor(key, value, fmt, meta):
         # first chunk of paragraph must be str and contain '||'
         if isinstance(text, str) and text.startswith("||"):
             text = pandocfilters.stringify(value)  # get whole text of page number
-            pnum = config.PAGENUMBERING_PATTERN.search(text)
+            pnum = pnum_from_str(text)
             if pnum:
                 # strip the first ||
                 text = text[2:].lstrip().rstrip()
                 if fmt == "epub":
                     return html(
                         '<p class="pagebreak"><span id="p{0}">{1}</span></p>'.format(
-                            pnum.groups()[1], text
+                            pnum, text
                         )
                     )
                 return html(
-                    '<p><span id="p{0}">{1}</span></p>'.format(pnum.groups()[1], text)
+                    '<p><span id="p{0}">{1}</span></p>'.format(pnum, text)
                 )
 
 

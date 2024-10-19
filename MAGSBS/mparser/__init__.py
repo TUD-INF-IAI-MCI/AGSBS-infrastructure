@@ -146,12 +146,35 @@ def extract_page_numbers_from_par(
 
     paragraphs = list(paragraphs)
     for start_line, par in paragraphs:
-        result = regex.search(par[0])
-        if not result:
+        try:
+            pnum = pnum_from_str(par[0], regex)
+        except ValueError as e:
+            raise errors.FormattingError(
+                "cannot recognize page number", e.args, line=start_line,
+            )
+        if pnum is None:
             continue
-        id, number = result.groups()[:2]
-        # figure out whether arabic or roman number
-        is_arabic = True
+
+        pnum.line_no = start_line
+        numbers.append(pnum)
+    return numbers
+
+
+def pnum_from_str(str, regex=config.PAGENUMBERING_PATTERN):
+    """Return a `datastructures.PageNumber` found in `str`, else `None`.
+
+    Raises a `ValueError` with the the problematic number as argument if
+    a number matched by the `regex` is no valid page number.
+    """
+    result = regex.search(str)
+    if not result:
+        return None
+
+    id, *numbers = result.groups()
+    # figure out whether arabic or roman number
+    is_arabic = True
+    page_numbers = []
+    for number in filter(lambda n: n is not None, numbers):
         try:
             number = int(number)
         except ValueError:  # try roman number
@@ -159,14 +182,15 @@ def extract_page_numbers_from_par(
                 number = roman.from_roman(number)
                 is_arabic = False
             except roman.InvalidRomanNumeralError:
-                raise errors.FormattingError(
-                    "cannot recognize page number", number, line=start_line
-                )
+                # Parsing failed.
+                raise ValueError(number) from None
+        page_numbers.append(number)
 
-        pnum = datastructures.PageNumber(id, number, is_arabic=is_arabic)
-        pnum.line_no = start_line
-        numbers.append(pnum)
-    return numbers
+    return datastructures.PageNumber(
+        id,
+        range(*page_numbers) if len(page_numbers) > 1 else page_numbers[0],
+        is_arabic=is_arabic,
+    )
 
 
 ################################################################################

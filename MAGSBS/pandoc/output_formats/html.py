@@ -330,12 +330,17 @@ class HtmlConverter(OutputGenerator):
                 trans.get_translation("next").title(), make_path(nxt)
             )
         navbar = []
+
         # take each pnumgapth element
-        page_numbers = [
-            pnum
-            for pnum in page_numbers
-            if (pnum.number % conf[config.MetaInfo.PageNumberingGap]) == 0
-        ]
+        def is_between_gaps(pnum):
+            if not isinstance(pnum, range):
+                pnum = (pnum,)
+            return any(
+                num % conf[config.MetaInfo.PageNumberingGap] == 0
+                for num in pnum
+            )
+        page_numbers = [pnum for pnum in page_numbers if is_between_gaps(pnum.number)]
+
         if page_numbers:
             navbar.append(trans.get_translation("pages").title() + ": ")
             navbar.extend("[[{0}]](#p{0}), ".format(num) for num in page_numbers)

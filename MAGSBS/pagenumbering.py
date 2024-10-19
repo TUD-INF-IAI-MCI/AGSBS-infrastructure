@@ -48,10 +48,16 @@ def add_page_number_from_str(data, line_number, path=None):
         translator.set_language(conf[MetaInfo.Language])
         return datastructures.PageNumber(translator.get_translation("page"), 1)
     else:
+        last_pnum = pagenumbers[-1]
         return datastructures.PageNumber(
-            pagenumbers[-1].identifier,
-            pagenumbers[-1].number + 1,
-            pagenumbers[-1].arabic,
+            last_pnum.identifier,
+            (
+                last_pnum.number.stop
+                if isinstance(last_pnum.number, range)
+                else last_pnum.number
+            )
+            + 1,
+            last_pnum.arabic,
         )
 
 
@@ -68,17 +74,49 @@ def check_page_numbering(pnums):
         the same style far earlier
     """
     if not pnums:
-        return tuple()
-    errorneous = []  # tuple of page number object and expected page number (as number)
-    prev = pnums[0]  # previous
-    for cur in pnums[1:]:
-        # if previous page number was errorneous and the style is unchanged:
-        if prev.arabic == cur.arabic:  # same style
-            if errorneous and errorneous[-1][0] == prev:  # already error found
-                errorneous.append((cur, errorneous[-1][1] + 1))
-            elif prev.number != (cur.number - 1):
-                errorneous.append((cur, prev.number + 1))
-        else:  # different style, ignore
-            pass
-        prev = cur
-    return errorneous
+        return ()
+
+    erroneous = []  # tuple of page number object and expected page number (as number)
+
+    # Check first number as special case.
+    first_num = pnums[0].number
+    if isinstance(first_num, range) and first_num.start >= first_num.stop:
+        # Only allow increasing ranges; reverse range (one simple possible fix).
+        start = first_num.stop
+        diff = first_num.start - first_num.stop    # `.start` >= `.stop`
+        erroneous.append((pnums[0], range(start, start + diff) if diff != 0 else start))
+
+    for prev, cur in zip(pnums, pnums[1:]):
+        different_style = prev.arabic != cur.arabic
+
+        prev_num = prev.number
+        if different_style:
+            # No previous number as orientation on style reset.
+            prev_num = cur.number
+        elif erroneous and erroneous[-1][0] == prev:
+            # Override expectation with potentially more precise value.
+            prev_num = erroneous[-1][1]
+
+        expected = (
+            prev_num.stop if isinstance(prev_num, range) else prev_num
+        ) + 1 * (not different_style)    # Only add one when style stays the same.
+
+        cur_num, cur_diff = (
+            (cur.number.start, cur.number.stop - cur.number.start)
+            if isinstance(cur.number, range)
+            else (cur.number, 0)
+        )
+
+        if cur_diff < 0:
+            # Reverse range to only allow increasing ranges.
+            cur_diff *= -1
+        elif different_style or cur_num == expected:
+            # Different style, expected value and correct range.
+            continue
+
+        erroneous.append((
+            cur,
+            range(expected, expected + cur_diff) if cur_diff != 0 else expected,
+        ))
+
+    return erroneous
