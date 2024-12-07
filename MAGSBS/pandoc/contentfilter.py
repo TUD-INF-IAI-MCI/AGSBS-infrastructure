@@ -416,7 +416,6 @@ def convert_formulas(conversion_file, img_dir, ast):
     # the data structure is different
     formulas = [conv.get_data_for(eqn, style) for _p, style, eqn in formulas]
     img_fmt = gleetex.htmlhandling.HtmlImageFormatter(base_path)
-    img_fmt.set_exclude_long_formulas(True)
     img_fmt.set_replace_nonascii(True)
     # this alters the AST reference, so no return value required
     gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast["blocks"], formulas)
