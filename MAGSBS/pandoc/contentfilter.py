@@ -390,7 +390,7 @@ def get_title(json_ast):
 
 def convert_formulas(conversion_file, img_dir, ast):
     """This filter extracts all formulas from the given Pandoc AST, converts
-    them and replaces their original occurrences with RAW inline HTML.
+    them and replaces their original occurrences with rendered images.
     For the linking to work, the first argument needs to be the path to the file
     being converted (relative to the current working directory) and the second a
     path to the image directory name and will be in the same directory as the
@@ -415,7 +415,7 @@ def convert_formulas(conversion_file, img_dir, ast):
     # an converted image has information like image depth and height and hence
     # the data structure is different
     formulas = [conv.get_data_for(eqn, style) for _p, style, eqn in formulas]
-    img_fmt = gleetex.htmlhandling.HtmlImageFormatter(base_path)
+    img_fmt = gleetex.pandoc.PandocAstImageFormatter(base_path)
     img_fmt.set_replace_nonascii(True)
     # this alters the AST reference, so no return value required
     gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast["blocks"], formulas)
