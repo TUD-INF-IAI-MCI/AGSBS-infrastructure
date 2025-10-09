@@ -256,12 +256,13 @@ class EpubConverter(OutputGenerator):
         try:
             filter_ = None
             fmt = self.PANDOC_FORMAT_NAME
+            new_json_ast = json_ast
             for filter_ in filters:
                 # reset chapter count for next filter which may count chapters
                 if isinstance(meta, dict):
                     if "chapter" in meta:
                         meta["chapter"] = 1
-                json_ast = pandocfilters.walk(json_ast, filter_, fmt, meta)
+                new_json_ast = pandocfilters.walk(new_json_ast, filter_, fmt, meta)
         except KeyError as e:  # API clash(?)
             raise errors.StructuralError(
                 (
@@ -271,6 +272,10 @@ class EpubConverter(OutputGenerator):
                 % (filter.__name__, str(e)),
                 path,
             )
+        else:
+            # Update parameter value in place.
+            json_ast.clear()
+            json_ast.update(new_json_ast)
 
     @staticmethod
     def __format_filename(str_):
