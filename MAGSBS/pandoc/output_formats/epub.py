@@ -177,8 +177,8 @@ class EpubConverter(OutputGenerator):
                     try:
                         # this alters the Pandoc document AST -- no return required
                         contentfilter.convert_formulas(
-                            path,
-                            os.path.join(os.path.dirname(entry["path"]), "bilder"),
+                            entry["path"],
+                            "bilder",
                             json_ast,
                         )
                     except errors.MathError as err:
@@ -282,7 +282,7 @@ class EpubConverter(OutputGenerator):
         """Take a string and return a valid filename constructed from the string.
         Uses a whitelist approach: any characters not present in valid_chars are
         removed.
-         
+
         Note: this method may produce invalid filenames such as ``, `.` or `..`
         """
         filename = "".join(
