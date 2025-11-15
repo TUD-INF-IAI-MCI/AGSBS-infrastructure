@@ -100,6 +100,9 @@ files are converted."""
     def _run(self):
         orig_cwd = os.getcwd()
         for root in self.get_roots():
+            # Ensure each conversion step refers to the same directory,
+            # relative paths can be tricky.
+            root = os.path.abspath(root)
             os.chdir(root)
             if self._output_format == pandoc.formats.OutputFormat.Html:
                 conf = config.ConfFactory().get_conf_instance(".")
@@ -113,7 +116,7 @@ files are converted."""
                         with open("inhalt.md", "w", encoding="utf-8") as file:
                             file.write(md_creator.format())
 
-            conv = pandoc.converter.Pandoc(root_path=orig_cwd)
+            conv = pandoc.converter.Pandoc(root_path=root)
             files_to_convert = [
                 os.path.join(dir, f)
                 for dir, _, flist in filesystem.get_markdown_files(".", True)
