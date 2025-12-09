@@ -11,7 +11,7 @@ MAGSBS-specific extensions.
 
 import enum
 import datetime
-from distutils.version import StrictVersion
+from packaging.version import Version
 import os
 import re
 import sys
@@ -22,7 +22,7 @@ from . import common
 from .errors import ConfigurationError
 from . import roman
 
-VERSION = StrictVersion("0.9")
+VERSION = Version("0.9")
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
