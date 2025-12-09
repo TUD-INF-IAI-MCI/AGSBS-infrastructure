@@ -5,14 +5,18 @@ FILES = $(shell find MAGSBS -type f -name '*.py')
 
 all: pot
 
-pot:
-	pygettext --keyword=_ --output=matuc.pot $(FILES)
+clean:
+	rm -f MAGSBS/*.pyo
+	find . -type d -name __pycache__ -exec rm -r '{}' ';'
 
 mo: $(wildcard po/*.po)
 	for LANG in $(basename $(notdir $^)); do \
 		mkdir -p locale/$$LANG/LC_MESSAGES; \
 		msgfmt --output-file=locale/$$LANG/LC_MESSAGES/matuc.mo po/$$LANG; \
 	done
+
+pot:
+	pygettext --keyword=_ --output=matuc.pot $(FILES)
 
 # merge new strings and old translations
 update: pot
