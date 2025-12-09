@@ -1,3 +1,6 @@
-[tool.black]
-line-length = 88
-target-version = ['py39']
+[build-system]
+requires = ["packaging", "setuptools", "setuptools-gettext"]
+
+[tool.setuptools-gettext]
+source_dir = "po"
+build_dir = "mo"

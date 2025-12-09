@@ -151,7 +151,10 @@ setuptools.setup(
             "matuc_js = MAGSBS.matuc_js:main",
         ]
     },
-    install_requires=["gladtex       >= 3.1", "packaging", "pandocfilters >= 1.4.2"],
+    install_requires=["gladtex >= 3.1",
+            "packaging",
+            "pandocfilters >= 1.4.2",
+            "setuptools-gettext"],
     include_package_data=True,
     license="LGPL",
     name="MAGSBS-matuc",
