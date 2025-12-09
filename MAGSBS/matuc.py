@@ -3,7 +3,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2018 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2016-2025 Sebastian Humenda <shumenda@gmx.de>
 #
 # This file contains the command-line frontend for the MAGSBS module, with a
 # user-friendly text interface. Most of the functionality is implemented in
@@ -15,15 +15,18 @@ import os
 import shutil
 import sys
 import textwrap
-import MAGSBS
 
 try:
+    import MAGSBS
     import matuc_impl
 except (SystemError, ModuleNotFoundError):
     # usually happens when executing from source
     try:
+        import MAGSBS
         from matuc_impl import matuc_impl
     except ModuleNotFoundError:
+        sys.path.append(".")
+        import MAGSBS
         from MAGSBS import matuc_impl
 
 

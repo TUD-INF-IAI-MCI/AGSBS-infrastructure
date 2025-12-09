@@ -1,7 +1,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2025 Sebastian Humenda <shumenda |at| gmx |dot| de>
 """Common datastructures."""
 
 import enum
@@ -14,7 +14,7 @@ from . import errors
 from . import roman
 
 CHAPTERNUM = re.compile(r"^[a-z|A-Z]+(\d\d).*\.md")
-HEADING_ATTRIBUTES = re.compile("^(#\w+\s*|\.\w+\s*|\w+=\w+\s*)+$")
+HEADING_ATTRIBUTES = re.compile(r"^(#\w+\s*|\.\w+\s*|\w+=\w+\s*)+$")
 
 
 def gen_id(text, attributes=None):

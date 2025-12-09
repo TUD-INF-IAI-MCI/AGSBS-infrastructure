@@ -3,13 +3,14 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2019 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2016-2025 Sebastian Humenda <shumenda |at| gmx |dot| de>
 import atexit
 import gettext
 import itertools
 import locale
 import os
 import sys
+import sysconfig
 
 
 VALID_PREFACE_BGN = ["v"]
@@ -25,6 +26,14 @@ VALID_MAIN_BGN = [
 ]
 VALID_APPENDIX_BGN = ["anh"]
 VALID_FILE_BGN = VALID_PREFACE_BGN + VALID_MAIN_BGN + VALID_APPENDIX_BGN
+
+def dbg(*text):
+    """Output a piece of text if debugging is enabled."""
+    if "DEBUG" in os.environ and os.environ["DEBUG"] in ("1", "true"):
+        for piece in text:
+            print(piece, end="")
+    if not text[-1].endswith("\n"):
+        print()
 
 
 # pylint: disable=too-few-public-methods
@@ -59,11 +68,11 @@ subsequent calls, the already created instance is returned.  """
 def format_warning(warning):
     if not hasattr(warning, "get") or not warning.get("message"):
         raise TypeError(
-            ("Expected a dictionary with at least a key called " "message.")
+            ('Expected a dictionary with at least a key called "message."')
         )
     string = ["Warning: ", warning.pop("message"), "\n"]
     for key, val in warning.items():
-        string.append("  {}: {}\n".format(key.title(), val))
+        string.append(f"  {key.title()}: {val}\n")
     return "".join(string)
 
 
@@ -136,9 +145,8 @@ def is_lecture_root(directory):
     # if cwd starts with a chapter prefix, it is no lecture root
     if is_valid_file(directory):
         return False
-    subdir = (
-        e for e in os.listdir(directory) if os.path.isdir(os.path.join(directory, e))
-    )
+    subdir = (e for e in os.listdir(directory)
+            if os.path.isdir(os.path.join(directory, e)))
     # if any of the subdirectories is a valid file, it's a lecture root
     if any(directory for directory in subdir if is_valid_file(directory)):
         return True  # at least one chapter, so this is a lecture root
@@ -167,12 +175,10 @@ def is_within_lecture(path):
     parent = os.path.dirname
     if not os.path.exists(path):
         return False
-    elif os.path.isfile(path):
-        return (
-            is_valid_file(parent(path))
-            or is_valid_file(parent(parent(path)))
-            or is_lecture_root(parent(path))
-        )
+    if os.path.isfile(path):
+        return is_valid_file(parent(path)) \
+                or is_valid_file(parent(parent(path))) \
+                or is_lecture_root(parent(path))
     # directories:
     return is_valid_file(path) or is_valid_file(parent(path))
 
@@ -184,30 +190,38 @@ atexit.register(flush_warnings)
 # pylint: disable=protected-access
 def _get_localedir():
     """Get locale dirs depending on operating system."""
-    loc_dirs = [gettext._default_localedir]
-    loc_dirs.append(
-        os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0]))),
-            "share",
-            "locale",
-        )
-    )
+    loc_dirs = []
+    # development or pipx paths should take precedence
+    executable_parent_dir = os.path.dirname(os.path.dirname(
+            os.path.abspath(sys.argv[0])))
+    # for development, it might be in `SCRIPT`/../mo
+    loc_dirs.append(os.path.join(executable_parent_dir, "mo"))
+    # for pipx, use sysconfig to get the data path
+    loc_dirs.append(os.path.join(sysconfig.get_path("data"), "share", "locale"))
+
+    loc_dirs.append(gettext._default_localedir)
     if sys.platform in ["linux", "darwin"]:
         loc_dirs += ["/usr/share/locale", "/usr/local/share/locale"]
     elif sys.platform == "win32":
         # default installer place
-        loc_dirs.append(
-            os.path.join(os.getenv("ProgramData"), "agsbs", "matuc", "locale")
-        )
+        loc_dirs.append(os.path.join(os.getenv("ProgramData"),
+                "agsbs", "matuc", "locale"))
+    dbg("potential directories with locales:\n  ", '\n  '.join(loc_dirs))
+    locale_dir_with_matuc = None
     for directory in loc_dirs:
-        loc_dir_lang = os.path.join(directory, locale.getdefaultlocale()[0][:2])
-        if any(
-            file == "matuc.mo"
-            for _d, _ds, files in os.walk(loc_dir_lang)
-            for file in files
-        ):
-            return directory
-    WarningRegistry().register_warning("Couldn't find 'locales' directory.")  # → None
+        loc_dir_lang = os.path.join(directory, locale.getlocale()[0][:2])
+        if any(file == "matuc.mo" or file == "MAGSBS-matuc.mo"
+                for _d, _ds, files in os.walk(loc_dir_lang) for file in files):
+            locale_dir_with_matuc = directory
+            dbg("localisation found in ", locale_dir_with_matuc)
+            break
+    if not locale_dir_with_matuc:
+        print("Envs: ")
+        for k,v in os.environ.items():
+            print(f"{k} = {v}")
+        WarningRegistry().register_warning("Couldn't find 'locale' directory with "
+            "translations.")  # → None
+    return locale_dir_with_matuc
 
 
 def setup_i18n():
@@ -219,7 +233,7 @@ def setup_i18n():
     trans = None
     try:
         trans = gettext.translation(
-            "matuc", localedir=localedir, languages=[locale.getdefaultlocale()[0][:2]],
+            "matuc", localedir=localedir, languages=[locale.getlocale()[0][:2]],
         )
     except (FileNotFoundError, AttributeError):
         trans = gettext.translation("matuc", localedir=localedir, fallback=True)

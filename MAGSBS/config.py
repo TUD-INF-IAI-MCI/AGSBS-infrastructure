@@ -6,24 +6,24 @@ MAGSBS-specific extensions.
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2025 Sebastian Humenda <shumenda |at| gmx |dot| de>
 # pylint: disable=line-too-long,too-few-public-methods
 
 import enum
 import datetime
-import packaging.version
-from packaging.version import Version
 import os
 import re
 import sys
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+import packaging.version
+
 from . import common
 from .errors import ConfigurationError
 from . import roman
 
-VERSION = Version("0.9")
+VERSION = packaging.version.Version("0.9")
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -63,7 +63,7 @@ def get_semester():
     year = datetime.datetime.now().year
     if month < 3 or month >= 9:
         year = year - 1 if month < 3 else year  # WS starts at end of last year
-        return "WS {}/{}".format(year, year + 1)
+        return f"WS {year}/{year + 1}"
     return "SS {}".format(year)
 
 
@@ -81,6 +81,7 @@ def get_lnum_of_tag(path, tag):
 
 
 class MetaInfo(enum.Enum):
+    #pylint: disable=invalid-name
     AppendixPrefix = "MAGSBS:appendixPrefix"
     AutoNumberingOfChapter = "MAGSBS:autoNumberingOfChapter"
     Editor = "dc:creator"
@@ -152,6 +153,7 @@ instead.
             self[key] = value
         if self[MetaInfo.Editor] == "Unknown":
             # guess editor
+            #pylint: disable=import-outside-toplevel
             if "win32" in sys.platform or "wind" in sys.platform:
                 import getpass
 
@@ -247,7 +249,7 @@ instead.
     def __check_for_version(self, path, value):
         """Check whether version exists and fail otherwise."""
         try:
-            version = StrictVersion(value)
+            version = packaging.version.Version(value)
         except ValueError:
             raise ConfigurationError(
                 _("invalid version number: {}").format(repr(value)),
@@ -288,11 +290,11 @@ instead.
                 v = int(v)
             except ValueError:
                 raise ConfigurationError(
-                    _("Option {} couldn't be converted to " "a number: {}").format(
+                    _("Option {} couldn't be converted to a number: {}").format(
                         k, v
                     ),
                     self.__path,
-                )
+                ) from None
         if k not in self.keys():
             raise ConfigurationError(_("the key %s is unknown") % k, self.__path)
         super().__setitem__(k, v)
@@ -330,31 +332,30 @@ configuration and then, if present, the corresponding subdirectory configuration
         returned."""
         if path is None:
             raise ValueError("Path expected")
-        elif path == "":
+        if path == "":
             path = os.getcwd()
         if not os.path.exists(path):
             raise ConfigurationError("specified path doesn't exist", path)
-        elif os.path.isfile(path):
+        if os.path.isfile(path):
             path = os.path.dirname(path)
         conf_path = os.path.abspath(os.path.join(path, CONF_FILE_NAME))
-        if conf_path in self._instances.keys():
+        if conf_path in self._instances:
             return self._instances[conf_path]
-        else:
-            # check directory above if in a subdirectory of a lecture
-            if not os.path.exists(conf_path) and not common.is_lecture_root(path):
-                dir_above = os.path.split(os.path.abspath(path))[0]
-                if common.is_lecture_root(dir_above):
-                    conf_path = os.path.join(dir_above, CONF_FILE_NAME)
-            try:
-                self._instances[conf_path] = LectureMetaData(conf_path)
-                if os.path.exists(conf_path):
-                    self._instances[conf_path].read()
-            except UnicodeDecodeError:
-                raise ValueError(_(f"{conf_path}: File must be encoded in UTF-8"))
-            except ET.ParseError as e:
-                raise ConfigurationError(
-                    _("Configuration errorneous: ") + str(e), conf_path, e.position[0],
-                )
+        # check directory above if in a subdirectory of a lecture
+        if not os.path.exists(conf_path) and not common.is_lecture_root(path):
+            dir_above = os.path.split(os.path.abspath(path))[0]
+            if common.is_lecture_root(dir_above):
+                conf_path = os.path.join(dir_above, CONF_FILE_NAME)
+        try:
+            self._instances[conf_path] = LectureMetaData(conf_path)
+            if os.path.exists(conf_path):
+                self._instances[conf_path].read()
+        except UnicodeDecodeError:
+            raise ValueError(_(f"{conf_path}: File must be encoded in UTF-8"))
+        except ET.ParseError as e:
+            raise ConfigurationError(
+                _("Configuration errorneous: ") + str(e), conf_path, e.position[0],
+            )
         return self._instances[conf_path]
 
     def get_conf_instance_safe(self, path):
