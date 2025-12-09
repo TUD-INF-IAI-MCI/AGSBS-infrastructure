@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import gettext
 import os
 import shlex
@@ -152,7 +151,7 @@ setuptools.setup(
             "matuc_js = MAGSBS.matuc_js:main",
         ]
     },
-    install_requires=["pandocfilters >= 1.4.2", "gladtex       >= 3.1"],
+    install_requires=["gladtex       >= 3.1", "packaging", "pandocfilters >= 1.4.2"],
     include_package_data=True,
     license="LGPL",
     name="MAGSBS-matuc",

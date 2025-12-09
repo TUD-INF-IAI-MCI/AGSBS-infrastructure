@@ -11,6 +11,7 @@ MAGSBS-specific extensions.
 
 import enum
 import datetime
+import packaging.version
 from packaging.version import Version
 import os
 import re
