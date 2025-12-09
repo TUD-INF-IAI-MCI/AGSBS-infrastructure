@@ -29,13 +29,10 @@ You can install this module as well as the program from source. The following
 sections describe the installation for Windows, GNU/Linux and Mac. You are
 welcome to send corrections or additions, as well as any requests.
 
-### Dependencies
+### Dependencies (excluding Python modules)
 
 -   Python
 -   Pandoc: <https://github.com/jgm/pandoc>
--   pandocfilters for python
-    -   pip3 install pandocfilters
--   GladTeX: <http://humenda.github.io/GladTeX/downloads.html>
 -   a LaTeX distribution.
     -   On GNU/Linux, you should use your package manager to get a recent
         version of GladTeX and a LaTeX distribution. If you happen to run
@@ -49,28 +46,34 @@ welcome to send corrections or additions, as well as any requests.
             because a mixture of 32 and 64 bit components is known to cause hard
             to debug issues.
 
+NOTE: for development, you can look up the dependencies in setup.py and run
+MAGSBS/matuc.py from source.
 
 ### Installation
 
 On any platform, it is enough to change to the source directory and issue the
-following command:
+following commands:
 
-    pip install --upgrade .
+-   If you have not pipx installed:
 
-**Note:** on Debian and derivatives (Mint, Ubuntu), pip3 should be used instead.
+    `python -m pip install pipx`
+-   Install the package:
+
+    `pipx install .`
+-   to reinstall:
+
+    `pipx install -f .`
+
+**Note:** on Debian and derivatives (Mint, Ubuntu), "python3" should be used
+instead.
 
 Localization
 ------------
 
-For correct running of different language versions, it is now necessary to
-manually generate .mo files and create appropriate structure given by
-[gettext](https://docs.python.org/3/library/gettext.html), i.e.
-localedir/language/LC_MESSAGES/domain.mo for each language (encoded using
-two-letter codes given by [ISO-639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)).
-
-For generation, you can use the e.g. the [msgfmt script]
-(http://refspecs.linuxbase.org/LSB_3.0.0/LSB-PDA/LSB-PDA/msgfmt.html)
-
+MAGSBS/Matuc uses gettext for localisation.
+Most of the process is handled transparently.
+To do translations, we recommend installing gettext and use either the Makefile
+or Python's gettext tooling to add translations.
 
 Development
 -----------
