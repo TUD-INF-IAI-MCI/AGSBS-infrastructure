@@ -256,14 +256,14 @@ instead.
                 path,
                 line=get_lnum_of_tag(path, "MAGSBS:version"),
             )
-        # check whether the first two digits of the version numbers match;
-        # that'll tread bug fix releases the same
-        if self.__version.version[:2] == version.version[:2]:
-            if (
-                self.__version.version[-1] < version.version[-1]
-            ):  # a newer bug fix release is available
+        # semantic versioning: check the first two version parts only, ignore
+        # bug fix releasses
+        if self.__version.major == version.major \
+                and self.__version.minor == version.minor:
+            # a newer bug fix release is available
+            if self.__version.minor < version.minor:
                 common.WarningRegistry().register_warning(
-                    ("A newer version of " "Matuc is available: ") + str(version)
+                    f"A newer version of Matuc is available: {version}"
                 )
             # do nothing
         elif version < self.__version:
