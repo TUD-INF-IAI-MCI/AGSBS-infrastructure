@@ -419,3 +419,10 @@ def convert_formulas(conversion_file, img_dir, ast):
     img_fmt.set_replace_nonascii(True)
     # this alters the AST reference, so no return value required
     gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast["blocks"], formulas)
+    excluded = img_fmt.get_excluded()
+    if excluded:
+        from gleetex import sink
+
+        sink.EXCLUSION_FORMULA_SINKS[sink.SinkType.html_file](
+            img_fmt.get_exclusion_file_path(), excluded
+        )
