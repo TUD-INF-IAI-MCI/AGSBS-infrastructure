@@ -1,6 +1,10 @@
 # pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable
+import os
+import shutil
+import tempfile
 import unittest
 import MAGSBS.datastructures
+from MAGSBS import config
 import MAGSBS.toc as toc
 
 # shorthand for creating headings
@@ -96,3 +100,42 @@ class test_factories(unittest.TestCase):
             c.register(has_no_level())  # heading with level set
         with self.assertRaises(ValueError):
             c.register(h("h1 without chapter", 99))
+
+
+class TestHeadingIndexer(unittest.TestCase):
+    def setUp(self):
+        self.orig_cwd = os.getcwd()
+        self.tmpdir = tempfile.mkdtemp()
+        os.chdir(self.tmpdir)
+
+    def tearDown(self):
+        os.chdir(self.orig_cwd)
+        shutil.rmtree(self.tmpdir)
+
+    def write_conf(self):
+        lecture_meta = config.LectureMetaData(config.CONF_FILE_NAME)
+        lecture_meta[config.MetaInfo.GenerateToc] = 1
+        lecture_meta[config.MetaInfo.LectureTitle] = "Test"
+        lecture_meta[config.MetaInfo.SemesterOfEdit] = "SS 2026"
+        lecture_meta.write()
+
+    def test_that_hashed_lines_in_fenced_code_blocks_are_ignored_for_toc(self):
+        self.write_conf()
+        os.mkdir("k01")
+        with open(os.path.join("k01", "k01.md"), "w", encoding="utf-8") as file:
+            file.write(
+                "# Title\n\n"
+                "```text\n"
+                "Some text\n\n"
+                "# Yields erroneously a heading entry\n\n"
+                "Some other text\n"
+                "# This does not create a heading\n"
+                "```\n"
+            )
+
+        indexer = toc.HeadingIndexer(".")
+        indexer.walk()
+        output = toc.TocFormatter(indexer.get_index(), ".").format()
+
+        self.assertIn("Title", output)
+        self.assertNotIn("Yields erroneously a heading entry", output)
