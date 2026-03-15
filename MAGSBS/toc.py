@@ -61,7 +61,7 @@ By calling the function, the actual index is build."""
         file was not edited yet."""
         with open(path, "r", encoding="utf-8") as cnt:
             paragraphs = mparser.file2paragraphs(cnt.read())
-        headings = mparser.extract_headings(path, paragraphs)
+        headings = mparser.extract_headings(path, mparser.rm_codeblocks(paragraphs))
         heading_lines = [h.get_line_number() for h in headings]
 
         all_lines_are_headings = lambda x: all(l.startswith("#") for l in x)
