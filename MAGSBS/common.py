@@ -196,6 +196,10 @@ def _get_localedir():
             os.path.abspath(sys.argv[0])))
     # for development, it might be in `SCRIPT`/../mo
     loc_dirs.append(os.path.join(executable_parent_dir, "mo"))
+    # editable installs keep the package in the source tree, so also check the
+    # repository-local `mo` directory next to the package.
+    package_parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    loc_dirs.append(os.path.join(package_parent_dir, "mo"))
     # for pipx, use sysconfig to get the data path
     loc_dirs.append(os.path.join(sysconfig.get_path("data"), "share", "locale"))
 
