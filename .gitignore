@@ -5,6 +5,8 @@ dist
 *.egg-info
 installer/matuc-installer*.exe
 *.mo
+!mo/cs/LC_MESSAGES/matuc.mo
+!mo/de/LC_MESSAGES/matuc.mo
 *.pot
 *.pot
 *.pyc

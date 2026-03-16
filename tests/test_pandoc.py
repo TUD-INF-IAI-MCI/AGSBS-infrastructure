@@ -1,6 +1,7 @@
 # This file does NOT test pandoc, but MAGSBS.pandoc ;)
 # pylint: disable=too-many-public-methods,import-error,too-few-public-methods,missing-docstring,unused-variable,multiple-imports,invalid-name
 import os, shutil, tempfile, unittest, json, pandocfilters
+from unittest import mock
 from MAGSBS.config import MetaInfo
 import MAGSBS.datastructures as datastructures
 import MAGSBS.errors as errors
@@ -144,6 +145,166 @@ class test_HTMLConverter(unittest.TestCase):
             ast, pandoc.contentfilter.html_link_converter, "html", None
         )
         self.assertTrue("target.html#target_id" in json.dumps(ast))
+
+    def test_convert_formulas_falls_back_to_legacy_gladtex_formatter(self):
+        long_formula = "x" * 150
+        ast = {
+            "blocks": [
+                {"t": "Math", "c": [{"t": "InlineMath"}, long_formula]},
+            ]
+        }
+
+        class DummyConverter:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def set_replace_nonascii(self, flag):
+                self.replace_nonascii = flag
+
+            def convert_all(self, formulas):
+                self.formulas = formulas
+
+            def get_data_for(self, eqn, style):
+                return {
+                    "pos": {"depth": 0, "height": 10, "width": 10},
+                    "formula": eqn,
+                    "path": "bilder/eqn000.svg",
+                    "displaymath": style,
+                }
+
+        class DummyLegacyFormatter:
+            instances = []
+
+            def __init__(self, base_path):
+                self.base_path = base_path
+                self.replace_nonascii = False
+                self.exclude_long_formulas = False
+                self.closed = False
+                self._HtmlImageFormatter__exclusion_filepath = (
+                    "outsourced-descriptions.html"
+                )
+                DummyLegacyFormatter.instances.append(self)
+
+            def set_replace_nonascii(self, flag):
+                self.replace_nonascii = flag
+
+            def set_exclude_long_formulas(self, flag):
+                self.exclude_long_formulas = flag
+
+            def format(self, pos, formula, img_path, displaymath=False):
+                return f"<img src='{img_path}' alt='{formula[:10]}' />"
+
+            def close(self):
+                self.closed = True
+
+        def legacy_replace(formatter, blocks, formulas):
+            eqn = formulas.pop(0)
+            blocks[0].clear()
+            blocks[0].update(
+                {
+                    "t": "RawInline",
+                    "c": [
+                        "html",
+                        formatter.format(
+                            eqn["pos"],
+                            eqn["formula"],
+                            eqn["path"],
+                            eqn["displaymath"],
+                        ),
+                    ],
+                }
+            )
+
+        with mock.patch.object(
+            pandoc.contentfilter.gleetex.pandoc,
+            "PandocAstImageFormatter",
+            None,
+        ), mock.patch.object(
+            pandoc.contentfilter.gleetex.pandoc,
+            "extract_formulas",
+            return_value=[(None, False, long_formula)],
+        ), mock.patch.object(
+            pandoc.contentfilter.gleetex.pandoc,
+            "replace_formulas_in_ast",
+            side_effect=legacy_replace,
+        ), mock.patch.object(
+            pandoc.contentfilter.gleetex.cachedconverter,
+            "CachedConverter",
+            DummyConverter,
+        ), mock.patch.object(
+            pandoc.contentfilter.gleetex.htmlhandling,
+            "HtmlImageFormatter",
+            DummyLegacyFormatter,
+            create=True,
+        ):
+            pandoc.contentfilter.convert_formulas("k01/k01.md", "bilder", ast)
+
+        self.assertEqual(ast["blocks"][0]["t"], "RawInline")
+        self.assertIn("bilder/eqn000.svg", ast["blocks"][0]["c"][1])
+        self.assertTrue(DummyLegacyFormatter.instances[0].replace_nonascii)
+        self.assertTrue(DummyLegacyFormatter.instances[0].exclude_long_formulas)
+        self.assertTrue(DummyLegacyFormatter.instances[0].closed)
+        self.assertEqual(
+            DummyLegacyFormatter.instances[0]._HtmlImageFormatter__exclusion_filepath,
+            "k01/excluded-descriptions.html",
+        )
+
+    def test_legacy_cachedconverter_uses_output_path_for_existing_eqn_files(self):
+        class DummyCache:
+            def contains(self, formula, displaymath):
+                return False
+
+        class BrokenCachedConverter:
+            def __init__(self):
+                self._CachedConverter__options = {"png": False}
+                self._CachedConverter__img_dir = "bilder"
+                self._CachedConverter__output_path = os.path.join(
+                    os.getcwd(), "k01"
+                )
+                self._CachedConverter__cache = DummyCache()
+
+            def _get_formulas_to_convert(self, formulas):
+                file_ext = (
+                    pandoc.contentfilter.gleetex.cachedconverter.Format.Png.value
+                    if self._CachedConverter__options["png"]
+                    else pandoc.contentfilter.gleetex.cachedconverter.Format.Svg.value
+                )
+                eqn_path = lambda x: os.path.join(
+                    self._CachedConverter__img_dir, "eqn%03d.%s" % (x, file_ext)
+                )
+                abs_eqn_path = lambda x: os.path.join(
+                    self._CachedConverter__img_dir, eqn_path(x)
+                )
+                formulas_to_convert = []
+                file_name_count = 0
+                for formula_count, (pos, dsp, formula) in enumerate(formulas):
+                    while os.path.exists(abs_eqn_path(file_name_count)):
+                        file_name_count += 1
+                    formulas_to_convert.append(
+                        (formula, pos, eqn_path(file_name_count), dsp, formula_count + 1)
+                    )
+                return formulas_to_convert
+
+        with CleverTmpDir():
+            os.makedirs(os.path.join("k01", "bilder"))
+            for index in range(8):
+                with open(
+                    os.path.join("k01", "bilder", "eqn%03d.svg" % index), "w"
+                ) as file:
+                    file.write("placeholder")
+
+            with mock.patch.object(
+                pandoc.contentfilter.gleetex.cachedconverter,
+                "CachedConverter",
+                BrokenCachedConverter,
+            ):
+                pandoc.contentfilter._patch_legacy_cachedconverter()
+                converter = BrokenCachedConverter()
+                pipeline = converter._get_formulas_to_convert(
+                    [((0, 0), False, "x+y")]
+                )
+
+            self.assertEqual("bilder/eqn008.svg", pipeline[0][2])
 
 
 ################################################################################
