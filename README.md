@@ -29,40 +29,46 @@ You can install this module as well as the program from source. The following
 sections describe the installation for Windows, GNU/Linux and Mac. You are
 welcome to send corrections or additions, as well as any requests.
 
-### Dependencies (excluding Python modules)
+### Dependencies
 
 -   Python
 -   Pandoc: <https://github.com/jgm/pandoc>
 -   a LaTeX distribution.
-    -   On GNU/Linux, you should use your package manager to get a recent
-        version of GladTeX and a LaTeX distribution. If you happen to run
-        Debian, Linux Mint or Ubuntu, typing `sudo apt-get install gladtex
-        texlive-full` installs everything (or hunt down the packages yourself).
-    -   On OS/X, you should install
-        [GladTeX](https://github.com/humenda/GladTeX) from source and install
-        [MacTeX](www.tug.org/mactex/).
+    -   On GNU/Linux, use your package manager to install a recent LaTeX
+        distribution. If you happen to run Debian, Linux Mint or Ubuntu,
+        typing `sudo apt-get install texlive-full` installs a full setup (or
+        hunt down the packages yourself).
+    -   On OS/X, install [MacTeX](https://www.tug.org/mactex/).
     -   On windows you can try [MikTeX](https://miktex.org/)
         -   It is advised that you install a 64 bit MikTeX on a 64 bit system
             because a mixture of 32 and 64 bit components is known to cause hard
             to debug issues.
 
-NOTE: for development, you can look up the dependencies in setup.py and run
-MAGSBS/matuc.py from source.
+NOTE: Python package dependencies and console scripts are declared in
+`pyproject.toml`.
+The Python package dependencies, including GladTeX/GleeTeX, are installed via
+`pyproject.toml`. Conversions still require Pandoc and a LaTeX distribution to
+be available on the system.
 
 ### Installation
 
-On any platform, it is enough to change to the source directory and issue the
-following commands:
+On any platform, it is enough to change to the source directory and issue one
+of the following commands:
 
--   If you have not pipx installed:
+-   Install the command-line tool in an isolated environment via `pipx`:
 
     `python -m pip install pipx`
--   Install the package:
 
     `pipx install .`
--   to reinstall:
+-   Install the package into the current Python environment:
 
-    `pipx install -f .`
+    `python -m pip install .`
+-   Install an editable development environment:
+
+    `python -m pip install -e .`
+-   Reinstall via `pipx` after local changes:
+
+    `pipx install --force .`
 
 **Note:** on Debian and derivatives (Mint, Ubuntu), "python3" should be used
 instead.

@@ -1,6 +1,33 @@
 [build-system]
-requires = ["packaging", "setuptools", "setuptools-gettext"]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.setuptools-gettext]
-source_dir = "po"
-build_dir = "mo"
+[project]
+name = "MAGSBS-matuc"
+version = "0.9"
+description = "MAGSBS - MarkDown AG SBS module"
+readme = "README.md"
+license = { text = "LGPL" }
+authors = [
+    { name = "Sebastian Humenda" },
+    { name = "Jens Voegler" },
+]
+dependencies = [
+    "gladtex >= 3.1",
+    "packaging",
+    "pandocfilters >= 1.4.2",
+]
+
+[project.urls]
+Repository = "https://github.com/TUD-INF-IAI-MCI/AGSBS-infrastructure"
+
+[project.scripts]
+matuc = "MAGSBS.matuc:main"
+matuc_js = "MAGSBS.matuc_js:main"
+
+[tool.setuptools.packages.find]
+include = ["MAGSBS*"]
+
+[tool.setuptools.data-files]
+"share/locale/cs/LC_MESSAGES" = ["mo/cs/LC_MESSAGES/matuc.mo"]
+"share/locale/de/LC_MESSAGES" = ["mo/de/LC_MESSAGES/matuc.mo"]

@@ -9,8 +9,10 @@ filters have been written, stored in this module. A content filter is a function
 (or program) working on the abstract document representation of a Pandoc
 document and extracting, removing or alterint the AST."""
 
+import inspect
 import json
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -20,6 +22,7 @@ from xml.parsers.expat import ExpatError
 import pandocfilters
 
 import gleetex
+import gleetex.htmlhandling
 import gleetex.pandoc
 
 from ..errors import MathError, SubprocessError
@@ -388,6 +391,104 @@ def get_title(json_ast):
                     return pandocfilters.stringify(node["c"])
 
 
+def _get_exclusion_filename():
+    sink = getattr(gleetex, "sink", None)
+    if sink and hasattr(sink, "EXCLUSION_FILE_NAME"):
+        return sink.EXCLUSION_FILE_NAME
+    return "excluded-descriptions.html"
+
+
+def _patch_legacy_cachedconverter():
+    converter_class = gleetex.cachedconverter.CachedConverter
+    method = getattr(converter_class, "_get_formulas_to_convert", None)
+    if method is None:
+        return
+    try:
+        source = inspect.getsource(method)
+    except (OSError, TypeError):
+        return
+    normalized_source = source.replace(" ", "").replace("\n", "")
+    broken_variants = [
+        "abs_eqn_path=lambdax:os.path.join(self.__img_dir,eqn_path(x))",
+        "abs_eqn_path=lambdax:os.path.join(self._CachedConverter__img_dir,eqn_path(x))",
+    ]
+    if not any(variant in normalized_source for variant in broken_variants):
+        return
+
+    def _fixed_get_formulas_to_convert(self, formulas):
+        formulas_to_convert = []
+        file_ext = (
+            gleetex.cachedconverter.Format.Png.value
+            if self._CachedConverter__options["png"]
+            else gleetex.cachedconverter.Format.Svg.value
+        )
+        eqn_path = lambda x: os.path.join(
+            self._CachedConverter__img_dir, "eqn%03d.%s" % (x, file_ext)
+        )
+        abs_eqn_path = lambda x: os.path.join(
+            self._CachedConverter__output_path, eqn_path(x)
+        )
+        formula_was_converted = lambda f, dsp: (
+            gleetex.cachedconverter.normalize_formula(f),
+            dsp,
+        ) in (
+            (gleetex.cachedconverter.normalize_formula(entry[0]), entry[3])
+            for entry in formulas_to_convert
+        )
+        file_name_count = 0
+        used_file_names = []
+        for formula_count, (pos, dsp, formula) in enumerate(formulas):
+            if not self._CachedConverter__cache.contains(
+                formula, dsp
+            ) and not formula_was_converted(formula, dsp):
+                while os.path.exists(abs_eqn_path(file_name_count)) or (
+                    eqn_path(file_name_count) in used_file_names
+                ):
+                    file_name_count += 1
+                used_file_names.append(eqn_path(file_name_count))
+                formulas_to_convert.append(
+                    (formula, pos, eqn_path(file_name_count), dsp, formula_count + 1)
+                )
+        return formulas_to_convert
+
+    converter_class._get_formulas_to_convert = _fixed_get_formulas_to_convert
+
+
+def _get_formula_formatter(base_path):
+    formatter_class = getattr(gleetex.pandoc, "PandocAstImageFormatter", None)
+    if formatter_class is not None:
+        img_fmt = formatter_class(base_path)
+        img_fmt.set_replace_nonascii(True)
+        return img_fmt, False
+
+    _patch_legacy_cachedconverter()
+    img_fmt = gleetex.htmlhandling.HtmlImageFormatter(base_path)
+    img_fmt.set_replace_nonascii(True)
+    img_fmt.set_exclude_long_formulas(True)
+    exclusion_path = (
+        posixpath.join(base_path, _get_exclusion_filename())
+        if base_path
+        else _get_exclusion_filename()
+    )
+    if hasattr(img_fmt, "_HtmlImageFormatter__exclusion_filepath"):
+        setattr(img_fmt, "_HtmlImageFormatter__exclusion_filepath", exclusion_path)
+    return img_fmt, True
+
+
+def _finalize_excluded_formulas(img_fmt, legacy_formatter):
+    if legacy_formatter:
+        img_fmt.close()
+        return
+
+    excluded = img_fmt.get_excluded()
+    if excluded:
+        from gleetex import sink
+
+        sink.EXCLUSION_FORMULA_SINKS[sink.SinkType.html_file](
+            img_fmt.get_exclusion_file_path(), excluded
+        )
+
+
 def convert_formulas(conversion_file, img_dir, ast):
     """This filter extracts all formulas from the given Pandoc AST, converts
     them and replaces their original occurrences with rendered images.
@@ -415,7 +516,7 @@ def convert_formulas(conversion_file, img_dir, ast):
     # an converted image has information like image depth and height and hence
     # the data structure is different
     formulas = [conv.get_data_for(eqn, style) for _p, style, eqn in formulas]
-    img_fmt = gleetex.pandoc.PandocAstImageFormatter(base_path)
-    img_fmt.set_replace_nonascii(True)
+    img_fmt, legacy_formatter = _get_formula_formatter(base_path)
     # this alters the AST reference, so no return value required
     gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast["blocks"], formulas)
+    _finalize_excluded_formulas(img_fmt, legacy_formatter)
