@@ -2,7 +2,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2017 Sebastian Humenda <shumenda@gmx.de>
+# (c) 2016-2026 Sebastian Humenda <shumenda@gmx.de>
 """For documentation about this module, please refer to its classs master."""
 
 import os
@@ -32,10 +32,7 @@ files are converted."""
                 raise OSError("Operation can only be applied to directories.")
             if common.is_valid_file(os.path.abspath(path)):
                 raise errors.StructuralError(
-                    (
-                        "The master command can only be called "
-                        "on a whole lecture, not on particular chapters."
-                    ),
+                        "Can only convert individual files or entire lectures.",
                     path,
                 )
         self._roots = self.__findroot(path)
@@ -50,17 +47,17 @@ files are converted."""
         dirs = [path]
         go_deeper = True
         for directory in dirs:
-            meta = [e for e in os.listdir(directory) if e == config.CONF_FILE_NAME]
-            if meta:  # found, this is our root
+            cur_dirs = os.listdir(directory)
+            # is this our root
+            if any(d for d in cur_dirs if d == config.CONF_FILE_NAME):
                 roots.append(directory)
                 go_deeper = False
             else:
                 if go_deeper:
-                    dirs += [
-                        os.path.join(directory, e)
-                        for e in os.listdir(directory)
-                        if os.path.isdir(os.path.join(directory, e))
-                    ]
+                    dirs.extend(os.path.join(directory, d)
+                        for d in cur_dirs
+                        if os.path.isdir(os.path.join(directory, d))
+                    )
         found_md = any(
             fname.endswith(".md")
             for directory, _, flist in os.walk(path)
@@ -69,7 +66,7 @@ files are converted."""
         if not roots and found_md:
             # no root and markdown files present → lecture without configuration
             raise errors.ConfigurationError(
-                ("no configuration found, but it " "is required"), path
+                ("No configuration found, but it is required."), path
             )
         return roots
 
