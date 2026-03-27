@@ -3,7 +3,7 @@
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2016-2025 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2016-2026 Sebastian Humenda <shumenda |at| gmx |dot| de>
 import atexit
 import gettext
 import itertools
@@ -215,8 +215,8 @@ def _get_localedir():
             locale_dir_with_matuc = directory
             dbg("localisation found in ", locale_dir_with_matuc)
             break
-    if not locale_dir_with_matuc:
-        print("Envs: ")
+    if not locale_dir_with_matuc and "DEBUG" in os.environ:
+        print("No locale found, env vars for debugging: ")
         for k,v in os.environ.items():
             print(f"{k} = {v}")
         WarningRegistry().register_warning("Couldn't find 'locale' directory with "
