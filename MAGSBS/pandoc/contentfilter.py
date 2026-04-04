@@ -415,7 +415,16 @@ def convert_formulas(conversion_file, img_dir, ast):
     # an converted image has information like image depth and height and hence
     # the data structure is different
     formulas = [conv.get_data_for(eqn, style) for _p, style, eqn in formulas]
-    img_fmt = gleetex.pandoc.PandocAstImageFormatter(base_path)
+    from gleetex import sink
+
+    img_fmt = gleetex.pandoc.PandocAstImageFormatter(
+        exclusion_file_path=sink.EXCLUSION_FILE_NAME
+    )
     img_fmt.set_replace_nonascii(True)
     # this alters the AST reference, so no return value required
     gleetex.pandoc.replace_formulas_in_ast(img_fmt, ast["blocks"], formulas)
+    excluded = img_fmt.get_excluded()
+    if excluded:
+        sink.EXCLUSION_FORMULA_SINKS[sink.SinkType.html_file](
+            os.path.join(base_path, sink.EXCLUSION_FILE_NAME), excluded
+        )

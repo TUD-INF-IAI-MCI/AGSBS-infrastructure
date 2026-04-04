@@ -145,6 +145,37 @@ class test_HTMLConverter(unittest.TestCase):
         )
         self.assertTrue("target.html#target_id" in json.dumps(ast))
 
+    def test_that_excluded_descriptions_file_is_written_for_long_formulas(self):
+        long_formula = (
+            "llloooooooooooooooooooooooooooooooooooooooooooooooooong "
+            "foooooooooooooooormmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
+            "ullllllllaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        )
+        with CleverTmpDir():
+            path = os.path.join("k99", "k99.md")
+            os.mkdir(os.path.dirname(path))
+            with open(path, "w", encoding="utf-8") as file:
+                file.write(f"${long_formula}$\n")
+            h = get_html_converter()
+            h.convert([path], cache=mkcache(path))
+
+            html_path = path.replace(".md", ".html")
+            excluded_path = os.path.join(
+                os.path.dirname(path), "excluded-descriptions.html"
+            )
+
+            with open(html_path, encoding="utf-8") as file:
+                html = file.read()
+            self.assertIn('href="excluded-descriptions.html#', html)
+            self.assertNotIn('href="k99/excluded-descriptions.html#', html)
+            self.assertTrue(
+                os.path.exists(excluded_path),
+                f"expected excluded formula descriptions at {excluded_path}",
+            )
+            with open(excluded_path, encoding="utf-8") as file:
+                excluded = file.read()
+            self.assertIn(long_formula, excluded)
+
 
 ################################################################################
 
