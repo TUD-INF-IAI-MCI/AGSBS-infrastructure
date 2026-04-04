@@ -166,7 +166,8 @@ class test_HTMLConverter(unittest.TestCase):
 
             with open(html_path, encoding="utf-8") as file:
                 html = file.read()
-            self.assertIn("excluded-descriptions.html#", html)
+            self.assertIn('href="excluded-descriptions.html#', html)
+            self.assertNotIn('href="k99/excluded-descriptions.html#', html)
             self.assertTrue(
                 os.path.exists(excluded_path),
                 f"expected excluded formula descriptions at {excluded_path}",
