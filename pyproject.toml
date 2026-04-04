@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=65", "wheel"]
+requires = ["setuptools>=65", "setuptools-gettext", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -13,7 +13,7 @@ authors = [
     { name = "Jens Voegler" },
 ]
 dependencies = [
-    "gladtex >= 3.1",
+    "GladTeX @ https://github.com/humenda/GladTeX/archive/990f6526873a135683fe75e84e754f3059e63b7e.tar.gz",
     "packaging",
     "pandocfilters >= 1.4.2",
 ]
@@ -28,6 +28,6 @@ matuc_js = "MAGSBS.matuc_js:main"
 [tool.setuptools.packages.find]
 include = ["MAGSBS*"]
 
-[tool.setuptools.data-files]
-"share/locale/cs/LC_MESSAGES" = ["mo/cs/LC_MESSAGES/matuc.mo"]
-"share/locale/de/LC_MESSAGES" = ["mo/de/LC_MESSAGES/matuc.mo"]
+[tool.setuptools-gettext]
+source_dir = "po"
+build_dir = "mo"

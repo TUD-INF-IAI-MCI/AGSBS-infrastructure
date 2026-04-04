@@ -46,9 +46,12 @@ welcome to send corrections or additions, as well as any requests.
 
 NOTE: Python package dependencies and console scripts are declared in
 `pyproject.toml`.
-The Python package dependencies, including GladTeX/GleeTeX, are installed via
-`pyproject.toml`. Conversions still require Pandoc and a LaTeX distribution to
-be available on the system.
+The Python package dependencies are installed via `pyproject.toml`.
+AGSBS currently pins GladTeX/GleeTeX to upstream commit
+`990f6526873a135683fe75e84e754f3059e63b7e`, because the latest PyPI release
+does not provide the Pandoc API required by the current conversion pipeline.
+Pandoc and a LaTeX distribution still need to be installed separately on the
+system.
 
 ### Installation
 
