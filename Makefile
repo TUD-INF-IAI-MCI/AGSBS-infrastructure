@@ -1,9 +1,18 @@
-# This is a temporary solution until a proper gettextPOT generation and
-# setup.py-install target has been written.
+# This is a temporary solution until we can somehow pyproject.toml to do the
+# translation meging for us.
 
 FILES = $(shell find MAGSBS -type f -name '*.py')
+# pygettext ironically detected fewer strings for translation than xgettext.
+GETTEXT ?= xgettext
+ifeq ($(shell which $(GETTEXT)),)
+$(error Couldn't find $(GETTEXT)! Install it first.")
+endif
+MSGMERGE ?= msgmerge
+ifeq ($(shell which $(MSGMERGE)),)
+$(error Couldn't find msgmerge! Install it first.")
+endif
 
-all: pot
+all: update
 
 clean:
 	rm -f MAGSBS/*.pyo
@@ -16,11 +25,11 @@ mo: $(wildcard po/*.po)
 	done
 
 pot:
-	pygettext --keyword=_ --output=matuc.pot $(FILES)
+	$(GETTEXT) -L Python -o matuc.pot $(FILES)
 
 # merge new strings and old translations
 update: pot
 	mkdir -p po
 	for file in `ls po/*.po`; do \
-		msgmerge -F -U $$file matuc.pot; \
+		$(MSGMERGE) -F -U $$file matuc.pot; \
 	done
