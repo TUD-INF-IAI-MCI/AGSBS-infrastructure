@@ -1,11 +1,12 @@
 # MAGSBS German translation file
-# Copyright (C) 2019 Sebastian Humenda
+# Copyright (C) 2019-2026 Sebastian Humenda
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-09-26 17:14+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-21 19:54+0200\n"
 "PO-Revision-Date: 2019-08-09 12:02+0200\n"
-"Last-Translator: xplhak <xplhak@fi.muni.cz>\n"
+"Last-Translator: Sebastian Humenda shumenda@tudos.org\n"
 "Language-Team: TUD\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -15,11 +16,8 @@ msgstr ""
 "X-Generator: Poedit 2.2.3\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: MAGSBS/common.py:187
-msgid "Couldn't find 'locales' directory."
-msgstr "Konnte Verzeichnis 'locales' nicht finden."
-
-#: MAGSBS/config.py:186
+#: MAGSBS/config.py:219
+#, python-format
 msgid ""
 "Unknown key %s, skipping. Please update the configuration and rerun the "
 "operation."
@@ -27,16 +25,21 @@ msgstr ""
 "Unbekannter Schlüsselbegriff %s, wird ignoriert. Bitte aktualisieren Sie die "
 "Konfiguration und wiederholen Sie dann diese Operation."
 
-#: MAGSBS/config.py:203
+#: MAGSBS/config.py:236
+#, python-brace-format
+msgid "has invalid, non-numerical value of {value}"
+msgstr ""
+
+#: MAGSBS/config.py:243
 #, fuzzy
 msgid "Malformed XML in configuration: "
 msgstr "in Konfiguration"
 
-#: MAGSBS/config.py:214
+#: MAGSBS/config.py:255
 msgid "invalid version number: {}"
 msgstr "ungültige Versionsnummer: {}"
 
-#: MAGSBS/config.py:227
+#: MAGSBS/config.py:275
 msgid ""
 "Matuc is too old, the configuration requires version {}, but version {} is "
 "running."
@@ -44,84 +47,121 @@ msgstr ""
 "Matuc ist zu alt. Die Konfiguration benötigt Version {}, es läuft aber "
 "Version {}."
 
-#: MAGSBS/config.py:239
+#: MAGSBS/config.py:293
 msgid "Option {} couldn't be converted to a number: {}"
 msgstr "Option {} konnte nicht zu einer Zahl konvertiert werden: {}"
 
-#: MAGSBS/config.py:242
+#: MAGSBS/config.py:299
+#, python-format
 msgid "the key %s is unknown"
 msgstr "der Schlüsselbegriff %s ist nicht bekannt"
 
-#: MAGSBS/config.py:299
+#: MAGSBS/config.py:357
 #, fuzzy
 msgid "Configuration errorneous: "
 msgstr "in Konfiguration unter"
 
-#: MAGSBS/config.py:387
-msgid "unsupported language %s; known languages: %s"
-msgstr "unbekannte Sprache %s; bekannte Sprachen: %s"
+#: MAGSBS/datastructures.py:230
+msgid "the file does not follow naming conventions"
+msgstr "die Datei folgt nicht den Namenskonventionen"
 
-#: MAGSBS/errors.py:60
-msgid ""
-"error while running: %s\n"
-"%s"
-msgstr ""
-"Fehler beim Ausführen von: %s\n"
-"%s"
-
-#: MAGSBS/errors.py:79
+#: MAGSBS/errors.py:92
 msgid "in configuration from"
 msgstr "in Konfiguration unter"
 
-#: MAGSBS/errors.py:80
+#: MAGSBS/errors.py:94
 msgid "in configuration"
 msgstr "in Konfiguration"
 
-#: MAGSBS/errors.py:94
+#: MAGSBS/errors.py:110
+#, python-format
 msgid "erroneous structure in %s: "
 msgstr "fehlerhafte Struktur in %s: "
 
-#: MAGSBS/errors.py:113
+#: MAGSBS/errors.py:130
+#, python-brace-format
 msgid "error in {path}"
 msgstr "Fehler in {path}"
 
-#: MAGSBS/factories.py:56
+#: MAGSBS/factories.py:58
 msgid "images"
 msgstr "Bilder"
 
-#: MAGSBS/factories.py:81
+#: MAGSBS/factories.py:83
 msgid "external image description"
 msgstr "ausgelagerte Bildbeschreibung"
 
-#: MAGSBS/factories.py:94
+#: MAGSBS/factories.py:103
 msgid "description of image"
 msgstr "Bildbeschreibung"
 
-#: MAGSBS/filesystem.py:140
+#: MAGSBS/filesystem.py:149
 msgid "chapter"
 msgstr "Kapitel"
 
-#: MAGSBS/filesystem.py:142
+#: MAGSBS/filesystem.py:151
 msgid "paper"
 msgstr "Papier"
 
-#: MAGSBS/filesystem.py:150 MAGSBS/filesystem.py:152
+#: MAGSBS/filesystem.py:159 MAGSBS/filesystem.py:161
 msgid "image descriptions"
 msgstr "Bildbeschreibungen"
 
-#: MAGSBS/matuc_impl.py:191
+#: MAGSBS/matuc_impl.py:44
+msgid "<command> determines which action to take."
+msgstr "<kommando> wählt die auszuführende Aktion aus."
+
+#: MAGSBS/matuc_impl.py:45
+#, python-brace-format
+msgid "Use {PROCNAME} <command> -h for help on each command."
+msgstr "Nutzen Sie {PROCNAME} <command> -h für weitere Hilfe zum Kommando."
+
+#: MAGSBS/matuc_impl.py:46
+msgid ""
+"Available commands are:\n"
+"\n"
+"addpnum         - generate new page number, relative to its predecessors\n"
+"conf            - set, init or update a configuration\n"
+"conv            - convert a project\n"
+"fixpnums        - fix incorrect page numbering of a document\n"
+"imgdsc          - generate image description (snippets)\n"
+"iswithinlecture - test, whether a certain path is part of a project\n"
+"new             - create new project structure\n"
+"mk              - invoke \"mistkerl\", a quality assurance helper\n"
+"toc             - generate table of contents\n"
+"version         - output program version\n"
+msgstr ""
+"Gültige Kommandos:\n"
+"\n"
+"addpnum         - füge neue Seitenzahl hinzu, relativ zu ihrem Vorgänger"
+"conf            - setze, aktualisiere oder initialisiere einen Konfigurationswert\n"
+"conv            - konvertiere ein Projekt\n"
+"fixpnums        - behebe fehlerhafte Seitenummerierung\n"
+"imgdsc          - generiere Schnipsel für Bildbeschreibungen\n"
+"iswithinlecture - prüfe ob ein Pfad in einem Lehrmaterial liegt\n"
+"new             - erstelle eine neue Projektstruktur\n"
+"mk              - rufe \"mistkerl\" auf, ein Werkzeug zur Qualitätssicherung\n"
+"toc             - generiere Inhaltsverzeichnis\n"
+"version         - gib Programmversion aus\n"
+
+#: MAGSBS/matuc_impl.py:189
+#, python-format
+msgid "Invalid command: %s"
+msgstr "Ungültiges Kommando: %s"
+
+#: MAGSBS/matuc_impl.py:200
 msgid "Generate table of contents."
 msgstr "Generiere Inhaltsverzeichnis"
 
-#: MAGSBS/matuc_impl.py:193
+#: MAGSBS/matuc_impl.py:206
 msgid "write output to file instead of stdout"
 msgstr "schreibe Ausgaben in in Datei anstatt nach Stdout"
 
-#: MAGSBS/matuc_impl.py:196
+#: MAGSBS/matuc_impl.py:211
 msgid "material directory (containing chapters)"
 msgstr "Materialverzeichnis mit Kapiteln"
 
-#: MAGSBS/matuc_impl.py:224
+#: MAGSBS/matuc_impl.py:242
 msgid ""
 "Allowed subcommands are `show`, `update` and `init`.\n"
 "`show` shows the current configuration settings, default values if none "
@@ -152,7 +192,7 @@ msgstr ""
 "Das ist nützlich, wenn Sie Konfigurationen in Unterverzeichnissen anlegen\n"
 "wollen oder ein neues Projekt anlegen."
 
-#: MAGSBS/matuc_impl.py:236
+#: MAGSBS/matuc_impl.py:258
 msgid ""
 "insert \"A\" as prefix for each chapter number in the appendix and omit the "
 "header \"appendix\""
@@ -160,62 +200,62 @@ msgstr ""
 "füge \"A\" als Präfix für alle Überschriften im Anhang hinzu und lasse die "
 "Überschrift \"Anhang\" weg"
 
-#: MAGSBS/matuc_impl.py:240
+#: MAGSBS/matuc_impl.py:265
 msgid "set author of source document"
 msgstr "setze Autor im Quelldokument"
 
-#: MAGSBS/matuc_impl.py:242
+#: MAGSBS/matuc_impl.py:270
 msgid "set project editor"
 msgstr "setze Bearbeiter des Projektes"
 
-#: MAGSBS/matuc_impl.py:245
+#: MAGSBS/matuc_impl.py:277
 msgid "set institution (default TU Dresden)"
 msgstr "setze Institution (Standard TU Dresden)"
 
-#: MAGSBS/matuc_impl.py:248
+#: MAGSBS/matuc_impl.py:284
 msgid "set title of project (first heading level 1 by default)"
 msgstr "setze Titel des Projektes (Standardwert erste Überschrift Ebene 1)"
 
-#: MAGSBS/matuc_impl.py:252
+#: MAGSBS/matuc_impl.py:291
 msgid "set document language (de by default)"
 msgstr "setze Sprache der Dokumente (Standardwert de)"
 
-#: MAGSBS/matuc_impl.py:255
+#: MAGSBS/matuc_impl.py:299
 msgid "specify gap between page numbering links in navigation bar (default: 5)"
 msgstr ""
 "setze Abstand zwischen Seitenzahlen in der Navigationsleiste (Standardwert 5)"
 
-#: MAGSBS/matuc_impl.py:259
+#: MAGSBS/matuc_impl.py:308
 msgid "set information about source document"
 msgstr "setze Informationen über Quelldokument"
 
-#: MAGSBS/matuc_impl.py:262
+#: MAGSBS/matuc_impl.py:315
 msgid "set semester of edit (will be guessed otherwise)"
 msgstr ""
 "setze das Semester, in dem die Bearbeitung stattfand (ansonsten wird es "
 "geraten)"
 
-#: MAGSBS/matuc_impl.py:265
+#: MAGSBS/matuc_impl.py:322
 msgid "limit the heading depth for the table of contents"
 msgstr "begrenze Tiefe der Überschriften im Inhaltsverzeichnis"
 
-#: MAGSBS/matuc_impl.py:268
+#: MAGSBS/matuc_impl.py:329
 msgid "set working group"
 msgstr "setze Arbeitsgruppe"
 
-#: MAGSBS/matuc_impl.py:272
+#: MAGSBS/matuc_impl.py:335
 msgid "Error: no subcommand specified."
 msgstr "Fehler: kein Unterkommando angegeben."
 
-#: MAGSBS/matuc_impl.py:289
+#: MAGSBS/matuc_impl.py:354
 msgid "Current settings"
 msgstr "Aktuelle Einstellungen"
 
-#: MAGSBS/matuc_impl.py:295
+#: MAGSBS/matuc_impl.py:364
 msgid "New settings"
 msgstr "Neue Einstellungen"
 
-#: MAGSBS/matuc_impl.py:304
+#: MAGSBS/matuc_impl.py:373
 msgid ""
 "Converts a file or directory containing a project.\n"
 "\n"
@@ -227,15 +267,20 @@ msgstr ""
 "Falls ein Verzeichnis übergeben wird, werden weitere Schritte wie die "
 "Generierung des Inhaltsverzeichnisses ausgeführt."
 
-#: MAGSBS/matuc_impl.py:309
+#: MAGSBS/matuc_impl.py:381
 msgid "select output format (html or epub, default html)"
 msgstr "Ändere Ausgabeformat (html oder epub, Standardwert html)"
 
-#: MAGSBS/matuc_impl.py:312
+#: MAGSBS/matuc_impl.py:385
 msgid "path to input file or directory"
 msgstr "Pfad zur Eingabedatei oder -verzeichnis"
 
-#: MAGSBS/matuc_impl.py:335
+#: MAGSBS/matuc_impl.py:389
+#, fuzzy, python-format
+msgid "file or directory not found: %s"
+msgstr "Zu prüfende Datei oder Verzeichnis angeben"
+
+#: MAGSBS/matuc_impl.py:417
 msgid ""
 "The working directory must be within a project; the image path must be "
 "relative to the current working directory."
@@ -243,23 +288,23 @@ msgstr ""
 "Das Arbeitsverzeichnis muss innerhalb eines Projektes sein; der Bildpfad "
 "muss relativ zum Arbeitsverzeichnis sein."
 
-#: MAGSBS/matuc_impl.py:340
+#: MAGSBS/matuc_impl.py:426
 msgid "image description string (- for reading stdin)"
 msgstr "Zeichenkette für Bildbeschreibung (- für stdin)"
 
-#: MAGSBS/matuc_impl.py:344
+#: MAGSBS/matuc_impl.py:436
 msgid "outsource image descriptions regardless of their length"
 msgstr "lagere Bildbeschreibungen immer aus, unabhängig von ihrer Länge"
 
-#: MAGSBS/matuc_impl.py:348
+#: MAGSBS/matuc_impl.py:443
 msgid "set title for outsourced images (mandatory if outsourced)"
 msgstr "setze Title für ausgelagerte Bilder (zwingend wenn ausgelagert)"
 
-#: MAGSBS/matuc_impl.py:353
+#: MAGSBS/matuc_impl.py:448
 msgid "no path specified"
 msgstr "kein Pfad angegeben"
 
-#: MAGSBS/matuc_impl.py:372
+#: MAGSBS/matuc_impl.py:469
 msgid ""
 "Usage: {} iswithinlecture <path>\n"
 "\n"
@@ -270,47 +315,47 @@ msgstr ""
 "Prüft, ob die angegebene Datei oder das Verzeichnis Teil einer Vorlesung "
 "ist.\n"
 
-#: MAGSBS/matuc_impl.py:375
+#: MAGSBS/matuc_impl.py:473
 msgid "path required"
 msgstr "Pfad erforderlich"
 
-#: MAGSBS/matuc_impl.py:379
+#: MAGSBS/matuc_impl.py:477
 msgid "only one path at a time allowed."
 msgstr "Nur ein Pfad ist gleichzeitig erlaubt."
 
-#: MAGSBS/matuc_impl.py:391
+#: MAGSBS/matuc_impl.py:490
 msgid "Initialize a new lecture material or book directory."
 msgstr "Neues Lehrmaterial oder Buch anlegen."
 
-#: MAGSBS/matuc_impl.py:395
+#: MAGSBS/matuc_impl.py:498
 msgid "number of appendix chapters (default 0)"
 msgstr "Anzahl der Kapitel im Anhang (Standardwert 0)"
 
-#: MAGSBS/matuc_impl.py:398
+#: MAGSBS/matuc_impl.py:506
 msgid "number of chapters (default 2)"
 msgstr "Anzahl der Kapitel (Standardwert 2)"
 
-#: MAGSBS/matuc_impl.py:401
+#: MAGSBS/matuc_impl.py:513
 msgid "add a preface (default no)\")"
 msgstr "füge ein Vorwort hinzu (Standardwert kein)"
 
-#: MAGSBS/matuc_impl.py:404
+#: MAGSBS/matuc_impl.py:520
 msgid "if set, blattxx will be used instead of kxx"
 msgstr "falls angegeben wird blattxx anstatt kxx verwendet"
 
-#: MAGSBS/matuc_impl.py:406
+#: MAGSBS/matuc_impl.py:523
 msgid "set language (default de)"
 msgstr "setze Sprache (Standardwert de)"
 
-#: MAGSBS/matuc_impl.py:408
+#: MAGSBS/matuc_impl.py:526
 msgid "new directory to create project in"
 msgstr "neues Verzeichnis, indem ein Projekt angelegt wird"
 
-#: MAGSBS/matuc_impl.py:417
+#: MAGSBS/matuc_impl.py:537
 msgid "The number of chapters and appendix chapters must be integers."
 msgstr "Die Anzahl der Kapitel und Anhangskapitel müssen ganze Zahlen sein."
 
-#: MAGSBS/matuc_impl.py:430
+#: MAGSBS/matuc_impl.py:551
 msgid ""
 "\n"
 "        Run \"mistkerl\", a quality assurance helper. It checks for common "
@@ -323,15 +368,15 @@ msgstr ""
 "barrierefreie Markdown-Dokumente auf häufige Fehler und gibt diese auf der "
 "Kommandozeile aus."
 
-#: MAGSBS/matuc_impl.py:436
+#: MAGSBS/matuc_impl.py:562
 msgid "Sort critical errors first"
 msgstr "Sortiere kritische Fehler zuerst"
 
-#: MAGSBS/matuc_impl.py:438
+#: MAGSBS/matuc_impl.py:568
 msgid "use less blank lines in output"
 msgstr "unterdrücke Leerzeilen in der Ausgabe"
 
-#: MAGSBS/matuc_impl.py:440
+#: MAGSBS/matuc_impl.py:575
 msgid ""
 "open a console-only live view, refreshing the list of errors every few "
 "seconds"
@@ -339,23 +384,24 @@ msgstr ""
 "öffne eine reine Kommandozeilenansicht, welche im Abstand mehrerer Sekunden "
 "die Fehlerliste aktualisiert."
 
-#: MAGSBS/matuc_impl.py:443
+#: MAGSBS/matuc_impl.py:580
 msgid "specify file or directory to be checked"
 msgstr "Zu prüfende Datei oder Verzeichnis angeben"
 
-#: MAGSBS/matuc_impl.py:447
+#: MAGSBS/matuc_impl.py:585
 msgid "input file name required."
 msgstr "Eingabedateiname erforderlich."
 
-#: MAGSBS/matuc_impl.py:450
+#: MAGSBS/matuc_impl.py:589
+#, python-format
 msgid "Error: %s does not exist."
 msgstr "Fehler: %s existiert nicht."
 
-#: MAGSBS/matuc_impl.py:458
+#: MAGSBS/matuc_impl.py:597
 msgid "No errors found. Hopefully there are none :-)."
 msgstr "Keine Fehler gefunden. Hoffentlich gibt es keine :-)."
 
-#: MAGSBS/matuc_impl.py:501
+#: MAGSBS/matuc_impl.py:643
 msgid ""
 "Generate a page number for a given context. A context consists of a line and "
 "a file. The enumeration will happen automatically (including distinction "
@@ -371,11 +417,11 @@ msgstr ""
 "sondern auf der Standardausgabe ausgegeben. Dies ist für Anwendungen "
 "gedacht, die Matuc einbetten wollen."
 
-#: MAGSBS/matuc_impl.py:510 MAGSBS/matuc_impl.py:566
+#: MAGSBS/matuc_impl.py:658 MAGSBS/matuc_impl.py:747
 msgid "read from specified path instead of reading from standard input"
 msgstr "lies angegebenen Pfad ein, anstatt von der Standardeingabe"
 
-#: MAGSBS/matuc_impl.py:513
+#: MAGSBS/matuc_impl.py:667
 #, fuzzy
 msgid ""
 "read from specified path instead of reading from standard input and write "
@@ -386,7 +432,7 @@ msgstr ""
 "Änderungen in die Dateien. Dies kann beim gleichzeitigen Speichern zu "
 "Problemen führen."
 
-#: MAGSBS/matuc_impl.py:518
+#: MAGSBS/matuc_impl.py:677
 msgid ""
 "Path to load configuration from. This can be either a file or a directory. "
 "If -f is given, the path is used as input file (by default, input is read "
@@ -396,26 +442,26 @@ msgstr ""
 "eine Datei oder ein Verzeichnis sein. Wird -f übergeben, wird die Datei als "
 "Eingabedatei verwendet (standardmäßig ist es die Standardeingabe)."
 
-#: MAGSBS/matuc_impl.py:522
+#: MAGSBS/matuc_impl.py:685
 msgid "Line number for which to generate the page number"
 msgstr "Zeilennummer für welche eine Seitenzahl generiert werden soll"
 
-#: MAGSBS/matuc_impl.py:527 MAGSBS/matuc_impl.py:580
+#: MAGSBS/matuc_impl.py:691 MAGSBS/matuc_impl.py:768
 msgid "Given path has to exist."
 msgstr "Der angegebene Pfad existiert nicht."
 
-#: MAGSBS/matuc_impl.py:532
+#: MAGSBS/matuc_impl.py:696
 msgid "Argument 2 is not a number."
 msgstr "Parameter 2 ist keine Zahl."
 
-#: MAGSBS/matuc_impl.py:538
+#: MAGSBS/matuc_impl.py:704
 msgid ""
 "Given path is not a file, but reading from it with -f has been requested."
 msgstr ""
 "Der angegebene Pfad ist keine Datei, aber Einlesen der Datei mit -f "
 "erfordert eine Datei."
 
-#: MAGSBS/matuc_impl.py:562
+#: MAGSBS/matuc_impl.py:736
 msgid ""
 "Check the page numbers of a document and warn / fix the page numbering, if "
 "the numbers do not strictly increase by one.\n"
@@ -425,25 +471,22 @@ msgstr ""
 "Seitenzahlen, wenn die Nummer nicht genau um eins erhöht wurde.\n"
 "Diese Befehlt liest von stdin als Standard, siehe -f."
 
-#: MAGSBS/matuc_impl.py:569
+#: MAGSBS/matuc_impl.py:755
 #, fuzzy
 msgid "if -f is given, replace the page numbering in the file in-place"
 msgstr ""
 "falls angegeben, wird die Seitennummerierung direkt in der Datei ersetzt"
 
-#: MAGSBS/matuc_impl.py:575
+#: MAGSBS/matuc_impl.py:763
 msgid "In-place modifications requested, but no file given."
 msgstr "Ersetzung in der Datei erforderlich, aber keine Datei vorhanden"
 
-#: MAGSBS/pandoc/contentfilter.py:141
+#: MAGSBS/pandoc/contentfilter.py:410
+#, python-brace-format
 msgid "Incorrect formula: {reason}"
 msgstr "Fehlerhafte Formel: {reason}"
 
-#: MAGSBS/pandoc/formats.py:189
-msgid "You need to have Pandoc installed."
-msgstr "Sie müssen Pandoc installiert haben."
-
-#: MAGSBS/pandoc/formats.py:478
+#: MAGSBS/pandoc/formats.py:201
 msgid ""
 "LaTeX reported an error while converting a fomrula. Unfortunately, "
 "improperly closed formula environments exist, therefore it cannot be "
@@ -455,7 +498,12 @@ msgstr ""
 "ermittelt werden, welche Formel fehlerhaft ist. Bitte lesen Sie das Dokument "
 "erneut und korrigieren Sie ungeschlossene Formelumgebungen."
 
-#: MAGSBS/quality_assurance/all_formats.py:22
+#: MAGSBS/pandoc/output_formats/epub.py:97
+#: MAGSBS/pandoc/output_formats/html.py:93
+msgid "You need to have Pandoc installed."
+msgstr "Sie müssen Pandoc installiert haben."
+
+#: MAGSBS/quality_assurance/all_formats.py:29
 msgid ""
 "Error in the lecture configuration: the value {} is unset, thefefore the "
 "meta data in the HTML files cannot be generated."
@@ -463,7 +511,7 @@ msgstr ""
 "Fehler in der Konfiguration: Der Wert {} ist nicht gesetzt, wodurch die "
 "Kopfdaten in den HTML-Dateien nicht erzeugt werden können."
 
-#: MAGSBS/quality_assurance/all_formats.py:46
+#: MAGSBS/quality_assurance/all_formats.py:61
 msgid ""
 "Incorrectly formatted umlauts have been found. This usually happens when "
 "copying texts from PDFs. This makes text nearly impossible to read."
@@ -472,7 +520,7 @@ msgstr ""
 "Text aus PDF-Dateien kopiert wird. Das macht den Text allerdings schwer "
 "leserlich."
 
-#: MAGSBS/quality_assurance/all_formats.py:60
+#: MAGSBS/quality_assurance/all_formats.py:93
 msgid ""
 "The naming of the file or directory \"{}\" is incorrect and does not follow "
 "the naming conventions. This leads to an incorrect usage of the file."
@@ -480,7 +528,7 @@ msgstr ""
 "Die Datei oder das Verzeichnis \"{}\" ist falsch benannt und folgt nicht den "
 "Namenskonventionen. Dies führt zu einer falschen Verwendung der Datei."
 
-#: MAGSBS/quality_assurance/latex.py:21
+#: MAGSBS/quality_assurance/latex.py:25
 msgid ""
 "The LaTeX environment \"cases\" should contain line breaks at suitable "
 "places to increase readibility."
@@ -488,7 +536,8 @@ msgstr ""
 "Die LaTeX-Umgebung zur Fallunterscheidung (cases) sollte Zeilenumbrüche an "
 "den passenden Stellen enthalten, um die Lesbarkeit zu gewährleisten."
 
-#: MAGSBS/quality_assurance/latex.py:38
+#: MAGSBS/quality_assurance/latex.py:49
+#, python-brace-format
 msgid ""
 "To increase readibility, matrices should not be constructed using manual "
 "formatting commands, but using \"\\begin{pmatrix}...\". This is also shorter."
@@ -497,7 +546,7 @@ msgstr ""
 "Formattierungsinstruktionen, sonder mit \"\\begin{pmatrix}...\" gesetzt "
 "werden. Dies ist außerdem kürzer."
 
-#: MAGSBS/quality_assurance/latex.py:52
+#: MAGSBS/quality_assurance/latex.py:69
 msgid ""
 "Each line of a matrix or table should be written on one line, using a hard "
 "line break."
@@ -505,7 +554,7 @@ msgstr ""
 "Jede Zeile einer Matrix oder Tabelle sollte auf eine eigene Zeile "
 "geschrieben werden, mittels eines echten Zeilenumbruchs."
 
-#: MAGSBS/quality_assurance/latex.py:71
+#: MAGSBS/quality_assurance/latex.py:102
 msgid ""
 "Instead of using an actual umlaut, a LaTeX control sequence was used. This "
 "is hard to read and not required with this program."
@@ -514,7 +563,7 @@ msgstr ""
 "verwendet. Das ist schwer leserlich und ist außerdem nicht nötig mit diesem "
 "Programm."
 
-#: MAGSBS/quality_assurance/latex.py:85
+#: MAGSBS/quality_assurance/latex.py:124
 msgid ""
 "Formulas within a paragraph surrounded by text have to be set with single "
 "dollars, because the formulas don't integrate into the line otherwise. $$ "
@@ -526,7 +575,7 @@ msgstr ""
 "integrieren. $$ (display math) sollte für einzeln stehende Formeln verwendet "
 "werden."
 
-#: MAGSBS/quality_assurance/latex.py:97
+#: MAGSBS/quality_assurance/latex.py:144
 msgid ""
 "Empty space in formulas should be set with \\quad or \\qquad, because they "
 "are otherwise hard to read with speech synthesis."
@@ -534,7 +583,8 @@ msgstr ""
 "Leerräume in Formeln sollten mit \\quad oder \\qquad gekennzeichnet werden, "
 "da sie sonst mit Sprachausgabe schwer lesbar sind."
 
-#: MAGSBS/quality_assurance/latex.py:120
+#: MAGSBS/quality_assurance/latex.py:173
+#, python-brace-format
 msgid ""
 "'{0}' should be generally set using the appropriate LaTeX command, namely "
 "using \\{0}. This way it will be properly formatted in the output and easily "
@@ -544,7 +594,7 @@ msgstr ""
 "mittels \\{0}. Auf diese Weise wird es korrekt formattiert und ist leichter "
 "Lesbar für Bildschirmleser."
 
-#: MAGSBS/quality_assurance/latex.py:140
+#: MAGSBS/quality_assurance/latex.py:199
 msgid ""
 "A formula, occurring on a paragraph on its own, has been set as an embedded "
 "formula using single dollars. Instead double dollar signs around the formula "
@@ -563,7 +613,8 @@ msgstr "Dateiendung erwartet, keine gefunden"
 msgid ".{} or .{}"
 msgstr ".{} oder .{}"
 
-#: MAGSBS/quality_assurance/linkchecker.py:119
+#: MAGSBS/quality_assurance/linkchecker.py:126
+#, python-brace-format
 msgid ""
 "An explicit reference with identifier \"{0}\" does not exist. Please write "
 "an explicit reference in a form \"[{0}]: link\" to the markdown file."
@@ -571,11 +622,12 @@ msgstr ""
 "Eine explizite Referenz mit Marker \"{0}\" existiert nicht. Bitte fügen Sie "
 "eineexplizite Referenz der Form \"[{0}]: link\" zur Datei hinzu."
 
-#: MAGSBS/quality_assurance/linkchecker.py:147
+#: MAGSBS/quality_assurance/linkchecker.py:160
 msgid "Identifier \"{}\" for reference is duplicated on lines {} and {}."
 msgstr "Marker \"{}\" für eine Referenz wiederholt sich auf Zeile {} und {}."
 
-#: MAGSBS/quality_assurance/linkchecker.py:166
+#: MAGSBS/quality_assurance/linkchecker.py:184
+#, python-brace-format
 msgid ""
 "Implicit reference with the identifier \"{0}\" does not exist. Please write "
 "a reference in a form [{0}] in the markdown file or remove the anchor [{0}]: "
@@ -585,34 +637,34 @@ msgstr ""
 "eine explizite Referenz der Form \"[{0}]: link\" zur Datei hinzu oder "
 "entfernen Sie die Marke \"{0}: {1}\"."
 
-#: MAGSBS/quality_assurance/linkchecker.py:228
+#: MAGSBS/quality_assurance/linkchecker.py:255
 msgid "Link path \"{}\" has no extension, but it should be {}."
 msgstr "Linkpfad \"{}\" hat keine Endung, sie sollte \"{}\" lauten."
 
-#: MAGSBS/quality_assurance/linkchecker.py:237
+#: MAGSBS/quality_assurance/linkchecker.py:267
 msgid "Link path \"{}\" has extension .{}, but it should be {}."
 msgstr "Linkpfad \"{}\" hat keine Endung, sie sollte \"{}\" lauten."
 
-#: MAGSBS/quality_assurance/linkchecker.py:250
+#: MAGSBS/quality_assurance/linkchecker.py:285
 msgid "The file \"{}\" given by the reference \"{}\" does not exist."
 msgstr "Die Datei hinter der Referenz \"{}\" existiert nicht."
 
-#: MAGSBS/quality_assurance/linkchecker.py:261
+#: MAGSBS/quality_assurance/linkchecker.py:299
 msgid "The source .md file for hypertext file \"{}\" does not exist."
 msgstr "Die .md-Quelldatei für Link \"{}\" existiert nicht."
 
-#: MAGSBS/quality_assurance/linkchecker.py:286
+#: MAGSBS/quality_assurance/linkchecker.py:325
 msgid "A link is referencing the anchor \"#{}\" which does not exist."
 msgstr "Ein Link referenziert den Bezeichner \"#{}\", welcher nicht existiert."
 
-#: MAGSBS/quality_assurance/linkchecker.py:294
+#: MAGSBS/quality_assurance/linkchecker.py:336
 msgid ""
 "A link references the anchor \"#{}\" which does not exist in the file {}."
 msgstr ""
 "Ein Link referenziert den Bezeichner \"#{}\", welcher in der Datei \"{}\" "
 "nicht existiert."
 
-#: MAGSBS/quality_assurance/markdown.py:18
+#: MAGSBS/quality_assurance/markdown.py:22
 msgid ""
 "Each line number has to have an empty line before and after it, that is, on "
 "a paragraph of its own."
@@ -620,7 +672,7 @@ msgstr ""
 "Jede Seitenzahl muss in der Zeile darüber oder darunter eine Leerzeile "
 "haben, das heißt sie muss in einem eigenen Absatz stehen."
 
-#: MAGSBS/quality_assurance/markdown.py:48
+#: MAGSBS/quality_assurance/markdown.py:59
 msgid ""
 "There is more than one heading of level one, which is not allowed. For "
 "instance, a slide set or a chapter has only one heading of level 1."
@@ -629,7 +681,7 @@ msgstr ""
 "ist. Beispielsweise hat ein Foliensatz oder Kapitel auch nur eine "
 "Überschrift der Ebene 1."
 
-#: MAGSBS/quality_assurance/markdown.py:89
+#: MAGSBS/quality_assurance/markdown.py:107
 msgid ""
 "A list or enumeration needs to be on a paragraph of its own and needs to "
 "have at least an empty line before."
@@ -637,7 +689,7 @@ msgstr ""
 "Eine Auflistund oder Aufzählung muss in einem eigenen Absatz stehen und muss "
 "zumindest davor eine Leerzeile haben."
 
-#: MAGSBS/quality_assurance/markdown.py:109
+#: MAGSBS/quality_assurance/markdown.py:132
 msgid ""
 "The page number \"{}\" can't be recognised, possibly due to a typo, hence it "
 "is ignored at the moment."
@@ -645,20 +697,23 @@ msgstr ""
 "Die Seitenzahl \"{}\" wird nicht erkannt, wahrscheinlich handelt es sich um "
 "einen Tippfehler, wodurch sie momentan ignoriert wird."
 
-#: MAGSBS/quality_assurance/markdown.py:124
+#: MAGSBS/quality_assurance/markdown.py:149
 msgid "Two differing page number identifiers were found."
 msgstr ""
 "Es wurden zwei sich unterscheidende Seitenzahlenkennzeichnungen gefunden."
 
-#: MAGSBS/quality_assurance/markdown.py:127
+#: MAGSBS/quality_assurance/markdown.py:152
+#, python-brace-format
 msgid "First \"{pagenum}\", later \"{another}\"."
 msgstr "Zuerst \"{pagenum}\", dann \"{another}\"."
 
-#: MAGSBS/quality_assurance/markdown.py:131
+#: MAGSBS/quality_assurance/markdown.py:157
+#, python-brace-format
 msgid "First \"{pagenum}\", but then \"{another}\" in \"{file}\"."
 msgstr "Zuerst \"{pagenum}\", dann allerdings \"{another}\" in \"{file}\"."
 
-#: MAGSBS/quality_assurance/markdown.py:178
+#: MAGSBS/quality_assurance/markdown.py:212
+#, python-brace-format
 msgid ""
 "There are more than {count} headings of level {depth}. This can be "
 "circumvented by decreasing the heading depth which will end up the the table "
@@ -668,16 +723,17 @@ msgstr ""
 "durch verringern der Überschriftentiefe für das Inhaltsverzeichnis, durch "
 "verringern des Wertes tocDepth umgangen werden."
 
-#: MAGSBS/quality_assurance/markdown.py:208
+#: MAGSBS/quality_assurance/markdown.py:248
 msgid ""
 "A page number was marked up, but the actual number has not been inserted."
 msgstr "Eine Seitenzahl wurde angegeben, doch die Zahl wurde vergessen."
 
-#: MAGSBS/quality_assurance/markdown.py:229
+#: MAGSBS/quality_assurance/markdown.py:277
 msgid "A \"-\" in the page number is missing, required: \"|| - Page xyz -\""
 msgstr "Es fehlt ein \"-\" in der Seitenzahl, Vorgabe: \"|| - Seite xyz -\""
 
-#: MAGSBS/quality_assurance/markdown.py:244
+#: MAGSBS/quality_assurance/markdown.py:299
+#, python-brace-format
 msgid ""
 "\"{tag}\" is not allowed, use a new paragraph or a \"\\\" at the end of a "
 "line."
@@ -685,23 +741,23 @@ msgstr ""
 "Unerlaubte Nutzung von \"{tag}\"; verwendne Sie einen neuen Absatz oder \"\\"
 "\" am Ende einer Zeile."
 
-#: MAGSBS/quality_assurance/markdown.py:248
+#: MAGSBS/quality_assurance/markdown.py:308
 msgid "It is not allowed to use HTML tags, except for div and span."
 msgstr "Es ist nicht erlaubt HTML-tags, außer div und span, zu verwenden."
 
-#: MAGSBS/quality_assurance/markdown.py:260
+#: MAGSBS/quality_assurance/markdown.py:328
 msgid ""
 "Comparison operators shouldn't be marked up in HTML, but with \\< and \\>."
 msgstr ""
 "Vergleichsoperatoren sollten möglichst nicht mittels HTML, sondern besser "
 "mittels \\< und \\> erzeugt werden."
 
-#: MAGSBS/quality_assurance/markdown.py:269
+#: MAGSBS/quality_assurance/markdown.py:343
 msgid "The heading was underlined and also marked with #'s."
 msgstr ""
 "Die Überschrift wurde unterstrichen und gleichzeitig mit # gekennzeichnet."
 
-#: MAGSBS/quality_assurance/markdown.py:287
+#: MAGSBS/quality_assurance/markdown.py:366
 msgid ""
 "If a paragraph ends on a \\, the next empty line will become part of the "
 "paragraph and hence the next paragraph is formatted incorrectly."
@@ -709,7 +765,7 @@ msgstr ""
 "Wenn ein Absatz auf \\ endet, wird die folgende leere Zeile Teil des "
 "Absatzes und der darauf folgende Absatz falsch formatiert."
 
-#: MAGSBS/quality_assurance/markdown.py:307
+#: MAGSBS/quality_assurance/markdown.py:392
 msgid ""
 "Line contains uneven number of dollar signs. Either a formula wasn't closed "
 "or an embedded formula was stretched across multiple lines (try double "
@@ -720,7 +776,7 @@ msgstr ""
 "Zeilen gedehnt (versuchen Sie doppelte Dollars). Falls Sie tatsächlich ein "
 "Dollarzeichen schreiben wollten, fügen Sie einen \\ davor ein."
 
-#: MAGSBS/quality_assurance/markdown.py:349
+#: MAGSBS/quality_assurance/markdown.py:446
 msgid ""
 "In enumerations and lists, the enumeration character may not immediately be "
 "followed by another such character, because it will be recognised as a "
@@ -732,7 +788,8 @@ msgstr ""
 "wird. Ein \\ vor dem Zeichen, bzw. bei  Zahlen ein \\ vor dem Punkt "
 "verhindert dies."
 
-#: MAGSBS/quality_assurance/markdown.py:370
+#: MAGSBS/quality_assurance/markdown.py:475
+#, python-brace-format
 msgid ""
 "The image description is probably incomplete, since \"{marker}\" has been "
 "found. "
@@ -740,13 +797,13 @@ msgstr ""
 "Die Bildbeschreibung ist wahrscheinlich unvollständig, da eine Markierung "
 "\"{marker}\" gefunden wurde."
 
-#: MAGSBS/quality_assurance/markdown.py:392
+#: MAGSBS/quality_assurance/markdown.py:504
 msgid "The included image is using wrong syntax, the converter will ignore it."
 msgstr ""
 "Das eingebundene Bild nutzt eine falsche Syntax, der Konverter wird das Bild "
 "ignorieren."
 
-#: MAGSBS/quality_assurance/markdown.py:422
+#: MAGSBS/quality_assurance/markdown.py:547
 msgid ""
 "A hyphen was found which possibly originates from copied justified text. "
 "This will be incorrectly formatted in the output."
@@ -754,22 +811,24 @@ msgstr ""
 "Es wurde ein Trennstrich gefunden, der wahrscheinlich aus einem Text mit "
 "Blocksatz kopiert wurde. Dies wird in der Ausgabe falsch formatiert werden."
 
-#: MAGSBS/quality_assurance/markdown.py:464
+#: MAGSBS/quality_assurance/markdown.py:599
 msgid "No image description provided."
 msgstr "Keine Bildbeschreibung vorhanden."
 
-#: MAGSBS/quality_assurance/mistkerl.py:118
+#: MAGSBS/quality_assurance/mistkerl.py:137
 msgid ""
 "File not encoded in UTF-8, please configure this encoding in your editor."
 msgstr ""
 "Datei nicht in UTF-8 gespeichert. Bitte wählen Sie diesen Zeichensatz in "
 "Ihrem Editor."
 
-#: MAGSBS/quality_assurance/mistkerl.py:222
+#: MAGSBS/quality_assurance/mistkerl.py:245
+#, python-brace-format
 msgid "The configuration could not be read: {reason}"
 msgstr "Die Konfiguration konnte nicht gelesen werden: {reason}"
 
-#: MAGSBS/quality_assurance/mistkerl.py:233
+#: MAGSBS/quality_assurance/mistkerl.py:262
+#, python-brace-format
 msgid ""
 "The file is too long. To ease navigation and maintain readability, the file "
 "should be split into fileswith less than {count} lines by naming them like "
@@ -779,34 +838,37 @@ msgstr ""
 "zu gewährleisten, sollten lange Kapitel mit mehr als {count} Zeilen in "
 "mehrere Dateien mit einer Bennung wie kXXYY.md aufgeteilt werden."
 
-#: MAGSBS/toc.py:209
+#: MAGSBS/toc.py:241
 msgid "table of contents"
 msgstr "Inhaltsverzeichnis"
 
-#: MAGSBS/toc.py:217
+#: MAGSBS/toc.py:252
 msgid "title page"
 msgstr "Titelseite"
 
-#: MAGSBS/toc.py:221
+#: MAGSBS/toc.py:257
 msgid "preface"
 msgstr "Vorwort"
 
-#: MAGSBS/toc.py:226
+#: MAGSBS/toc.py:262
 msgid "chapters"
 msgstr "Kapitel"
 
-#: MAGSBS/toc.py:229
+#: MAGSBS/toc.py:266
 msgid "appendix"
 msgstr "Appendix"
 
-#: MAGSBS/toc.py:234
+#: MAGSBS/toc.py:273
 msgid "list of tactile graphics"
 msgstr "Liste taktiler Grafiken"
 
-#: MAGSBS/toc.py:236
+#: MAGSBS/toc.py:279
 msgid "copyright notice"
 msgstr "Urheberrechtshinweis"
 
-#: MAGSBS/toc.py:243
+#: MAGSBS/toc.py:290
 msgid "remarks about the accessible version"
 msgstr "Hinweise zur barrierefreien Version"
+#, python-format
+#~ msgid "unsupported language %s; known languages: %s"
+#~ msgstr "unbekannte Sprache %s; bekannte Sprachen: %s"
