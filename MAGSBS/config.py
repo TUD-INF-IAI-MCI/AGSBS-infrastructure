@@ -6,7 +6,7 @@ MAGSBS-specific extensions.
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2025 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2026 Sebastian Humenda <shumenda |at| gmx |dot| de>
 # pylint: disable=line-too-long,too-few-public-methods
 
 import enum
@@ -467,9 +467,9 @@ class Translate:
 
     def set_language(self, lang):
         if not lang in self.supported_languages:
+            supported_languages = ", ".join(self.supported_languages)
             raise ValueError(
-                _("unsupported language %s; known languages: %s")
-                % (lang, ", ".join(self.supported_languages))
+                _(f"unsupported language {lang}; known languages: {supported_languages}")
             )
         self.lang = lang
 

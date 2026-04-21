@@ -40,13 +40,10 @@ PROCNAME = os.path.basename(sys.argv[0])
 # necessary for function '_'
 MAGSBS.common.setup_i18n()
 
-MAIN_USAGE = _(
-    """%s <command> <options>
-
-<command> determines which action to take. The syntax might vary between
-commands. Use %s <command> -h for help.
-
-Available commands are:
+MAIN_USAGE = _(f"{PROCNAME} <command> <options>") + "\n\n" + \
+    _("<command> determines which action to take.") + "\n" + \
+    _("Use {PROCNAME} <command> -h for help on each command.") + "\n\n" + \
+_("""Available commands are:
 
 addpnum         - generate new page number, relative to its predecessors
 conf            - set, init or update a configuration
@@ -59,7 +56,6 @@ mk              - invoke "mistkerl", a quality assurance helper
 toc             - generate table of contents
 version         - output program version
 """
-    % (PROCNAME, PROCNAME)
 )
 
 

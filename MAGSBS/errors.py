@@ -5,7 +5,7 @@ contextual information."""
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
 #
-# (c) 2014-2018 Sebastian Humenda <shumenda |at| gmx |dot| de>
+# (c) 2014-2026 Sebastian Humenda <shumenda |at| gmx |dot| de>
 
 import collections
 import os
@@ -66,7 +66,8 @@ class SubprocessError(MAGSBS_error):
             if isinstance(command, list)
             else command
         )
-        self.message = _("error while running: %s\n%s") % (self.command, message,)
+        cmd = self.command
+        self.message = _(f"error while running: {cmd}\n{message}")
         super().__init__(message)
         self.path = os.path.abspath(path)
         self.line = line
