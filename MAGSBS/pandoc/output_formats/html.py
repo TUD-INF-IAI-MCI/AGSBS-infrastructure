@@ -25,6 +25,7 @@ $if(date-meta)$
 $endif$
   <title>$if(title-prefix)$$title-prefix$ - $endif$$pagetitle$</title>
   <style type="text/css">
+$styles.html()$
     code {{ white-space: pre; }}
     .underline {{ text-decoration: underline }}
     .annotation {{ border:2px solid #000000; background-color: #FCFCFC; }}
@@ -233,7 +234,11 @@ class HtmlConverter(OutputGenerator):
         json_ast = self.__apply_filters(json_ast, path)
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + "." + self.FILE_EXTENSION
-        pandoc_args = ["-s", "--template=%s" % self.template_path]
+        pandoc_args = [
+            "-s",
+            "--template=%s" % self.template_path,
+            "--metadata=document-css:false",
+        ]
         # set title
         title = contentfilter.get_title(json_ast)
         if title:  # if not None
