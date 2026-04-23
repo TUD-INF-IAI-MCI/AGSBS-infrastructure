@@ -17,6 +17,7 @@ from ..formats import execute, ConversionProfile, OutputGenerator
 CSS_TEMPLATE = """/* This defines styles and classes used in the book */
 body { margin: 5%; text-align: justify; font-size: medium; }
 code { font-family: monospace; }
+span.smallcaps { font-variant: small-caps; }
 h1 { text-align: left; font-size: 2em; }
 h2 { text-align: left; font-size: 1.5em; }
 h3 { text-align: left; font-size: 1.17em; }

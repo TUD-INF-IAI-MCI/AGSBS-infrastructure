@@ -71,8 +71,23 @@ class test_HTMLConverter(unittest.TestCase):
             self.call_cleanup_on_me.cleanup()
 
     def test_that_css_information_is_in_template(self):
+        self.assertTrue("$styles.html()$" in get_html_converter().template_copy)
         self.assertTrue(".underline" in get_html_converter().template_copy)
         self.assertTrue(".frame" in get_html_converter().template_copy)
+
+    def test_that_pandoc_smallcaps_are_styled_in_html_output(self):
+        with CleverTmpDir():
+            path = os.path.join("k99", "k99.md")
+            os.mkdir(os.path.dirname(path))
+            with open(path, "w", encoding="utf-8") as file:
+                file.write("This is normal text and [Small caps]{.smallcaps}.\n")
+            h = get_html_converter()
+            h.set_profile(pandoc.formats.ConversionProfile.VisuallyImpairedDefault)
+            h.convert([path], cache=mkcache(path))
+            with open(path.replace(".md", ".html"), encoding="utf-8") as f:
+                data = f.read()
+            self.assertTrue('class="smallcaps"' in data)
+            self.assertTrue("font-variant: small-caps" in data)
 
     def test_that_unsupported_formats_are_detected(self):
         with self.assertRaises(NotImplementedError):
@@ -197,6 +212,10 @@ class test_EPUBConverter(unittest.TestCase):
         h = get_epub_converter()
         self.call_cleanup_on_me = h
         self.assertTrue(os.path.exists(h.css_path))
+        with open(h.css_path, encoding="utf-8") as file:
+            css = file.read()
+        self.assertTrue("span.smallcaps" in css)
+        self.assertTrue("font-variant: small-caps" in css)
 
     def test_conentfilter_link_converter(self):
         """ast contains a link: 'target.html#target_id'.
