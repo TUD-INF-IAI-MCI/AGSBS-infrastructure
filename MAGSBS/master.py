@@ -6,6 +6,7 @@
 """For documentation about this module, please refer to its classs master."""
 
 import os
+from . import cache
 from . import config
 from .config import MetaInfo
 from . import common
@@ -101,11 +102,12 @@ files are converted."""
             # relative paths can be tricky.
             root = os.path.abspath(root)
             os.chdir(root)
+            document_cache = cache.DocumentCache()
             if self._output_format == pandoc.formats.OutputFormat.Html:
                 conf = config.ConfFactory().get_conf_instance(".")
                 if conf[MetaInfo.GenerateToc]:
                     # create table of contents
-                    c = toc.HeadingIndexer(".")
+                    c = toc.HeadingIndexer(".", document_cache=document_cache)
                     c.walk()
                     if not c.is_empty():
                         index = c.get_index()
@@ -113,7 +115,9 @@ files are converted."""
                         with open("inhalt.md", "w", encoding="utf-8") as file:
                             file.write(md_creator.format())
 
-            conv = pandoc.converter.Pandoc(root_path=root)
+            conv = pandoc.converter.Pandoc(
+                root_path=root, document_cache=document_cache
+            )
             files_to_convert = [
                 os.path.join(dir, f)
                 for dir, _, flist in filesystem.get_markdown_files(".", True)

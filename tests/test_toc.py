@@ -4,6 +4,7 @@ import shutil
 import tempfile
 import unittest
 import MAGSBS.datastructures
+from MAGSBS.cache import DocumentCache
 from MAGSBS import config
 import MAGSBS.toc as toc
 
@@ -139,3 +140,125 @@ class TestHeadingIndexer(unittest.TestCase):
 
         self.assertIn("Title", output)
         self.assertNotIn("Yields erroneously a heading entry", output)
+
+    def test_that_cached_pandoc_ast_is_used_for_toc(self):
+        self.write_conf()
+        os.mkdir("k01")
+        path = os.path.join("k01", "k01.md")
+        with open(path, "w", encoding="utf-8") as file:
+            file.write("# Different title in file\n")
+        document_cache = DocumentCache()
+        document_cache.add(
+            path,
+            {
+                "blocks": [
+                    {
+                        "t": "Header",
+                        "c": [
+                            1,
+                            ["cached-title", [], []],
+                            [
+                                {"t": "Str", "c": "Cached"},
+                                {"t": "Space"},
+                                {"t": "Str", "c": "Title"},
+                            ],
+                        ],
+                    }
+                ],
+                "meta": {},
+            },
+        )
+
+        indexer = toc.HeadingIndexer(".", document_cache=document_cache)
+        indexer.walk()
+        output = toc.TocFormatter(indexer.get_index(), ".").format()
+
+        self.assertIn("Cached Title", output)
+        self.assertIn("#cached-title", output)
+        self.assertNotIn("Different title in file", output)
+
+    def test_that_unnumbered_cached_headings_are_omitted_from_toc(self):
+        self.write_conf()
+        os.mkdir("k01")
+        path = os.path.join("k01", "k01.md")
+        with open(path, "w", encoding="utf-8") as file:
+            file.write("# Visible\n\n# Hidden {.unnumbered}\n")
+        document_cache = DocumentCache()
+        document_cache.add(
+            path,
+            {
+                "blocks": [
+                    {
+                        "t": "Header",
+                        "c": [
+                            1,
+                            ["visible", [], []],
+                            [{"t": "Str", "c": "Visible"}],
+                        ],
+                    },
+                    {
+                        "t": "Header",
+                        "c": [
+                            1,
+                            ["hidden", ["unnumbered"], []],
+                            [{"t": "Str", "c": "Hidden"}],
+                        ],
+                    },
+                ],
+                "meta": {},
+            },
+        )
+
+        indexer = toc.HeadingIndexer(".", document_cache=document_cache)
+        indexer.walk()
+        output = toc.TocFormatter(indexer.get_index(), ".").format()
+
+        self.assertIn("Visible", output)
+        self.assertNotIn("Hidden", output)
+
+    def test_that_duplicate_cached_headings_are_omitted_from_toc(self):
+        self.write_conf()
+        os.mkdir("k01")
+        path = os.path.join("k01", "k01.md")
+        with open(path, "w", encoding="utf-8") as file:
+            file.write("# Title {-}\n\nTitle\n=====\n")
+        document_cache = DocumentCache()
+        document_cache.add(
+            path,
+            {
+                "blocks": [
+                    {
+                        "t": "Header",
+                        "c": [
+                            1,
+                            ["title", ["unnumbered"], []],
+                            [{"t": "Str", "c": "Title"}],
+                        ],
+                    },
+                    {
+                        "t": "Header",
+                        "c": [
+                            1,
+                            ["title-1", [], []],
+                            [{"t": "Str", "c": "Title"}],
+                        ],
+                    },
+                    {
+                        "t": "Header",
+                        "c": [
+                            2,
+                            ["introduction", [], []],
+                            [{"t": "Str", "c": "Introduction"}],
+                        ],
+                    },
+                ],
+                "meta": {},
+            },
+        )
+
+        indexer = toc.HeadingIndexer(".", document_cache=document_cache)
+        indexer.walk()
+        output = toc.TocFormatter(indexer.get_index(), ".").format()
+
+        self.assertNotIn("Title", output)
+        self.assertIn("Introduction", output)

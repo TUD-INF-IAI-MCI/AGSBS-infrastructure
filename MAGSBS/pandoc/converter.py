@@ -50,7 +50,7 @@ class Pandoc:
 to the output, handles errors and checks for the correct encoding.
 """
 
-    def __init__(self, conf=None, root_path=None):
+    def __init__(self, conf=None, root_path=None, document_cache=None):
         self.converters = ACTIVE_CONVERTERS
         self.__conf = (
             config.ConfFactory().get_conf_instance(os.getcwd()) if not conf else conf
@@ -60,6 +60,7 @@ to the output, handles errors and checks for the correct encoding.
         self.__conv_profile = ConversionProfile.Blind
         self.__output_format = OutputFormat.Html
         self.__root_path = root_path
+        self.__document_cache = document_cache
 
     def get_formatter_for_format(self, format_):
         """Get converter object."""
@@ -121,7 +122,9 @@ to the output, handles errors and checks for the correct encoding.
         converter.set_meta_data(self.__meta_data)
         converter.setup()
         converter.set_profile(self.__conv_profile)
-        converter.convert(files, path=self.__root_path)
+        converter.convert(
+            files, path=self.__root_path, document_cache=self.__document_cache
+        )
 
     def set_conversion_profile(self, profile):
         if not isinstance(profile, ConversionProfile):
