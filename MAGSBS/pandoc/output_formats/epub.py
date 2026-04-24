@@ -1,4 +1,5 @@
 """HTML output format."""
+
 # vim: set expandtab sts=4 ts=4 sw=4:
 # This is free software, licensed under the LGPL v3. See the file "COPYING" for
 # details.
@@ -118,9 +119,10 @@ class EpubConverter(OutputGenerator):
             raise ValueError("path needs to be specified to save epub.")
         if not files:
             return
+        document_cache = kwargs.get("document_cache")
         file_info = EpubConverter.__generate_file_structure(files)
         try:
-            ast = self.__generate_ast(file_info, kwargs["path"])
+            ast = self.__generate_ast(file_info, kwargs["path"], document_cache)
             self.__convert_document(ast, kwargs["path"])
         except errors.MAGSBS_error as err:
             raise err
@@ -168,47 +170,53 @@ class EpubConverter(OutputGenerator):
                 file_info[name].append({"chapter": chapter, "path": file_name})
         return file_info
 
-    def __generate_ast(self, file_info, path):
+    def __generate_ast(self, file_info, path, document_cache=None):
         """reads all files and generate one ast in correct order."""
         ast = {}
         for key in self.LECTURE_ORDER:
             for entry in file_info[key]:
-                with open(entry["path"], "r", encoding="utf-8") as file:
-                    json_ast = contentfilter.load_pandoc_ast(file.read())
-                    try:
-                        # this alters the Pandoc document AST -- no return required
-                        contentfilter.convert_formulas(
-                            entry["path"],
-                            "bilder",
-                            json_ast,
-                        )
-                    except errors.MathError as err:
-                        EpubConverter.__handle_error(path, err)
-                    self.__apply_filters(
+                json_ast = self.__get_json_ast(entry["path"], document_cache)
+                try:
+                    # this alters the Pandoc document AST -- no return required
+                    contentfilter.convert_formulas(
+                        entry["path"],
+                        "bilder",
                         json_ast,
-                        self.CHAPTER_CONTENT_FILTERS,
-                        path,
-                        os.path.dirname(entry["path"]),
                     )
-                    if key == "images":
-                        self.__apply_filters(json_ast, self.IMAGE_CONTENT_FILTERS, path)
-                    elif key == "backmatter":
-                        self.__apply_filters(
-                            json_ast, self.BACKMATTER_CONTENT_FILTERS, path
-                        )
-                    elif key in self.SPECIAL_MD_FILES:
-                        self.__apply_filters(
-                            json_ast, self.SPECIAL_MD_CONTENT_FILTERS, path
-                        )
-                    if ast:
-                        ast["blocks"].extend(json_ast["blocks"])
-                    else:
-                        ast = json_ast
+                except errors.MathError as err:
+                    EpubConverter.__handle_error(path, err)
+                self.__apply_filters(
+                    json_ast,
+                    self.CHAPTER_CONTENT_FILTERS,
+                    path,
+                    os.path.dirname(entry["path"]),
+                )
+                if key == "images":
+                    self.__apply_filters(json_ast, self.IMAGE_CONTENT_FILTERS, path)
+                elif key == "backmatter":
+                    self.__apply_filters(
+                        json_ast, self.BACKMATTER_CONTENT_FILTERS, path
+                    )
+                elif key in self.SPECIAL_MD_FILES:
+                    self.__apply_filters(
+                        json_ast, self.SPECIAL_MD_CONTENT_FILTERS, path
+                    )
+                if ast:
+                    ast["blocks"].extend(json_ast["blocks"])
+                else:
+                    ast = json_ast
         meta_ast = contentfilter.load_pandoc_ast(
             YAML_TEMPLATE.format(**self.get_meta_data())
         )
         ast["meta"] = meta_ast["meta"]
         return ast
+
+    @staticmethod
+    def __get_json_ast(path, document_cache=None):
+        if document_cache is not None:
+            return document_cache.get_copy(path)
+        with open(path, "r", encoding="utf-8") as file:
+            return contentfilter.load_pandoc_ast(file.read())
 
     # pylint: disable=too-many-locals
     def __convert_document(self, json_ast, path):

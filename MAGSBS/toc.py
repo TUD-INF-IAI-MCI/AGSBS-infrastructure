@@ -10,6 +10,8 @@ import collections
 import os
 import re
 
+import pandocfilters
+
 from . import config, errors, mparser, filesystem as fs, datastructures
 from . import datastructures
 
@@ -21,15 +23,16 @@ HeadingType = datastructures.Heading.Type
 
 class HeadingIndexer:
     """Walk the file system tree from "dir" and have a look in all files which end on
-.md. Take headings of level 1 or 2 and add it to the index.
+    .md. Take headings of level 1 or 2 and add it to the index.
 
-Format of index: dict of lists: every filename is the key, the list of heading
-[objects] is the value in the OrderedDict()."""
+    Format of index: dict of lists: every filename is the key, the list of heading
+    [objects] is the value in the OrderedDict()."""
 
-    def __init__(self, path):
+    def __init__(self, path, document_cache=None):
         if not os.path.exists(path):
             raise errors.StructuralError("Directory doesn't exist.", path)
         self.__dir = path
+        self.__document_cache = document_cache
         self.__index = collections.OrderedDict()
 
     def is_empty(self):
@@ -59,6 +62,9 @@ By calling the function, the actual index is build."""
     def __retrieve_headings_from(self, path):
         """Retrieve headings from path and annotate them with 'unedited' if the
         file was not edited yet."""
+        if self.__document_cache is not None:
+            return self.__retrieve_headings_from_ast(path)
+
         with open(path, "r", encoding="utf-8") as cnt:
             paragraphs = mparser.file2paragraphs(cnt.read())
         headings = mparser.extract_headings(path, mparser.rm_codeblocks(paragraphs))
@@ -96,6 +102,68 @@ By calling the function, the actual index is build."""
                 )
             )
         return headings
+
+    def __retrieve_headings_from_ast(self, path):
+        """Retrieve headings from a cached Pandoc AST."""
+        json_ast = self.__document_cache.get_or_load(path)
+        if not json_ast:
+            return []
+
+        headings = []
+        for value in self.__header_values_from(json_ast.get("blocks", [])):
+            heading = self.__heading_from_ast(path, value)
+            if (
+                headings
+                and headings[-1].get_text().strip() == heading.get_text().strip()
+            ):
+                continue
+            headings.append(heading)
+
+        if headings and self.__document_has_only_headings(json_ast):
+            conf = config.ConfFactory().get_conf_instance(path)
+            trans = config.Translate()
+            trans.set_language(conf[MetaInfo.Language])
+            for heading in headings:
+                heading.set_text(
+                    "{} ({})".format(
+                        heading.get_text(), trans.get_translation("not edited")
+                    )
+                )
+        return headings
+
+    @classmethod
+    def __header_values_from(cls, value):
+        if isinstance(value, dict):
+            if value.get("t") == "Header" and "c" in value:
+                yield value["c"]
+                return
+            yield from cls.__header_values_from(value.get("c"))
+        elif isinstance(value, list):
+            for item in value:
+                yield from cls.__header_values_from(item)
+
+    @staticmethod
+    def __heading_from_ast(path, value):
+        level = value[0]
+        attributes = value[1] if len(value) > 1 else ["", [], []]
+        inlines = value[2] if len(value) > 2 else []
+        identifier = attributes[0] if attributes else None
+        classes = attributes[1] if len(attributes) > 1 else []
+        heading = datastructures.Heading(
+            pandocfilters.stringify(inlines),
+            level,
+            identifier=identifier,
+            is_numbered="unnumbered" not in classes,
+        )
+        heading.set_chapter_number(datastructures.extract_chapter_number(path))
+        return heading
+
+    @staticmethod
+    def __document_has_only_headings(json_ast):
+        blocks = json_ast.get("blocks", [])
+        return bool(blocks) and all(
+            isinstance(block, dict) and block.get("t") == "Header" for block in blocks
+        )
 
     def get_index(self):
         tmp = collections.OrderedDict()
