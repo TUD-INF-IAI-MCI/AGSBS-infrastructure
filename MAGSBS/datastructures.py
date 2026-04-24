@@ -156,14 +156,18 @@ label "Heading" and attributes "{#id .class key=value}".
         APPENDIX = 1
         PREFACE = 2
 
-    def __init__(self, text, level):
+    def __init__(self, text, level, identifier=None, is_numbered=None):
         self.__line_number = None
         # removes attributes from the text
         self.__text, attributes = extract_label_and_attributes(text)
         # detect if heading is numbered
-        self.__is_numbered = detect_is_numbered(attributes)
+        self.__is_numbered = (
+            detect_is_numbered(attributes) if is_numbered is None else is_numbered
+        )
         # id is generated from the parsed text
-        self.__id = gen_id(self.__text, attributes)
+        self.__id = (
+            gen_id(self.__text, attributes) if identifier is None else identifier
+        )
         self.__level = level
         self.__chapter_number = None
         self.__type = Heading.Type.NORMAL
