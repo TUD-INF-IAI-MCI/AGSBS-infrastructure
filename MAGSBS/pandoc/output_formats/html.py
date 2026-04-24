@@ -174,10 +174,11 @@ class HtmlConverter(OutputGenerator):
         """See super class documentation."""
         from ..converter import Pandoc
 
-        cache, files = Pandoc.get_cache(files)
+        file_cache, files = Pandoc.get_cache(files)
+        document_cache = kwargs.get("document_cache")
         try:
             for file_name in files:
-                self.__convert_document(file_name, cache)
+                self.__convert_document(file_name, file_cache, document_cache)
         except errors.MAGSBS_error as err:
             if not err.path:
                 err.path = file_name
@@ -202,7 +203,7 @@ class HtmlConverter(OutputGenerator):
         raise err from None  # no TB here
 
     # pylint: disable=too-many-locals
-    def __convert_document(self, path, file_cache):
+    def __convert_document(self, path, file_cache, document_cache=None):
         """Convert a document by a given path. It takes a converter which takes
         actual care of the underlying format. The filecache caches the list of
         files in the lecture. The list of files within a lecture is required to
@@ -212,24 +213,40 @@ class HtmlConverter(OutputGenerator):
         # only convert if output file is newer than input file
         if not self.needs_update(path):
             return
-        with open(path, "r", encoding="utf-8") as file:
-            document = file.read()
-        if not document:
-            return  # skip empty documents
+        if document_cache is None:
+            with open(path, "r", encoding="utf-8") as file:
+                document = file.read()
+            if not document:
+                return  # skip empty documents
+            json_ast = None
+        else:
+            document = None
+            json_ast = document_cache.get_copy(path)
+            if not json_ast or not json_ast.get("blocks"):
+                return  # skip empty documents
         if OutputGenerator.IS_CHAPTER.search(os.path.basename(path)):
             try:
+                page_numbers = (
+                    mparser.extract_page_numbers_from_par(
+                        mparser.file2paragraphs(document)
+                    )
+                    if document is not None
+                    else self.__extract_page_numbers_from_ast(json_ast)
+                )
                 nav_start, nav_end = self.generate_page_navigation(
                     path,
                     file_cache,
-                    mparser.extract_page_numbers_from_par(
-                        mparser.file2paragraphs(document)
-                    ),
+                    page_numbers,
                 )
             except errors.FormattingError as e:
                 e.path = path
                 raise e from None
-            document = "{}\n\n{}\n\n{}\n".format(nav_start, document, nav_end)
-        json_ast = contentfilter.load_pandoc_ast(document)
+            if document is not None:
+                document = "{}\n\n{}\n\n{}\n".format(nav_start, document, nav_end)
+            else:
+                self.__add_navigation(json_ast, nav_start, nav_end)
+        if json_ast is None:
+            json_ast = contentfilter.load_pandoc_ast(document)
         json_ast = self.__apply_filters(json_ast, path)
         dirname, filename = os.path.split(path)
         outputf = os.path.splitext(filename)[0] + "." + self.FILE_EXTENSION
@@ -271,6 +288,33 @@ class HtmlConverter(OutputGenerator):
             ],
             stdin=json.dumps(json_ast),
             cwd=dirname,
+        )
+
+    @staticmethod
+    def __extract_page_numbers_from_ast(json_ast):
+        page_numbers = []
+        for block in json_ast.get("blocks", []):
+            if not isinstance(block, dict) or block.get("t") != "Para":
+                continue
+            text = pandocfilters.stringify(block.get("c", []))
+            if not text.startswith("||"):
+                continue
+            try:
+                page_number = mparser.pnum_from_str(text)
+            except ValueError as e:
+                raise errors.FormattingError(
+                    "cannot recognize page number", *e.args
+                ) from None
+            if page_number:
+                page_numbers.append(page_number)
+        return page_numbers
+
+    @staticmethod
+    def __add_navigation(json_ast, nav_start, nav_end):
+        start_ast = contentfilter.load_pandoc_ast(nav_start)
+        end_ast = contentfilter.load_pandoc_ast(nav_end)
+        json_ast["blocks"] = (
+            start_ast.get("blocks", []) + json_ast["blocks"] + end_ast.get("blocks", [])
         )
 
     def __apply_filters(self, json_ast, file_path):
@@ -339,6 +383,7 @@ class HtmlConverter(OutputGenerator):
                 num % conf[config.MetaInfo.PageNumberingGap] == 0
                 for num in pnum
             )
+
         page_numbers = [pnum for pnum in page_numbers if is_between_gaps(pnum.number)]
 
         if page_numbers:
@@ -347,7 +392,8 @@ class HtmlConverter(OutputGenerator):
             navbar[-1] = navbar[-1][:-2]  # strip ", " from last chunk
         navbar = "".join(navbar)
         chapternav = "[{}](../inhalt.{})".format(
-            trans.get_translation("table of contents").title(), self.FILE_EXTENSION,
+            trans.get_translation("table of contents").title(),
+            self.FILE_EXTENSION,
         )
 
         if previous:
