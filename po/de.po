@@ -110,7 +110,7 @@ msgstr "Bildbeschreibungen"
 
 #: MAGSBS/matuc_impl.py:44
 msgid "<command> determines which action to take."
-msgstr "<command> wählt die auszuführende Aktion aus."
+msgstr "<Kommando> wählt die auszuführende Aktion aus."
 
 #: MAGSBS/matuc_impl.py:45
 #, python-brace-format
@@ -342,7 +342,7 @@ msgstr "Anzahl der Kapitel (Standardwert 2)"
 
 #: MAGSBS/matuc_impl.py:513
 msgid "add a preface (default no)\")"
-msgstr "füge ein Vorwort hinzu (Standardwert: nein)"
+msgstr "füge ein Vorwort hinzu (Standardmäßig keins)"
 
 #: MAGSBS/matuc_impl.py:520
 msgid "if set, blattxx will be used instead of kxx"
