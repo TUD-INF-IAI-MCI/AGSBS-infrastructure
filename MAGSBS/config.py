@@ -11,6 +11,7 @@ MAGSBS-specific extensions.
 
 import enum
 import datetime
+import builtins
 import os
 import re
 import sys
@@ -24,6 +25,11 @@ from .errors import ConfigurationError
 from . import roman
 
 VERSION = packaging.version.Version("0.9")
+
+
+def _(message):
+    return getattr(builtins, "_", lambda text: text)(message)
+
 
 ## default values
 CONF_FILE_NAME = ".lecture_meta_data.dcxml"
@@ -171,7 +177,7 @@ instead.
                 self[MetaInfo.Editor] = editor
         self[MetaInfo.SemesterOfEdit] = get_semester()  # guess current semester
         self.__changed = False
-        self.__version = version
+        self.__version = packaging.version.Version(str(version))
 
     def write(self):
         """Write back configuration, if it was changed."""
