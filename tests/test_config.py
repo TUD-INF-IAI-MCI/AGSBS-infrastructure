@@ -2,15 +2,15 @@
 import unittest
 from unittest.mock import patch
 
-import distutils.version
 import os
+import packaging.version
 import shutil
 import tempfile
 from MAGSBS import config, common, errors
 from MAGSBS.config import MetaInfo
 
 conf = lambda conf, version=str(config.VERSION): config.LectureMetaData(
-    conf, distutils.version.StrictVersion(version)
+    conf, packaging.version.Version(version)
 )
 
 

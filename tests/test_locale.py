@@ -16,7 +16,7 @@ def fake_mo(actual_path, desired=None):
 
 fake_usr_local = lambda x: fake_mo(x, desired="/usr/share/locale")
 fake_c_program_files = lambda x: fake_mo(x, desired="C:\\ProgramData")
-fake_none = lambda x: fake_mo(x, ".")
+fake_none = lambda x: [(x, (), ())]
 
 
 def normalise_path(path):
@@ -48,5 +48,6 @@ class test_locale(unittest.TestCase):
         # Code sammeln, assert* ausführen
 
     @patch("os.walk", fake_none)
+    @patch.dict(os.environ, {}, clear=True)
     def test_install_locale_returns_none(self):
         self.assertEqual(_get_localedir(), None)
