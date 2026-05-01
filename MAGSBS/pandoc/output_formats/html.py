@@ -15,17 +15,9 @@ from ..formats import execute, remove_temp, ConversionProfile, OutputGenerator
 
 
 # pylint: disable=line-too-long
-HTML_TEMPLATE = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"$if(lang)$ lang="$lang$" xml:lang="$lang$"$endif$>
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+HTML_HEADER_TEMPLATE = """
   <meta name="author" content="{SourceAuthor}" />
-$if(date-meta)$
-  <meta name="date" content="$date-meta$" />
-$endif$
-  <title>$if(title-prefix)$$title-prefix$ - $endif$$pagetitle$</title>
   <style type="text/css">
-$styles.html()$
     code {{ white-space: pre; }}
     .underline {{ text-decoration: underline }}
     .annotation {{ border:2px solid #000000; background-color: #FCFCFC; }}
@@ -40,17 +32,7 @@ $styles.html()$
     div.frame span.title:after {{ content: "\\A"; white-space:pre; }}
     div.box span.title:before {{ content: "\\A{title}: "; white-space:pre; }}
     div.box span.title:after {{ content: "\\A"; white-space:pre; }}
-
-$if(highlighting-css)$
-$highlighting-css$
-$endif$
   </style>
-$if(math)$
-  $math$
-$endif$
-$for(header-includes)$
-  $header-includes$
-$endfor$
   <!-- agsbs-specific -->
   <meta name='Einrichtung' content='{Institution}' />
   <meta href='Arbeitsgruppe' content='{WorkingGroup}' />
@@ -58,22 +40,6 @@ $endfor$
   <meta name='Lehrgebiet' content='{LectureTitle}' />
   <meta name='Semester der Bearbeitung' content='{SemesterOfEdit}' />
   <meta name='Bearbeiter' content='{Editor}' />
-</head>
-<body lang="{Language}">
-$for(include-before)$
-$include-before$
-$endfor$
-$if(toc)$
-<div id="$idprefix$TOC">
-$toc$
-</div>
-$endif$
-$body$
-$for(include-after)$
-$include-after$
-$endfor$
-</body>
-</html>
 """
 
 
@@ -95,21 +61,21 @@ class HtmlConverter(OutputGenerator):
             )
 
         super().__init__(meta, language)
-        self.template_path = None
-        self.template_copy = HTML_TEMPLATE[:]  # full copy
+        self.header_path = None
+        self.header_copy = HTML_HEADER_TEMPLATE[:]  # full copy
 
     def setup(self):
-        """Set up the HtmlConverter. Prepare the template for later use."""
-        self.template_path = tempfile.mktemp() + ".html"
-        self.template_copy = self.get_template()
-        with open(self.template_path, "w", encoding="utf-8") as file:
-            file.write(self.template_copy)
+        """Set up the HtmlConverter. Prepare the header include for later use."""
+        self.header_path = tempfile.mktemp() + ".html"
+        self.header_copy = self.get_header()
+        with open(self.header_path, "w", encoding="utf-8") as file:
+            file.write(self.header_copy)
 
-    def get_template(self):
-        """Construct template."""
+    def get_header(self):
+        """Construct Pandoc header include."""
         start_with_caps = lambda content: content[0].upper() + content[1:]
-        data = HTML_TEMPLATE[:]
-        meta = self.get_meta_data()
+        data = HTML_HEADER_TEMPLATE[:]
+        meta = dict(self.get_meta_data())
         if "title" in meta:
             meta.pop("title")  # title should not be replaced
 
@@ -167,7 +133,7 @@ class HtmlConverter(OutputGenerator):
             )
 
     def set_meta_data(self, meta):
-        """Overwrite parent settr to re-generate template generation."""
+        """Overwrite parent setter to re-generate the header include."""
         super().set_meta_data(meta)
         self.setup()
 
@@ -236,13 +202,15 @@ class HtmlConverter(OutputGenerator):
         outputf = os.path.splitext(filename)[0] + "." + self.FILE_EXTENSION
         pandoc_args = [
             "-s",
-            "--template=%s" % self.template_path,
+            "--include-in-header=%s" % self.header_path,
             "--metadata=document-css:false",
+            "-V",
+            "lang:" + self.get_meta_data()["Language"],
         ]
         # set title
         title = contentfilter.get_title(json_ast)
         if title:  # if not None
-            pandoc_args += ["-V", "pagetitle:" + title, "-V", "title:" + title]
+            pandoc_args += ["-V", "pagetitle:" + title]
         # instruct pandoc to enumerate headings
         try:
             from ...config import MetaInfo
@@ -366,7 +334,7 @@ class HtmlConverter(OutputGenerator):
         return (nav_start, nav_end)
 
     def cleanup(self):
-        remove_temp(self.template_path)
+        remove_temp(self.header_path)
 
     def needs_update(self, path):
         # if file exists and input is newer than output, needs to be converted
