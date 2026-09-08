@@ -48,6 +48,7 @@ class test_locale(unittest.TestCase):
         # Code sammeln, assert* ausführen
 
     @patch("os.walk", fake_none)
-    @patch.dict(os.environ, {}, clear=True)
     def test_install_locale_returns_none(self):
-        self.assertEqual(_get_localedir(), None)
+        with patch.dict(os.environ):
+            os.environ.pop("DEBUG", None)
+            self.assertIsNone(_get_localedir())
