@@ -22,6 +22,10 @@ def write(c):
 
 class Testconf(unittest.TestCase):
     def setUp(self):
+        # Config tests do not require application-wide translation setup.
+        translation = patch("MAGSBS.config._", side_effect=lambda text: text, create=True)
+        translation.start()
+        self.addCleanup(translation.stop)
         self.orig_cwd = os.getcwd()
         self.tmpdir = tempfile.mkdtemp()
         os.chdir(self.tmpdir)
