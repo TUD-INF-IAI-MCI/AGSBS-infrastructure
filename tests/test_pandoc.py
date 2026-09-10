@@ -20,10 +20,8 @@ META_DATA = {
 }
 
 
-def get_html_converter(meta_data=META_DATA, template=None):
+def get_html_converter(meta_data=META_DATA):
     h = pandoc.output_formats.html.HtmlConverter(meta_data, language="de")
-    if template:
-        h.template_copy = template
     h.setup()
     return h
 
@@ -70,10 +68,12 @@ class test_HTMLConverter(unittest.TestCase):
         if self.call_cleanup_on_me:
             self.call_cleanup_on_me.cleanup()
 
-    def test_that_css_information_is_in_template(self):
-        self.assertTrue("$styles.html()$" in get_html_converter().template_copy)
-        self.assertTrue(".underline" in get_html_converter().template_copy)
-        self.assertTrue(".frame" in get_html_converter().template_copy)
+    def test_that_agsbs_information_is_in_header_include(self):
+        header = get_html_converter().header_copy
+        self.assertTrue("$styles.html()$" not in header)
+        self.assertTrue(".underline" in header)
+        self.assertTrue(".frame" in header)
+        self.assertTrue("Einrichtung" in header)
 
     def test_that_pandoc_smallcaps_are_styled_in_html_output(self):
         with CleverTmpDir():
@@ -89,6 +89,20 @@ class test_HTMLConverter(unittest.TestCase):
             self.assertTrue('class="smallcaps"' in data)
             self.assertTrue("font-variant: small-caps" in data)
 
+    def test_that_agsbs_header_include_is_used_in_html_output(self):
+        with CleverTmpDir():
+            path = os.path.join("k99", "k99.md")
+            os.mkdir(os.path.dirname(path))
+            with open(path, "w", encoding="utf-8") as file:
+                file.write("Body\n")
+            h = get_html_converter()
+            h.convert([path], cache=mkcache(path))
+            with open(path.replace(".md", ".html"), encoding="utf-8") as f:
+                data = f.read()
+            self.assertTrue('<meta name="generator" content="pandoc" />' in data)
+            self.assertTrue("<meta name='Einrichtung' content='unique3' />" in data)
+            self.assertTrue(".annotation" in data)
+
     def test_that_unsupported_formats_are_detected(self):
         with self.assertRaises(NotImplementedError):
             pandoc.converter.Pandoc().get_formatter_for_format("mp4")
@@ -97,19 +111,19 @@ class test_HTMLConverter(unittest.TestCase):
         h = pandoc.converter.Pandoc().get_formatter_for_format("html")
         self.call_cleanup_on_me = h
         h.set_meta_data(META_DATA)
-        data = h.get_template()
+        data = h.get_header()
         for key, value in META_DATA.items():
-            if key == "title" or key == "language" or key == "path":
+            if key in ("title", "Language", "path"):
                 continue  # those don't need to be included
             self.assertTrue(
                 value in data,
-                "%s (key=%s) not found in the template\n%s" % (value, key, str(data)),
+                "%s (key=%s) not found in the header\n%s" % (value, key, str(data)),
             )
 
-    def test_that_setup_writes_template(self):
+    def test_that_setup_writes_header_include(self):
         h = get_html_converter()
         self.call_cleanup_on_me = h
-        self.assertTrue(os.path.exists(h.template_path))
+        self.assertTrue(os.path.exists(h.header_path))
 
     def test_title_is_contained_in_document(self):
         with CleverTmpDir():
@@ -122,13 +136,15 @@ class test_HTMLConverter(unittest.TestCase):
             with open(path.replace(".md", ".html")) as f:
                 data = f.read()
             self.assertTrue("<title>It works!</title>" in data)
+            self.assertTrue("<h1" in data and "It works!" in data)
+            self.assertFalse('<header id="title-block-header">' in data)
 
     def test_that_missing_key_raises_conf_error(self):
         meta = dict(META_DATA)
         meta.pop("SourceAuthor")
         self.assertRaises(errors.ConfigurationError, get_html_converter, meta)
 
-    def test_that_language_is_set_in_body(self):
+    def test_that_language_is_set_on_document(self):
         meta = META_DATA.copy()
         meta["Language"] = "fr"
         with CleverTmpDir():
@@ -140,10 +156,9 @@ class test_HTMLConverter(unittest.TestCase):
             h.convert([path], cache=mkcache(path))
             with open(path.replace(".md", ".html")) as f:
                 data = f.read()
-            bodypos = data.find("<body")
             self.assertTrue(
-                '<body lang="fr"' in data or "<body lang='fr'" in data,
-                repr(data[bodypos : bodypos + 250]),
+                'lang="fr"' in data and 'xml:lang="fr"' in data,
+                repr(data[:250]),
             )
 
     def test_conentfilter_link_converter(self):
